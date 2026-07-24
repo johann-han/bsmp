@@ -9,9 +9,12 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@vitest/coverage-v8": "^4.1.10",
     "prettier": "^3.7.4",
     "turbo": "^2.10.6",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vitest": "^4.1.10"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {

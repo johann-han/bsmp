@@ -4,14 +4,16 @@
  * Value objects are compared by their values rather than by identity.
  */
 export abstract class ValueObject<T> {
-    protected constructor(private readonly value: T) { }
+    protected constructor(private readonly _value: T) { }
 
-    /**
-     * Returns the underlying value.
-     */
-    public getValue(): T {
-        return this.value;
+    public get value(): T {
+        return this._value;
     }
+
+    public getValue(): T {
+        return this._value;
+    }
+
 
     /**
      * Determines whether two value objects are equal.
