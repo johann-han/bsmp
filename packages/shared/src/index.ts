@@ -4,4 +4,4 @@
  * Public exports for shared functionality.
  */
 
-export * from "./core/Result.js";
+export * from "./core/index.js";
