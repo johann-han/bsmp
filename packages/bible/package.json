@@ -1,15 +1,21 @@
 {
-    "name": "@bsmp/bible",
-    "version": "0.1.0",
-    "private": true,
-    "type": "module",
-    "main": "./src/index.ts",
-    "types": "./src/index.ts",
-    "exports": {
-        ".": "./src/index.ts"
-    },
-    "scripts": {
-        "lint": "eslint .",
-        "typecheck": "tsc --noEmit"
-    }
+  "name": "@bsmp/bible",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@bsmp/shared": "workspace:*"
+  }
 }
