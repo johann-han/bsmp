@@ -1,28 +1,32 @@
+/**
+ * Utility methods for validating primitive values.
+ *
+ * Guards do not throw exceptions.
+ * They simply report whether a value satisfies a condition.
+ */
 export class Guard {
-    public static againstNullOrUndefined<T>(
+    public static isDefined<T>(
         value: T | null | undefined,
-        name: string,
-    ): void {
-        if (value === null || value === undefined) {
-            throw new Error(`${name} cannot be null or undefined.`);
-        }
+    ): value is T {
+        return value !== null && value !== undefined;
     }
 
-    public static againstEmptyString(
-        value: string,
-        name: string,
-    ): void {
-        if (value.trim().length === 0) {
-            throw new Error(`${name} cannot be empty.`);
-        }
+    public static isString(value: unknown): value is string {
+        return typeof value === "string";
     }
 
-    public static againstNonPositiveInteger(
-        value: number,
-        name: string,
-    ): void {
-        if (!Number.isInteger(value) || value < 1) {
-            throw new Error(`${name} must be a positive integer.`);
-        }
+    public static isNonEmptyString(value: unknown): value is string {
+        return (
+            typeof value === "string" &&
+            value.trim().length > 0
+        );
+    }
+
+    public static isPositiveInteger(value: unknown): value is number {
+        return (
+            typeof value === "number" &&
+            Number.isInteger(value) &&
+            value > 0
+        );
     }
 }
