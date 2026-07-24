@@ -1,87 +1,67 @@
-// packages/bible/src/domain/value-objects/BibleBookId.ts
+import {
+  Guard,
+  Identifier,
+  ValidationError,
+} from "@bsmp/shared";
 
-import { ValueObject } from "@bsmp/shared";
+import {
+  BIBLE_BOOK_CODES,
+  type BibleBookCode,
+} from "../constants/index.js";
 
-const BOOK_IDS = [
-  "GEN",
-  "EXO",
-  "LEV",
-  "NUM",
-  "DEU",
-  "JOS",
-  "JDG",
-  "RUT",
-  "1SA",
-  "2SA",
-  "1KI",
-  "2KI",
-  "1CH",
-  "2CH",
-  "EZR",
-  "NEH",
-  "EST",
-  "JOB",
-  "PSA",
-  "PRO",
-  "ECC",
-  "SNG",
-  "ISA",
-  "JER",
-  "LAM",
-  "EZK",
-  "DAN",
-  "HOS",
-  "JOL",
-  "AMO",
-  "OBA",
-  "JON",
-  "MIC",
-  "NAM",
-  "HAB",
-  "ZEP",
-  "HAG",
-  "ZEC",
-  "MAL",
-  "MAT",
-  "MRK",
-  "LUK",
-  "JHN",
-  "ACT",
-  "ROM",
-  "1CO",
-  "2CO",
-  "GAL",
-  "EPH",
-  "PHP",
-  "COL",
-  "1TH",
-  "2TH",
-  "1TI",
-  "2TI",
-  "TIT",
-  "PHM",
-  "HEB",
-  "JAS",
-  "1PE",
-  "2PE",
-  "1JN",
-  "2JN",
-  "3JN",
-  "JUD",
-  "REV",
-] as const;
+/**
+ * Represents the immutable identifier of a Bible book.
+ */
+export class BibleBookId extends Identifier<BibleBookCode> {
+  private static readonly cache = new Map<
+    BibleBookCode,
+    BibleBookId
+  >();
 
-export type BibleBookCode = (typeof BOOK_IDS)[number];
-
-export class BibleBookId extends ValueObject<BibleBookCode> {
   private constructor(value: BibleBookCode) {
     super(value);
   }
 
-  public static from(code: BibleBookCode): BibleBookId {
-    return new BibleBookId(code);
+  /**
+   * Creates a BibleBookId from a string.
+   */
+  public static from(value: string): BibleBookId {
+    if (!Guard.isNonEmptyString(value)) {
+      throw new ValidationError(
+        "Bible book code must be a non-empty string."
+      );
+    }
+
+    const normalized = value.trim().toUpperCase();
+
+    if (
+      !BIBLE_BOOK_CODES.includes(
+        normalized as BibleBookCode
+      )
+    ) {
+      throw new ValidationError(
+        `Invalid Bible book code: '${value}'.`
+      );
+    }
+
+    const code = normalized as BibleBookCode;
+
+    const existing = this.cache.get(code);
+
+    if (existing) {
+      return existing;
+    }
+
+    const id = new BibleBookId(code);
+
+    this.cache.set(code, id);
+
+    return id;
   }
 
+  /**
+   * Returns the OSIS code.
+   */
   public get code(): BibleBookCode {
     return this.getValue();
   }
