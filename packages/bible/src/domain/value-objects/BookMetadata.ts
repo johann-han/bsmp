@@ -1,4 +1,5 @@
 import { ValueObject } from "@bsmp/shared";
+
 import { BookName } from "./BookName.js";
 
 export interface BookMetadataProps {
@@ -15,7 +16,9 @@ export class BookMetadata extends ValueObject<BookMetadataProps> {
         super(props);
     }
 
-    public static create(props: BookMetadataProps): BookMetadata {
+    public static create(
+        props: BookMetadataProps,
+    ): BookMetadata {
         return new BookMetadata(props);
     }
 

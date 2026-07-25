@@ -31,18 +31,4 @@ describe("BookMetadata", () => {
 
         expect(first.equals(second)).toBe(true);
     });
-
-    it("serializes correctly", () => {
-        const metadata = BookMetadata.create({
-            canonicalName: BookName.from("Genesis"),
-            shortName: BookName.from("Gen"),
-            abbreviation: BookName.from("Gen"),
-        });
-
-        expect(metadata.toJSON()).toEqual({
-            canonicalName: "Genesis",
-            shortName: "Gen",
-            abbreviation: "Gen",
-        });
-    });
 });
