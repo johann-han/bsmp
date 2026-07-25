@@ -1,7 +1,7 @@
 /**
- * Represents the two major divisions of the Christian Bible.
+ * Represents the two testaments of the Protestant Bible.
  */
 export enum Testament {
-    Old = "Old Testament",
-    New = "New Testament",
+    Old = "OLD",
+    New = "NEW",
 }

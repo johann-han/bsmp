@@ -1,19 +1,17 @@
-import { ValueObject } from "@bsmp/shared";
+import { PositiveIntegerValueObject } from "@bsmp/shared";
 
-export class ChapterCount extends ValueObject<number> {
+/**
+ * Represents the total number of chapters in a biblical book.
+ */
+export class ChapterCount extends PositiveIntegerValueObject {
     private constructor(value: number) {
         super(value);
     }
 
-    public static of(value: number): ChapterCount {
-        if (!Number.isInteger(value)) {
-            throw new Error("Chapter count must be an integer.");
-        }
-
-        if (value < 1) {
-            throw new Error("Chapter count must be greater than zero.");
-        }
-
+    /**
+     * Creates a ChapterCount.
+     */
+    public static from(value: number): ChapterCount {
         return new ChapterCount(value);
     }
 }
