@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { BibleDivision } from "../classification/BibleDivision.js";
+import { BibleDivision } from "./BibleDivision.js";
 
 describe("BibleDivision", () => {
     it("contains all Protestant divisions", () => {

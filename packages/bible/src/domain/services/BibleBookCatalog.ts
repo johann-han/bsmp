@@ -1,9 +1,12 @@
 import { BibleDivision, Testament } from "../classification/index.js";
 import { BibleBook } from "../entities/index.js";
 import { BibleBookId } from "../value-objects/index.js";
+import { PROTESTANT_CANON } from "../canon/index.js";
+
+
 
 export class BibleBookCatalog {
-    private static readonly books: readonly BibleBook[] = [];
+    private static readonly books = PROTESTANT_CANON;
 
     public static all(): readonly BibleBook[] {
         return this.books;
