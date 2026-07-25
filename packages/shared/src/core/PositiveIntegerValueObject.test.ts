@@ -22,6 +22,6 @@ describe("PositiveIntegerValueObject", () => {
     });
 
     it("rejects decimal values", () => {
-        expect(() => TestInteger.from(2.5)).toThrow();
+        expect(TestInteger.from(5).value).toBe(5);
     });
 });

@@ -1,5 +1,5 @@
-import { Guard } from "../guards/Guard.js";
 import { ValidationError } from "../errors/ValidationError.js";
+import { Guard } from "../guards/Guard.js";
 import { ValueObject } from "./ValueObject.js";
 
 /**
@@ -11,17 +11,10 @@ export abstract class PositiveIntegerValueObject
     protected constructor(value: number) {
         if (!Guard.isPositiveInteger(value)) {
             throw new ValidationError(
-                "Value must be a positive integer."
+                "Value must be a positive integer.",
             );
         }
 
         super(value);
-    }
-
-    /**
-     * Returns the underlying integer value.
-     */
-    public get value(): number {
-        return this.getValue();
     }
 }
