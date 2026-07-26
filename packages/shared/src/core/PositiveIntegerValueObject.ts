@@ -1,5 +1,5 @@
 import { ValidationError } from "../errors/ValidationError.js";
-import { Guard } from "../guards/Guard.js";
+import { Guard } from "../validation/Guard.js";
 import { ValueObject } from "./ValueObject.js";
 
 /**
