@@ -1,0 +1,1 @@
+export * from "./pentateuch.js";
