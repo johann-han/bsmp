@@ -1,44 +1,54 @@
-import { ValueObject } from "@bsmp/shared";
+import { describe, expect, it } from "vitest";
 
 import {
     BibleBookId,
+    BibleReference,
     ChapterNumber,
     VerseNumber,
 } from "./index.js";
 
-export interface BibleReferenceProps {
-    book: BibleBookId;
-    chapter: ChapterNumber;
-    verse: VerseNumber;
-}
+describe("BibleReference", () => {
+    it("creates a valid Bible reference", () => {
+        const reference = BibleReference.create({
+            book: BibleBookId.from("GEN"),
+            chapter: ChapterNumber.from(1),
+            verse: VerseNumber.from(1),
+        });
 
-/**
- * Represents a reference to a single verse in Scripture.
- */
-export class BibleReference
-    extends ValueObject<BibleReferenceProps> {
+        expect(reference.book.value).toBe("GEN");
+        expect(reference.chapter.value).toBe(1);
+        expect(reference.verse.value).toBe(1);
+    });
 
-    private constructor(
-        props: BibleReferenceProps,
-    ) {
-        super(props);
-    }
+    it("supports structural equality", () => {
+        const first = BibleReference.create({
+            book: BibleBookId.from("GEN"),
+            chapter: ChapterNumber.from(1),
+            verse: VerseNumber.from(1),
+        });
 
-    public static create(
-        props: BibleReferenceProps,
-    ): BibleReference {
-        return new BibleReference(props);
-    }
+        const second = BibleReference.create({
+            book: BibleBookId.from("GEN"),
+            chapter: ChapterNumber.from(1),
+            verse: VerseNumber.from(1),
+        });
 
-    public get book(): BibleBookId {
-        return this.value.book;
-    }
+        expect(first.equals(second)).toBe(true);
+    });
 
-    public get chapter(): ChapterNumber {
-        return this.value.chapter;
-    }
+    it("distinguishes different references", () => {
+        const first = BibleReference.create({
+            book: BibleBookId.from("GEN"),
+            chapter: ChapterNumber.from(1),
+            verse: VerseNumber.from(1),
+        });
 
-    public get verse(): VerseNumber {
-        return this.value.verse;
-    }
-}
+        const second = BibleReference.create({
+            book: BibleBookId.from("GEN"),
+            chapter: ChapterNumber.from(1),
+            verse: VerseNumber.from(2),
+        });
+
+        expect(first.equals(second)).toBe(false);
+    });
+});

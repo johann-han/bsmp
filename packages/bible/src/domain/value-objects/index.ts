@@ -7,3 +7,5 @@ export * from "./VerseNumber.js";
 export * from "./BibleReference.js";
 export * from "./VerseRange.js";
 export * from "./CanonicalOrder.js";
+export * from "./CanonId.js";
+export * from "./CanonMetadata.js";

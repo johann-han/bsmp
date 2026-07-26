@@ -1,13 +1,14 @@
 import { Guard, ValueObject } from "@bsmp/shared";
 
-const CANON_IDS = [
-    "protestant",
-    "catholic",
-    "orthodox",
-    "hebrew",
-] as const;
+export const CanonIds = {
+    Protestant: "protestant",
+    Catholic: "catholic",
+    Orthodox: "orthodox",
+    Hebrew: "hebrew",
+} as const;
 
-type CanonIdValue = typeof CANON_IDS[number];
+export type CanonIdValue =
+    (typeof CanonIds)[keyof typeof CanonIds];
 
 export class CanonId extends ValueObject<CanonIdValue> {
     private constructor(value: CanonIdValue) {
@@ -21,7 +22,9 @@ export class CanonId extends ValueObject<CanonIdValue> {
 
         const normalized = value.trim().toLowerCase();
 
-        if (!CANON_IDS.includes(normalized as CanonIdValue)) {
+        const values = Object.values(CanonIds);
+
+        if (!values.includes(normalized as CanonIdValue)) {
             throw new Error(`Unsupported canon ID: ${value}`);
         }
 
@@ -29,19 +32,19 @@ export class CanonId extends ValueObject<CanonIdValue> {
     }
 
     public static protestant(): CanonId {
-        return new CanonId("protestant");
+        return new CanonId(CanonIds.Protestant);
     }
 
     public static catholic(): CanonId {
-        return new CanonId("catholic");
+        return new CanonId(CanonIds.Catholic);
     }
 
     public static orthodox(): CanonId {
-        return new CanonId("orthodox");
+        return new CanonId(CanonIds.Orthodox);
     }
 
     public static hebrew(): CanonId {
-        return new CanonId("hebrew");
+        return new CanonId(CanonIds.Hebrew);
     }
 
     public get value(): CanonIdValue {
