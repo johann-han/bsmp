@@ -1,7 +1,7 @@
 import { BibleDivision } from "../classification/index.js";
 import { Testament } from "../classification/index.js";
 
-import { createBook } from "./createBook.js";
+import { createBook } from "../factories/createBook.js";
 
 export const PROTESTANT_CANON = [
 
@@ -10,6 +10,7 @@ export const PROTESTANT_CANON = [
         canonicalName: "Genesis",
         shortName: "Genesis",
         abbreviation: "Gen",
+        canonicalOrder: 1,
         testament: Testament.Old,
         division: BibleDivision.Law,
         chapterCount: 50,
@@ -20,6 +21,7 @@ export const PROTESTANT_CANON = [
         canonicalName: "Exodus",
         shortName: "Exodus",
         abbreviation: "Ex",
+        canonicalOrder: 2,
         testament: Testament.Old,
         division: BibleDivision.Law,
         chapterCount: 40,
@@ -30,6 +32,7 @@ export const PROTESTANT_CANON = [
         canonicalName: "Leviticus",
         shortName: "Leviticus",
         abbreviation: "Lev",
+        canonicalOrder: 1,
         testament: Testament.Old,
         division: BibleDivision.Law,
         chapterCount: 27,

@@ -7,6 +7,7 @@ import {
     BibleBookId,
     BookMetadata,
     BookName,
+    CanonicalOrder,
     ChapterCount,
 } from "../value-objects/index.js";
 
@@ -14,17 +15,20 @@ import { BibleBook } from "./BibleBook.js";
 
 describe("BibleBook", () => {
     function createGenesis(): BibleBook {
-        return BibleBook.create({
-            id: BibleBookId.from("GEN"),
-            metadata: BookMetadata.create({
-                canonicalName: BookName.from("Genesis"),
-                shortName: BookName.from("Genesis"),
-                abbreviation: BookName.from("Gen"),
-            }),
-            testament: Testament.Old,
-            division: BibleDivision.Law,
-            chapterCount: ChapterCount.from(50),
-        });
+        return BibleBook.create(
+            BibleBookId.from("GEN"),
+            {
+                metadata: BookMetadata.create({
+                    canonicalName: BookName.from("Genesis"),
+                    shortName: BookName.from("Genesis"),
+                    abbreviation: BookName.from("Gen"),
+                }),
+                canonicalOrder: CanonicalOrder.from(1),
+                testament: Testament.Old,
+                division: BibleDivision.Law,
+                chapterCount: ChapterCount.from(50),
+            },
+        );
     }
 
     it("creates a Bible book", () => {
@@ -34,6 +38,7 @@ describe("BibleBook", () => {
         expect(genesis.metadata.canonicalName.value).toBe("Genesis");
         expect(genesis.metadata.shortName.value).toBe("Genesis");
         expect(genesis.metadata.abbreviation.value).toBe("Gen");
+        expect(genesis.canonicalOrder.value).toBe(1);
         expect(genesis.testament).toBe(Testament.Old);
         expect(genesis.division).toBe(BibleDivision.Law);
         expect(genesis.chapterCount.value).toBe(50);
