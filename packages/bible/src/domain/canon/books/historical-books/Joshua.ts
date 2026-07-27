@@ -1,8 +1,4 @@
-import {
-    BibleDivision,
-    Testament,
-} from "../../../classification/index.js";
-
+import { BibleDivision, Testament, } from "../../../classification/index.js";
 import { createBook } from "../../../factories/createBook.js";
 
 export const Joshua = createBook({
