@@ -6,3 +6,4 @@ export * from "./minor-prophets/index.js";
 export * from "./gospels/index.js";
 export * from "./acts/index.js";
 export * from "./pauline-epistles/index.js";
+export * from "./general-epistles/index.js";
