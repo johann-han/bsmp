@@ -1,6 +1,6 @@
 import { Canon } from "./Canon.js";
 import { CanonDefinition } from "./CanonDefinition.js";
-import { pentateuch } from "./books/index.js";
+import { pentateuch, wisdomLiterature } from "./books/index.js";
 import { historicalBooks } from "./books/index.js";
 import { CanonId, CanonMetadata, } from "../value-objects/index.js";
 
@@ -18,6 +18,7 @@ export const ProtestantCanon = Canon.create(
         books: [
             ...pentateuch,
             ...historicalBooks,
+            ...wisdomLiterature,
         ],
     }),
 );
