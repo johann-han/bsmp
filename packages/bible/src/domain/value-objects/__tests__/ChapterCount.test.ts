@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ChapterCount } from "./ChapterCount.js";
+import { ChapterCount } from "../ChapterCount.js";
 
 describe("ChapterCount", () => {
     it("creates a valid chapter count", () => {

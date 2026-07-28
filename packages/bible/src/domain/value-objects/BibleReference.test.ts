@@ -11,7 +11,7 @@ describe("BibleReference", () => {
     it("creates a valid Bible reference", () => {
         const reference = BibleReference.create({
             book: BibleBookId.from("GEN"),
-            chapter: ChapterNumber.from(1),
+            chapter: ChapterNumber.of(1),
             verse: VerseNumber.from(1),
         });
 
@@ -23,13 +23,13 @@ describe("BibleReference", () => {
     it("supports structural equality", () => {
         const first = BibleReference.create({
             book: BibleBookId.from("GEN"),
-            chapter: ChapterNumber.from(1),
+            chapter: ChapterNumber.of(1),
             verse: VerseNumber.from(1),
         });
 
         const second = BibleReference.create({
             book: BibleBookId.from("GEN"),
-            chapter: ChapterNumber.from(1),
+            chapter: ChapterNumber.of(1),
             verse: VerseNumber.from(1),
         });
 
@@ -39,13 +39,13 @@ describe("BibleReference", () => {
     it("distinguishes different references", () => {
         const first = BibleReference.create({
             book: BibleBookId.from("GEN"),
-            chapter: ChapterNumber.from(1),
+            chapter: ChapterNumber.of(1),
             verse: VerseNumber.from(1),
         });
 
         const second = BibleReference.create({
             book: BibleBookId.from("GEN"),
-            chapter: ChapterNumber.from(1),
+            chapter: ChapterNumber.of(1),
             verse: VerseNumber.from(2),
         });
 

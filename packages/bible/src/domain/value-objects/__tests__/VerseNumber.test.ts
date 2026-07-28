@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { VerseNumber } from "./VerseNumber.js";
+import { VerseNumber } from "../VerseNumber.js";
 
 describe("VerseNumber", () => {
     it("creates a valid verse number", () => {

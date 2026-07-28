@@ -92,14 +92,14 @@ export class CanonDefinition
     }
 
     public get id(): CanonId {
-        return this.value.id;
+        return this.get("id");
     }
 
     public get metadata(): CanonMetadata {
-        return this.value.metadata;
+        return this.get("metadata");
     }
 
     public get books(): readonly BibleBook[] {
-        return [...this.value.books];
+        return [...this.get("books")];
     }
 }

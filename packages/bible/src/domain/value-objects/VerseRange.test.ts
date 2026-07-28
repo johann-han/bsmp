@@ -16,7 +16,7 @@ describe("VerseRange", () => {
 
         return BibleReference.create({
             book: BibleBookId.from("GEN"),
-            chapter: ChapterNumber.from(1),
+            chapter: ChapterNumber.of(1),
             verse: VerseNumber.from(verse),
         });
     }

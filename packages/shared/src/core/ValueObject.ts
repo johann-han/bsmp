@@ -1,34 +1,48 @@
+import { deepEqual } from "./deepEqual.js";
+
 /**
  * Base class for immutable value objects.
  */
-export abstract class ValueObject<T> {
-    protected constructor(private readonly _value: T) { }
+export abstract class ValueObject<TProps extends object> {
 
-    public get value(): T {
-        return this._value;
+    protected constructor(
+        private readonly props: Readonly<TProps>,
+    ) {
+        this.props = Object.freeze({ ...props });
+        Object.freeze(this);
     }
 
-    public equals(other: ValueObject<T>): boolean {
-        if (this === other) {
-            return true;
-        }
-
-        return this.areEqual(this._value, other._value);
+    /**
+     * Gets a property.
+     */
+    protected get<K extends keyof TProps>(
+        key: K,
+    ): TProps[K] {
+        return this.props[key];
     }
 
-    public getValue(): T {
-        return this._value;
+    /**
+     * Value equality.
+     */
+    public equals(
+        other: unknown,
+    ): boolean {
+
+        return (
+            other instanceof ValueObject &&
+            this.constructor === other.constructor &&
+            deepEqual(
+                this.props,
+                other.props,
+            )
+        );
     }
 
-    public toJSON(): T {
-        return this._value;
+    /**
+     * Serialize.
+     */
+    public toJSON(): Readonly<TProps> {
+        return this.props;
     }
 
-    public toString(): string {
-        return String(this._value);
-    }
-
-    private areEqual(a: unknown, b: unknown): boolean {
-        return JSON.stringify(a) === JSON.stringify(b);
-    }
 }

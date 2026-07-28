@@ -31,14 +31,14 @@ export class BibleReference
     }
 
     public get book(): BibleBookId {
-        return this.value.book;
+        return this.get("book");
     }
 
     public get chapter(): ChapterNumber {
-        return this.value.chapter;
+        return this.get("chapter");
     }
 
     public get verse(): VerseNumber {
-        return this.value.verse;
+        return this.get("verse");
     }
 }

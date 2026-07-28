@@ -1,4 +1,4 @@
-import { Guard, ValueObject } from "@bsmp/shared";
+import { Guard, Identifier } from "@bsmp/shared";
 
 export const CanonIds = {
     Protestant: "protestant",
@@ -10,7 +10,11 @@ export const CanonIds = {
 export type CanonIdValue =
     (typeof CanonIds)[keyof typeof CanonIds];
 
-export class CanonId extends ValueObject<CanonIdValue> {
+/**
+ * Strongly typed identifier for a Bible canon.
+ */
+export class CanonId extends Identifier<CanonIdValue> {
+
     private constructor(value: CanonIdValue) {
         super(value);
     }
@@ -47,7 +51,10 @@ export class CanonId extends ValueObject<CanonIdValue> {
         return new CanonId(CanonIds.Hebrew);
     }
 
-    public get value(): CanonIdValue {
-        return super.value;
+    /**
+     * Convenience alias for the identifier value.
+     */
+    public get code(): CanonIdValue {
+        return this.value;
     }
 }

@@ -26,10 +26,10 @@ export class VerseRange
     }
 
     public get start(): BibleReference {
-        return this.value.start;
+        return this.get("start");
     }
 
     public get end(): BibleReference {
-        return this.value.end;
+        return this.get("end");
     }
 }

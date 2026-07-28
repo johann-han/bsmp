@@ -31,7 +31,7 @@ export function createBook(
                 shortName: BookName.from(props.shortName),
                 abbreviation: BookName.from(props.abbreviation),
             }),
-            canonicalOrder: CanonicalOrder.from(props.canonicalOrder),
+            canonicalOrder: CanonicalOrder.of(props.canonicalOrder),
             testament: props.testament,
             division: props.division,
             chapterCount: ChapterCount.from(props.chapterCount),

@@ -23,14 +23,14 @@ export class BookMetadata extends ValueObject<BookMetadataProps> {
     }
 
     public get canonicalName(): BookName {
-        return this.value.canonicalName;
+        return this.get("canonicalName");
     }
 
     public get shortName(): BookName {
-        return this.value.shortName;
+        return this.get("shortName");
     }
 
     public get abbreviation(): BookName {
-        return this.value.abbreviation;
+        return this.get("abbreviation");
     }
 }

@@ -63,6 +63,6 @@ export class BibleBookId extends Identifier<BibleBookCode> {
    * Returns the OSIS code.
    */
   public get code(): BibleBookCode {
-    return this.getValue();
+    return this.value;
   }
 }

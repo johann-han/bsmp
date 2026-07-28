@@ -48,14 +48,14 @@ export class CanonMetadata
     }
 
     public get displayName(): string {
-        return this.value.displayName;
+        return this.get("displayName");
     }
 
     public get shortName(): string {
-        return this.value.shortName;
+        return this.get("shortName");
     }
 
     public get description(): string {
-        return this.value.description;
+        return this.get("description");
     }
 }

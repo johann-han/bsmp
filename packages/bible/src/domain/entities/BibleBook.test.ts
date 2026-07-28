@@ -23,7 +23,7 @@ describe("BibleBook", () => {
                     shortName: BookName.from("Genesis"),
                     abbreviation: BookName.from("Gen"),
                 }),
-                canonicalOrder: CanonicalOrder.from(1),
+                canonicalOrder: CanonicalOrder.of(1),
                 testament: Testament.Old,
                 division: BibleDivision.Law,
                 chapterCount: ChapterCount.from(50),

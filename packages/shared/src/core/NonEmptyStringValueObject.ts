@@ -1,11 +1,15 @@
 import { ValidationError } from "../errors/ValidationError.js";
 import { ValueObject } from "./ValueObject.js";
 
+type NonEmptyStringProps = {
+    value: string;
+};
+
 /**
  * Base class for immutable non-empty string value objects.
  */
 export abstract class NonEmptyStringValueObject
-    extends ValueObject<string> {
+    extends ValueObject<NonEmptyStringProps> {
 
     protected constructor(value: string) {
         const normalized = value.trim();
@@ -16,6 +20,15 @@ export abstract class NonEmptyStringValueObject
             );
         }
 
-        super(normalized);
+        super({
+            value: normalized,
+        });
+    }
+
+    /**
+     * Gets the string value.
+     */
+    public get value(): string {
+        return this.get("value");
     }
 }
