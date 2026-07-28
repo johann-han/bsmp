@@ -42,7 +42,7 @@ export abstract class ValueObject<TProps extends object> {
      * Serialize.
      */
     public toJSON(): Readonly<TProps> {
-        return this.props;
+        return { ...this.props };
     }
 
 }

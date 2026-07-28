@@ -36,8 +36,8 @@ describe("NonEmptyStringValueObject", () => {
         ).toBe(true);
     });
 
-    it("serializes correctly", () => {
-        expect(TestString.from("Genesis").toJSON())
-            .toBe("Genesis");
-    });
+    expect(TestString.from("Genesis").toJSON())
+        .toEqual({
+            value: "Genesis",
+        });
 });
