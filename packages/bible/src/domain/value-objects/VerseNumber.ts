@@ -14,4 +14,8 @@ export class VerseNumber extends PositiveIntegerValueObject {
     public static from(value: number): VerseNumber {
         return new VerseNumber(value);
     }
+
+    public override toString(): string {
+        return String(this.value);
+    }
 }

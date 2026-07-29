@@ -14,4 +14,8 @@ export class ChapterCount extends PositiveIntegerValueObject {
     public static from(value: number): ChapterCount {
         return new ChapterCount(value);
     }
+
+    public override toString(): string {
+        return String(this.value);
+    }
 }

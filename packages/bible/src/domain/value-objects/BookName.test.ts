@@ -28,7 +28,9 @@ describe("BookName", () => {
     });
 
     it("supports serialization", () => {
-        expect(BookName.from("Genesis").toJSON()).toBe("Genesis");
+        expect(BookName.from("Genesis").toJSON()).toEqual({
+            value: "Genesis",
+        });
     });
 
     it("supports string conversion", () => {

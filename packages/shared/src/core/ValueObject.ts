@@ -2,6 +2,9 @@ import { deepEqual } from "./deepEqual.js";
 
 /**
  * Base class for immutable value objects.
+ *
+ * Value objects are defined entirely by the values they contain,
+ * not by identity.
  */
 export abstract class ValueObject<TProps extends object> {
 
@@ -13,7 +16,7 @@ export abstract class ValueObject<TProps extends object> {
     }
 
     /**
-     * Gets a property.
+     * Gets a property from this value object.
      */
     protected get<K extends keyof TProps>(
         key: K,
@@ -22,12 +25,11 @@ export abstract class ValueObject<TProps extends object> {
     }
 
     /**
-     * Value equality.
+     * Determines whether this value object equals another.
      */
     public equals(
         other: unknown,
     ): boolean {
-
         return (
             other instanceof ValueObject &&
             this.constructor === other.constructor &&
@@ -39,10 +41,19 @@ export abstract class ValueObject<TProps extends object> {
     }
 
     /**
-     * Serialize.
+     * Returns a JSON-serializable representation of this value object.
      */
     public toJSON(): Readonly<TProps> {
         return { ...this.props };
     }
 
+    /**
+     * Returns a string representation of this value object.
+     *
+     * Primitive value objects should override this method to return
+     * their underlying value directly.
+     */
+    public toString(): string {
+        return JSON.stringify(this.toJSON());
+    }
 }

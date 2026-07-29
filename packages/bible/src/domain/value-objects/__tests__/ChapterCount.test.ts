@@ -32,7 +32,9 @@ describe("ChapterCount", () => {
     });
 
     it("serializes to JSON", () => {
-        expect(ChapterCount.from(66).toJSON()).toBe(66);
+        expect(ChapterCount.from(66).toJSON()).toEqual({
+            value: 66,
+        });
     });
 
     it("converts to string", () => {

@@ -32,7 +32,9 @@ describe("VerseNumber", () => {
     });
 
     it("serializes to JSON", () => {
-        expect(VerseNumber.from(7).toJSON()).toBe(7);
+        expect(VerseNumber.from(7).toJSON()).toEqual({
+            value: 7,
+        });
     });
 
     it("converts to string", () => {

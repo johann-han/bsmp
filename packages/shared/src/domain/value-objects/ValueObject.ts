@@ -31,5 +31,21 @@ export abstract class ValueObject<TProps extends object> {
             deepEqual(this.props, other.props)
         );
     }
-    
+
+    /**
+     * Returns a JSON-serializable representation of this value object.
+     */
+    public toJSON(): Readonly<TProps> {
+        return { ...this.props };
+    }
+
+    /**
+     * Returns a string representation of this value object.
+     *
+     * Primitive-like value objects should override this method to return
+     * a more natural representation.
+     */
+    public toString(): string {
+        return JSON.stringify(this.toJSON());
+    }
 }

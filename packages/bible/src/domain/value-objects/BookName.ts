@@ -14,4 +14,11 @@ export class BookName extends NonEmptyStringValueObject {
     public static from(value: string): BookName {
         return new BookName(value);
     }
+
+    /**
+     * Returns the book name as a string.
+     */
+    public override toString(): string {
+        return this.value;
+    }
 }
