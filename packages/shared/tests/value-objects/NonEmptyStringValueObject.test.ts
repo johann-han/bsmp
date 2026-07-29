@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { NonEmptyStringValueObject } from "./NonEmptyStringValueObject.js";
+import { NonEmptyStringValueObject } from "../../src/core/NonEmptyStringValueObject.js";
 
 class TestString extends NonEmptyStringValueObject {
     public static from(value: string): TestString {

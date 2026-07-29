@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { PositiveIntegerValueObject } from "./PositiveIntegerValueObject.js";
+import { PositiveIntegerValueObject } from "../../src/core/PositiveIntegerValueObject.js";
 
 class TestInteger extends PositiveIntegerValueObject {
     public static from(value: number): TestInteger {
