@@ -47,10 +47,11 @@ export function deepEqual(
         }
 
         return leftKeys.every(key =>
+            Object.hasOwn(rightRecord, key) &&
             deepEqual(
                 leftRecord[key],
                 rightRecord[key],
-            ),
+            )
         );
     }
 
