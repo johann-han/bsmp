@@ -9,3 +9,4 @@ export * from "./VerseRange.js";
 export * from "./CanonicalOrder.js";
 export * from "./CanonId.js";
 export * from "./CanonMetadata.js";
+export * from "./BookCode.js";

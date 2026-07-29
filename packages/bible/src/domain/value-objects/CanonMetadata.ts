@@ -1,4 +1,4 @@
-import { Guard, ValueObject } from "@bsmp/shared";
+import { Guard, ValidationError, ValueObject } from "@bsmp/shared";
 
 export interface CanonMetadataProps {
     displayName: string;
@@ -23,19 +23,19 @@ export class CanonMetadata
     ): CanonMetadata {
 
         if (!Guard.isNonEmptyString(props.displayName)) {
-            throw new Error(
+            throw new ValidationError(
                 "Display name must be a non-empty string.",
             );
         }
 
         if (!Guard.isNonEmptyString(props.shortName)) {
-            throw new Error(
+            throw new ValidationError(
                 "Short name must be a non-empty string.",
             );
         }
 
         if (!Guard.isNonEmptyString(props.description)) {
-            throw new Error(
+            throw new ValidationError(
                 "Description must be a non-empty string.",
             );
         }
