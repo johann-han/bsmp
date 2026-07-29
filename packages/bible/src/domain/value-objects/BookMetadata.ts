@@ -1,36 +1,53 @@
 import { ValueObject } from "@bsmp/shared";
 
+import { BookCode } from "./BookCode.js";
 import { BookName } from "./BookName.js";
 
 export interface BookMetadataProps {
     canonicalName: BookName;
     shortName: BookName;
-    abbreviation: BookName;
+    code: BookCode;
 }
 
 /**
  * Immutable metadata describing a Bible book.
  */
-export class BookMetadata extends ValueObject<BookMetadataProps> {
-    private constructor(props: BookMetadataProps) {
+export class BookMetadata
+    extends ValueObject<BookMetadataProps> {
+
+    private constructor(
+        props: BookMetadataProps,
+    ) {
         super(props);
     }
 
+    /**
+     * Creates immutable metadata describing a Bible book.
+     */
     public static create(
         props: BookMetadataProps,
     ): BookMetadata {
         return new BookMetadata(props);
     }
 
+    /**
+     * Gets the canonical name.
+     */
     public get canonicalName(): BookName {
         return this.get("canonicalName");
     }
 
+    /**
+     * Gets the short display name.
+     */
     public get shortName(): BookName {
         return this.get("shortName");
     }
 
-    public get abbreviation(): BookName {
-        return this.get("abbreviation");
+    /**
+     * Gets the unique book code.
+     */
+    public get code(): BookCode {
+        return this.get("code");
     }
 }
