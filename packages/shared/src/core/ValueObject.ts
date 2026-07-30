@@ -9,7 +9,7 @@ import { deepEqual } from "./deepEqual.js";
 export abstract class ValueObject<TProps extends object> {
 
     protected constructor(
-        private readonly props: Readonly<TProps>,
+        protected readonly props: Readonly<TProps>,
     ) {
         this.props = Object.freeze({ ...props });
         Object.freeze(this);
