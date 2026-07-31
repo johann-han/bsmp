@@ -12,7 +12,9 @@ interface VerseReferenceProps {
 
 export class VerseReference extends ValueObject<VerseReferenceProps> {
 
-    private constructor(props: VerseReferenceProps) {
+    private constructor(
+        props: VerseReferenceProps,
+    ) {
         super(props);
     }
 
@@ -28,6 +30,18 @@ export class VerseReference extends ValueObject<VerseReferenceProps> {
             verse,
         });
 
+    }
+
+    public get book(): BookCode {
+        return this.get("book");
+    }
+
+    public get chapter(): ChapterNumber {
+        return this.get("chapter");
+    }
+
+    public get verse(): VerseNumber {
+        return this.get("verse");
     }
 
 }

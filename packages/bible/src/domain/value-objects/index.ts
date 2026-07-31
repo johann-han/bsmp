@@ -16,3 +16,5 @@ export * from "./Language.js";
 export * from "./Translation.js";
 export * from "./VerseReference.js";
 export * from "./VerseText.js";
+export * from "./Book.js"
+export * from "./Chapter.js"
