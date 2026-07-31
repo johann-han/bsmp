@@ -18,3 +18,4 @@ export * from "./VerseReference.js";
 export * from "./VerseText.js";
 export * from "./Book.js"
 export * from "./Chapter.js"
+export * from "./Passage.js"

@@ -11,6 +11,23 @@ interface VerseReferenceProps {
 }
 
 export class VerseReference extends ValueObject<VerseReferenceProps> {
+    public compareTo(
+        other: VerseReference,
+    ): number {
+
+        if (!this.book.equals(other.book)) {
+            throw new Error(
+                "Comparison across books is not yet supported.",
+            );
+        }
+
+        if (!this.chapter.equals(other.chapter)) {
+            return this.chapter.value - other.chapter.value;
+        }
+
+        return this.verse.value - other.verse.value;
+
+    }
 
     private constructor(
         props: VerseReferenceProps,
@@ -31,6 +48,7 @@ export class VerseReference extends ValueObject<VerseReferenceProps> {
         });
 
     }
+    
 
     public get book(): BookCode {
         return this.get("book");
