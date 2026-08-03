@@ -6,4 +6,8 @@ export class BibleId extends Identifier<string> {
         return new BibleId(value);
     }
 
+    public static create(): BibleId {
+        return new BibleId(crypto.randomUUID());
+    }
+
 }
