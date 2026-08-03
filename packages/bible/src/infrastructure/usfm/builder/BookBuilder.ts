@@ -1,3 +1,4 @@
+import { BookRegistry } from "../../../domain/canon/BookRegistry.js";
 import {
     Book,
     BookCode,
@@ -22,15 +23,21 @@ export class BookBuilder {
         parsed: ParsedBook,
     ): Book {
 
-        return Book.create(
-            BookCode.from(parsed.id),
-            BookName.from(parsed.id),
-            parsed.chapters.map(
-                chapter => this.buildChapter(
-                    parsed.id,
-                    chapter,
-                ),
+        const code = BookCode.from(parsed.id);
+
+        const chapters = parsed.chapters.map(
+            chapter => this.buildChapter(
+                parsed.id,
+                chapter,
             ),
+        );
+
+        return Book.create(
+            code,
+            BookName.from(
+                BookRegistry.nameFor(code),
+            ),
+            chapters,
         );
 
     }
