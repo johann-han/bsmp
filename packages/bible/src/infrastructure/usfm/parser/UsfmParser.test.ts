@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { UsfmParser } from "./UsfmParser.js";
+import { UsfmLexer } from "../lexer/UsfmLexer.js";
 
 describe("UsfmParser", () => {
 
@@ -12,11 +13,12 @@ describe("UsfmParser", () => {
 \\id GEN
 `;
 
+        const lexer = new UsfmLexer();
         const parser = new UsfmParser();
 
-        // Act
+        const tokens = lexer.tokenize(usfm);
 
-        const book = parser.parse(usfm);
+        const book = parser.parse(tokens);
 
         // Assert
 
@@ -34,11 +36,12 @@ describe("UsfmParser", () => {
 \\v 1 In the beginning God created the heaven and the earth.
 `;
 
+        const lexer = new UsfmLexer();
         const parser = new UsfmParser();
 
-        // Act
+        const tokens = lexer.tokenize(usfm);
 
-        const book = parser.parse(usfm);
+        const book = parser.parse(tokens);
 
         // Assert
 

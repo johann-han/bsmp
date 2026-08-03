@@ -1,65 +1,95 @@
-import { ParsedBook } from "./ParsedBook.js";
+import { Token } from "../lexer/Token.js";
+import { TokenType } from "../lexer/TokenType.js";
+import { ParsedBook, ParsedChapter } from "./ParsedBook.js";
 
 export class UsfmParser {
 
     public parse(
-        usfm: string,
+        tokens: readonly Token[],
     ): ParsedBook {
-
-        const lines = usfm
-            .split("\n")
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
 
         let id = "";
 
-        const chapters: ParsedBook["chapters"] = [];
+        const chapters: ParsedChapter[] = [];
 
-        let currentChapter:
-            ParsedBook["chapters"][number]
-            | undefined;
+        let currentChapter: ParsedChapter | undefined;
 
-        for (const line of lines) {
+        for (let i = 0; i < tokens.length; i++) {
 
-            if (line.startsWith("\\id ")) {
+            const token = tokens[i];
 
-                id = line.substring(4).trim();
+            if (!token) {
+                continue;
+            }
 
-            } else if (line.startsWith("\\c ")) {
+            if (token.type !== TokenType.Marker) {
+                continue;
+            }
 
-                currentChapter = {
-                    number: Number(
-                        line.substring(3).trim(),
-                    ),
-                    verses: [],
-                };
+            switch (token.value) {
 
-                chapters.push(currentChapter);
+                case "id": {
 
-            } else if (line.startsWith("\\v ")) {
+                    const text = tokens[++i];
 
-                if (!currentChapter) {
-                    throw new Error(
-                        "Verse encountered before chapter.",
-                    );
+                    if (!text) {
+                        throw new Error("Missing book identifier.");
+                    }
+
+                    id = text.value;
+
+                    break;
                 }
 
-                const content = line.substring(3);
+                case "c": {
 
-                const firstSpace = content.indexOf(" ");
+                    const text = tokens[++i];
 
-                const verseNumber = Number(
-                    content.substring(0, firstSpace),
-                );
+                    if (!text) {
+                        throw new Error("Missing chapter number.");
+                    }
 
-                const text = content
-                    .substring(firstSpace + 1)
-                    .trim();
+                    currentChapter = {
+                        number: Number(text.value),
+                        verses: [],
+                    };
 
-                currentChapter.verses.push({
-                    number: verseNumber,
-                    text,
-                });
+                    chapters.push(currentChapter);
+
+                    break;
+                }
+
+                case "v": {
+
+                    if (!currentChapter) {
+                        throw new Error(
+                            "Verse encountered before chapter.",
+                        );
+                    }
+
+                    const text = tokens[++i];
+
+                    if (!text) {
+                        throw new Error("Missing verse.");
+                    }
+
+                    const firstSpace = text.value.indexOf(" ");
+
+                    const verseNumber = Number(
+                        text.value.substring(0, firstSpace),
+                    );
+
+                    const verseText = text.value
+                        .substring(firstSpace + 1)
+                        .trim();
+
+                    currentChapter.verses.push({
+                        number: verseNumber,
+                        text: verseText,
+                    });
+
+                    break;
+                }
 
             }
 
