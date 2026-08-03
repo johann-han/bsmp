@@ -66,32 +66,25 @@ export class Bible extends AggregateRoot<BibleId> {
     ): readonly Verse[] {
 
         const start = passage.start;
+        const end = passage.end;
 
-        const book = this.book(
-            start.book,
-        );
+        const book = this.book(start.book);
 
         if (!book) {
             return [];
         }
 
-        const chapter = book.chapter(
-            start.chapter,
-        );
+        const chapter = book.chapter(start.chapter);
 
         if (!chapter) {
             return [];
         }
 
-        const verse = chapter.verse(
-            start.verse,
+        return chapter.verses.filter(
+            verse =>
+                verse.reference.compareTo(start) >= 0 &&
+                verse.reference.compareTo(end) <= 0,
         );
-
-        if (!verse) {
-            return [];
-        }
-
-        return [verse];
 
     }
 

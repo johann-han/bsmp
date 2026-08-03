@@ -1,21 +1,28 @@
+export * from "./BibleId.js";
 export * from "./BibleBookId.js";
+export * from "./BibleMetadata.js";
+export * from "./BibleReference.js";
+
+export * from "./Book.js";
+export * from "./BookCode.js";
 export * from "./BookMetadata.js";
 export * from "./BookName.js";
+
+export * from "./Chapter.js";
 export * from "./ChapterCount.js";
 export * from "./ChapterNumber.js";
+
+export * from "./Verse.js";
 export * from "./VerseNumber.js";
-export * from "./BibleReference.js";
 export * from "./VerseRange.js";
-export * from "./CanonicalOrder.js";
-export * from "./CanonId.js";
-export * from "./CanonMetadata.js";
-export * from "./BookCode.js";
-export * from "./BibleId.js";
-export * from "./BibleMetadata.js";
-export * from "./Language.js";
-export * from "./Translation.js";
 export * from "./VerseReference.js";
 export * from "./VerseText.js";
-export * from "./Book.js"
-export * from "./Chapter.js"
-export * from "./Passage.js"
+
+export * from "./Passage.js";
+
+export * from "./CanonId.js";
+export * from "./CanonMetadata.js";
+export * from "./CanonicalOrder.js";
+
+export * from "./Language.js";
+export * from "./Translation.js";

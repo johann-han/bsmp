@@ -1,11 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { Bible } from "../aggregates/Bible.js";
 
-describe("BibleRepository", () => {
+export interface BibleRepository {
 
-    it("defines the Bible repository contract", () => {
+    find(): Promise<Bible>;
 
-        expect(true).toBe(true);
-
-    });
-
-});
+}
