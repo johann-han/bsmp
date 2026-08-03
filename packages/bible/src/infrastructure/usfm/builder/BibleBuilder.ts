@@ -18,7 +18,7 @@ export class BibleBuilder {
     ): Bible {
 
         return Bible.create(
-            BibleId.from("test-bible"),
+            BibleId.create(),
             metadata,
             language,
             translation,
