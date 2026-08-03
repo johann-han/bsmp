@@ -16,6 +16,7 @@ import {
     ChapterNumber,
     VerseNumber,
 } from "../../domain/value-objects/index.js";
+import { UsfmBibleImportService } from "./UsfmBibleImportService.js";
 
 describe("USFM Import Integration", () => {
 
@@ -90,6 +91,29 @@ describe("USFM Import Integration", () => {
         expect(verses[0]?.text.value).toBe(
             "In the beginning God created the heaven and the earth.",
         );
+
+    });
+
+});
+
+describe("UsfmBibleImportService", () => {
+
+    it("imports Genesis", () => {
+
+        const usfm = `
+\\id GEN
+\\c 1
+\\v 1 In the beginning God created the heaven and the earth.
+`;
+
+        const service =
+            new UsfmBibleImportService();
+
+        const book =
+            service.importBook(usfm);
+
+        expect(book.code.value)
+            .toBe("GEN");
 
     });
 
