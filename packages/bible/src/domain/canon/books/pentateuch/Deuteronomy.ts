@@ -6,10 +6,10 @@ import {
 import { createBook } from "../../../factories/createBook.js";
 
 export const Deuteronomy = createBook({
-    id: "DEUT",
+    id: "DEU",
     canonicalName: "Deuteronomy",
     shortName: "Deuteronomy",
-    abbreviation: "Deut",
+    abbreviation: "Deu",
     canonicalOrder: 5,
     testament: Testament.Old,
     division: BibleDivision.Law,

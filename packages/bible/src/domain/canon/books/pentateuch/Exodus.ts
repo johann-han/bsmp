@@ -6,10 +6,10 @@ import {
 import { createBook } from "../../../factories/createBook.js";
 
 export const Exodus = createBook({
-    id: "EX",
+    id: "EXO",
     canonicalName: "Exodus",
     shortName: "Exodus",
-    abbreviation: "Ex",
+    abbreviation: "Exo",
     canonicalOrder: 2,
     testament: Testament.Old,
     division: BibleDivision.Law,
