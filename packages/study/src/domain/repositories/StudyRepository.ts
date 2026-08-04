@@ -7,8 +7,20 @@ export interface StudyRepository {
         id: StudyId,
     ): Promise<StudySession | undefined>;
 
+    findAll(): Promise<readonly StudySession[]>;
+
     save(
         study: StudySession,
+    ): Promise<void>;
+
+    delete(
+        id: StudyId,
+    ): Promise<void>;
+
+    findAll(): Promise<readonly StudySession[]>;
+
+    delete(
+        id: StudyId,
     ): Promise<void>;
 
 }

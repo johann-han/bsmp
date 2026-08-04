@@ -2,23 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { InMemoryStudyRepository } from "./InMemoryStudyRepository.js";
 
-import {
-    StudyId,
-    StudyTitle,
-} from "../../domain/value-objects/index.js";
-
-import { StudySession } from "../../domain/aggregates/StudySession.js";
+import { createStudy } from "../../test/index.js";
 
 describe("InMemoryStudyRepository", () => {
 
     it("loads a stored study", async () => {
 
-        const study = StudySession.create(
-            StudyId.from("study-1"),
-            StudyTitle.from(
-                "Romans Study",
-            ),
-        );
+        const study = createStudy("Romans Study");
 
         const repository =
             new InMemoryStudyRepository([
@@ -27,7 +17,7 @@ describe("InMemoryStudyRepository", () => {
 
         const loaded =
             await repository.find(
-                StudyId.from("study-1"),
+                study.id,
             );
 
         expect(
@@ -42,11 +32,8 @@ describe("InMemoryStudyRepository", () => {
             new InMemoryStudyRepository();
 
         const study =
-            StudySession.create(
-                StudyId.from("study-1"),
-                StudyTitle.from(
-                    "Romans Study",
-                ),
+            createStudy(
+                "Romans Study",
             );
 
         await repository.save(
@@ -55,12 +42,76 @@ describe("InMemoryStudyRepository", () => {
 
         const loaded =
             await repository.find(
-                StudyId.from("study-1"),
+                study.id,
             );
 
         expect(
             loaded,
         ).toBe(study);
+
+    });
+
+    it("returns all studies", async () => {
+
+        const study1 =
+            createStudy(
+                "Romans",
+            );
+
+        const study2 =
+            createStudy(
+                "John",
+            );
+
+        const repository =
+            new InMemoryStudyRepository([
+                study1,
+                study2,
+            ]);
+
+        const studies =
+            await repository.findAll();
+
+        expect(
+            studies,
+        ).toHaveLength(2);
+
+        expect(
+            studies,
+        ).toContain(
+            study1,
+        );
+
+        expect(
+            studies,
+        ).toContain(
+            study2,
+        );
+
+    });
+
+    it("deletes a study", async () => {
+
+        const study =
+            createStudy();
+
+        const repository =
+            new InMemoryStudyRepository([
+                study,
+            ]);
+
+        await repository.delete(
+            study.id,
+        );
+
+        const loaded =
+            await repository.find(
+                study.id,
+            );
+
+        expect(
+            loaded,
+        ).toBeUndefined();
 
     });
 

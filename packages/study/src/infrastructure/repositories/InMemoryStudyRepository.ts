@@ -45,4 +45,23 @@ export class InMemoryStudyRepository
 
     }
 
+    public async findAll():
+        Promise<readonly StudySession[]> {
+
+        return [
+            ...this.studies.values(),
+        ];
+
+    }
+
+       
+
+    public async delete(
+        id: StudyId,
+    ): Promise<void> {
+
+        this.studies.delete(id.value);
+
+    }
+
 }
