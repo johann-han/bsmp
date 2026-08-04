@@ -7,3 +7,4 @@ export * from "./ObservationStatement.js";
 
 export * from "./EvidenceId.js";
 export * from "./EvidenceDescription.js";
+export * from "./EvidenceType.js";
