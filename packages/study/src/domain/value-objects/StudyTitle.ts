@@ -1,4 +1,7 @@
-import { ValueObject } from "@bsmp/shared";
+import {
+    ValidationError,
+    ValueObject,
+} from "@bsmp/shared";
 
 interface StudyTitleProps {
 
@@ -13,8 +16,18 @@ export class StudyTitle
         value: string,
     ): StudyTitle {
 
+        const trimmed = value.trim();
+
+        if (!trimmed) {
+
+            throw new ValidationError(
+                "Study title cannot be empty.",
+            );
+
+        }
+
         return new StudyTitle({
-            value,
+            value: trimmed,
         });
 
     }
