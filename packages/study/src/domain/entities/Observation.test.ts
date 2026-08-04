@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { Observation } from "./Observation.js";
+import { Evidence } from "./Evidence.js";
 
 import {
+    EvidenceDescription,
+    EvidenceId,
+    EvidenceType,
     ObservationId,
     ObservationStatement,
 } from "../value-objects/index.js";
@@ -26,18 +30,30 @@ describe("Observation", () => {
 
     });
 
-    it("stores the creation date", () => {
+    it("adds evidence", () => {
 
         const observation = Observation.create(
             ObservationId.create(),
             ObservationStatement.from(
-                "Repeated word: abide",
+                "Jesus asks three questions.",
             ),
         );
 
+        const evidence = Evidence.create(
+            EvidenceId.create(),
+            EvidenceType.scripture(),
+            EvidenceDescription.from(
+                "Matthew 16:13",
+            ),
+        );
+
+        observation.addEvidence(
+            evidence,
+        );
+
         expect(
-            observation.createdAt,
-        ).toBeInstanceOf(Date);
+            observation.evidence,
+        ).toHaveLength(1);
 
     });
 

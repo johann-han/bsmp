@@ -1,5 +1,7 @@
 import { Entity } from "@bsmp/shared";
 
+import { Evidence } from "./Evidence.js";
+
 import {
     ObservationId,
     ObservationStatement,
@@ -12,16 +14,20 @@ export class Observation
 
     private readonly _createdAt: Date;
 
+    private readonly _evidence: Evidence[];
+
     private constructor(
         id: ObservationId,
         statement: ObservationStatement,
         createdAt: Date,
+        evidence: Evidence[],
     ) {
 
         super(id);
 
         this._statement = statement;
         this._createdAt = createdAt;
+        this._evidence = evidence;
 
     }
 
@@ -34,6 +40,17 @@ export class Observation
             id,
             statement,
             new Date(),
+            [],
+        );
+
+    }
+
+    public addEvidence(
+        evidence: Evidence,
+    ): void {
+
+        this._evidence.push(
+            evidence,
         );
 
     }
@@ -47,6 +64,13 @@ export class Observation
     public get createdAt(): Date {
 
         return this._createdAt;
+
+    }
+
+    public get evidence():
+        readonly Evidence[] {
+
+        return this._evidence;
 
     }
 

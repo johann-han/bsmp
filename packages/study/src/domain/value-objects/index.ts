@@ -8,3 +8,6 @@ export * from "./ObservationStatement.js";
 export * from "./EvidenceId.js";
 export * from "./EvidenceDescription.js";
 export * from "./EvidenceType.js";
+
+export * from "./InterpretationId.js";
+export * from "./InterpretationStatement.js";

@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { Evidence } from "../entities/Evidence.js";
+import { Evidence } from "./Evidence.js";
 
 import {
     EvidenceDescription,
     EvidenceId,
+    EvidenceType,
 } from "../value-objects/index.js";
 
 describe("Evidence", () => {
@@ -13,15 +14,22 @@ describe("Evidence", () => {
 
         const evidence = Evidence.create(
             EvidenceId.create(),
+            EvidenceType.scripture(),
             EvidenceDescription.from(
-                "The word 'abide' appears four times.",
+                "John 15:4",
             ),
+        );
+
+        expect(
+            evidence.type.value,
+        ).toBe(
+            "Scripture",
         );
 
         expect(
             evidence.description.value,
         ).toBe(
-            "The word 'abide' appears four times.",
+            "John 15:4",
         );
 
     });
@@ -30,8 +38,9 @@ describe("Evidence", () => {
 
         const evidence = Evidence.create(
             EvidenceId.create(),
+            EvidenceType.scripture(),
             EvidenceDescription.from(
-                "Evidence",
+                "John 15:4",
             ),
         );
 
