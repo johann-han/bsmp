@@ -145,6 +145,12 @@ importers:
 
   packages/shared: {}
 
+  packages/study:
+    dependencies:
+      '@bsmp/shared':
+        specifier: workspace:*
+        version: link:../shared
+
   packages/typescript-config: {}
 
   packages/ui:
