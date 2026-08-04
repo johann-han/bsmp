@@ -1,5 +1,7 @@
 import { AggregateRoot } from "@bsmp/shared";
 
+import { Observation } from "../entities/Observation.js";
+
 import {
     StudyId,
     StudyStatus,
@@ -15,19 +17,21 @@ export class StudySession
 
     private readonly _createdAt: Date;
 
+    private readonly _observations: Observation[];
+
     private constructor(
         id: StudyId,
         title: StudyTitle,
         status: StudyStatus,
         createdAt: Date,
+        observations: Observation[],
     ) {
-
         super(id);
 
         this._title = title;
         this._status = status;
         this._createdAt = createdAt;
-
+        this._observations = observations;
     }
 
     public static create(
@@ -40,6 +44,17 @@ export class StudySession
             title,
             StudyStatus.draft(),
             new Date(),
+            [],
+        );
+
+    }
+
+    public addObservation(
+        observation: Observation,
+    ): void {
+
+        this._observations.push(
+            observation,
         );
 
     }
@@ -59,6 +74,12 @@ export class StudySession
     public get createdAt(): Date {
 
         return this._createdAt;
+
+    }
+
+    public get observations(): readonly Observation[] {
+
+        return this._observations;
 
     }
 
