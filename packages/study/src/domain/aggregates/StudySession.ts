@@ -8,6 +8,8 @@ import {
     StudyTitle,
 } from "../value-objects/index.js";
 
+import { Interpretation } from "../entities/Interpretation.js";
+
 export class StudySession
     extends AggregateRoot<StudyId> {
 
@@ -19,12 +21,15 @@ export class StudySession
 
     private readonly _observations: Observation[];
 
+    private readonly _interpretations: Interpretation[];
+
     private constructor(
         id: StudyId,
         title: StudyTitle,
         status: StudyStatus,
         createdAt: Date,
         observations: Observation[],
+        interpretations: Interpretation[],
     ) {
         super(id);
 
@@ -32,6 +37,7 @@ export class StudySession
         this._status = status;
         this._createdAt = createdAt;
         this._observations = observations;
+        this._interpretations = interpretations;
     }
 
     public static create(
@@ -44,6 +50,7 @@ export class StudySession
             title,
             StudyStatus.draft(),
             new Date(),
+            [],
             [],
         );
 
@@ -83,6 +90,22 @@ export class StudySession
     public get observations(): readonly Observation[] {
 
         return this._observations;
+
+    }
+
+    public addInterpretation(
+        interpretation: Interpretation,
+    ): void {
+
+        this._interpretations.push(
+            interpretation,
+        );
+
+    }
+
+    public get interpretations(): readonly Interpretation[] {
+
+        return this._interpretations;
 
     }
 

@@ -1,18 +1,25 @@
 import { describe, expect, it } from "vitest";
 
-import { CreateObservation } from "./CreateObservation.js";
+import { CreateInterpretation } from "./CreateInterpretation.js";
 
 import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
 
-import { createStudy } from "../../test/index.js";
+import {
+    StudyId,
+} from "../../domain/value-objects/index.js";
 
-describe("CreateObservation", () => {
+import {
+    createStudy,
+} from "../../test/index.js";
 
-    it("adds an observation to a study", async () => {
+describe("CreateInterpretation", () => {
 
-        // Arrange
+    it("adds an interpretation to a study", async () => {
 
-        const study = createStudy("Romans");
+        const study =
+            createStudy(
+                "Romans",
+            );
 
         const repository =
             new InMemoryStudyRepository([
@@ -20,15 +27,13 @@ describe("CreateObservation", () => {
             ]);
 
         const command =
-            new CreateObservation(
+            new CreateInterpretation(
                 repository,
             );
 
-        // Act
-
         await command.execute(
             study.id,
-            "Paul introduces himself.",
+            "Paul teaches justification by faith.",
         );
 
         const loaded =
@@ -36,9 +41,9 @@ describe("CreateObservation", () => {
                 study.id,
             );
 
-        // Assert
-
-        expect(loaded).toBeDefined();
+        expect(
+            loaded,
+        ).toBeDefined();
 
         if (!loaded) {
 
@@ -49,20 +54,17 @@ describe("CreateObservation", () => {
         }
 
         expect(
-            loaded.observations,
+            loaded.interpretations,
         ).toHaveLength(1);
 
-        const observation =
-            loaded.observations[0];
-
         expect(
-            observation,
+            loaded.interpretations[0]!,
         ).toBeDefined();
 
         expect(
-            observation!.statement.value,
+            loaded.interpretations[0]!.statement.value,
         ).toBe(
-            "Paul introduces himself.",
+            "Paul teaches justification by faith.",
         );
 
     });
