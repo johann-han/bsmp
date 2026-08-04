@@ -49,6 +49,8 @@ export class StudySession
 
     }
 
+    
+
     public addObservation(
         observation: Observation,
     ): void {
@@ -58,6 +60,7 @@ export class StudySession
         );
 
     }
+    
 
     public get title(): StudyTitle {
 
@@ -82,5 +85,7 @@ export class StudySession
         return this._observations;
 
     }
+
+    
 
 }
