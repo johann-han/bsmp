@@ -147,6 +147,9 @@ importers:
 
   packages/study:
     dependencies:
+      '@bsmp/bible':
+        specifier: workspace:*
+        version: link:../bible
       '@bsmp/shared':
         specifier: workspace:*
         version: link:../shared

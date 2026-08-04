@@ -16,6 +16,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@bsmp/shared": "workspace:*"
+        "@bsmp/shared": "workspace:*",
+        "@bsmp/bible": "workspace:*"
     }
 }

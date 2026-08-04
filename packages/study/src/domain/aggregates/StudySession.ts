@@ -1,6 +1,9 @@
 import { AggregateRoot } from "@bsmp/shared";
 
+import { Passage } from "@bsmp/bible";
+
 import { Observation } from "../entities/Observation.js";
+import { Interpretation } from "../entities/Interpretation.js";
 
 import {
     StudyId,
@@ -8,12 +11,12 @@ import {
     StudyTitle,
 } from "../value-objects/index.js";
 
-import { Interpretation } from "../entities/Interpretation.js";
-
 export class StudySession
     extends AggregateRoot<StudyId> {
 
     private readonly _title: StudyTitle;
+
+    private readonly _passage: Passage;
 
     private readonly _status: StudyStatus;
 
@@ -26,28 +29,34 @@ export class StudySession
     private constructor(
         id: StudyId,
         title: StudyTitle,
+        passage: Passage,
         status: StudyStatus,
         createdAt: Date,
         observations: Observation[],
         interpretations: Interpretation[],
     ) {
+
         super(id);
 
         this._title = title;
+        this._passage = passage;
         this._status = status;
         this._createdAt = createdAt;
         this._observations = observations;
         this._interpretations = interpretations;
+
     }
 
     public static create(
         id: StudyId,
         title: StudyTitle,
+        passage: Passage,
     ): StudySession {
 
         return new StudySession(
             id,
             title,
+            passage,
             StudyStatus.draft(),
             new Date(),
             [],
@@ -55,8 +64,6 @@ export class StudySession
         );
 
     }
-
-    
 
     public addObservation(
         observation: Observation,
@@ -67,11 +74,26 @@ export class StudySession
         );
 
     }
-    
+
+    public addInterpretation(
+        interpretation: Interpretation,
+    ): void {
+
+        this._interpretations.push(
+            interpretation,
+        );
+
+    }
 
     public get title(): StudyTitle {
 
         return this._title;
+
+    }
+
+    public get passage(): Passage {
+
+        return this._passage;
 
     }
 
@@ -87,28 +109,18 @@ export class StudySession
 
     }
 
-    public get observations(): readonly Observation[] {
+    public get observations():
+        readonly Observation[] {
 
         return this._observations;
 
     }
 
-    public addInterpretation(
-        interpretation: Interpretation,
-    ): void {
-
-        this._interpretations.push(
-            interpretation,
-        );
-
-    }
-
-    public get interpretations(): readonly Interpretation[] {
+    public get interpretations():
+        readonly Interpretation[] {
 
         return this._interpretations;
 
     }
-
-    
 
 }

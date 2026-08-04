@@ -1,57 +1,68 @@
 import { describe, expect, it } from "vitest";
 
-import { StudySession } from "./StudySession.js";
 import {
-    ObservationId,
-    ObservationStatement,
+    BookCode,
+    ChapterNumber,
+    Passage,
+    VerseNumber,
+    VerseReference,
+} from "@bsmp/bible";
+
+import { StudySession } from "./StudySession.js";
+
+import {
     StudyId,
     StudyTitle,
 } from "../value-objects/index.js";
-import { Observation } from "../../index.js";
 
 describe("StudySession", () => {
+
+    const passage = Passage.create(
+        VerseReference.create(
+            BookCode.from("ROM"),
+            ChapterNumber.of(8),
+            VerseNumber.from(1),
+        ),
+        VerseReference.create(
+            BookCode.from("ROM"),
+            ChapterNumber.of(8),
+            VerseNumber.from(39),
+        ),
+    );
 
     it("creates a study session", () => {
 
         const study = StudySession.create(
             StudyId.create(),
-            StudyTitle.from("Romans 8 Study"),
+            StudyTitle.from(
+                "Romans 8 Study",
+            ),
+            passage,
         );
 
         expect(study).toBeDefined();
 
-        expect(study.title.value)
-            .toBe("Romans 8 Study");
-
-        expect(study.status.value)
-            .toBe("Draft");
-
-        expect(study.createdAt)
-            .toBeInstanceOf(Date);
-
-    });
-
-    it("adds an observation", () => {
-
-        const study = StudySession.create(
-            StudyId.create(),
-            StudyTitle.from("Romans"),
-        );
-
-        const observation = Observation.create(
-            ObservationId.create(),
-            ObservationStatement.from(
-                "Paul introduces himself.",
-            ),
-        );
-
-        study.addObservation(
-            observation,
+        expect(
+            study.title.value,
+        ).toBe(
+            "Romans 8 Study",
         );
 
         expect(
-            study.observations,
-        ).toHaveLength(1);
+            study.passage,
+        ).toBe(
+            passage,
+        );
+
+        expect(
+            study.status.value,
+        ).toBe(
+            "Draft",
+        );
+
+        expect(
+            study.createdAt,
+        ).toBeInstanceOf(Date);
 
     });
 
