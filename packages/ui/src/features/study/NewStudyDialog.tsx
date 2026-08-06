@@ -24,11 +24,8 @@ export function NewStudyDialog({
     onCreate,
 }: NewStudyDialogProps) {
 
-    const [title, setTitle] =
-        useState("");
-
-    const [passage, setPassage] =
-        useState("");
+    const [title, setTitle] = useState("");
+    const [passage, setPassage] = useState("");
 
     if (!open) {
 
@@ -38,33 +35,35 @@ export function NewStudyDialog({
 
     return (
 
-        <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-2xl">
+        <div
+            style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.5)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 9999,
+            }}
+        >
 
-            <div className="w-full max-w-lg rounded-xl bg-white p-8 shadow-xl">
+            <div className="w-full max-w-xl rounded-2xl bg-white p-8 shadow-2xl">
 
-                <h2 className="mb-6 text-2xl font-semibold text-slate-900">
-
+                <h2 className="mb-8 text-3xl font-bold text-slate-900">
                     Create New Study
-
                 </h2>
 
-                <div className="mt-6 space-y-6">
+                <div className="space-y-6">
 
                     <div>
 
                         <label className="mb-2 block text-sm font-semibold text-slate-700">
-
                             Study Title
-
                         </label>
 
                         <Input
                             value={title}
-                            onChange={(e) =>
-                                setTitle(
-                                    e.target.value,
-                                )
-                            }
+                            onChange={(e) => setTitle(e.target.value)}
                         />
 
                     </div>
@@ -72,19 +71,13 @@ export function NewStudyDialog({
                     <div>
 
                         <label className="mb-2 block text-sm font-semibold text-slate-700">
-
                             Bible Passage
-
                         </label>
 
                         <Input
-                            placeholder="Romans 8:1-39"
+                            placeholder="Romans 8:1–39"
                             value={passage}
-                            onChange={(e) =>
-                                setPassage(
-                                    e.target.value,
-                                )
-                            }
+                            onChange={(e) => setPassage(e.target.value)}
                         />
 
                     </div>
@@ -103,10 +96,7 @@ export function NewStudyDialog({
                     <Button
                         onClick={() => {
 
-                            onCreate(
-                                title,
-                                passage,
-                            );
+                            onCreate(title, passage);
 
                             onClose();
 

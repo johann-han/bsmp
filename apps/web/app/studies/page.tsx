@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
     AppShell,
@@ -9,24 +9,24 @@ import {
     StudyList,
 } from "@repo/ui";
 
-const studies = [
-    {
-        id: "1",
-        title: "Romans 8 Study",
-        passage: "Romans 8:1–39",
-        status: "Draft",
-    },
-    {
-        id: "2",
-        title: "John 15 Study",
-        passage: "John 15:1–17",
-        status: "Draft",
-    },
-];
+import { StudySummary } from "../../types/study";
 
 export default function StudiesPage() {
 
+    const [studies, setStudies] =
+        useState<StudySummary[]>([]);
+
     const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+
+        fetch("/api/studies")
+
+            .then((response) => response.json())
+
+            .then(setStudies);
+
+    }, []);
 
     return (
 
@@ -65,6 +65,8 @@ export default function StudiesPage() {
 
                 }}
             />
+
+
 
         </AppShell>
 

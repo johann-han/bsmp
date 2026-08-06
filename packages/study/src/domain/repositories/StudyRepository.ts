@@ -17,10 +17,4 @@ export interface StudyRepository {
         id: StudyId,
     ): Promise<void>;
 
-    findAll(): Promise<readonly StudySession[]>;
-
-    delete(
-        id: StudyId,
-    ): Promise<void>;
-
 }
