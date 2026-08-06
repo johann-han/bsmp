@@ -66,6 +66,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bsmp/study':
+        specifier: workspace:^
+        version: link:../../packages/study
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui

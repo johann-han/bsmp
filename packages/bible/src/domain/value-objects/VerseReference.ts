@@ -62,4 +62,10 @@ export class VerseReference extends ValueObject<VerseReferenceProps> {
         return this.get("verse");
     }
 
+    public override toString(): string {
+
+        return `${this.book.value} ${this.chapter.value}:${this.verse.value}`;
+
+    }
+
 }

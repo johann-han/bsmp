@@ -41,4 +41,14 @@ export class Passage extends ValueObject<PassageProps> {
         return this.get("end");
     }
 
+    public override toString(): string {
+
+        if (this.start.compareTo(this.end) === 0) {
+            return this.start.toString();
+        }
+
+        return `${this.start.toString()}–${this.end.toString()}`;
+
+    }
+
 }

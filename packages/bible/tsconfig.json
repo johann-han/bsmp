@@ -1,11 +1,17 @@
 {
-    "extends": "../typescript-config/base.json",
-    "include": [
-        "src"
-    ],
-    "compilerOptions": {
-        "types": [
-            "node"
-        ]
+  "extends": "../typescript-config/base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "composite": true,
+    "noEmitOnError": true,
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"],
+  "references": [
+    {
+      "path": "../shared"
     }
+  ]
 }

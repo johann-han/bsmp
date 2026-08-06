@@ -3,6 +3,7 @@ import { BibleBook } from "../entities/index.js";
 
 import {
     BibleBookId,
+    BookCode,
     BookMetadata,
     BookName,
     CanonicalOrder,
@@ -13,11 +14,15 @@ export interface CreateBookProps {
     id: string;
     canonicalName: string;
     shortName: string;
+
     abbreviation: string;
+
     canonicalOrder: number;
     testament: Testament;
     division: BibleDivision;
     chapterCount: number;
+
+    
 }
 
 export function createBook(
@@ -29,7 +34,7 @@ export function createBook(
             metadata: BookMetadata.create({
                 canonicalName: BookName.from(props.canonicalName),
                 shortName: BookName.from(props.shortName),
-                abbreviation: BookName.from(props.abbreviation),
+                code: BookCode.from(props.abbreviation),
             }),
             canonicalOrder: CanonicalOrder.of(props.canonicalOrder),
             testament: props.testament,

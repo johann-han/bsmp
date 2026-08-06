@@ -1,14 +1,28 @@
 import { NextResponse } from "next/server";
 
+import { repository } from "../../../lib/repository";
+
+
+
 export async function GET() {
 
-    return NextResponse.json([
-        {
-            id: "1",
-            title: "Romans 8 Study",
-            passage: "Romans 8:1–39",
+    const studies =
+        await repository.findAll();
+
+    return NextResponse.json(
+
+        studies.map((study) => ({
+
+            id: study.id.value,
+
+            title: study.title.value,
+
+            passage: study.passage.toString(),
+
             status: "Draft",
-        },
-    ]);
+
+        })),
+
+    );
 
 }
