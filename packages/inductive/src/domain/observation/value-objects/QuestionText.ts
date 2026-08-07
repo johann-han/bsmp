@@ -27,4 +27,8 @@ export class QuestionText extends NonEmptyStringValueObject {
         return new QuestionText(value);
     }
 
+    public override toString(): string {
+        return this.get("value");
+    }
+
 }

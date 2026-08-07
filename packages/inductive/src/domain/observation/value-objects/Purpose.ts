@@ -21,4 +21,8 @@ export class Purpose extends NonEmptyStringValueObject {
         return new Purpose(value);
     }
 
+    public override toString(): string {
+        return this.get("value");
+    }
+
 }
