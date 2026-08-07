@@ -20,6 +20,8 @@
     },
     "dependencies": {
         "@bsmp/shared": "workspace:*",
-        "@bsmp/bible": "workspace:*"
+        "@bsmp/bible": "workspace:*",
+        "@bsmp/inductive": "workspace:*"
     }
+    
 }

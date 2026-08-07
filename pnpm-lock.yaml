@@ -168,6 +168,9 @@ importers:
       '@bsmp/bible':
         specifier: workspace:*
         version: link:../bible
+      '@bsmp/inductive':
+        specifier: workspace:*
+        version: link:../inductive
       '@bsmp/shared':
         specifier: workspace:*
         version: link:../shared
