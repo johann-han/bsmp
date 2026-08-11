@@ -1,8 +1,16 @@
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import { UsfmBibleImportService } from "./UsfmBibleImportService.js";
 import { NodeFileSystem } from "../files/NodeFileSystem.js";
 import { BookCode, ChapterNumber, VerseNumber } from "../../index.js";
+
+const resourcesPath = join(
+    dirname(fileURLToPath(import.meta.url)),
+    "../../../test/resources/KJV",
+);
 
 describe("UsfmBibleImportService", () => {
 
@@ -30,7 +38,7 @@ describe("UsfmBibleImportService", () => {
         const fileSystem = new NodeFileSystem();
 
         const usfm = await fileSystem.readFile(
-            "test/resources/KJV/GEN.usfm",
+            join(resourcesPath, "GEN.usfm"),
         );
 
         const importer = new UsfmBibleImportService();
@@ -62,7 +70,7 @@ describe("UsfmBibleImportService", () => {
         const importer = new UsfmBibleImportService();
 
         const bible = await importer.importBible(
-            "test/resources/KJV",
+            resourcesPath,
         );
 
         expect(

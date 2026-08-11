@@ -5,6 +5,7 @@ import { Testament } from "../classification/Testament.js";
 
 import {
     BibleBookId,
+    BookCode,
     BookMetadata,
     BookName,
     CanonicalOrder,
@@ -21,7 +22,7 @@ describe("BibleBook", () => {
                 metadata: BookMetadata.create({
                     canonicalName: BookName.from("Genesis"),
                     shortName: BookName.from("Genesis"),
-                    code: BookName.from("Gen"),
+                    code: BookCode.from("GEN"),
                 }),
                 canonicalOrder: CanonicalOrder.of(1),
                 testament: Testament.Old,
@@ -37,7 +38,7 @@ describe("BibleBook", () => {
         expect(genesis.id.code).toBe("GEN");
         expect(genesis.metadata.canonicalName.value).toBe("Genesis");
         expect(genesis.metadata.shortName.value).toBe("Genesis");
-        expect(genesis.metadata.code.value).toBe("Gen");
+        expect(genesis.metadata.code.value).toBe("GEN");
         expect(genesis.canonicalOrder.value).toBe(1);
         expect(genesis.testament).toBe(Testament.Old);
         expect(genesis.division).toBe(BibleDivision.Law);

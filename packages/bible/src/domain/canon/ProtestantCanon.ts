@@ -3,7 +3,6 @@ import { CanonDefinition } from "./CanonDefinition.js";
 import { acts, generalEpistles, gospels, majorProphets, minorProphets, paulineEpistles, pentateuch, wisdomLiterature } from "./books/index.js";
 import { historicalBooks } from "./books/index.js";
 import { CanonId, CanonMetadata, } from "../value-objects/index.js";
-import { Revelation } from "./books/revelation/Revelation.js";
 import { revelation } from "./books/revelation/index.js";
 
 export const ProtestantCanon = Canon.create(

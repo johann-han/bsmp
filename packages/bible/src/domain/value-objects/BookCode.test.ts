@@ -26,6 +26,12 @@ describe("BookCode", () => {
             expect(code.value).toBe("GEN");
         });
 
+        it("accepts canonical codes with digits", () => {
+            const code = BookCode.from("1CH");
+
+            expect(code.value).toBe("1CH");
+        });
+
         it("rejects an empty string", () => {
             expect(() => BookCode.from(""))
                 .toThrow(ValidationError);
@@ -41,10 +47,7 @@ describe("BookCode", () => {
                 .toThrow(ValidationError);
         });
 
-        it("rejects non-alphabetic characters", () => {
-            expect(() => BookCode.from("GE1"))
-                .toThrow(ValidationError);
-
+        it("rejects non-alphanumeric characters", () => {
             expect(() => BookCode.from("G-E"))
                 .toThrow(ValidationError);
 

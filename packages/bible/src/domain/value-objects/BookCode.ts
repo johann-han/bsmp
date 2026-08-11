@@ -8,6 +8,7 @@ import {
  *
  * Examples:
  * - GEN
+ * - 1CH
  * - EXO
  * - MAT
  * - REV
@@ -29,9 +30,9 @@ export class BookCode extends NonEmptyStringValueObject {
             );
         }
 
-        if (!/^[A-Z]+$/.test(normalized)) {
+        if (!/^[A-Z0-9]+$/.test(normalized)) {
             throw new ValidationError(
-                "Book code must contain only alphabetic characters.",
+                "Book code must contain only uppercase letters and digits.",
             );
         }
 

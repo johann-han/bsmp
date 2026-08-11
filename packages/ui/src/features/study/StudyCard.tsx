@@ -18,9 +18,15 @@ export function StudyCard({
 
             <div className="flex justify-between">
 
-                <h3>Romans 8 Study</h3>
+                <div>
 
-                <Badge>Draft</Badge>
+                    <h3>{title}</h3>
+
+                    <p>{passage}</p>
+
+                </div>
+
+                <Badge>{status}</Badge>
 
             </div>
 

@@ -2,7 +2,6 @@ import { ValueObject } from "@bsmp/shared";
 
 import { VerseReference } from "./VerseReference.js";
 import { VerseText } from "./VerseText.js";
-import { VerseNumber } from "./VerseNumber.js";
 
 interface VerseProps {
     reference: VerseReference;

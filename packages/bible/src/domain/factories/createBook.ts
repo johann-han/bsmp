@@ -34,7 +34,7 @@ export function createBook(
             metadata: BookMetadata.create({
                 canonicalName: BookName.from(props.canonicalName),
                 shortName: BookName.from(props.shortName),
-                code: BookCode.from(props.abbreviation),
+                code: BookCode.from(props.id),
             }),
             canonicalOrder: CanonicalOrder.of(props.canonicalOrder),
             testament: props.testament,

@@ -5,10 +5,6 @@ import { CreateInterpretation } from "./CreateInterpretation.js";
 import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
 
 import {
-    StudyId,
-} from "../../domain/value-objects/index.js";
-
-import {
     createStudy,
 } from "../../test/index.js";
 

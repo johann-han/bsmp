@@ -6,6 +6,6 @@ pnpm build
 
 pnpm lint
 
-pnpm check-types
+pnpm typecheck
 
 Never commit code that fails the workspace build.
