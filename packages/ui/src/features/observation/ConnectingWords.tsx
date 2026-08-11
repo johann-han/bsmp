@@ -1,6 +1,6 @@
 import type { ConnectingWord } from "@bsmp/inductive";
 
-interface ConnectingWordsProps {
+export interface ConnectingWordsProps {
     connectingWords: readonly ConnectingWord[];
 }
 
@@ -18,10 +18,10 @@ export function ConnectingWords({
                             {word.text.toString()}
                         </strong>
 
-                        {" "}
+                        {" — "}
 
                         <span>
-                            ({word.category})
+                            {word.category}
                         </span>
                     </li>
                 ))}

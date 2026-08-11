@@ -1,6 +1,6 @@
 import type { ObservationQuestion } from "@bsmp/inductive";
 
-interface ObservationQuestionsProps {
+export interface ObservationQuestionsProps {
     questions: readonly ObservationQuestion[];
 }
 

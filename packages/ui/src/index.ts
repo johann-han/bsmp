@@ -8,3 +8,5 @@ export * from "./layout/index";
 
 export * from "./features/study/index";
 
+export * from "./features/observation/index.js";
+

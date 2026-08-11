@@ -3,7 +3,7 @@ import type { ObservationWorkspaceData } from "@bsmp/study";
 import { ObservationQuestions } from "./ObservationQuestions.js";
 import { ConnectingWords } from "./ConnectingWords.js";
 
-interface ObservationPanelProps {
+export interface ObservationPanelProps {
     data: ObservationWorkspaceData;
 }
 
@@ -17,7 +17,7 @@ export function ObservationPanel({
             />
 
             <ConnectingWords
-                connectingWords={data.connectingWords as any}
+                connectingWords={data.connectingWords}
             />
         </aside>
     );

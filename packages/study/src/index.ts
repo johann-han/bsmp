@@ -15,4 +15,7 @@ export * from "./infrastructure/repositories/InMemoryStudyRepository.js";
 
 export * from "./application/queries/ListStudies.js";
 
+export * from "./application/index.js";
+
 export * from "./application/services/ObservationWorkspaceService.js";
+export * from "./bootstrap/index.js";
