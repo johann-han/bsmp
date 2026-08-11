@@ -14,3 +14,5 @@ export * from "./infrastructure/repositories/InMemoryStudyRepository.js";
  export * from "./application/commands/CreateStudy.js"; 
 
 export * from "./application/queries/ListStudies.js";
+
+export * from "./application/services/ObservationWorkspaceService.js";

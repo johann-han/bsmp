@@ -9,6 +9,22 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./button": {
+      "types": "./dist/button.d.ts",
+      "default": "./dist/button.js"
+    },
+    "./card": {
+      "types": "./dist/card.d.ts",
+      "default": "./dist/card.js"
+    },
+    "./code": {
+      "types": "./dist/code.d.ts",
+      "default": "./dist/code.js"
+    },
+    "./features/observation": {
+      "types": "./dist/features/observation/index.d.ts",
+      "default": "./dist/features/observation/index.js"
     }
   },
   "scripts": {
@@ -18,6 +34,8 @@
     "generate:component": "turbo gen react-component"
   },
   "dependencies": {
+    "@bsmp/inductive": "workspace:*",
+    "@bsmp/study": "workspace:*",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

@@ -9,7 +9,15 @@
   },
   "include": [
     "src"
-, "../study/presentation/observation"  ],
+  ],
+  "references": [
+    {
+      "path": "../inductive"
+    },
+    {
+      "path": "../study"
+    }
+  ],
   "exclude": [
     "dist",
     "node_modules"

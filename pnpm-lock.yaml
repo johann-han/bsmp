@@ -179,6 +179,12 @@ importers:
 
   packages/ui:
     dependencies:
+      '@bsmp/inductive':
+        specifier: workspace:*
+        version: link:../inductive
+      '@bsmp/study':
+        specifier: workspace:*
+        version: link:../study
       react:
         specifier: ^19.2.0
         version: 19.2.0
