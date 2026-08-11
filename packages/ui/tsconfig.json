@@ -9,7 +9,7 @@
   },
   "include": [
     "src"
-  ],
+, "../study/presentation/observation"  ],
   "exclude": [
     "dist",
     "node_modules"
