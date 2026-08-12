@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { VerseReference } from "@bsmp/bible";
+import { BookCode, ChapterNumber, VerseNumber, VerseReference } from "@bsmp/bible";
 
 import { CreateObservation } from "./CreateObservation.js";
 
@@ -28,9 +28,9 @@ describe("CreateObservation", () => {
 
         const verseReference =
             VerseReference.create(
-                "ROM",
-                1,
-                1,
+                BookCode.from("ROM"),
+                ChapterNumber.of(1),
+                VerseNumber.from(1),
             );
 
         // Act
