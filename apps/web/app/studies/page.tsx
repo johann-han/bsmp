@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { CreateStudy } from "@bsmp/study";
 import {
     AppShell,
     NewStudyButton,
@@ -9,35 +10,27 @@ import {
     StudyList,
 } from "@repo/ui";
 
-import { supabase } from "../../src/lib/supabase";
+import { SupabaseStudyRepository } from "../../src/lib/SupabaseStudyRepository";
+import { parseStudyPassage } from "../../src/lib/parseStudyPassage";
 import type { StudySummary } from "../../types/study";
+
+const repository = new SupabaseStudyRepository();
 
 export default function StudiesPage() {
     const [studies, setStudies] = useState<StudySummary[]>([]);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function authorizationHeaders(): Promise<HeadersInit> {
-        const { data, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (!data.session) throw new Error("Please sign in to view your studies.");
-
-        return {
-            Authorization: `Bearer ${data.session.access_token}`,
-        };
-    }
-
     async function loadStudies() {
-        const response = await fetch("/api/studies", {
-            headers: await authorizationHeaders(),
-        });
-        const result = await response.json() as StudySummary[] | { error?: string };
-
-        if (!response.ok) {
-            throw new Error("error" in result && result.error ? result.error : "Unable to load studies.");
-        }
-
-        setStudies(result as StudySummary[]);
+        const result = await repository.findAll();
+        setStudies(
+            result.map((study) => ({
+                id: study.id.value,
+                title: study.title.value,
+                passage: study.passage.toString(),
+                status: study.status.value,
+            })),
+        );
     }
 
     useEffect(() => {
@@ -50,21 +43,10 @@ export default function StudiesPage() {
         setError(null);
 
         try {
-            const response = await fetch("/api/studies", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(await authorizationHeaders()),
-                },
-                body: JSON.stringify({ title, passage }),
-            });
-
-            const result = await response.json() as { error?: string; id?: string };
-
-            if (!response.ok) {
-                throw new Error(result.error ?? "Unable to create study.");
-            }
-
+            await new CreateStudy(repository).execute(
+                title,
+                parseStudyPassage(passage),
+            );
             await loadStudies();
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to create study.");
