@@ -27,11 +27,14 @@ export function ObservationWorkspace() {
     const [data, setData] = useState<ObservationWorkspaceData | null>(null);
     const [passage, setPassage] = useState<StudyPassageData | null>(null);
     const [selectedVerse, setSelectedVerse] = useState<StudyVerse | null>(null);
+    const [studyTitle, setStudyTitle] = useState("");
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        createSupabaseObservationWorkspace()
-            .then(async ({ workspace: nextWorkspace, passageService: nextPassageService }) => {
+        const studyId = new URLSearchParams(window.location.search).get("studyId") ?? undefined;
+
+        createSupabaseObservationWorkspace(studyId)
+            .then(async ({ workspace: nextWorkspace, passageService: nextPassageService, study }) => {
                 const [workspaceData, passageData] = await Promise.all([
                     nextWorkspace.load(),
                     nextPassageService.load(),
@@ -40,6 +43,7 @@ export function ObservationWorkspace() {
                 setPassageService(nextPassageService);
                 setData(workspaceData);
                 setPassage(passageData);
+                setStudyTitle(study.title.value);
             })
             .catch((reason: unknown) => {
                 setError(reason instanceof Error ? reason.message : "Unable to load the study workspace.");
@@ -60,6 +64,12 @@ export function ObservationWorkspace() {
 
     return (
         <div>
+            {studyTitle && (
+                <p style={{ margin: "0 0 16px", fontWeight: 600 }}>
+                    Study: {studyTitle}
+                </p>
+            )}
+
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(300px, 360px)", gap: 20, alignItems: "start" }}>
                 <StudyPassage
                     reference={passage.reference}
