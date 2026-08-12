@@ -11,10 +11,10 @@ import type {
 
 import { ObservationPanel } from "@repo/ui";
 
-import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace.js";
-import { ObservationComposer } from "./ObservationComposer.js";
-import { ObservationHistory } from "./ObservationHistory.js";
-import { StudyPassage, type StudyVerse } from "./StudyPassage.js";
+import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
+import { ObservationComposer } from "./ObservationComposer";
+import { ObservationHistory } from "./ObservationHistory";
+import { StudyPassage, type StudyVerse } from "./StudyPassage";
 
 export function ObservationWorkspace() {
     const [workspace, setWorkspace] =
