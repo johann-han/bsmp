@@ -7,8 +7,10 @@ import {
 } from "@bsmp/inductive";
 
 import { AddObservation } from "../application/commands/AddObservation.js";
+import { CreateApplication } from "../application/commands/CreateApplication.js";
 import { CreateEvidence } from "../application/commands/CreateEvidence.js";
 import { CreateInterpretation } from "../application/commands/CreateInterpretation.js";
+import { UpdateApplication } from "../application/commands/UpdateApplication.js";
 import { UpdateInterpretation } from "../application/commands/UpdateInterpretation.js";
 import { StudySession } from "../domain/aggregates/StudySession.js";
 import type { StudyRepository } from "../domain/repositories/StudyRepository.js";
@@ -41,6 +43,8 @@ export function createObservationWorkspace(
     const createInterpretation = new CreateInterpretation(repository);
     const updateInterpretation = new UpdateInterpretation(repository);
     const createEvidence = new CreateEvidence(repository);
+    const createApplication = new CreateApplication(repository);
+    const updateApplication = new UpdateApplication(repository);
 
     return new ObservationWorkspaceService(
         listObservationQuestions,
@@ -51,5 +55,7 @@ export function createObservationWorkspace(
         createInterpretation,
         updateInterpretation,
         createEvidence,
+        createApplication,
+        updateApplication,
     );
 }
