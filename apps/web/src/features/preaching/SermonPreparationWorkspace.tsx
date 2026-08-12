@@ -28,6 +28,10 @@ export function SermonPreparationWorkspace() {
     const [purpose, setPurpose] = useState("");
     const [heading, setHeading] = useState("");
     const [truth, setTruth] = useState("");
+    const [supportingObservationIds, setSupportingObservationIds] = useState<string[]>([]);
+    const [supportingInterpretationIds, setSupportingInterpretationIds] = useState<string[]>([]);
+    const [supportingEvidenceIds, setSupportingEvidenceIds] = useState<string[]>([]);
+    const [supportingApplicationIds, setSupportingApplicationIds] = useState<string[]>([]);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -49,9 +53,7 @@ export function SermonPreparationWorkspace() {
                 const nextStudies = await studyRepository.findAll();
                 if (!cancelled) setStudies(nextStudies);
             } catch (reason: unknown) {
-                if (!cancelled) {
-                    setError(reason instanceof Error ? reason.message : "Unable to load studies.");
-                }
+                if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load studies.");
             }
         }
 
@@ -66,6 +68,7 @@ export function SermonPreparationWorkspace() {
         setSelectedStudyId(studyId);
         setMessage(null);
         setError(null);
+        resetOutlineSupport();
         if (!studyId) {
             setSermon(null);
             setTitle("");
@@ -124,13 +127,34 @@ export function SermonPreparationWorkspace() {
     function addOutlinePoint() {
         if (!sermon) return;
         try {
-            sermon.addOutlinePoint(heading, truth);
+            sermon.addOutlinePoint(heading, truth, {
+                supportingObservationIds,
+                supportingInterpretationIds,
+                supportingEvidenceIds,
+                supportingApplicationIds,
+            });
             setHeading("");
             setTruth("");
+            resetOutlineSupport();
             setSermon(Object.assign(Object.create(Object.getPrototypeOf(sermon)), sermon));
+            void sermonRepository.save(sermon).then(
+                () => setMessage("Outline point saved."),
+                (reason: unknown) => setError(reason instanceof Error ? reason.message : "Unable to save outline point."),
+            );
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to add outline point.");
         }
+    }
+
+    function resetOutlineSupport() {
+        setSupportingObservationIds([]);
+        setSupportingInterpretationIds([]);
+        setSupportingEvidenceIds([]);
+        setSupportingApplicationIds([]);
+    }
+
+    function toggleValue(current: string[], value: string, setter: (values: string[]) => void) {
+        setter(current.includes(value) ? current.filter((item) => item !== value) : [...current, value]);
     }
 
     const selectedStudy = studies.find((study) => study.id.value === selectedStudyId) ?? null;
@@ -171,11 +195,68 @@ export function SermonPreparationWorkspace() {
 
                             <div style={{ borderTop: "1px solid #eee", paddingTop: 16 }}>
                                 <h3>Outline</h3>
-                                {sermon.outline.map((point, index) => (
-                                    <div key={point.id} style={{ marginBottom: 12 }}><strong>{index + 1}. {point.heading}</strong><div>{point.truth}</div></div>
-                                ))}
+                                {sermon.outline.map((point, index) => {
+                                    const observationTexts = point.supportingObservationIds.map((id) => selectedStudy.observations.find((item) => item.id.value === id)?.statement.value).filter(Boolean);
+                                    const interpretationTexts = point.supportingInterpretationIds.map((id) => selectedStudy.interpretations.find((item) => item.id.value === id)?.statement.value).filter(Boolean);
+                                    const applicationTexts = point.supportingApplicationIds.map((id) => selectedStudy.applications.find((item) => item.id.value === id)?.principle.value).filter(Boolean);
+                                    return (
+                                        <div key={point.id} style={{ marginBottom: 16, border: "1px solid #eee", borderRadius: 8, padding: 12 }}>
+                                            <strong>{index + 1}. {point.heading}</strong>
+                                            <div>{point.truth}</div>
+                                            {(observationTexts.length + interpretationTexts.length + applicationTexts.length) > 0 && (
+                                                <div style={{ marginTop: 10, fontSize: 13, color: "#4b5563" }}>
+                                                    <strong>Study support</strong>
+                                                    {observationTexts.length > 0 && <div>Observations: {observationTexts.join(" • ")}</div>}
+                                                    {interpretationTexts.length > 0 && <div>Interpretations: {interpretationTexts.join(" • ")}</div>}
+                                                    {applicationTexts.length > 0 && <div>Applications: {applicationTexts.join(" • ")}</div>}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                                 <input value={heading} onChange={(event) => setHeading(event.target.value)} placeholder="Outline heading" style={{ width: "100%", padding: 10, marginBottom: 8 }} />
-                                <textarea value={truth} onChange={(event) => setTruth(event.target.value)} placeholder="Truth statement" rows={2} style={{ width: "100%", padding: 10, marginBottom: 8 }} />
+                                <textarea value={truth} onChange={(event) => setTruth(event.target.value)} placeholder="Truth statement" rows={2} style={{ width: "100%", padding: 10, marginBottom: 12 }} />
+
+                                <div style={{ border: "1px solid #eee", borderRadius: 8, padding: 12, marginBottom: 12 }}>
+                                    <strong>Supporting Study Material</strong>
+
+                                    {selectedStudy.observations.length > 0 && (
+                                        <div style={{ marginTop: 10 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Observations</div>
+                                            {selectedStudy.observations.map((observation) => (
+                                                <label key={observation.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                                                    <input type="checkbox" checked={supportingObservationIds.includes(observation.id.value)} onChange={() => toggleValue(supportingObservationIds, observation.id.value, setSupportingObservationIds)} />
+                                                    <span>{observation.verseReference.value.toString()} — {observation.statement.value}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {selectedStudy.interpretations.length > 0 && (
+                                        <div style={{ marginTop: 10 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Interpretations</div>
+                                            {selectedStudy.interpretations.map((interpretation) => (
+                                                <label key={interpretation.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                                                    <input type="checkbox" checked={supportingInterpretationIds.includes(interpretation.id.value)} onChange={() => toggleValue(supportingInterpretationIds, interpretation.id.value, setSupportingInterpretationIds)} />
+                                                    <span>{interpretation.statement.value}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {selectedStudy.applications.length > 0 && (
+                                        <div style={{ marginTop: 10 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Applications</div>
+                                            {selectedStudy.applications.map((application) => (
+                                                <label key={application.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                                                    <input type="checkbox" checked={supportingApplicationIds.includes(application.id.value)} onChange={() => toggleValue(supportingApplicationIds, application.id.value, setSupportingApplicationIds)} />
+                                                    <span>{application.principle.value}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <button onClick={addOutlinePoint} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Add Outline Point</button>
                             </div>
                         </section>
