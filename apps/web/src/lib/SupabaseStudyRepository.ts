@@ -1,8 +1,3 @@
-import {
-    BookCode,
-    ChapterNumber,
-    VerseNumber,
-} from "@bsmp/bible";
 import type { StudyRepository, StudySession } from "@bsmp/study";
 import {
     Observation,
@@ -10,10 +5,8 @@ import {
     ObservationStatement,
     ObservationVerseReference,
     StudyId,
-    StudyStatus,
     StudyTitle,
 } from "@bsmp/study";
-
 import { createStudyPassage } from "@bsmp/study";
 
 import { supabase } from "./supabase.js";
@@ -120,11 +113,8 @@ export class SupabaseStudyRepository implements StudyRepository {
         }
     }
 
-    private async hydrateStudy(
-        row: DatabaseStudyRow,
-    ): Promise<StudySession> {
+    private async hydrateStudy(row: DatabaseStudyRow): Promise<StudySession> {
         const passageService = createStudyPassage();
-        const passage = passageService.passageReference;
 
         const { data: observationRows, error } = await supabase
             .from("study_observations")
@@ -139,21 +129,19 @@ export class SupabaseStudyRepository implements StudyRepository {
         const study = StudySession.create(
             StudyId.from(row.id),
             StudyTitle.from(row.title),
-            passage,
+            passageService.passageReference,
         );
 
         for (const observationRow of observationRows ?? []) {
-            const reference = ObservationVerseReference.from(
-                passageService.getVerseReference(
-                    observationRow.verse_verse,
-                ),
-            );
-
             study.addObservation(
                 Observation.create(
                     ObservationId.from(observationRow.id),
                     ObservationStatement.from(observationRow.statement),
-                    reference,
+                    ObservationVerseReference.from(
+                        passageService.getVerseReference(
+                            observationRow.verse_verse,
+                        ),
+                    ),
                 ),
             );
         }
