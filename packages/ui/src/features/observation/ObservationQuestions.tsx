@@ -1,7 +1,7 @@
 import type { ObservationQuestionViewModel } from "@bsmp/study";
 
 export interface ObservationQuestionsProps {
-    questions: readonly ObservationQuestionViewModel[];
+    readonly questions: readonly ObservationQuestionViewModel[];
 }
 
 export function ObservationQuestions({

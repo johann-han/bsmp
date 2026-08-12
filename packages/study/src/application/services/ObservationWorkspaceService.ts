@@ -8,7 +8,6 @@ import {
 import type {
     ConnectingWordViewModel,
     ObservationQuestionViewModel,
-    ObservationWorkspaceViewModel,
 } from "../view-models/index.js";
 
 export interface ObservationWorkspaceData {
@@ -26,8 +25,7 @@ export class ObservationWorkspaceService {
             ListConnectingWords,
     ) { }
 
-    public async load():
-        Promise<ObservationWorkspaceViewModel> {
+    public async load(): Promise<ObservationWorkspaceData> {
 
         const [
             observationQuestions,
@@ -50,7 +48,6 @@ export class ObservationWorkspaceService {
                         this.toConnectingWordViewModel(word),
                 ),
         };
-
     }
 
     private toObservationQuestionViewModel(
@@ -62,7 +59,6 @@ export class ObservationWorkspaceService {
             question: question.question.toString(),
             purpose: question.purpose.toString(),
         };
-
     }
 
     private toConnectingWordViewModel(
@@ -75,7 +71,5 @@ export class ObservationWorkspaceService {
             category: word.category,
             meaning: word.meaning.toString(),
         };
-
     }
-
 }
