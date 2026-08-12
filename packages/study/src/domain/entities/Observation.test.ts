@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { BookCode, ChapterNumber, VerseNumber, VerseReference } from "@bsmp/bible";
+
 import { Observation } from "./Observation.js";
 import { Evidence } from "./Evidence.js";
 
@@ -9,23 +11,39 @@ import {
     EvidenceType,
     ObservationId,
     ObservationStatement,
+    ObservationVerseReference,
 } from "../value-objects/index.js";
 
 describe("Observation", () => {
 
-    it("creates an observation", () => {
+    const verseReference = ObservationVerseReference.from(
+        VerseReference.create(
+            BookCode.from("JHN"),
+            ChapterNumber.of(15),
+            VerseNumber.from(1),
+        ),
+    );
+
+    it("creates an observation anchored to a verse", () => {
 
         const observation = Observation.create(
             ObservationId.create(),
             ObservationStatement.from(
-                "Jesus asks three questions.",
+                "Jesus describes Himself as the true vine.",
             ),
+            verseReference,
         );
 
         expect(
             observation.statement.value,
         ).toBe(
-            "Jesus asks three questions.",
+            "Jesus describes Himself as the true vine.",
+        );
+
+        expect(
+            observation.verseReference.toString(),
+        ).toBe(
+            "JHN 15:1",
         );
 
     });
@@ -35,15 +53,16 @@ describe("Observation", () => {
         const observation = Observation.create(
             ObservationId.create(),
             ObservationStatement.from(
-                "Jesus asks three questions.",
+                "Jesus describes Himself as the true vine.",
             ),
+            verseReference,
         );
 
         const evidence = Evidence.create(
             EvidenceId.create(),
             EvidenceType.scripture(),
             EvidenceDescription.from(
-                "Matthew 16:13",
+                "John 15:1",
             ),
         );
 
