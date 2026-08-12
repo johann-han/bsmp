@@ -14,6 +14,7 @@ import {
 import { ObservationPanel } from "@repo/ui";
 
 import { ObservationComposer } from "./ObservationComposer.js";
+import { ObservationHistory } from "./ObservationHistory.js";
 import { StudyPassage, type StudyVerse } from "./StudyPassage.js";
 
 export function ObservationWorkspace() {
@@ -56,6 +57,14 @@ export function ObservationWorkspace() {
             });
     }, []);
 
+    async function refreshWorkspace() {
+        if (!workspace) {
+            return;
+        }
+
+        setData(await workspace.load());
+    }
+
     if (error) {
         return <p>{error}</p>;
     }
@@ -63,6 +72,12 @@ export function ObservationWorkspace() {
     if (!workspace || !passageService || !data || !passage) {
         return <p>Loading study workspace...</p>;
     }
+
+    const selectedVerseReference = selectedVerse
+        ? passage.verses.find(
+            (verse) => verse.number === selectedVerse.number,
+        )?.reference ?? null
+        : null;
 
     return (
         <div>
@@ -89,6 +104,12 @@ export function ObservationWorkspace() {
                 workspace={workspace}
                 selectedVerse={selectedVerse}
                 getVerseReference={passageService.getVerseReference.bind(passageService)}
+                onSaved={refreshWorkspace}
+            />
+
+            <ObservationHistory
+                observations={data.observations}
+                selectedVerseReference={selectedVerseReference}
             />
         </div>
     );
