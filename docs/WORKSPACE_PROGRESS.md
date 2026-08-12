@@ -2,27 +2,29 @@
 
 ## Current Integration
 
-The `/workspace` route now renders the existing `ObservationWorkspace` feature instead of the temporary placeholder.
+The `/workspace` route renders the `ObservationWorkspace` feature instead of the temporary placeholder.
 
-The workspace presents a study passage pane beside the existing observation tools. The passage pane remains a UI-level development fixture while the Bible application boundary is being wired.
+The workspace presents a Bible-backed study passage beside the existing observation tools. The development passage is loaded through `@bsmp/study` and `@bsmp/bible` rather than hard-coded in the React component.
 
-The passage pane supports verse focus. Selecting a verse updates the workspace focus state so the next observation-record feature can attach study data to a specific verse.
+The passage supports verse focus. Selecting a verse updates the workspace focus state.
 
-The Bible package now exposes its `ReadPassage` application query through the public package API. Production passage loading is the next integration step.
+The workspace now provides an observation editor. A submitted observation is created through the Study application command, anchored to the selected Scripture verse, added to the current `StudySession`, and saved through the study repository.
 
 ## Current Architecture
 
 - `apps/web/app/workspace/page.tsx` hosts the Study Workspace route.
-- `apps/web/src/features/observation/ObservationWorkspace.tsx` loads workspace data from `@bsmp/study` and owns focused-verse state.
+- `apps/web/src/features/observation/ObservationWorkspace.tsx` loads the workspace and Bible passage services and owns focused-verse state.
 - `apps/web/src/features/observation/StudyPassage.tsx` renders passage context and supports verse selection.
-- `packages/study` provides `ObservationWorkspaceService` and bootstrap wiring.
+- `apps/web/src/features/observation/ObservationComposer.tsx` captures and saves verse-linked observations.
+- `packages/study` provides `StudyPassageService`, `ObservationWorkspaceService`, `AddObservation`, and study bootstrap wiring.
+- `packages/study` anchors `Observation` entities explicitly to an `ObservationVerseReference`.
 - `packages/inductive` provides observation questions and connecting words through application queries and repositories.
 - `packages/ui` renders the observation panel.
-- `packages/bible` provides `ReadPassage` and `BibleRepository`, with the passage query now exported through the public package API.
+- `packages/bible` provides `ReadPassage` and `BibleRepository`, with the passage query exported through the public package API.
 
 ## Next Work
 
-1. Wire a Bible repository into the web/study bootstrap.
-2. Replace the development passage fixture with Bible application loading.
-3. Add persistent observation records tied to study, passage, and verse.
+1. Move the development Bible fixture behind a dedicated Bible-source/repository configuration.
+2. Add an observation list/history to the workspace so saved observations are visible by verse.
+3. Add observation-question selection and connect it to observation records.
 4. Build interpretation on top of completed observation data.
