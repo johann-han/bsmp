@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { VerseReference } from "@bsmp/bible";
 import type { ObservationWorkspaceService } from "@bsmp/study";
 
-import type { StudyVerse } from "./StudyPassage.js";
+import type { StudyVerse } from "./StudyPassage";
 
 export interface ObservationComposerProps {
     readonly workspace: ObservationWorkspaceService;
