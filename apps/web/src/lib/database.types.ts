@@ -85,6 +85,28 @@ export interface Database {
                 Update: Partial<Database["public"]["Tables"]["interpretation_observations"]["Insert"]>;
                 Relationships: [];
             };
+            interpretation_evidence: {
+                Row: {
+                    id: string;
+                    interpretation_id: string;
+                    study_id: string;
+                    user_id: string;
+                    evidence_type: string;
+                    description: string;
+                    created_at: string;
+                };
+                Insert: {
+                    id: string;
+                    interpretation_id: string;
+                    study_id: string;
+                    user_id: string;
+                    evidence_type: string;
+                    description: string;
+                    created_at?: string;
+                };
+                Update: Partial<Database["public"]["Tables"]["interpretation_evidence"]["Insert"]>;
+                Relationships: [];
+            };
         };
         Views: Record<string, never>;
         Functions: Record<string, never>;
