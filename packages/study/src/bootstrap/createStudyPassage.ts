@@ -44,23 +44,34 @@ class DevelopmentBibleRepository implements BibleRepository {
     }
 }
 
-function createDevelopmentBible(): Bible {
-    const bookCode = BookCode.from("JHN");
-    const chapterNumber = ChapterNumber.of(15);
+function createDevelopmentBible(passage: Passage): Bible {
+    const start = passage.start.chapter.value;
+    const end = passage.end.chapter.value;
+    const bookCode = passage.start.book;
+    const bookName = BookName.from(bookCode.value);
+    const chapters: Chapter[] = [];
 
-    const verses = demoVerses.map((text, index) => {
-        const verseNumber = VerseNumber.from(index + 1);
-        const reference = VerseReference.create(
-            bookCode,
-            chapterNumber,
-            verseNumber,
-        );
+    for (let chapter = start; chapter <= end; chapter += 1) {
+        const firstVerse = chapter === start ? passage.start.verse.value : 1;
+        const lastVerse = chapter === end ? passage.end.verse.value : Math.max(firstVerse, 30);
+        const verses = [];
 
-        return Verse.create(
-            reference,
-            VerseText.from(text),
-        );
-    });
+        for (let verse = firstVerse; verse <= lastVerse; verse += 1) {
+            const reference = VerseReference.create(
+                bookCode,
+                ChapterNumber.of(chapter),
+                VerseNumber.from(verse),
+            );
+            const text =
+                bookCode.value === "JHN" && chapter === 15 && verse >= 1 && verse <= demoVerses.length
+                    ? demoVerses[verse - 1]
+                    : "Text unavailable in the development Bible source.";
+
+            verses.push(Verse.create(reference, VerseText.from(text)));
+        }
+
+        chapters.push(Chapter.create(ChapterNumber.of(chapter), verses));
+    }
 
     return Bible.create(
         BibleId.from("bsmp-development-kjv"),
@@ -70,29 +81,14 @@ function createDevelopmentBible(): Bible {
         }),
         Language.from("en"),
         Translation.from("KJV"),
-        [
-            Book.create(
-                bookCode,
-                BookName.from("John"),
-                [
-                    Chapter.create(
-                        chapterNumber,
-                        verses,
-                    ),
-                ],
-            ),
-        ],
+        [Book.create(bookCode, bookName, chapters)],
     );
 }
 
-export function createStudyPassage(): StudyPassageService {
-    const readPassage = new ReadPassage(
-        new DevelopmentBibleRepository(
-            createDevelopmentBible(),
-        ),
-    );
-
-    const passage = Passage.create(
+export function createStudyPassage(
+    passage?: Passage,
+): StudyPassageService {
+    const studyPassage = passage ?? Passage.create(
         VerseReference.create(
             BookCode.from("JHN"),
             ChapterNumber.of(15),
@@ -105,9 +101,15 @@ export function createStudyPassage(): StudyPassageService {
         ),
     );
 
+    const readPassage = new ReadPassage(
+        new DevelopmentBibleRepository(
+            createDevelopmentBible(studyPassage),
+        ),
+    );
+
     return new StudyPassageService(
         readPassage,
-        passage,
+        studyPassage,
         "KJV",
     );
 }
