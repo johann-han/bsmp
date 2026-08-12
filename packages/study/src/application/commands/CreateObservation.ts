@@ -1,3 +1,5 @@
+import { VerseReference } from "@bsmp/bible";
+
 import {
     Observation,
 } from "../../domain/entities/Observation.js";
@@ -5,6 +7,7 @@ import {
 import {
     ObservationId,
     ObservationStatement,
+    ObservationVerseReference,
     StudyId,
 } from "../../domain/value-objects/index.js";
 
@@ -20,6 +23,7 @@ export class CreateObservation {
 
     public async execute(
         studyId: StudyId,
+        verseReference: VerseReference,
         statement: string,
     ): Promise<Observation> {
 
@@ -41,6 +45,9 @@ export class CreateObservation {
                 ObservationId.create(),
                 ObservationStatement.from(
                     statement,
+                ),
+                ObservationVerseReference.from(
+                    verseReference,
                 ),
             );
 
