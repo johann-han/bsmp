@@ -11,12 +11,14 @@ export interface ObservationComposerProps {
     readonly workspace: ObservationWorkspaceService;
     readonly selectedVerse: StudyVerse | null;
     readonly getVerseReference: (verseNumber: number) => VerseReference;
+    readonly onSaved: () => Promise<void> | void;
 }
 
 export function ObservationComposer({
     workspace,
     selectedVerse,
     getVerseReference,
+    onSaved,
 }: ObservationComposerProps) {
     const [statement, setStatement] = useState("");
     const [savedMessage, setSavedMessage] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export function ObservationComposer({
                 statement,
             );
 
+            await onSaved();
             setStatement("");
             setSavedMessage(
                 `Observation saved to verse ${selectedVerse.number}.`,
