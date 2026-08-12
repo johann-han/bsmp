@@ -4,9 +4,11 @@
 
 The `/workspace` route now renders the existing `ObservationWorkspace` feature instead of the temporary placeholder.
 
-The workspace presents a study passage pane beside the existing observation tools. The current passage content remains a UI-level prototype and is intentionally isolated from Bible loading until the Bible application query is exported and wired through the web bootstrap.
+The workspace presents a study passage pane beside the existing observation tools. The passage pane remains a UI-level development fixture while the Bible application boundary is being wired.
 
-The passage pane now supports verse focus. Selecting a verse updates the workspace focus state so the next observation-record feature can attach study data to a specific verse.
+The passage pane supports verse focus. Selecting a verse updates the workspace focus state so the next observation-record feature can attach study data to a specific verse.
+
+The Bible package now exposes its `ReadPassage` application query through the public package API. Production passage loading is the next integration step.
 
 ## Current Architecture
 
@@ -16,11 +18,11 @@ The passage pane now supports verse focus. Selecting a verse updates the workspa
 - `packages/study` provides `ObservationWorkspaceService` and bootstrap wiring.
 - `packages/inductive` provides observation questions and connecting words through application queries and repositories.
 - `packages/ui` renders the observation panel.
-- `packages/bible` already provides `ReadPassage` and `BibleRepository`, but the current public package entry point does not yet export the application query.
+- `packages/bible` provides `ReadPassage` and `BibleRepository`, with the passage query now exported through the public package API.
 
 ## Next Work
 
-1. Export the Bible passage-reading application API cleanly.
-2. Replace the prototype passage data with Bible application loading.
+1. Wire a Bible repository into the web/study bootstrap.
+2. Replace the development passage fixture with Bible application loading.
 3. Add persistent observation records tied to study, passage, and verse.
 4. Build interpretation on top of completed observation data.
