@@ -41,7 +41,7 @@ export class SupabaseStudyRepository implements StudyRepository {
 
     public async find(id: StudyId): Promise<StudySession | undefined> {
         const user = await this.requireUser();
-        const { data: study, error } = await this.client.from("studies").select("*").eq("id", id.toString()).eq("user_id", user.id).maybeSingle();
+        const { data: study, error } = await this.client.from("studies").select("*").eq("id", id.value).eq("user_id", user.id).maybeSingle();
         if (error) throw error;
         if (!study) return undefined;
         return this.hydrateStudy(study);
@@ -58,7 +58,7 @@ export class SupabaseStudyRepository implements StudyRepository {
         const user = await this.requireUser();
         const passage = study.passage;
         const { error: studyError } = await this.client.from("studies").upsert({
-            id: study.id.toString(), user_id: user.id, title: study.title.value, status: study.status.value,
+            id: study.id.value, user_id: user.id, title: study.title.value, status: study.status.value,
             passage_start_book: passage.start.book.value, passage_start_chapter: passage.start.chapter.value, passage_start_verse: passage.start.verse.value,
             passage_end_book: passage.end.book.value, passage_end_chapter: passage.end.chapter.value, passage_end_verse: passage.end.verse.value,
             created_at: study.createdAt.toISOString(),
@@ -67,7 +67,7 @@ export class SupabaseStudyRepository implements StudyRepository {
 
         if (study.observations.length > 0) {
             const { error } = await this.client.from("study_observations").upsert(study.observations.map((observation) => ({
-                id: observation.id.toString(), study_id: study.id.toString(), user_id: user.id,
+                id: observation.id.value, study_id: study.id.value, user_id: user.id,
                 verse_book: observation.verseReference.value.book.value, verse_chapter: observation.verseReference.value.chapter.value,
                 verse_verse: observation.verseReference.value.verse.value, statement: observation.statement.value,
                 created_at: observation.createdAt.toISOString(),
@@ -77,17 +77,17 @@ export class SupabaseStudyRepository implements StudyRepository {
 
         if (study.interpretations.length > 0) {
             const { error: interpretationError } = await this.client.from("study_interpretations").upsert(study.interpretations.map((interpretation) => ({
-                id: interpretation.id.toString(), study_id: study.id.toString(), user_id: user.id,
+                id: interpretation.id.value, study_id: study.id.value, user_id: user.id,
                 statement: interpretation.statement.value, created_at: interpretation.createdAt.toISOString(),
             })));
             if (interpretationError) throw interpretationError;
 
-            const interpretationIds = study.interpretations.map((interpretation) => interpretation.id.toString());
+            const interpretationIds = study.interpretations.map((interpretation) => interpretation.id.value);
             const { error: deleteLinksError } = await this.client.from("interpretation_observations").delete().in("interpretation_id", interpretationIds);
             if (deleteLinksError) throw deleteLinksError;
 
             const supportLinks = study.interpretations.flatMap((interpretation) => interpretation.observationIds.map((observationId) => ({
-                interpretation_id: interpretation.id.toString(), observation_id: observationId.toString(),
+                interpretation_id: interpretation.id.value, observation_id: observationId.value,
             })));
             if (supportLinks.length > 0) {
                 const { error } = await this.client.from("interpretation_observations").upsert(supportLinks, { onConflict: "interpretation_id,observation_id" });
@@ -95,7 +95,7 @@ export class SupabaseStudyRepository implements StudyRepository {
             }
 
             const evidenceRows = study.interpretations.flatMap((interpretation) => interpretation.evidence.map((evidence) => ({
-                id: evidence.id.toString(), interpretation_id: interpretation.id.toString(), study_id: study.id.toString(), user_id: user.id,
+                id: evidence.id.value, interpretation_id: interpretation.id.value, study_id: study.id.value, user_id: user.id,
                 evidence_type: evidence.type.value, description: evidence.description.value, created_at: evidence.createdAt.toISOString(),
             })));
             if (evidenceRows.length > 0) {
@@ -106,7 +106,7 @@ export class SupabaseStudyRepository implements StudyRepository {
 
         if (study.applications.length > 0) {
             const { error } = await this.client.from("study_applications").upsert(study.applications.map((application) => ({
-                id: application.id.toString(), study_id: study.id.toString(), interpretation_id: application.interpretationId.toString(),
+                id: application.id.value, study_id: study.id.value, interpretation_id: application.interpretationId.value,
                 user_id: user.id, principle: application.principle.value, personal: application.personal.value,
                 ministry: application.ministry.value, action: application.action.value, created_at: application.createdAt.toISOString(),
             })));
@@ -116,7 +116,7 @@ export class SupabaseStudyRepository implements StudyRepository {
 
     public async delete(id: StudyId): Promise<void> {
         const user = await this.requireUser();
-        const { error } = await this.client.from("studies").delete().eq("id", id.toString()).eq("user_id", user.id);
+        const { error } = await this.client.from("studies").delete().eq("id", id.value).eq("user_id", user.id);
         if (error) throw error;
     }
 
