@@ -13,3 +13,5 @@ export * from "./EvidenceType.js";
 export * from "./InterpretationId.js";
 export * from "./InterpretationStatement.js";
 
+export * from "./ApplicationId.js";
+export * from "./ApplicationText.js";
