@@ -52,6 +52,17 @@ export interface SermonOutlinePoint {
     readonly id: string;
     readonly heading: string;
     readonly truth: string;
+    readonly supportingObservationIds: readonly string[];
+    readonly supportingInterpretationIds: readonly string[];
+    readonly supportingEvidenceIds: readonly string[];
+    readonly supportingApplicationIds: readonly string[];
+}
+
+export interface SermonOutlineSupport {
+    readonly supportingObservationIds?: readonly string[];
+    readonly supportingInterpretationIds?: readonly string[];
+    readonly supportingEvidenceIds?: readonly string[];
+    readonly supportingApplicationIds?: readonly string[];
 }
 
 export class ExpositorySermon extends Entity<ExpositorySermonId> {
@@ -98,7 +109,11 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
         this._purpose = purpose;
     }
 
-    public addOutlinePoint(heading: string, truth: string): SermonOutlinePoint {
+    public addOutlinePoint(
+        heading: string,
+        truth: string,
+        support: SermonOutlineSupport = {},
+    ): SermonOutlinePoint {
         const normalizedHeading = heading.trim();
         const normalizedTruth = truth.trim();
         if (!normalizedHeading || !normalizedTruth) {
@@ -109,6 +124,10 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             id: crypto.randomUUID(),
             heading: normalizedHeading,
             truth: normalizedTruth,
+            supportingObservationIds: [...(support.supportingObservationIds ?? [])],
+            supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])],
+            supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])],
+            supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
         } satisfies SermonOutlinePoint;
 
         this._outline.push(point);
