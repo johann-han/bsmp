@@ -16,6 +16,12 @@ export function SermonStudySourcePanel({ study }: Props) {
                 <p>Observations: {study.observations.length}</p>
                 <p>Interpretations: {study.interpretations.length}</p>
                 <p>Applications: {study.applications.length}</p>
+                <a
+                    href={`/workspace?studyId=${encodeURIComponent(study.id.value)}`}
+                    style={{ display: "inline-block", marginTop: 8, fontWeight: 600 }}
+                >
+                    Open Study Workspace
+                </a>
             </section>
 
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}>
@@ -24,7 +30,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                     <p>No observations recorded.</p>
                 ) : (
                     study.observations.map((observation) => (
-                        <article key={observation.id.toString()} style={{ marginBottom: 12 }}>
+                        <article key={observation.id.value} style={{ marginBottom: 12 }}>
                             <strong>{observation.verseReference.value.toString()}</strong>
                             <div>{observation.statement.value}</div>
                         </article>
@@ -38,7 +44,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                     <p>No interpretations recorded.</p>
                 ) : (
                     study.interpretations.map((interpretation) => (
-                        <article key={interpretation.id.toString()} style={{ marginBottom: 16 }}>
+                        <article key={interpretation.id.value} style={{ marginBottom: 16 }}>
                             <strong>{interpretation.statement.value}</strong>
                             {interpretation.observationIds.length > 0 && (
                                 <div style={{ marginTop: 6, fontSize: 13 }}>
@@ -49,7 +55,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                                 <div style={{ marginTop: 8 }}>
                                     <strong>Evidence</strong>
                                     {interpretation.evidence.map((evidence) => (
-                                        <div key={evidence.id.toString()} style={{ marginTop: 4 }}>
+                                        <div key={evidence.id.value} style={{ marginTop: 4 }}>
                                             <span>{evidence.type.value}: </span>{evidence.description.value}
                                         </div>
                                     ))}
@@ -66,7 +72,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                     <p>No applications recorded.</p>
                 ) : (
                     study.applications.map((application) => (
-                        <article key={application.id.toString()} style={{ marginBottom: 14 }}>
+                        <article key={application.id.value} style={{ marginBottom: 14 }}>
                             <div><strong>Principle:</strong> {application.principle.value}</div>
                             <div><strong>Personal:</strong> {application.personal.value}</div>
                             <div><strong>Ministry:</strong> {application.ministry.value}</div>
