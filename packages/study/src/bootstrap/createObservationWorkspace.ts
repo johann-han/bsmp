@@ -7,6 +7,7 @@ import {
 } from "@bsmp/inductive";
 
 import { AddObservation } from "../application/commands/AddObservation.js";
+import { CreateInterpretation } from "../application/commands/CreateInterpretation.js";
 import { StudySession } from "../domain/aggregates/StudySession.js";
 import type { StudyRepository } from "../domain/repositories/StudyRepository.js";
 import {
@@ -45,6 +46,7 @@ export function createObservationWorkspace(
     const repository = studyRepository ?? new InMemoryStudyRepository([study]);
 
     const addObservation = new AddObservation(repository);
+    const createInterpretation = new CreateInterpretation(repository);
 
     return new ObservationWorkspaceService(
         listObservationQuestions,
@@ -52,5 +54,6 @@ export function createObservationWorkspace(
         addObservation,
         study.id,
         repository,
+        createInterpretation,
     );
 }
