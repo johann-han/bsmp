@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { VerseReference } from "@bsmp/bible";
+
 import { CreateObservation } from "./CreateObservation.js";
 
 import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
@@ -24,10 +26,18 @@ describe("CreateObservation", () => {
                 repository,
             );
 
+        const verseReference =
+            VerseReference.create(
+                "ROM",
+                1,
+                1,
+            );
+
         // Act
 
         await command.execute(
             study.id,
+            verseReference,
             "Paul introduces himself.",
         );
 
@@ -63,6 +73,24 @@ describe("CreateObservation", () => {
             observation!.statement.value,
         ).toBe(
             "Paul introduces himself.",
+        );
+
+        expect(
+            observation!.verseReference.value.book.value,
+        ).toBe(
+            "ROM",
+        );
+
+        expect(
+            observation!.verseReference.value.chapter.value,
+        ).toBe(
+            1,
+        );
+
+        expect(
+            observation!.verseReference.value.verse.value,
+        ).toBe(
+            1,
         );
 
     });
