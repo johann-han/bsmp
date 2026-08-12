@@ -1,4 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+    BookCode,
+    ChapterNumber,
+    Passage,
+    VerseNumber,
+    VerseReference,
+} from "@bsmp/bible";
 import type { StudyRepository } from "@bsmp/study";
 import {
     Application,
@@ -22,7 +29,6 @@ import {
     StudySession,
     StudyTitle,
 } from "@bsmp/study";
-import { createStudyPassage } from "@bsmp/study";
 
 import type { Database } from "./database.types";
 import { supabase } from "./supabase";
@@ -114,7 +120,6 @@ export class SupabaseStudyRepository implements StudyRepository {
     }
 
     private async hydrateStudy(row: DatabaseStudyRow): Promise<StudySession> {
-        const passageService = createStudyPassage();
         const { data: observationRows, error: observationError } = await this.client.from("study_observations").select("*").eq("study_id", row.id).order("created_at", { ascending: true });
         if (observationError) throw observationError;
         const { data: interpretationRows, error: interpretationError } = await this.client.from("study_interpretations").select("*").eq("study_id", row.id).order("created_at", { ascending: true });
@@ -124,12 +129,34 @@ export class SupabaseStudyRepository implements StudyRepository {
         const { data: applicationRows, error: applicationError } = await this.client.from("study_applications").select("*").eq("study_id", row.id).order("created_at", { ascending: true });
         if (applicationError) throw applicationError;
 
-        const study = StudySession.create(StudyId.from(row.id), StudyTitle.from(row.title), passageService.passageReference);
+        const startBook = BookCode.from(row.passage_start_book);
+        const startChapter = ChapterNumber.of(row.passage_start_chapter);
+        const startVerse = VerseNumber.from(row.passage_start_verse);
+        const endBook = BookCode.from(row.passage_end_book);
+        const endChapter = ChapterNumber.of(row.passage_end_chapter);
+        const endVerse = VerseNumber.from(row.passage_end_verse);
+
+        const studyPassage = Passage.create(
+            VerseReference.create(startBook, startChapter, startVerse),
+            VerseReference.create(endBook, endChapter, endVerse),
+        );
+
+        const study = StudySession.create(
+            StudyId.from(row.id),
+            StudyTitle.from(row.title),
+            studyPassage,
+        );
 
         for (const observationRow of observationRows ?? []) {
+            const observationReference = VerseReference.create(
+                BookCode.from(observationRow.verse_book),
+                ChapterNumber.of(observationRow.verse_chapter),
+                VerseNumber.from(observationRow.verse_verse),
+            );
+
             study.addObservation(Observation.create(
                 ObservationId.from(observationRow.id), ObservationStatement.from(observationRow.statement),
-                ObservationVerseReference.from(passageService.getVerseReference(observationRow.verse_verse)),
+                ObservationVerseReference.from(observationReference),
             ));
         }
 
