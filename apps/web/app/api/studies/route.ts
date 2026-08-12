@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import {
     BookCode,
@@ -8,7 +9,8 @@ import {
 } from "@bsmp/bible";
 import { CreateStudy } from "@bsmp/study";
 
-import { repository } from "../../../lib/repository";
+import { SupabaseStudyRepository } from "../../../src/lib/SupabaseStudyRepository";
+import type { Database } from "../../../src/lib/database.types";
 
 const BOOK_CODES: Record<string, string> = {
     genesis: "GEN", exodus: "EXO", leviticus: "LEV", numbers: "NUM", deuteronomy: "DEU",
@@ -35,19 +37,19 @@ function parsePassage(input: string): Passage {
         throw new Error("Passage must look like 'Romans 8:1-39'.");
     }
 
-    const bookName = match[1]?.trim();
+    const bookName = match[1];
     const chapter = match[2];
     const startVerse = match[3];
-    const endVerse = match[4] ?? match[3];
+    const endVerse = match[4] ?? startVerse;
 
-    if (!bookName || !chapter || !startVerse) {
-        throw new Error("Passage must include a Bible book, chapter, and verse.");
+    if (!bookName || !chapter || !startVerse || !endVerse) {
+        throw new Error("Passage is incomplete.");
     }
 
-    const code = BOOK_CODES[bookName.toLowerCase()];
+    const code = BOOK_CODES[bookName.trim().toLowerCase()];
 
     if (!code) {
-        throw new Error(`Unsupported Bible book: ${bookName}.`);
+        throw new Error(`Unsupported Bible book: ${bookName.trim()}.`);
     }
 
     const book = BookCode.from(code);
@@ -66,21 +68,61 @@ function parsePassage(input: string): Passage {
     return Passage.create(start, end);
 }
 
-export async function GET() {
-    const studies = await repository.findAll();
+function repositoryFromRequest(request: Request): SupabaseStudyRepository {
+    const authorization = request.headers.get("authorization");
+    if (!authorization?.startsWith("Bearer ")) {
+        throw new Error("A signed-in Supabase session is required.");
+    }
 
-    return NextResponse.json(
-        studies.map((study) => ({
-            id: study.id.value,
-            title: study.title.value,
-            passage: study.passage.toString(),
-            status: "Draft",
-        })),
-    );
+    const accessToken = authorization.slice("Bearer ".length).trim();
+    if (!accessToken) {
+        throw new Error("A signed-in Supabase session is required.");
+    }
+
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!url || !publishableKey) {
+        throw new Error("Missing Supabase environment configuration.");
+    }
+
+    const client = createClient<Database>(url, publishableKey, {
+        global: {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        },
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+        },
+    });
+
+    return new SupabaseStudyRepository(client);
+}
+
+export async function GET(request: Request) {
+    try {
+        const repository = repositoryFromRequest(request);
+        const studies = await repository.findAll();
+
+        return NextResponse.json(
+            studies.map((study) => ({
+                id: study.id.value,
+                title: study.title.value,
+                passage: study.passage.toString(),
+                status: study.status.value,
+            })),
+        );
+    } catch (reason: unknown) {
+        const message = reason instanceof Error ? reason.message : "Unable to load studies.";
+        return NextResponse.json({ error: message }, { status: 401 });
+    }
 }
 
 export async function POST(request: Request) {
     try {
+        const repository = repositoryFromRequest(request);
         const body = await request.json() as { title?: unknown; passage?: unknown };
         const title = typeof body.title === "string" ? body.title.trim() : "";
         const passageText = typeof body.passage === "string" ? body.passage.trim() : "";
@@ -105,6 +147,7 @@ export async function POST(request: Request) {
         }, { status: 201 });
     } catch (reason: unknown) {
         const message = reason instanceof Error ? reason.message : "Unable to create study.";
-        return NextResponse.json({ error: message }, { status: 400 });
+        const status = /session|signed-in|Supabase/i.test(message) ? 401 : 400;
+        return NextResponse.json({ error: message }, { status });
     }
 }
