@@ -17,7 +17,7 @@ import type {
 import type { Interpretation } from "../../domain/entities/Interpretation.js";
 import type { Observation } from "../../domain/entities/Observation.js";
 import type { StudyRepository } from "../../domain/repositories/StudyRepository.js";
-import type { ObservationId } from "../../domain/value-objects/ObservationId.js";
+import { ObservationId } from "../../domain/value-objects/ObservationId.js";
 import type { StudyId } from "../../domain/value-objects/StudyId.js";
 
 export interface ObservationWorkspaceData {
@@ -116,7 +116,7 @@ export class ObservationWorkspaceService {
         return this.createInterpretationCommand.execute(
             this.studyId,
             statement,
-            observationIds.map((id) => ({ toString: () => id } as ObservationId)),
+            observationIds.map((id) => ObservationId.from(id)),
         );
     }
 
