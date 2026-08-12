@@ -7,21 +7,27 @@ import {
 import type { VerseReference } from "@bsmp/bible";
 
 import { AddObservation } from "../commands/AddObservation.js";
+import { CreateApplication } from "../commands/CreateApplication.js";
 import { CreateEvidence } from "../commands/CreateEvidence.js";
 import { CreateInterpretation } from "../commands/CreateInterpretation.js";
+import { UpdateApplication } from "../commands/UpdateApplication.js";
 import { UpdateInterpretation } from "../commands/UpdateInterpretation.js";
 import type {
+    ApplicationViewModel,
     ConnectingWordViewModel,
     EvidenceViewModel,
     InterpretationViewModel,
     ObservationQuestionViewModel,
     ObservationViewModel,
 } from "../view-models/index.js";
+import type { Application } from "../../domain/entities/Application.js";
 import type { Evidence } from "../../domain/entities/Evidence.js";
 import type { Interpretation } from "../../domain/entities/Interpretation.js";
 import type { Observation } from "../../domain/entities/Observation.js";
 import type { StudyRepository } from "../../domain/repositories/StudyRepository.js";
+import { ApplicationId } from "../../domain/value-objects/ApplicationId.js";
 import { ObservationId } from "../../domain/value-objects/ObservationId.js";
+import { InterpretationId } from "../../domain/value-objects/InterpretationId.js";
 import type { StudyId } from "../../domain/value-objects/StudyId.js";
 
 export interface ObservationWorkspaceData {
@@ -29,6 +35,7 @@ export interface ObservationWorkspaceData {
     connectingWords: readonly ConnectingWordViewModel[];
     observations: readonly ObservationViewModel[];
     interpretations: readonly InterpretationViewModel[];
+    applications: readonly ApplicationViewModel[];
 }
 
 export class ObservationWorkspaceService {
@@ -41,6 +48,8 @@ export class ObservationWorkspaceService {
         private readonly createInterpretationCommand?: CreateInterpretation,
         private readonly updateInterpretationCommand?: UpdateInterpretation,
         private readonly createEvidenceCommand?: CreateEvidence,
+        private readonly createApplicationCommand?: CreateApplication,
+        private readonly updateApplicationCommand?: UpdateApplication,
     ) { }
 
     public async load(): Promise<ObservationWorkspaceData> {
@@ -66,28 +75,23 @@ export class ObservationWorkspaceService {
             interpretations: (study?.interpretations ?? []).map((interpretation) =>
                 this.toInterpretationViewModel(interpretation),
             ),
+            applications: (study?.applications ?? []).map((application) =>
+                this.toApplicationViewModel(application),
+            ),
         };
     }
 
-    public async addObservation(
-        verseReference: VerseReference,
-        statement: string,
-    ): Promise<Observation> {
+    public async addObservation(verseReference: VerseReference, statement: string): Promise<Observation> {
         if (!this.addObservationCommand || !this.studyId) {
             throw new Error("Observation persistence is not configured for this workspace.");
         }
-
         return this.addObservationCommand.execute(this.studyId, verseReference, statement);
     }
 
-    public async addInterpretation(
-        statement: string,
-        observationIds: readonly string[] = [],
-    ): Promise<Interpretation> {
+    public async addInterpretation(statement: string, observationIds: readonly string[] = []): Promise<Interpretation> {
         if (!this.createInterpretationCommand || !this.studyId) {
             throw new Error("Interpretation persistence is not configured for this workspace.");
         }
-
         return this.createInterpretationCommand.execute(
             this.studyId,
             statement,
@@ -95,15 +99,10 @@ export class ObservationWorkspaceService {
         );
     }
 
-    public async updateInterpretation(
-        interpretationId: string,
-        statement: string,
-        observationIds: readonly string[] = [],
-    ): Promise<Interpretation> {
+    public async updateInterpretation(interpretationId: string, statement: string, observationIds: readonly string[] = []): Promise<Interpretation> {
         if (!this.updateInterpretationCommand || !this.studyId) {
             throw new Error("Interpretation editing is not configured for this workspace.");
         }
-
         return this.updateInterpretationCommand.execute(
             this.studyId,
             interpretationId,
@@ -112,67 +111,82 @@ export class ObservationWorkspaceService {
         );
     }
 
-    public async addEvidence(
-        interpretationId: string,
-        type: string,
-        description: string,
-    ): Promise<Evidence> {
+    public async addEvidence(interpretationId: string, type: string, description: string): Promise<Evidence> {
         if (!this.createEvidenceCommand || !this.studyId) {
             throw new Error("Evidence persistence is not configured for this workspace.");
         }
+        return this.createEvidenceCommand.execute(this.studyId, interpretationId, type, description);
+    }
 
-        return this.createEvidenceCommand.execute(
+    public async addApplication(
+        interpretationId: string,
+        principle: string,
+        personal: string,
+        ministry: string,
+        action: string,
+    ): Promise<Application> {
+        if (!this.createApplicationCommand || !this.studyId) {
+            throw new Error("Application persistence is not configured for this workspace.");
+        }
+        return this.createApplicationCommand.execute(
             this.studyId,
-            interpretationId,
-            type,
-            description,
+            InterpretationId.from(interpretationId),
+            principle,
+            personal,
+            ministry,
+            action,
+        );
+    }
+
+    public async updateApplication(
+        applicationId: string,
+        principle: string,
+        personal: string,
+        ministry: string,
+        action: string,
+    ): Promise<void> {
+        if (!this.updateApplicationCommand || !this.studyId) {
+            throw new Error("Application editing is not configured for this workspace.");
+        }
+        await this.updateApplicationCommand.execute(
+            this.studyId,
+            ApplicationId.from(applicationId),
+            principle,
+            personal,
+            ministry,
+            action,
         );
     }
 
     private toObservationQuestionViewModel(question: ObservationQuestion): ObservationQuestionViewModel {
-        return {
-            id: question.id.toString(),
-            question: question.question.toString(),
-            purpose: question.purpose.toString(),
-        };
+        return { id: question.id.toString(), question: question.question.toString(), purpose: question.purpose.toString() };
     }
 
     private toConnectingWordViewModel(word: ConnectingWord): ConnectingWordViewModel {
-        return {
-            id: word.id.toString(),
-            text: word.text.toString(),
-            category: word.category,
-            meaning: word.meaning.toString(),
-        };
+        return { id: word.id.toString(), text: word.text.toString(), category: word.category, meaning: word.meaning.toString() };
     }
 
     private toObservationViewModel(observation: Observation): ObservationViewModel {
-        return {
-            id: observation.id.toString(),
-            verseReference: observation.verseReference.toString(),
-            statement: observation.statement.value,
-            createdAt: observation.createdAt.toISOString(),
-        };
+        return { id: observation.id.toString(), verseReference: observation.verseReference.toString(), statement: observation.statement.value, createdAt: observation.createdAt.toISOString() };
     }
 
     private toEvidenceViewModel(evidence: Evidence): EvidenceViewModel {
-        return {
-            id: evidence.id.toString(),
-            type: evidence.type.value,
-            description: evidence.description.value,
-            createdAt: evidence.createdAt.toISOString(),
-        };
+        return { id: evidence.id.toString(), type: evidence.type.value, description: evidence.description.value, createdAt: evidence.createdAt.toISOString() };
     }
 
     private toInterpretationViewModel(interpretation: Interpretation): InterpretationViewModel {
+        return { id: interpretation.id.toString(), statement: interpretation.statement.value, observationIds: interpretation.observationIds.map((id) => id.toString()), evidence: interpretation.evidence.map((evidence) => this.toEvidenceViewModel(evidence)), createdAt: interpretation.createdAt.toISOString() };
+    }
+
+    private toApplicationViewModel(application: Application): ApplicationViewModel {
         return {
-            id: interpretation.id.toString(),
-            statement: interpretation.statement.value,
-            observationIds: interpretation.observationIds.map((id) => id.toString()),
-            evidence: interpretation.evidence.map((evidence) =>
-                this.toEvidenceViewModel(evidence),
-            ),
-            createdAt: interpretation.createdAt.toISOString(),
+            id: application.id.toString(),
+            interpretationId: application.interpretationId.toString(),
+            principle: application.principle.value,
+            personal: application.personal.value,
+            ministry: application.ministry.value,
+            action: application.action.value,
+            createdAt: application.createdAt.toISOString(),
         };
     }
 }
