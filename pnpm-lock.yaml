@@ -66,6 +66,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@bsmp/bible':
+        specifier: workspace:^
+        version: link:../../packages/bible
+      '@bsmp/preaching':
+        specifier: workspace:^
+        version: link:../../packages/preaching
       '@bsmp/study':
         specifier: workspace:^
         version: link:../../packages/study
@@ -163,6 +169,18 @@ importers:
       '@bsmp/shared':
         specifier: workspace:*
         version: link:../shared
+
+  packages/preaching:
+    dependencies:
+      '@bsmp/bible':
+        specifier: workspace:*
+        version: link:../bible
+      '@bsmp/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@bsmp/study':
+        specifier: workspace:*
+        version: link:../study
 
   packages/shared: {}
 
