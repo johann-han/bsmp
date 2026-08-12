@@ -16,8 +16,7 @@ import {
     VerseReference,
     VerseText,
 } from "@bsmp/bible";
-
-import { InMemoryBibleRepository } from "@bsmp/bible";
+import type { BibleRepository } from "@bsmp/bible";
 
 import { StudyPassageService } from "../application/services/StudyPassageService.js";
 
@@ -34,6 +33,16 @@ const demoVerses = [
     "If ye keep my commandments, ye shall abide in my love; even as I have kept my Father's commandments, and abide in his love.",
     "These things have I spoken unto you, that my joy might remain in you, and that your joy might be full.",
 ];
+
+class DevelopmentBibleRepository implements BibleRepository {
+    public constructor(
+        private readonly bible: Bible,
+    ) { }
+
+    public async find(): Promise<Bible> {
+        return this.bible;
+    }
+}
 
 function createDevelopmentBible(): Bible {
     const bookCode = BookCode.from("JHN");
@@ -53,17 +62,6 @@ function createDevelopmentBible(): Bible {
         );
     });
 
-    const chapter = Chapter.create(
-        chapterNumber,
-        verses,
-    );
-
-    const book = Book.create(
-        bookCode,
-        BookName.from("John"),
-        [chapter],
-    );
-
     return Bible.create(
         BibleId.from("bsmp-development-kjv"),
         BibleMetadata.create({
@@ -72,17 +70,26 @@ function createDevelopmentBible(): Bible {
         }),
         Language.from("en"),
         Translation.from("KJV"),
-        [book],
+        [
+            Book.create(
+                bookCode,
+                BookName.from("John"),
+                [
+                    Chapter.create(
+                        chapterNumber,
+                        verses,
+                    ),
+                ],
+            ),
+        ],
     );
 }
 
 export function createStudyPassage(): StudyPassageService {
-    const bibleRepository = new InMemoryBibleRepository(
-        createDevelopmentBible(),
-    );
-
     const readPassage = new ReadPassage(
-        bibleRepository,
+        new DevelopmentBibleRepository(
+            createDevelopmentBible(),
+        ),
     );
 
     const passage = Passage.create(
