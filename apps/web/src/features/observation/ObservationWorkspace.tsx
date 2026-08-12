@@ -2,17 +2,16 @@
 
 import { useEffect, useState } from "react";
 
-import {
-    createObservationWorkspace,
-    createStudyPassage,
-    type ObservationWorkspaceData,
-    type ObservationWorkspaceService,
-    type StudyPassageData,
-    type StudyPassageService,
+import type {
+    ObservationWorkspaceData,
+    ObservationWorkspaceService,
+    StudyPassageData,
+    StudyPassageService,
 } from "@bsmp/study";
 
 import { ObservationPanel } from "@repo/ui";
 
+import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace.js";
 import { ObservationComposer } from "./ObservationComposer.js";
 import { ObservationHistory } from "./ObservationHistory.js";
 import { StudyPassage, type StudyVerse } from "./StudyPassage.js";
@@ -37,22 +36,23 @@ export function ObservationWorkspace() {
         useState<string | null>(null);
 
     useEffect(() => {
-        const nextWorkspace = createObservationWorkspace();
-        const nextPassageService = createStudyPassage();
+        createSupabaseObservationWorkspace()
+            .then(async ({ workspace: nextWorkspace, passageService: nextPassageService }) => {
+                const [workspaceData, passageData] = await Promise.all([
+                    nextWorkspace.load(),
+                    nextPassageService.load(),
+                ]);
 
-        Promise.all([
-            nextWorkspace.load(),
-            nextPassageService.load(),
-        ])
-            .then(([workspaceData, passageData]) => {
                 setWorkspace(nextWorkspace);
                 setPassageService(nextPassageService);
                 setData(workspaceData);
                 setPassage(passageData);
             })
-            .catch(() => {
+            .catch((reason: unknown) => {
                 setError(
-                    "Unable to load the study workspace.",
+                    reason instanceof Error
+                        ? reason.message
+                        : "Unable to load the study workspace.",
                 );
             });
     }, []);
