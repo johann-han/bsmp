@@ -12,6 +12,8 @@ import type {
 import { ObservationPanel } from "@repo/ui";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
+import { InterpretationComposer } from "./InterpretationComposer";
+import { InterpretationHistory } from "./InterpretationHistory";
 import { ObservationComposer } from "./ObservationComposer";
 import { ObservationHistory } from "./ObservationHistory";
 import { StudyPassage, type StudyVerse } from "./StudyPassage";
@@ -110,6 +112,17 @@ export function ObservationWorkspace() {
             <ObservationHistory
                 observations={data.observations}
                 selectedVerseReference={selectedVerseReference}
+            />
+
+            <InterpretationComposer
+                workspace={workspace}
+                observations={data.observations}
+                onSaved={refreshWorkspace}
+            />
+
+            <InterpretationHistory
+                interpretations={data.interpretations}
+                observations={data.observations}
             />
         </div>
     );
