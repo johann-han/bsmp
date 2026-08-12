@@ -4,11 +4,15 @@ import {
     ListObservationQuestions,
     ObservationQuestion,
 } from "@bsmp/inductive";
+import type { VerseReference } from "@bsmp/bible";
 
+import { AddObservation } from "../commands/AddObservation.js";
 import type {
     ConnectingWordViewModel,
     ObservationQuestionViewModel,
 } from "../view-models/index.js";
+import type { Observation } from "../../domain/entities/Observation.js";
+import type { StudyId } from "../../domain/value-objects/StudyId.js";
 
 export interface ObservationWorkspaceData {
     observationQuestions: readonly ObservationQuestionViewModel[];
@@ -23,6 +27,10 @@ export class ObservationWorkspaceService {
 
         private readonly listConnectingWords:
             ListConnectingWords,
+
+        private readonly addObservationCommand?: AddObservation,
+
+        private readonly studyId?: StudyId,
     ) { }
 
     public async load(): Promise<ObservationWorkspaceData> {
@@ -48,6 +56,24 @@ export class ObservationWorkspaceService {
                         this.toConnectingWordViewModel(word),
                 ),
         };
+    }
+
+    public async addObservation(
+        verseReference: VerseReference,
+        statement: string,
+    ): Promise<Observation> {
+
+        if (!this.addObservationCommand || !this.studyId) {
+            throw new Error(
+                "Observation persistence is not configured for this workspace.",
+            );
+        }
+
+        return this.addObservationCommand.execute(
+            this.studyId,
+            verseReference,
+            statement,
+        );
     }
 
     private toObservationQuestionViewModel(
