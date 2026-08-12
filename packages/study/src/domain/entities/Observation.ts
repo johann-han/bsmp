@@ -5,12 +5,15 @@ import { Evidence } from "./Evidence.js";
 import {
     ObservationId,
     ObservationStatement,
+    ObservationVerseReference,
 } from "../value-objects/index.js";
 
 export class Observation
     extends Entity<ObservationId> {
 
     private readonly _statement: ObservationStatement;
+
+    private readonly _verseReference: ObservationVerseReference;
 
     private readonly _createdAt: Date;
 
@@ -19,6 +22,7 @@ export class Observation
     private constructor(
         id: ObservationId,
         statement: ObservationStatement,
+        verseReference: ObservationVerseReference,
         createdAt: Date,
         evidence: Evidence[],
     ) {
@@ -26,6 +30,7 @@ export class Observation
         super(id);
 
         this._statement = statement;
+        this._verseReference = verseReference;
         this._createdAt = createdAt;
         this._evidence = evidence;
 
@@ -34,11 +39,13 @@ export class Observation
     public static create(
         id: ObservationId,
         statement: ObservationStatement,
+        verseReference: ObservationVerseReference,
     ): Observation {
 
         return new Observation(
             id,
             statement,
+            verseReference,
             new Date(),
             [],
         );
@@ -58,6 +65,12 @@ export class Observation
     public get statement(): ObservationStatement {
 
         return this._statement;
+
+    }
+
+    public get verseReference(): ObservationVerseReference {
+
+        return this._verseReference;
 
     }
 
