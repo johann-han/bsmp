@@ -158,6 +158,7 @@ export function SermonPreparationWorkspace() {
     }
 
     const selectedStudy = studies.find((study) => study.id.value === selectedStudyId) ?? null;
+    const studyEvidence = selectedStudy?.interpretations.flatMap((interpretation) => interpretation.evidence) ?? [];
 
     return (
         <AppShell title="Sermon Preparation">
@@ -198,16 +199,18 @@ export function SermonPreparationWorkspace() {
                                 {sermon.outline.map((point, index) => {
                                     const observationTexts = point.supportingObservationIds.map((id) => selectedStudy.observations.find((item) => item.id.value === id)?.statement.value).filter(Boolean);
                                     const interpretationTexts = point.supportingInterpretationIds.map((id) => selectedStudy.interpretations.find((item) => item.id.value === id)?.statement.value).filter(Boolean);
+                                    const evidenceTexts = point.supportingEvidenceIds.map((id) => studyEvidence.find((item) => item.id.value === id)).filter(Boolean);
                                     const applicationTexts = point.supportingApplicationIds.map((id) => selectedStudy.applications.find((item) => item.id.value === id)?.principle.value).filter(Boolean);
                                     return (
                                         <div key={point.id} style={{ marginBottom: 16, border: "1px solid #eee", borderRadius: 8, padding: 12 }}>
                                             <strong>{index + 1}. {point.heading}</strong>
                                             <div>{point.truth}</div>
-                                            {(observationTexts.length + interpretationTexts.length + applicationTexts.length) > 0 && (
+                                            {(observationTexts.length + interpretationTexts.length + evidenceTexts.length + applicationTexts.length) > 0 && (
                                                 <div style={{ marginTop: 10, fontSize: 13, color: "#4b5563" }}>
                                                     <strong>Study support</strong>
                                                     {observationTexts.length > 0 && <div>Observations: {observationTexts.join(" • ")}</div>}
                                                     {interpretationTexts.length > 0 && <div>Interpretations: {interpretationTexts.join(" • ")}</div>}
+                                                    {evidenceTexts.length > 0 && <div>Evidence: {evidenceTexts.map((item) => `${item?.type.value}: ${item?.description.value}`).join(" • ")}</div>}
                                                     {applicationTexts.length > 0 && <div>Applications: {applicationTexts.join(" • ")}</div>}
                                                 </div>
                                             )}
@@ -239,6 +242,18 @@ export function SermonPreparationWorkspace() {
                                                 <label key={interpretation.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
                                                     <input type="checkbox" checked={supportingInterpretationIds.includes(interpretation.id.value)} onChange={() => toggleValue(supportingInterpretationIds, interpretation.id.value, setSupportingInterpretationIds)} />
                                                     <span>{interpretation.statement.value}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {studyEvidence.length > 0 && (
+                                        <div style={{ marginTop: 10 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Evidence</div>
+                                            {studyEvidence.map((evidence) => (
+                                                <label key={evidence.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                                                    <input type="checkbox" checked={supportingEvidenceIds.includes(evidence.id.value)} onChange={() => toggleValue(supportingEvidenceIds, evidence.id.value, setSupportingEvidenceIds)} />
+                                                    <span>{evidence.type.value}: {evidence.description.value}</span>
                                                 </label>
                                             ))}
                                         </div>
