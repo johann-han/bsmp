@@ -3,6 +3,7 @@ import { Interpretation } from "../../domain/entities/Interpretation.js";
 import {
     InterpretationId,
     InterpretationStatement,
+    ObservationId,
     StudyId,
 } from "../../domain/value-objects/index.js";
 
@@ -19,6 +20,7 @@ export class CreateInterpretation {
     public async execute(
         studyId: StudyId,
         statement: string,
+        observationIds: readonly ObservationId[] = [],
     ): Promise<Interpretation> {
 
         const study =
@@ -34,12 +36,25 @@ export class CreateInterpretation {
 
         }
 
+        const knownObservationIds = new Set(
+            study.observations.map((observation) => observation.id.toString()),
+        );
+
+        for (const observationId of observationIds) {
+            if (!knownObservationIds.has(observationId.toString())) {
+                throw new Error(
+                    `Observation ${observationId.toString()} is not part of this study.`,
+                );
+            }
+        }
+
         const interpretation =
             Interpretation.create(
                 InterpretationId.create(),
                 InterpretationStatement.from(
                     statement,
                 ),
+                observationIds,
             );
 
         study.addInterpretation(
