@@ -1,3 +1,4 @@
+import { Passage } from "@bsmp/bible";
 import {
     InMemoryConnectingWordRepository,
     InMemoryObservationQuestionRepository,
@@ -5,9 +6,21 @@ import {
     ListObservationQuestions,
 } from "@bsmp/inductive";
 
+import { AddObservation } from "../application/commands/AddObservation.js";
+import { StudySession } from "../domain/aggregates/StudySession.js";
+import type { StudyRepository } from "../domain/repositories/StudyRepository.js";
+import {
+    StudyId,
+    StudyTitle,
+} from "../domain/value-objects/index.js";
+import { InMemoryStudyRepository } from "../infrastructure/repositories/InMemoryStudyRepository.js";
 import { ObservationWorkspaceService } from "../application/services/ObservationWorkspaceService.js";
+import { createStudyPassage } from "./createStudyPassage.js";
 
-export function createObservationWorkspace(): ObservationWorkspaceService {
+export function createObservationWorkspace(
+    studyRepository?: StudyRepository,
+    existingStudy?: StudySession,
+): ObservationWorkspaceService {
     const observationRepository =
         new InMemoryObservationQuestionRepository();
 
@@ -15,17 +28,29 @@ export function createObservationWorkspace(): ObservationWorkspaceService {
         new InMemoryConnectingWordRepository();
 
     const listObservationQuestions =
-        new ListObservationQuestions(
-            observationRepository,
-        );
+        new ListObservationQuestions(observationRepository);
 
     const listConnectingWords =
-        new ListConnectingWords(
-            connectingWordRepository,
-        );
+        new ListConnectingWords(connectingWordRepository);
+
+    const passageService = createStudyPassage();
+    const passage: Passage = passageService.passageReference;
+
+    const study = existingStudy ?? StudySession.create(
+        StudyId.create(),
+        StudyTitle.from("John 15 Observation Study"),
+        passage,
+    );
+
+    const repository = studyRepository ?? new InMemoryStudyRepository([study]);
+
+    const addObservation = new AddObservation(repository);
 
     return new ObservationWorkspaceService(
         listObservationQuestions,
         listConnectingWords,
+        addObservation,
+        study.id,
+        repository,
     );
 }

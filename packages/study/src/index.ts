@@ -10,8 +10,8 @@ export * from "./domain/repositories/StudyRepository.js";
 
 export * from "./infrastructure/repositories/InMemoryStudyRepository.js";
 
-
- export * from "./application/commands/CreateStudy.js"; 
+export * from "./application/commands/CreateStudy.js";
+export * from "./application/commands/AddObservation.js";
 
 export * from "./application/queries/ListStudies.js";
 

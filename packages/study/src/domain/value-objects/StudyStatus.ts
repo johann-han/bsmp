@@ -41,6 +41,10 @@ export class StudyStatus
 
     }
 
+    public static from(value: string): StudyStatus {
+        return new StudyStatus({ value });
+    }
+
     public get value(): string {
 
         return this.get("value");

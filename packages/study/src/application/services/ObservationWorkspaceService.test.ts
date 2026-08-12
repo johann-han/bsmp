@@ -6,96 +6,81 @@ import {
     ListConnectingWords,
     ListObservationQuestions,
 } from "@bsmp/inductive";
+import { BookCode, ChapterNumber, Passage, VerseNumber, VerseReference } from "@bsmp/bible";
 
+import { AddObservation } from "../commands/AddObservation.js";
+import { StudySession } from "../../domain/aggregates/StudySession.js";
+import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
+import { StudyId, StudyTitle } from "../../domain/value-objects/index.js";
 import { ObservationWorkspaceService } from "./ObservationWorkspaceService.js";
 
 describe("ObservationWorkspaceService", () => {
+    function createService() {
+        const studyId = StudyId.create();
+        const passage = Passage.create(
+            VerseReference.create(
+                BookCode.from("JHN"),
+                ChapterNumber.of(15),
+                VerseNumber.from(1),
+            ),
+            VerseReference.create(
+                BookCode.from("JHN"),
+                ChapterNumber.of(15),
+                VerseNumber.from(11),
+            ),
+        );
 
-    it("loads the observation workspace", async () => {
+        const repository = new InMemoryStudyRepository([
+            StudySession.create(
+                studyId,
+                StudyTitle.from("John 15 Observation Study"),
+                passage,
+            ),
+        ]);
 
-        const observationRepository =
-            new InMemoryObservationQuestionRepository();
-
-        const connectingWordRepository =
-            new InMemoryConnectingWordRepository();
-
-        const service =
-            new ObservationWorkspaceService(
-                new ListObservationQuestions(
-                    observationRepository,
-                ),
-
-                new ListConnectingWords(
-                    connectingWordRepository,
-                ),
-            );
-
-        const workspace =
-            await service.load();
-
-        expect(
-            workspace.observationQuestions,
-        ).toHaveLength(6);
-
-        expect(
-            workspace.connectingWords,
-        ).toHaveLength(10);
-
-    });
-
-    it("returns presentation-ready observation questions", async () => {
-
-        const service =
-            new ObservationWorkspaceService(
+        return {
+            service: new ObservationWorkspaceService(
                 new ListObservationQuestions(
                     new InMemoryObservationQuestionRepository(),
                 ),
-
                 new ListConnectingWords(
                     new InMemoryConnectingWordRepository(),
                 ),
-            );
+                new AddObservation(repository),
+                studyId,
+                repository,
+            ),
+            verseReference: VerseReference.create(
+                BookCode.from("JHN"),
+                ChapterNumber.of(15),
+                VerseNumber.from(4),
+            ),
+        };
+    }
 
-        const workspace =
-            await service.load();
+    it("loads observation questions, connecting words, and observations", async () => {
+        const { service } = createService();
+        const workspace = await service.load();
 
-        const question =
-            workspace.observationQuestions[0];
-
-        expect(question).toEqual({
-            id: "OBSQ-001",
-            question: "Who?",
-            purpose: expect.any(String),
-        });
-
+        expect(workspace.observationQuestions).toHaveLength(6);
+        expect(workspace.connectingWords).toHaveLength(10);
+        expect(workspace.observations).toHaveLength(0);
     });
 
-    it("returns presentation-ready connecting words", async () => {
+    it("maps saved observations into presentation-ready view models", async () => {
+        const { service, verseReference } = createService();
 
-        const service =
-            new ObservationWorkspaceService(
-                new ListObservationQuestions(
-                    new InMemoryObservationQuestionRepository(),
-                ),
+        await service.addObservation(
+            verseReference,
+            "The command is to abide in Christ.",
+        );
 
-                new ListConnectingWords(
-                    new InMemoryConnectingWordRepository(),
-                ),
-            );
+        const workspace = await service.load();
 
-        const workspace =
-            await service.load();
-
-        const word =
-            workspace.connectingWords[0];
-
-        expect(word).toEqual({
-            id: "CW-001",
-            text: "Therefore",
-            category: "Conclusion",
-            meaning: expect.any(String),
+        expect(workspace.observations).toHaveLength(1);
+        expect(workspace.observations[0]).toMatchObject({
+            verseReference: "JHN 15:4",
+            statement: "The command is to abide in Christ.",
         });
-
     });
-
 });
