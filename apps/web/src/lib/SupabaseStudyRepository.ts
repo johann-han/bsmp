@@ -1,5 +1,8 @@
 import type { StudyRepository } from "@bsmp/study";
 import {
+    Interpretation,
+    InterpretationId,
+    InterpretationStatement,
     Observation,
     ObservationId,
     ObservationStatement,
@@ -76,27 +79,62 @@ export class SupabaseStudyRepository implements StudyRepository {
             throw studyError;
         }
 
-        if (study.observations.length === 0) {
+        if (study.observations.length > 0) {
+            const { error: observationError } = await supabase
+                .from("study_observations")
+                .upsert(
+                    study.observations.map((observation) => ({
+                        id: observation.id.toString(),
+                        study_id: study.id.toString(),
+                        user_id: user.id,
+                        verse_book: observation.verseReference.value.book.value,
+                        verse_chapter: observation.verseReference.value.chapter.value,
+                        verse_verse: observation.verseReference.value.verse.value,
+                        statement: observation.statement.value,
+                        created_at: observation.createdAt.toISOString(),
+                    })),
+                );
+
+            if (observationError) {
+                throw observationError;
+            }
+        }
+
+        if (study.interpretations.length === 0) {
             return;
         }
 
-        const { error: observationError } = await supabase
-            .from("study_observations")
+        const { error: interpretationError } = await supabase
+            .from("study_interpretations")
             .upsert(
-                study.observations.map((observation) => ({
-                    id: observation.id.toString(),
+                study.interpretations.map((interpretation) => ({
+                    id: interpretation.id.toString(),
                     study_id: study.id.toString(),
                     user_id: user.id,
-                    verse_book: observation.verseReference.value.book.value,
-                    verse_chapter: observation.verseReference.value.chapter.value,
-                    verse_verse: observation.verseReference.value.verse.value,
-                    statement: observation.statement.value,
-                    created_at: observation.createdAt.toISOString(),
+                    statement: interpretation.statement.value,
+                    created_at: interpretation.createdAt.toISOString(),
                 })),
             );
 
-        if (observationError) {
-            throw observationError;
+        if (interpretationError) {
+            throw interpretationError;
+        }
+
+        const supportLinks = study.interpretations.flatMap((interpretation) =>
+            interpretation.observationIds.map((observationId) => ({
+                interpretation_id: interpretation.id.toString(),
+                observation_id: observationId.toString(),
+            })),
+        );
+
+        if (supportLinks.length > 0) {
+            const { error: supportError } = await supabase
+                .from("interpretation_observations")
+                .upsert(supportLinks, { onConflict: "interpretation_id,observation_id" });
+
+            if (supportError) {
+                throw supportError;
+            }
         }
     }
 
@@ -117,14 +155,24 @@ export class SupabaseStudyRepository implements StudyRepository {
     private async hydrateStudy(row: DatabaseStudyRow): Promise<StudySession> {
         const passageService = createStudyPassage();
 
-        const { data: observationRows, error } = await supabase
+        const { data: observationRows, error: observationError } = await supabase
             .from("study_observations")
             .select("*")
             .eq("study_id", row.id)
             .order("created_at", { ascending: true });
 
-        if (error) {
-            throw error;
+        if (observationError) {
+            throw observationError;
+        }
+
+        const { data: interpretationRows, error: interpretationError } = await supabase
+            .from("study_interpretations")
+            .select("*")
+            .eq("study_id", row.id)
+            .order("created_at", { ascending: true });
+
+        if (interpretationError) {
+            throw interpretationError;
         }
 
         const study = StudySession.create(
@@ -142,6 +190,27 @@ export class SupabaseStudyRepository implements StudyRepository {
                         passageService.getVerseReference(
                             observationRow.verse_verse,
                         ),
+                    ),
+                ),
+            );
+        }
+
+        for (const interpretationRow of interpretationRows ?? []) {
+            const { data: supportRows, error: supportError } = await supabase
+                .from("interpretation_observations")
+                .select("observation_id")
+                .eq("interpretation_id", interpretationRow.id);
+
+            if (supportError) {
+                throw supportError;
+            }
+
+            study.addInterpretation(
+                Interpretation.create(
+                    InterpretationId.from(interpretationRow.id),
+                    InterpretationStatement.from(interpretationRow.statement),
+                    (supportRows ?? []).map((support) =>
+                        ObservationId.from(support.observation_id),
                     ),
                 ),
             );
