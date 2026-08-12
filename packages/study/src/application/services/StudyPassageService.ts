@@ -1,5 +1,5 @@
 import { ReadPassage } from "@bsmp/bible";
-import type { Passage, Verse } from "@bsmp/bible";
+import type { Passage, Verse, VerseReference } from "@bsmp/bible";
 
 export interface StudyPassageVerse {
     readonly number: number;
@@ -24,6 +24,16 @@ export class StudyPassageService {
         return this.passage;
     }
 
+    public getVerseReference(
+        verseNumber: number,
+    ): VerseReference {
+        const verse = this.passage.start.verse.value === verseNumber
+            ? this.passage.start
+            : this.readPassageReferenceFromPassage(verseNumber);
+
+        return verse;
+    }
+
     public async load(): Promise<StudyPassageData> {
         const verses = await this.readPassage.execute(this.passage);
 
@@ -32,6 +42,15 @@ export class StudyPassageService {
             translation: this.translation,
             verses: verses.map((verse) => this.toVerseViewModel(verse)),
         };
+    }
+
+    private readPassageReferenceFromPassage(
+        verseNumber: number,
+    ): VerseReference {
+        return {
+            ...this.passage.start,
+            verse: this.passage.start.verse.constructor.from(verseNumber),
+        } as VerseReference;
     }
 
     private toVerseViewModel(verse: Verse): StudyPassageVerse {
