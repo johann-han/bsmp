@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@bsmp/bible": "workspace:^",
+    "@bsmp/preaching": "workspace:^",
     "@bsmp/study": "workspace:^",
     "@repo/ui": "workspace:*",
     "@supabase/supabase-js": "^2.0.0",
