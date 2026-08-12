@@ -52,6 +52,21 @@ export class Observation
 
     }
 
+    public static rehydrate(
+        id: ObservationId,
+        statement: ObservationStatement,
+        verseReference: ObservationVerseReference,
+        createdAt: Date,
+    ): Observation {
+        return new Observation(
+            id,
+            statement,
+            verseReference,
+            createdAt,
+            [],
+        );
+    }
+
     public addEvidence(
         evidence: Evidence,
     ): void {
