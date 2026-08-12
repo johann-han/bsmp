@@ -6,14 +6,23 @@ import {
     createObservationWorkspace,
     createStudyPassage,
     type ObservationWorkspaceData,
+    type ObservationWorkspaceService,
     type StudyPassageData,
+    type StudyPassageService,
 } from "@bsmp/study";
 
 import { ObservationPanel } from "@repo/ui";
 
+import { ObservationComposer } from "./ObservationComposer.js";
 import { StudyPassage, type StudyVerse } from "./StudyPassage.js";
 
 export function ObservationWorkspace() {
+    const [workspace, setWorkspace] =
+        useState<ObservationWorkspaceService | null>(null);
+
+    const [passageService, setPassageService] =
+        useState<StudyPassageService | null>(null);
+
     const [data, setData] =
         useState<ObservationWorkspaceData | null>(null);
 
@@ -27,14 +36,16 @@ export function ObservationWorkspace() {
         useState<string | null>(null);
 
     useEffect(() => {
-        const workspace = createObservationWorkspace();
-        const studyPassage = createStudyPassage();
+        const nextWorkspace = createObservationWorkspace();
+        const nextPassageService = createStudyPassage();
 
         Promise.all([
-            workspace.load(),
-            studyPassage.load(),
+            nextWorkspace.load(),
+            nextPassageService.load(),
         ])
             .then(([workspaceData, passageData]) => {
+                setWorkspace(nextWorkspace);
+                setPassageService(nextPassageService);
                 setData(workspaceData);
                 setPassage(passageData);
             })
@@ -49,28 +60,36 @@ export function ObservationWorkspace() {
         return <p>{error}</p>;
     }
 
-    if (!data || !passage) {
+    if (!workspace || !passageService || !data || !passage) {
         return <p>Loading study workspace...</p>;
     }
 
     return (
-        <div
-            style={{
-                display: "grid",
-                gridTemplateColumns: "minmax(0, 1fr) minmax(300px, 360px)",
-                gap: 20,
-                alignItems: "start",
-            }}
-        >
-            <StudyPassage
-                reference={passage.reference}
-                translation={passage.translation}
-                verses={passage.verses}
-                selectedVerse={selectedVerse?.number ?? null}
-                onSelectVerse={setSelectedVerse}
-            />
+        <div>
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "minmax(0, 1fr) minmax(300px, 360px)",
+                    gap: 20,
+                    alignItems: "start",
+                }}
+            >
+                <StudyPassage
+                    reference={passage.reference}
+                    translation={passage.translation}
+                    verses={passage.verses}
+                    selectedVerse={selectedVerse?.number ?? null}
+                    onSelectVerse={setSelectedVerse}
+                />
 
-            <ObservationPanel data={data} />
+                <ObservationPanel data={data} />
+            </div>
+
+            <ObservationComposer
+                workspace={workspace}
+                selectedVerse={selectedVerse}
+                getVerseReference={passageService.getVerseReference.bind(passageService)}
+            />
         </div>
     );
 }
