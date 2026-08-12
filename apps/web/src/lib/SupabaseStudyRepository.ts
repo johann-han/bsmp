@@ -1,10 +1,11 @@
-import type { StudyRepository, StudySession } from "@bsmp/study";
+import type { StudyRepository } from "@bsmp/study";
 import {
     Observation,
     ObservationId,
     ObservationStatement,
     ObservationVerseReference,
     StudyId,
+    StudySession,
     StudyTitle,
 } from "@bsmp/study";
 import { createStudyPassage } from "@bsmp/study";
