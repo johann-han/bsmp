@@ -20,6 +20,10 @@ export class StudyPassageService {
         private readonly translation: string,
     ) { }
 
+    public get passageReference(): Passage {
+        return this.passage;
+    }
+
     public async load(): Promise<StudyPassageData> {
         const verses = await this.readPassage.execute(this.passage);
 
