@@ -1,12 +1,13 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { supabase } from "../../lib/supabase";
 
 export function AuthForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
@@ -36,7 +37,9 @@ export function AuthForm() {
             return;
         }
 
-        router.push("/workspace");
+        const next = searchParams.get("next");
+        const destination = next && next.startsWith("/") ? next : "/workspace";
+        router.push(destination);
         router.refresh();
     }
 
