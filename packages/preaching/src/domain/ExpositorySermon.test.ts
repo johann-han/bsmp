@@ -29,7 +29,7 @@ describe("ExpositorySermon", () => {
     it("captures the sermon preparation foundation and study provenance", () => {
         const sermon = ExpositorySermon.create(
             ExpositorySermonId.create("sermon-1"),
-            StudyId.create("study-1"),
+            StudyId.from("study-1"),
             SermonTitle.from("Abide in Christ"),
             john15(),
         );
@@ -40,7 +40,7 @@ describe("ExpositorySermon", () => {
         sermon.addOutlinePoint("Bear lasting fruit", "Abiding produces visible obedience.");
 
         expect(sermon.title.value).toBe("Abide in Christ");
-        expect(sermon.studyId.toString()).toBe("study-1");
+        expect(sermon.studyId.value).toBe("study-1");
         expect(sermon.passage.toString()).toBe("JHN 15:1");
         expect(sermon.bigIdea?.value).toContain("abide in Him");
         expect(sermon.purpose?.value).toContain("dependent obedience");
@@ -50,7 +50,7 @@ describe("ExpositorySermon", () => {
     it("rejects empty outline content", () => {
         const sermon = ExpositorySermon.create(
             ExpositorySermonId.create("sermon-2"),
-            StudyId.create("study-2"),
+            StudyId.from("study-2"),
             SermonTitle.from("Test"),
             john15(),
         );
