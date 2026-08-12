@@ -1,5 +1,6 @@
 import { Entity, ValueObject } from "@bsmp/shared";
 import type { Passage } from "@bsmp/bible";
+import type { StudyId } from "@bsmp/study";
 
 export class ExpositorySermonId extends ValueObject<{ value: string }> {
     public static create(value = crypto.randomUUID()): ExpositorySermonId {
@@ -55,6 +56,7 @@ export interface SermonOutlinePoint {
 
 export class ExpositorySermon extends Entity<ExpositorySermonId> {
     private _title: SermonTitle;
+    private readonly _studyId: StudyId;
     private readonly _passage: Passage;
     private _bigIdea?: SermonBigIdea;
     private _purpose?: SermonPurpose;
@@ -63,22 +65,25 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
 
     private constructor(
         id: ExpositorySermonId,
+        studyId: StudyId,
         title: SermonTitle,
         passage: Passage,
         createdAt: Date,
     ) {
         super(id);
         this._title = title;
+        this._studyId = studyId;
         this._passage = passage;
         this._createdAt = createdAt;
     }
 
     public static create(
         id: ExpositorySermonId,
+        studyId: StudyId,
         title: SermonTitle,
         passage: Passage,
     ): ExpositorySermon {
-        return new ExpositorySermon(id, title, passage, new Date());
+        return new ExpositorySermon(id, studyId, title, passage, new Date());
     }
 
     public reviseTitle(title: SermonTitle): void {
@@ -112,6 +117,10 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
 
     public get title(): SermonTitle {
         return this._title;
+    }
+
+    public get studyId(): StudyId {
+        return this._studyId;
     }
 
     public get passage(): Passage {
