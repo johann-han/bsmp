@@ -1,5 +1,9 @@
 import type { StudyRepository } from "@bsmp/study";
 import {
+    Evidence,
+    EvidenceDescription,
+    EvidenceId,
+    EvidenceType,
     Interpretation,
     InterpretationId,
     InterpretationStatement,
@@ -26,13 +30,8 @@ export class SupabaseStudyRepository implements StudyRepository {
             .eq("user_id", user.id)
             .maybeSingle();
 
-        if (error) {
-            throw error;
-        }
-
-        if (!study) {
-            return undefined;
-        }
+        if (error) throw error;
+        if (!study) return undefined;
 
         return this.hydrateStudy(study);
     }
@@ -46,9 +45,7 @@ export class SupabaseStudyRepository implements StudyRepository {
             .eq("user_id", user.id)
             .order("created_at", { ascending: false });
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         return Promise.all(
             (studies ?? []).map((study) => this.hydrateStudy(study)),
@@ -75,12 +72,10 @@ export class SupabaseStudyRepository implements StudyRepository {
                 created_at: study.createdAt.toISOString(),
             });
 
-        if (studyError) {
-            throw studyError;
-        }
+        if (studyError) throw studyError;
 
         if (study.observations.length > 0) {
-            const { error: observationError } = await supabase
+            const { error } = await supabase
                 .from("study_observations")
                 .upsert(
                     study.observations.map((observation) => ({
@@ -95,45 +90,69 @@ export class SupabaseStudyRepository implements StudyRepository {
                     })),
                 );
 
-            if (observationError) {
-                throw observationError;
-            }
+            if (error) throw error;
         }
 
-        if (study.interpretations.length === 0) {
-            return;
-        }
+        if (study.interpretations.length > 0) {
+            const { error: interpretationError } = await supabase
+                .from("study_interpretations")
+                .upsert(
+                    study.interpretations.map((interpretation) => ({
+                        id: interpretation.id.toString(),
+                        study_id: study.id.toString(),
+                        user_id: user.id,
+                        statement: interpretation.statement.value,
+                        created_at: interpretation.createdAt.toISOString(),
+                    })),
+                );
 
-        const { error: interpretationError } = await supabase
-            .from("study_interpretations")
-            .upsert(
-                study.interpretations.map((interpretation) => ({
-                    id: interpretation.id.toString(),
-                    study_id: study.id.toString(),
-                    user_id: user.id,
-                    statement: interpretation.statement.value,
-                    created_at: interpretation.createdAt.toISOString(),
+            if (interpretationError) throw interpretationError;
+
+            const { error: deleteLinksError } = await supabase
+                .from("interpretation_observations")
+                .delete()
+                .in(
+                    "interpretation_id",
+                    study.interpretations.map((interpretation) => interpretation.id.toString()),
+                );
+
+            if (deleteLinksError) throw deleteLinksError;
+
+            const supportLinks = study.interpretations.flatMap((interpretation) =>
+                interpretation.observationIds.map((observationId) => ({
+                    interpretation_id: interpretation.id.toString(),
+                    observation_id: observationId.toString(),
                 })),
             );
 
-        if (interpretationError) {
-            throw interpretationError;
-        }
+            if (supportLinks.length > 0) {
+                const { error: supportError } = await supabase
+                    .from("interpretation_observations")
+                    .upsert(supportLinks, {
+                        onConflict: "interpretation_id,observation_id",
+                    });
 
-        const supportLinks = study.interpretations.flatMap((interpretation) =>
-            interpretation.observationIds.map((observationId) => ({
-                interpretation_id: interpretation.id.toString(),
-                observation_id: observationId.toString(),
-            })),
-        );
+                if (supportError) throw supportError;
+            }
 
-        if (supportLinks.length > 0) {
-            const { error: supportError } = await supabase
-                .from("interpretation_observations")
-                .upsert(supportLinks, { onConflict: "interpretation_id,observation_id" });
+            const evidenceRows = study.interpretations.flatMap((interpretation) =>
+                interpretation.evidence.map((evidence) => ({
+                    id: evidence.id.toString(),
+                    interpretation_id: interpretation.id.toString(),
+                    study_id: study.id.toString(),
+                    user_id: user.id,
+                    evidence_type: evidence.type.value,
+                    description: evidence.description.value,
+                    created_at: evidence.createdAt.toISOString(),
+                })),
+            );
 
-            if (supportError) {
-                throw supportError;
+            if (evidenceRows.length > 0) {
+                const { error: evidenceError } = await supabase
+                    .from("interpretation_evidence")
+                    .upsert(evidenceRows);
+
+                if (evidenceError) throw evidenceError;
             }
         }
     }
@@ -147,9 +166,7 @@ export class SupabaseStudyRepository implements StudyRepository {
             .eq("id", id.toString())
             .eq("user_id", user.id);
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
     }
 
     private async hydrateStudy(row: DatabaseStudyRow): Promise<StudySession> {
@@ -161,9 +178,7 @@ export class SupabaseStudyRepository implements StudyRepository {
             .eq("study_id", row.id)
             .order("created_at", { ascending: true });
 
-        if (observationError) {
-            throw observationError;
-        }
+        if (observationError) throw observationError;
 
         const { data: interpretationRows, error: interpretationError } = await supabase
             .from("study_interpretations")
@@ -171,9 +186,15 @@ export class SupabaseStudyRepository implements StudyRepository {
             .eq("study_id", row.id)
             .order("created_at", { ascending: true });
 
-        if (interpretationError) {
-            throw interpretationError;
-        }
+        if (interpretationError) throw interpretationError;
+
+        const { data: evidenceRows, error: evidenceError } = await supabase
+            .from("interpretation_evidence")
+            .select("*")
+            .eq("study_id", row.id)
+            .order("created_at", { ascending: true });
+
+        if (evidenceError) throw evidenceError;
 
         const study = StudySession.create(
             StudyId.from(row.id),
@@ -187,9 +208,7 @@ export class SupabaseStudyRepository implements StudyRepository {
                     ObservationId.from(observationRow.id),
                     ObservationStatement.from(observationRow.statement),
                     ObservationVerseReference.from(
-                        passageService.getVerseReference(
-                            observationRow.verse_verse,
-                        ),
+                        passageService.getVerseReference(observationRow.verse_verse),
                     ),
                 ),
             );
@@ -201,17 +220,24 @@ export class SupabaseStudyRepository implements StudyRepository {
                 .select("observation_id")
                 .eq("interpretation_id", interpretationRow.id);
 
-            if (supportError) {
-                throw supportError;
-            }
+            if (supportError) throw supportError;
+
+            const interpretationEvidence = (evidenceRows ?? [])
+                .filter((evidence) => evidence.interpretation_id === interpretationRow.id)
+                .map((evidence) =>
+                    Evidence.create(
+                        EvidenceId.from(evidence.id),
+                        this.toEvidenceType(evidence.evidence_type),
+                        EvidenceDescription.from(evidence.description),
+                    ),
+                );
 
             study.addInterpretation(
                 Interpretation.create(
                     InterpretationId.from(interpretationRow.id),
                     InterpretationStatement.from(interpretationRow.statement),
-                    (supportRows ?? []).map((support) =>
-                        ObservationId.from(support.observation_id),
-                    ),
+                    (supportRows ?? []).map((support) => ObservationId.from(support.observation_id)),
+                    interpretationEvidence,
                 ),
             );
         }
@@ -219,17 +245,25 @@ export class SupabaseStudyRepository implements StudyRepository {
         return study;
     }
 
+    private toEvidenceType(value: string): EvidenceType {
+        switch (value) {
+            case "Scripture": return EvidenceType.scripture();
+            case "CrossReference": return EvidenceType.crossReference();
+            case "OriginalLanguage": return EvidenceType.originalLanguage();
+            case "Historical": return EvidenceType.historical();
+            case "Geographical": return EvidenceType.geographical();
+            case "Literary": return EvidenceType.literary();
+            case "PersonalNote": return EvidenceType.personalNote();
+            default: return EvidenceType.other();
+        }
+    }
+
     private async requireUser() {
         const { data, error } = await supabase.auth.getUser();
-
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
         if (!data.user) {
-            throw new Error(
-                "A signed-in Supabase user is required for study persistence.",
-            );
+            throw new Error("A signed-in Supabase user is required for study persistence.");
         }
 
         return data.user;
