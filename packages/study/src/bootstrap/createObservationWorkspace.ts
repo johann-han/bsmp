@@ -7,13 +7,12 @@ import {
 } from "@bsmp/inductive";
 
 import { AddObservation } from "../application/commands/AddObservation.js";
+import { CreateEvidence } from "../application/commands/CreateEvidence.js";
 import { CreateInterpretation } from "../application/commands/CreateInterpretation.js";
+import { UpdateInterpretation } from "../application/commands/UpdateInterpretation.js";
 import { StudySession } from "../domain/aggregates/StudySession.js";
 import type { StudyRepository } from "../domain/repositories/StudyRepository.js";
-import {
-    StudyId,
-    StudyTitle,
-} from "../domain/value-objects/index.js";
+import { StudyId, StudyTitle } from "../domain/value-objects/index.js";
 import { InMemoryStudyRepository } from "../infrastructure/repositories/InMemoryStudyRepository.js";
 import { ObservationWorkspaceService } from "../application/services/ObservationWorkspaceService.js";
 import { createStudyPassage } from "./createStudyPassage.js";
@@ -22,17 +21,11 @@ export function createObservationWorkspace(
     studyRepository?: StudyRepository,
     existingStudy?: StudySession,
 ): ObservationWorkspaceService {
-    const observationRepository =
-        new InMemoryObservationQuestionRepository();
+    const observationRepository = new InMemoryObservationQuestionRepository();
+    const connectingWordRepository = new InMemoryConnectingWordRepository();
 
-    const connectingWordRepository =
-        new InMemoryConnectingWordRepository();
-
-    const listObservationQuestions =
-        new ListObservationQuestions(observationRepository);
-
-    const listConnectingWords =
-        new ListConnectingWords(connectingWordRepository);
+    const listObservationQuestions = new ListObservationQuestions(observationRepository);
+    const listConnectingWords = new ListConnectingWords(connectingWordRepository);
 
     const passageService = createStudyPassage();
     const passage: Passage = passageService.passageReference;
@@ -44,9 +37,10 @@ export function createObservationWorkspace(
     );
 
     const repository = studyRepository ?? new InMemoryStudyRepository([study]);
-
     const addObservation = new AddObservation(repository);
     const createInterpretation = new CreateInterpretation(repository);
+    const updateInterpretation = new UpdateInterpretation(repository);
+    const createEvidence = new CreateEvidence(repository);
 
     return new ObservationWorkspaceService(
         listObservationQuestions,
@@ -55,5 +49,7 @@ export function createObservationWorkspace(
         study.id,
         repository,
         createInterpretation,
+        updateInterpretation,
+        createEvidence,
     );
 }
