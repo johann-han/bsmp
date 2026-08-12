@@ -3,4 +3,7 @@ export * from "./ObservationComposer";
 export * from "./ObservationHistory";
 export * from "./InterpretationComposer";
 export * from "./InterpretationHistory";
+export * from "./InterpretationTools";
+export * from "./ApplicationComposer";
+export * from "./ApplicationHistory";
 export * from "./StudyPassage";
