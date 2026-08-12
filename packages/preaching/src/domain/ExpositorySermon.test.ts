@@ -18,8 +18,8 @@ import {
 function john15(): Passage {
     const start = VerseReference.create(
         BookCode.from("JHN"),
-        ChapterNumber.create(15),
-        VerseNumber.create(1),
+        ChapterNumber.of(15),
+        VerseNumber.from(1),
     );
     return Passage.create(start, start);
 }
