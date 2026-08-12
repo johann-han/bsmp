@@ -9,7 +9,7 @@ import {
 
 import { ObservationPanel } from "@repo/ui";
 
-import { StudyPassage } from "./StudyPassage.js";
+import { StudyPassage, type StudyVerse } from "./StudyPassage.js";
 
 const demoPassage = {
     reference: "John 15:1–11",
@@ -32,6 +32,9 @@ const demoPassage = {
 export function ObservationWorkspace() {
     const [data, setData] =
         useState<ObservationWorkspaceData | null>(null);
+
+    const [selectedVerse, setSelectedVerse] =
+        useState<StudyVerse | null>(null);
 
     const [error, setError] =
         useState<string | null>(null);
@@ -71,6 +74,8 @@ export function ObservationWorkspace() {
                 reference={demoPassage.reference}
                 translation={demoPassage.translation}
                 verses={demoPassage.verses}
+                selectedVerse={selectedVerse?.number ?? null}
+                onSelectVerse={setSelectedVerse}
             />
 
             <ObservationPanel data={data} />
