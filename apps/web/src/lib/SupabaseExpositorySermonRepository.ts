@@ -7,6 +7,7 @@ import {
     SermonTitle,
 } from "@bsmp/preaching";
 import { BookCode, ChapterNumber, Passage, VerseNumber, VerseReference } from "@bsmp/bible";
+import { StudyId } from "@bsmp/study";
 import { supabase } from "./supabase";
 
 export class SupabaseExpositorySermonRepository implements ExpositorySermonRepository {
@@ -35,7 +36,7 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
 
         const { error } = await supabase.from("expository_sermons").upsert({
             id: sermon.id.value,
-            study_id: sermon.studyId.toString(),
+            study_id: sermon.studyId.value,
             user_id: userData.user.id,
             title: sermon.title.value,
             big_idea: sermon.bigIdea?.value ?? null,
@@ -78,8 +79,8 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
             VerseNumber.from(study.passage_end_verse),
         );
         const sermon = ExpositorySermon.create(
-            ExpositorySermonId.create(row.id),
-            row.study_id,
+            ExpositorySermonId.create(row.id as `${string}-${string}-${string}-${string}-${string}`),
+            StudyId.from(row.study_id),
             SermonTitle.from(row.title),
             Passage.create(start, end),
         );
