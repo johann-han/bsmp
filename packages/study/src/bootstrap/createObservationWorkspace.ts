@@ -58,5 +58,6 @@ export function createObservationWorkspace(): ObservationWorkspaceService {
         listConnectingWords,
         addObservation,
         study.id,
+        studyRepository,
     );
 }
