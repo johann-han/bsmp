@@ -6,7 +6,7 @@ import {
     StudyTitle,
 } from "@bsmp/study";
 
-import { SupabaseStudyRepository } from "./SupabaseStudyRepository.js";
+import { SupabaseStudyRepository } from "./SupabaseStudyRepository";
 
 export async function createSupabaseObservationWorkspace() {
     const repository = new SupabaseStudyRepository();
