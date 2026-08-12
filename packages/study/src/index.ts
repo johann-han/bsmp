@@ -3,6 +3,7 @@ export * from "./domain/aggregates/StudySession.js";
 export * from "./domain/entities/Observation.js";
 export * from "./domain/entities/Evidence.js";
 export * from "./domain/entities/Interpretation.js";
+export * from "./domain/entities/Application.js";
 
 export * from "./domain/value-objects/index.js";
 
@@ -15,6 +16,8 @@ export * from "./application/commands/AddObservation.js";
 export * from "./application/commands/CreateInterpretation.js";
 export * from "./application/commands/UpdateInterpretation.js";
 export * from "./application/commands/CreateEvidence.js";
+export * from "./application/commands/CreateApplication.js";
+export * from "./application/commands/UpdateApplication.js";
 
 export * from "./application/queries/ListStudies.js";
 
