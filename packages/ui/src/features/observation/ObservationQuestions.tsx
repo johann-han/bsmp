@@ -1,7 +1,7 @@
-import type { ObservationQuestion } from "@bsmp/inductive";
+import type { ObservationQuestionViewModel } from "@bsmp/study";
 
 export interface ObservationQuestionsProps {
-    questions: readonly ObservationQuestion[];
+    questions: readonly ObservationQuestionViewModel[];
 }
 
 export function ObservationQuestions({
@@ -13,8 +13,8 @@ export function ObservationQuestions({
 
             <ul>
                 {questions.map((question) => (
-                    <li key={question.id.toString()}>
-                        {question.question.toString()}
+                    <li key={question.id}>
+                        {question.question}
                     </li>
                 ))}
             </ul>

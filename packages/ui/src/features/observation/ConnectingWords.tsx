@@ -1,7 +1,7 @@
-import type { ConnectingWord } from "@bsmp/inductive";
+import type { ConnectingWordViewModel } from "@bsmp/study";
 
 export interface ConnectingWordsProps {
-    connectingWords: readonly ConnectingWord[];
+    connectingWords: readonly ConnectingWordViewModel[];
 }
 
 export function ConnectingWords({
@@ -13,9 +13,9 @@ export function ConnectingWords({
 
             <ul>
                 {connectingWords.map((word) => (
-                    <li key={word.id.toString()}>
+                    <li key={word.id}>
                         <strong>
-                            {word.text.toString()}
+                            {word.text}
                         </strong>
 
                         {" — "}

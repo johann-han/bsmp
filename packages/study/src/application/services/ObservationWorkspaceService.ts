@@ -1,16 +1,19 @@
-import type {
+import {
     ConnectingWord,
-    ObservationQuestion,
     ListConnectingWords,
     ListObservationQuestions,
+    ObservationQuestion,
 } from "@bsmp/inductive";
 
-export interface ObservationWorkspaceData {
-    observationQuestions:
-    readonly ObservationQuestion[];
+import type {
+    ConnectingWordViewModel,
+    ObservationQuestionViewModel,
+    ObservationWorkspaceViewModel,
+} from "../view-models/index.js";
 
-    connectingWords:
-    readonly ConnectingWord[];
+export interface ObservationWorkspaceData {
+    observationQuestions: readonly ObservationQuestionViewModel[];
+    connectingWords: readonly ConnectingWordViewModel[];
 }
 
 export class ObservationWorkspaceService {
@@ -24,7 +27,7 @@ export class ObservationWorkspaceService {
     ) { }
 
     public async load():
-        Promise<ObservationWorkspaceData> {
+        Promise<ObservationWorkspaceViewModel> {
 
         const [
             observationQuestions,
@@ -35,8 +38,44 @@ export class ObservationWorkspaceService {
         ]);
 
         return {
-            observationQuestions,
-            connectingWords,
+            observationQuestions:
+                observationQuestions.map(
+                    (question) =>
+                        this.toObservationQuestionViewModel(question),
+                ),
+
+            connectingWords:
+                connectingWords.map(
+                    (word) =>
+                        this.toConnectingWordViewModel(word),
+                ),
         };
+
     }
+
+    private toObservationQuestionViewModel(
+        question: ObservationQuestion,
+    ): ObservationQuestionViewModel {
+
+        return {
+            id: question.id.toString(),
+            question: question.question.toString(),
+            purpose: question.purpose.toString(),
+        };
+
+    }
+
+    private toConnectingWordViewModel(
+        word: ConnectingWord,
+    ): ConnectingWordViewModel {
+
+        return {
+            id: word.id.toString(),
+            text: word.text.toString(),
+            category: word.category,
+            meaning: word.meaning.toString(),
+        };
+
+    }
+
 }

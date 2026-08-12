@@ -1,13 +1,5 @@
-export interface ObservationQuestionViewModel {
-    id: string;
-    question: string;
-}
-
-export interface ConnectingWordViewModel {
-    id: string;
-    text: string;
-    category: string;
-}
+import type { ObservationQuestionViewModel } from "./ObservationQuestionViewModel.js";
+import type { ConnectingWordViewModel } from "./ConnectingWordViewModel.js";
 
 export interface ObservationWorkspaceViewModel {
     observationQuestions: readonly ObservationQuestionViewModel[];
