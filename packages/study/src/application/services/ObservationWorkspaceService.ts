@@ -167,21 +167,21 @@ export class ObservationWorkspaceService {
     }
 
     private toObservationViewModel(observation: Observation): ObservationViewModel {
-        return { id: observation.id.toString(), verseReference: observation.verseReference.toString(), statement: observation.statement.value, createdAt: observation.createdAt.toISOString() };
+        return { id: observation.id.value, verseReference: observation.verseReference.toString(), statement: observation.statement.value, createdAt: observation.createdAt.toISOString() };
     }
 
     private toEvidenceViewModel(evidence: Evidence): EvidenceViewModel {
-        return { id: evidence.id.toString(), type: evidence.type.value, description: evidence.description.value, createdAt: evidence.createdAt.toISOString() };
+        return { id: evidence.id.value, type: evidence.type.value, description: evidence.description.value, createdAt: evidence.createdAt.toISOString() };
     }
 
     private toInterpretationViewModel(interpretation: Interpretation): InterpretationViewModel {
-        return { id: interpretation.id.toString(), statement: interpretation.statement.value, observationIds: interpretation.observationIds.map((id) => id.toString()), evidence: interpretation.evidence.map((evidence) => this.toEvidenceViewModel(evidence)), createdAt: interpretation.createdAt.toISOString() };
+        return { id: interpretation.id.value, statement: interpretation.statement.value, observationIds: interpretation.observationIds.map((id) => id.value), evidence: interpretation.evidence.map((evidence) => this.toEvidenceViewModel(evidence)), createdAt: interpretation.createdAt.toISOString() };
     }
 
     private toApplicationViewModel(application: Application): ApplicationViewModel {
         return {
-            id: application.id.toString(),
-            interpretationId: application.interpretationId.toString(),
+            id: application.id.value,
+            interpretationId: application.interpretationId.value,
             principle: application.principle.value,
             personal: application.personal.value,
             ministry: application.ministry.value,
