@@ -9,19 +9,35 @@ import {
     StudyList,
 } from "@repo/ui";
 
-import { StudySummary } from "../../types/study";
+import { supabase } from "../../src/lib/supabase";
+import type { StudySummary } from "../../types/study";
 
 export default function StudiesPage() {
     const [studies, setStudies] = useState<StudySummary[]>([]);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    async function authorizationHeaders(): Promise<HeadersInit> {
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!data.session) throw new Error("Please sign in to view your studies.");
+
+        return {
+            Authorization: `Bearer ${data.session.access_token}`,
+        };
+    }
+
     async function loadStudies() {
-        const response = await fetch("/api/studies");
+        const response = await fetch("/api/studies", {
+            headers: await authorizationHeaders(),
+        });
+        const result = await response.json() as StudySummary[] | { error?: string };
+
         if (!response.ok) {
-            throw new Error("Unable to load studies.");
+            throw new Error("error" in result && result.error ? result.error : "Unable to load studies.");
         }
-        setStudies(await response.json());
+
+        setStudies(result as StudySummary[]);
     }
 
     useEffect(() => {
@@ -36,7 +52,10 @@ export default function StudiesPage() {
         try {
             const response = await fetch("/api/studies", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(await authorizationHeaders()),
+                },
                 body: JSON.stringify({ title, passage }),
             });
 
