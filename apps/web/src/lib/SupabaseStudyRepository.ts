@@ -36,6 +36,7 @@ import { supabase } from "./supabase";
 export class SupabaseStudyRepository implements StudyRepository {
     public constructor(
         private readonly client: SupabaseClient<Database> = supabase,
+        private readonly accessToken?: string,
     ) { }
 
     public async find(id: StudyId): Promise<StudySession | undefined> {
@@ -200,10 +201,12 @@ export class SupabaseStudyRepository implements StudyRepository {
     }
 
     private async requireUser() {
-        const { data, error } = await this.client.auth.getUser();
-        if (error) throw error;
-        if (!data.user) throw new Error("A signed-in Supabase user is required for study persistence.");
-        return data.user;
+        const result = this.accessToken
+            ? await this.client.auth.getUser(this.accessToken)
+            : await this.client.auth.getUser();
+        if (result.error) throw result.error;
+        if (!result.data.user) throw new Error("A signed-in Supabase user is required for study persistence.");
+        return result.data.user;
     }
 }
 
