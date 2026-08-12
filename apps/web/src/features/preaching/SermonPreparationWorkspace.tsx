@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { StudySession } from "@bsmp/study";
 import { StudyId } from "@bsmp/study";
 import { AppShell } from "@repo/ui";
@@ -14,8 +15,10 @@ import {
 
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
+import { supabase } from "../../lib/supabase";
 
 export function SermonPreparationWorkspace() {
+    const router = useRouter();
     const [studies, setStudies] = useState<readonly StudySession[]>([]);
     const [selectedStudyId, setSelectedStudyId] = useState<string>("");
     const [sermon, setSermon] = useState<ExpositorySermon | null>(null);
@@ -31,10 +34,32 @@ export function SermonPreparationWorkspace() {
     const sermonRepository = new SupabaseExpositorySermonRepository();
 
     useEffect(() => {
-        studyRepository.findAll().then(setStudies).catch((reason: unknown) => {
-            setError(reason instanceof Error ? reason.message : "Unable to load studies.");
-        });
-    }, []);
+        let cancelled = false;
+
+        async function initialize() {
+            const { data, error: authError } = await supabase.auth.getUser();
+
+            if (authError || !data.user) {
+                router.replace(`/login?next=${encodeURIComponent("/preaching")}`);
+                return;
+            }
+
+            try {
+                const nextStudies = await studyRepository.findAll();
+                if (!cancelled) setStudies(nextStudies);
+            } catch (reason: unknown) {
+                if (!cancelled) {
+                    setError(reason instanceof Error ? reason.message : "Unable to load studies.");
+                }
+            }
+        }
+
+        void initialize();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [router]);
 
     async function selectStudy(studyId: string) {
         setSelectedStudyId(studyId);
@@ -85,10 +110,14 @@ export function SermonPreparationWorkspace() {
 
     function addOutlinePoint() {
         if (!sermon) return;
-        sermon.addOutlinePoint(heading, truth);
-        setHeading("");
-        setTruth("");
-        setSermon(Object.assign(Object.create(Object.getPrototypeOf(sermon)), sermon));
+        try {
+            sermon.addOutlinePoint(heading, truth);
+            setHeading("");
+            setTruth("");
+            setSermon(Object.assign(Object.create(Object.getPrototypeOf(sermon)), sermon));
+        } catch (reason: unknown) {
+            setError(reason instanceof Error ? reason.message : "Unable to add outline point.");
+        }
     }
 
     return (
