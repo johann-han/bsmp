@@ -12,6 +12,8 @@ import type {
 import { ObservationPanel } from "@repo/ui";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
+import { ApplicationComposer } from "./ApplicationComposer";
+import { ApplicationHistory } from "./ApplicationHistory";
 import { InterpretationComposer } from "./InterpretationComposer";
 import { InterpretationHistory } from "./InterpretationHistory";
 import { InterpretationTools } from "./InterpretationTools";
@@ -76,28 +78,14 @@ export function ObservationWorkspace() {
                 onSaved={refreshWorkspace}
             />
 
-            <ObservationHistory
-                observations={data.observations}
-                selectedVerseReference={selectedVerseReference}
-            />
+            <ObservationHistory observations={data.observations} selectedVerseReference={selectedVerseReference} />
 
-            <InterpretationComposer
-                workspace={workspace}
-                observations={data.observations}
-                onSaved={refreshWorkspace}
-            />
+            <InterpretationComposer workspace={workspace} observations={data.observations} onSaved={refreshWorkspace} />
+            <InterpretationHistory interpretations={data.interpretations} observations={data.observations} />
+            <InterpretationTools interpretations={data.interpretations} observations={data.observations} workspace={workspace} onSaved={refreshWorkspace} />
 
-            <InterpretationHistory
-                interpretations={data.interpretations}
-                observations={data.observations}
-            />
-
-            <InterpretationTools
-                interpretations={data.interpretations}
-                observations={data.observations}
-                workspace={workspace}
-                onSaved={refreshWorkspace}
-            />
+            <ApplicationComposer workspace={workspace} interpretations={data.interpretations} onSaved={refreshWorkspace} />
+            <ApplicationHistory applications={data.applications} interpretations={data.interpretations} />
         </div>
     );
 }
