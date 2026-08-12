@@ -35,11 +35,19 @@ function parsePassage(input: string): Passage {
         throw new Error("Passage must look like 'Romans 8:1-39'.");
     }
 
-    const [, bookName, chapter, startVerse, endVerse] = match;
-    const code = BOOK_CODES[bookName.trim().toLowerCase()];
+    const bookName = match[1]?.trim();
+    const chapter = match[2];
+    const startVerse = match[3];
+    const endVerse = match[4] ?? match[3];
+
+    if (!bookName || !chapter || !startVerse) {
+        throw new Error("Passage must include a Bible book, chapter, and verse.");
+    }
+
+    const code = BOOK_CODES[bookName.toLowerCase()];
 
     if (!code) {
-        throw new Error(`Unsupported Bible book: ${bookName.trim()}.`);
+        throw new Error(`Unsupported Bible book: ${bookName}.`);
     }
 
     const book = BookCode.from(code);
@@ -52,7 +60,7 @@ function parsePassage(input: string): Passage {
     const end = VerseReference.create(
         book,
         chapterNumber,
-        VerseNumber.from(Number(endVerse ?? startVerse)),
+        VerseNumber.from(Number(endVerse)),
     );
 
     return Passage.create(start, end);
