@@ -57,6 +57,10 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
                     heading: point.heading,
                     truth: point.truth,
                     position: index,
+                    supporting_observation_ids: [...point.supportingObservationIds],
+                    supporting_interpretation_ids: [...point.supportingInterpretationIds],
+                    supporting_evidence_ids: [...point.supportingEvidenceIds],
+                    supporting_application_ids: [...point.supportingApplicationIds],
                 })),
             );
             if (outlineError) throw outlineError;
@@ -90,7 +94,14 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
 
         const { data: outlineRows, error: outlineError } = await supabase.from("sermon_outline_points").select("*").eq("sermon_id", row.id).order("position", { ascending: true });
         if (outlineError) throw outlineError;
-        for (const point of outlineRows ?? []) sermon.addOutlinePoint(point.heading, point.truth);
+        for (const point of outlineRows ?? []) {
+            sermon.addOutlinePoint(point.heading, point.truth, {
+                supportingObservationIds: point.supporting_observation_ids ?? [],
+                supportingInterpretationIds: point.supporting_interpretation_ids ?? [],
+                supportingEvidenceIds: point.supporting_evidence_ids ?? [],
+                supportingApplicationIds: point.supporting_application_ids ?? [],
+            });
+        }
         return sermon;
     }
 }
