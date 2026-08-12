@@ -9,7 +9,7 @@ import {
 } from "@bsmp/study";
 import { createStudyPassage } from "@bsmp/study";
 
-import { supabase } from "./supabase.js";
+import { supabase } from "./supabase";
 
 export class SupabaseStudyRepository implements StudyRepository {
     public async find(id: StudyId): Promise<StudySession | undefined> {
