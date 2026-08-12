@@ -98,7 +98,7 @@ function repositoryFromRequest(request: Request): SupabaseStudyRepository {
         },
     });
 
-    return new SupabaseStudyRepository(client);
+    return new SupabaseStudyRepository(client, accessToken);
 }
 
 export async function GET(request: Request) {
