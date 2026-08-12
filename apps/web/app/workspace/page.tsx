@@ -1,15 +1,11 @@
 import { AppShell } from "@repo/ui";
 
+import { ObservationWorkspace } from "../../src/features/observation";
+
 export default function WorkspacePage() {
-
     return (
-
         <AppShell title="Study Workspace">
-
-            <p>Study workspace coming soon.</p>
-
+            <ObservationWorkspace />
         </AppShell>
-
     );
-
 }
