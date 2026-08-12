@@ -82,7 +82,7 @@ export function SermonPreparationWorkspace() {
                 setBigIdea(existing.bigIdea?.value ?? "");
                 setPurpose(existing.purpose?.value ?? "");
             } else {
-                const study = studies.find((item) => item.id.toString() === studyId);
+                const study = studies.find((item) => item.id.value === studyId);
                 setTitle(study ? study.title.value : "");
                 setBigIdea("");
                 setPurpose("");
@@ -133,7 +133,7 @@ export function SermonPreparationWorkspace() {
         }
     }
 
-    const selectedStudy = studies.find((study) => study.id.toString() === selectedStudyId) ?? null;
+    const selectedStudy = studies.find((study) => study.id.value === selectedStudyId) ?? null;
 
     return (
         <AppShell title="Sermon Preparation">
@@ -143,7 +143,7 @@ export function SermonPreparationWorkspace() {
                     <select value={selectedStudyId} onChange={(event) => void selectStudy(event.target.value)} style={{ width: "100%", padding: 10 }}>
                         <option value="">Select a study</option>
                         {studies.map((study) => (
-                            <option key={study.id.toString()} value={study.id.toString()}>
+                            <option key={study.id.value} value={study.id.value}>
                                 {study.title.value} — {study.passage.toString()}
                             </option>
                         ))}
