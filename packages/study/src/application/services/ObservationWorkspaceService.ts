@@ -7,19 +7,24 @@ import {
 import type { VerseReference } from "@bsmp/bible";
 
 import { AddObservation } from "../commands/AddObservation.js";
+import { CreateInterpretation } from "../commands/CreateInterpretation.js";
 import type {
     ConnectingWordViewModel,
+    InterpretationViewModel,
     ObservationQuestionViewModel,
     ObservationViewModel,
 } from "../view-models/index.js";
+import type { Interpretation } from "../../domain/entities/Interpretation.js";
 import type { Observation } from "../../domain/entities/Observation.js";
 import type { StudyRepository } from "../../domain/repositories/StudyRepository.js";
+import type { ObservationId } from "../../domain/value-objects/ObservationId.js";
 import type { StudyId } from "../../domain/value-objects/StudyId.js";
 
 export interface ObservationWorkspaceData {
     observationQuestions: readonly ObservationQuestionViewModel[];
     connectingWords: readonly ConnectingWordViewModel[];
     observations: readonly ObservationViewModel[];
+    interpretations: readonly InterpretationViewModel[];
 }
 
 export class ObservationWorkspaceService {
@@ -36,6 +41,8 @@ export class ObservationWorkspaceService {
         private readonly studyId?: StudyId,
 
         private readonly studyRepository?: StudyRepository,
+
+        private readonly createInterpretationCommand?: CreateInterpretation,
     ) { }
 
     public async load(): Promise<ObservationWorkspaceData> {
@@ -47,7 +54,7 @@ export class ObservationWorkspaceService {
             this.listConnectingWords.execute(),
         ]);
 
-        const observations =
+        const study =
             this.studyId && this.studyRepository
                 ? await this.studyRepository.find(this.studyId)
                 : undefined;
@@ -65,9 +72,14 @@ export class ObservationWorkspaceService {
                         this.toConnectingWordViewModel(word),
                 ),
 
-            observations: (observations?.observations ?? [])
+            observations: (study?.observations ?? [])
                 .map((observation) =>
                     this.toObservationViewModel(observation),
+                ),
+
+            interpretations: (study?.interpretations ?? [])
+                .map((interpretation) =>
+                    this.toInterpretationViewModel(interpretation),
                 ),
         };
     }
@@ -87,6 +99,24 @@ export class ObservationWorkspaceService {
             this.studyId,
             verseReference,
             statement,
+        );
+    }
+
+    public async addInterpretation(
+        statement: string,
+        observationIds: readonly string[] = [],
+    ): Promise<Interpretation> {
+
+        if (!this.createInterpretationCommand || !this.studyId) {
+            throw new Error(
+                "Interpretation persistence is not configured for this workspace.",
+            );
+        }
+
+        return this.createInterpretationCommand.execute(
+            this.studyId,
+            statement,
+            observationIds.map((id) => ({ toString: () => id } as ObservationId)),
         );
     }
 
@@ -119,6 +149,17 @@ export class ObservationWorkspaceService {
             verseReference: observation.verseReference.toString(),
             statement: observation.statement.value,
             createdAt: observation.createdAt.toISOString(),
+        };
+    }
+
+    private toInterpretationViewModel(
+        interpretation: Interpretation,
+    ): InterpretationViewModel {
+        return {
+            id: interpretation.id.toString(),
+            statement: interpretation.statement.value,
+            observationIds: interpretation.observationIds.map((id) => id.toString()),
+            createdAt: interpretation.createdAt.toISOString(),
         };
     }
 }
