@@ -8,7 +8,7 @@ import {
 
 import { AddObservation } from "../application/commands/AddObservation.js";
 import { StudySession } from "../domain/aggregates/StudySession.js";
-import { StudyRepository } from "../domain/repositories/StudyRepository.js";
+import type { StudyRepository } from "../domain/repositories/StudyRepository.js";
 import {
     StudyId,
     StudyTitle,
@@ -17,7 +17,10 @@ import { InMemoryStudyRepository } from "../infrastructure/repositories/InMemory
 import { ObservationWorkspaceService } from "../application/services/ObservationWorkspaceService.js";
 import { createStudyPassage } from "./createStudyPassage.js";
 
-export function createObservationWorkspace(): ObservationWorkspaceService {
+export function createObservationWorkspace(
+    studyRepository?: StudyRepository,
+    existingStudy?: StudySession,
+): ObservationWorkspaceService {
     const observationRepository =
         new InMemoryObservationQuestionRepository();
 
@@ -25,39 +28,29 @@ export function createObservationWorkspace(): ObservationWorkspaceService {
         new InMemoryConnectingWordRepository();
 
     const listObservationQuestions =
-        new ListObservationQuestions(
-            observationRepository,
-        );
+        new ListObservationQuestions(observationRepository);
 
     const listConnectingWords =
-        new ListConnectingWords(
-            connectingWordRepository,
-        );
+        new ListConnectingWords(connectingWordRepository);
 
     const passageService = createStudyPassage();
     const passage: Passage = passageService.passageReference;
 
-    const study = StudySession.create(
+    const study = existingStudy ?? StudySession.create(
         StudyId.create(),
         StudyTitle.from("John 15 Observation Study"),
         passage,
     );
 
-    const studyRepository: StudyRepository =
-        new InMemoryStudyRepository([
-            study,
-        ]);
+    const repository = studyRepository ?? new InMemoryStudyRepository([study]);
 
-    const addObservation =
-        new AddObservation(
-            studyRepository,
-        );
+    const addObservation = new AddObservation(repository);
 
     return new ObservationWorkspaceService(
         listObservationQuestions,
         listConnectingWords,
         addObservation,
         study.id,
-        studyRepository,
+        repository,
     );
 }
