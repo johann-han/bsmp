@@ -21,6 +21,51 @@ import { ObservationComposer } from "./ObservationComposer";
 import { ObservationHistory } from "./ObservationHistory";
 import { StudyPassage, type StudyVerse } from "./StudyPassage";
 
+interface RealBiblePassageResponse {
+    readonly reference: string;
+    readonly translation: string;
+    readonly verses: readonly {
+        readonly number: number;
+        readonly reference: string;
+        readonly text: string;
+    }[];
+}
+
+function buildBibleApiReference(passage: StudyPassageService["passageReference"]): string {
+    const start = passage.start;
+    const end = passage.end;
+    const book = start.book.value;
+    const startChapter = start.chapter.value;
+    const startVerse = start.verse.value;
+    const endChapter = end.chapter.value;
+    const endVerse = end.verse.value;
+
+    if (startChapter === endChapter) {
+        return `${book} ${startChapter}:${startVerse}-${endVerse}`;
+    }
+
+    return `${book} ${startChapter}:${startVerse}-${endChapter}:${endVerse}`;
+}
+
+async function loadRealBiblePassage(
+    passageService: StudyPassageService,
+): Promise<StudyPassageData | null> {
+    const reference = buildBibleApiReference(passageService.passageReference);
+    const response = await fetch(`/api/bible/passage?reference=${encodeURIComponent(reference)}`);
+
+    if (!response.ok) {
+        return null;
+    }
+
+    const payload = await response.json() as RealBiblePassageResponse;
+
+    return {
+        reference: payload.reference,
+        translation: payload.translation,
+        verses: payload.verses,
+    };
+}
+
 export function ObservationWorkspace() {
     const [workspace, setWorkspace] = useState<ObservationWorkspaceService | null>(null);
     const [passageService, setPassageService] = useState<StudyPassageService | null>(null);
@@ -35,14 +80,16 @@ export function ObservationWorkspace() {
 
         createSupabaseObservationWorkspace(studyId)
             .then(async ({ workspace: nextWorkspace, passageService: nextPassageService, study }) => {
-                const [workspaceData, passageData] = await Promise.all([
+                const [workspaceData, developmentPassage, realPassage] = await Promise.all([
                     nextWorkspace.load(),
                     nextPassageService.load(),
+                    loadRealBiblePassage(nextPassageService).catch(() => null),
                 ]);
+
                 setWorkspace(nextWorkspace);
                 setPassageService(nextPassageService);
                 setData(workspaceData);
-                setPassage(passageData);
+                setPassage(realPassage ?? developmentPassage);
                 setStudyTitle(study.title.value);
             })
             .catch((reason: unknown) => {
