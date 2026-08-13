@@ -24,6 +24,12 @@ function isBibleResponse(payload: BibleResponse | BibleErrorResponse): payload i
     return "verses" in payload && Array.isArray(payload.verses);
 }
 
+function getBibleError(payload: BibleResponse | BibleErrorResponse): string {
+    return "error" in payload && typeof payload.error === "string"
+        ? payload.error
+        : "Unable to load passage.";
+}
+
 export function BibleReader() {
     const [reference, setReference] = useState("Romans 12");
     const [result, setResult] = useState<BibleResponse | null>(null);
@@ -41,7 +47,7 @@ export function BibleReader() {
             const payload = await response.json() as BibleResponse | BibleErrorResponse;
 
             if (!response.ok || !isBibleResponse(payload)) {
-                throw new Error(payload.error ?? "Unable to load passage.");
+                throw new Error(getBibleError(payload));
             }
 
             setResult(payload);
