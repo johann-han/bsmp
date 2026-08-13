@@ -1,0 +1,110 @@
+"use client";
+
+import { useState } from "react";
+
+interface BibleVerse {
+    readonly number: number;
+    readonly reference: string;
+    readonly text: string;
+}
+
+interface BibleResponse {
+    readonly reference: string;
+    readonly translation: string;
+    readonly translationId: string;
+    readonly translationNote: string;
+    readonly verses: readonly BibleVerse[];
+}
+
+export function BibleReader() {
+    const [reference, setReference] = useState("Romans 12");
+    const [result, setResult] = useState<BibleResponse | null>(null);
+    const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    async function loadPassage(event?: React.FormEvent) {
+        event?.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/bible/passage?reference=${encodeURIComponent(reference)}`);
+            const payload = await response.json() as BibleResponse | { error?: string };
+
+            if (!response.ok || "error" in payload) {
+                throw new Error("error" in payload ? payload.error ?? "Unable to load passage." : "Unable to load passage.");
+            }
+
+            setResult(payload);
+            setSelectedVerse(null);
+        } catch (reason: unknown) {
+            setResult(null);
+            setError(reason instanceof Error ? reason.message : "Unable to load passage.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <div style={{ display: "grid", gap: 16, maxWidth: 900 }}>
+            <form onSubmit={loadPassage} style={{ display: "flex", gap: 10 }}>
+                <input
+                    value={reference}
+                    onChange={(event) => setReference(event.target.value)}
+                    placeholder="John 3:16 or Romans 12"
+                    style={{ flex: 1, padding: 12, border: "1px solid #d1d5db", borderRadius: 8 }}
+                />
+                <button type="submit" disabled={loading || !reference.trim()} style={{ padding: "10px 16px" }}>
+                    {loading ? "Loading..." : "Read"}
+                </button>
+            </form>
+
+            {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
+
+            {result && (
+                <section style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, background: "#fff" }}>
+                    <header style={{ display: "flex", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
+                        <div>
+                            <p style={{ margin: 0, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6b7280" }}>Bible Reader</p>
+                            <h2 style={{ margin: "4px 0 0" }}>{result.reference}</h2>
+                        </div>
+                        <div style={{ textAlign: "right", fontSize: 13, color: "#6b7280" }}>
+                            <div>{result.translation} ({result.translationId.toUpperCase()})</div>
+                            <div>{result.translationNote}</div>
+                        </div>
+                    </header>
+
+                    <div style={{ display: "grid", gap: 8, lineHeight: 1.8 }}>
+                        {result.verses.map((verse) => {
+                            const active = selectedVerse === verse.number;
+                            return (
+                                <button
+                                    key={verse.reference}
+                                    type="button"
+                                    onClick={() => setSelectedVerse(verse.number)}
+                                    style={{
+                                        textAlign: "left",
+                                        border: active ? "2px solid #111827" : "1px solid transparent",
+                                        background: active ? "#f3f4f6" : "transparent",
+                                        borderRadius: 8,
+                                        padding: "8px 10px",
+                                        font: "inherit",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    <sup style={{ marginRight: 8, fontWeight: 700, color: "#6b7280" }}>{verse.number}</sup>
+                                    {verse.text}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <p style={{ margin: "16px 0 0", fontSize: 13, color: "#6b7280" }}>
+                        {selectedVerse === null ? "Select a verse to focus your reading." : `Focused verse: ${selectedVerse}`}
+                    </p>
+                </section>
+            )}
+        </div>
+    );
+}
