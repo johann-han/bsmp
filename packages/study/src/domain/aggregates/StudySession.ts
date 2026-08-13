@@ -90,6 +90,13 @@ export class StudySession
         this._applications.push(application);
     }
 
+    public removeApplication(applicationId: import("../value-objects/ApplicationId.js").ApplicationId): void {
+        const index = this._applications.findIndex((item) => item.id.value === applicationId.value);
+        if (index === -1) throw new Error(`Application not found: ${applicationId.value}`);
+
+        this._applications.splice(index, 1);
+    }
+
     public get title(): StudyTitle { return this._title; }
     public get passage(): Passage { return this._passage; }
     public get status(): StudyStatus { return this._status; }
