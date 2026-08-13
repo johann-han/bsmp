@@ -16,6 +16,14 @@ interface BibleResponse {
     readonly verses: readonly BibleVerse[];
 }
 
+interface BibleErrorResponse {
+    readonly error?: string;
+}
+
+function isBibleResponse(payload: BibleResponse | BibleErrorResponse): payload is BibleResponse {
+    return "verses" in payload && Array.isArray(payload.verses);
+}
+
 export function BibleReader() {
     const [reference, setReference] = useState("Romans 12");
     const [result, setResult] = useState<BibleResponse | null>(null);
@@ -30,10 +38,10 @@ export function BibleReader() {
 
         try {
             const response = await fetch(`/api/bible/passage?reference=${encodeURIComponent(reference)}`);
-            const payload = await response.json() as BibleResponse | { error?: string };
+            const payload = await response.json() as BibleResponse | BibleErrorResponse;
 
-            if (!response.ok || "error" in payload) {
-                throw new Error("error" in payload ? payload.error ?? "Unable to load passage." : "Unable to load passage.");
+            if (!response.ok || !isBibleResponse(payload)) {
+                throw new Error(payload.error ?? "Unable to load passage.");
             }
 
             setResult(payload);
