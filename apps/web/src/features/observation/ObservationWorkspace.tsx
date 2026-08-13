@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type {
     ObservationWorkspaceData,
@@ -19,7 +19,7 @@ import { InterpretationHistory } from "./InterpretationHistory";
 import { InterpretationTools } from "./InterpretationTools";
 import { ObservationComposer } from "./ObservationComposer";
 import { ObservationHistory } from "./ObservationHistory";
-import { StudyPassage, type StudyVerse } from "./StudyPassage";
+import { StudyPassage, type StudyWordMarkup, type StudyVerse } from "./StudyPassage";
 
 interface RealBiblePassageResponse {
     readonly reference: string;
@@ -68,6 +68,7 @@ async function loadRealBiblePassage(
 }
 
 export function ObservationWorkspace() {
+    const observationComposerRef = useRef<HTMLElement | null>(null);
     const [workspace, setWorkspace] = useState<ObservationWorkspaceService | null>(null);
     const [passageService, setPassageService] = useState<StudyPassageService | null>(null);
     const [data, setData] = useState<ObservationWorkspaceData | null>(null);
@@ -75,6 +76,8 @@ export function ObservationWorkspace() {
     const [selectedVerses, setSelectedVerses] = useState<readonly StudyVerse[]>([]);
     const [studyId, setStudyId] = useState<string | null>(null);
     const [studyTitle, setStudyTitle] = useState("");
+    const [targetWord, setTargetWord] = useState<string | null>(null);
+    const [targetMarkup, setTargetMarkup] = useState<StudyWordMarkup | null>(null);
     const [translation, setTranslation] = useState<TranslationId>("asv");
     const [passageLoading, setPassageLoading] = useState(false);
     const [passageError, setPassageError] = useState<string | null>(null);
@@ -120,11 +123,22 @@ export function ObservationWorkspace() {
             if (!nextPassage) throw new Error("Unable to load the selected Bible translation.");
             setPassage(nextPassage);
             setSelectedVerses((current) => current.filter((selected) => nextPassage.verses.some((verse) => verse.number === selected.number)));
+            setTargetWord(null);
+            setTargetMarkup(null);
         } catch (reason: unknown) {
             setPassageError(reason instanceof Error ? reason.message : "Unable to load the selected Bible translation.");
         } finally {
             setPassageLoading(false);
         }
+    }
+
+    function targetObservationFromMarkup(verse: StudyVerse, markup: StudyWordMarkup, word: string) {
+        setSelectedVerses([verse]);
+        setTargetWord(word);
+        setTargetMarkup(markup);
+        window.requestAnimationFrame(() => {
+            observationComposerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
     }
 
     if (error) return <p>{error}</p>;
@@ -155,13 +169,31 @@ export function ObservationWorkspace() {
                     translation={translation}
                     verses={passage.verses}
                     selectedVerses={selectedVerses.map((verse) => verse.number)}
-                    onSelectVerse={(verse) => setSelectedVerses([verse])}
-                    onSelectVerseRange={setSelectedVerses}
+                    onSelectVerse={(verse) => {
+                        setSelectedVerses([verse]);
+                        setTargetWord(null);
+                        setTargetMarkup(null);
+                    }}
+                    onSelectVerseRange={(verses) => {
+                        setSelectedVerses(verses);
+                        setTargetWord(null);
+                        setTargetMarkup(null);
+                    }}
+                    onMarkedWordSelect={targetObservationFromMarkup}
                 />
                 <ObservationPanel data={data} />
             </div>
 
-            <ObservationComposer workspace={workspace} selectedVerse={selectedVerse} getVerseReference={passageService.getVerseReference.bind(passageService)} onSaved={refreshWorkspace} />
+            <div ref={(node) => { observationComposerRef.current = node; }}>
+                <ObservationComposer
+                    workspace={workspace}
+                    selectedVerse={selectedVerse}
+                    targetWord={targetWord}
+                    targetMarkup={targetMarkup}
+                    getVerseReference={passageService.getVerseReference.bind(passageService)}
+                    onSaved={refreshWorkspace}
+                />
+            </div>
             <ObservationHistory observations={data.observations} selectedVerseReference={selectedVerseReference} />
             <InterpretationComposer workspace={workspace} observations={data.observations} onSaved={refreshWorkspace} />
             <InterpretationHistory interpretations={data.interpretations} observations={data.observations} />
