@@ -88,6 +88,7 @@ export function StudyPassage({
             const { data, error } = await asMarkupTable()
                 .select("verse_number,word_index,symbol")
                 .eq("study_id", studyId)
+                .eq("translation", translation)
                 .order("verse_number", { ascending: true })
                 .order("word_index", { ascending: true });
 
@@ -136,7 +137,8 @@ export function StudyPassage({
             const { error: deleteError } = await table
                 .delete()
                 .eq("study_id", studyId)
-                .eq("user_id", userResult.data.user.id);
+                .eq("user_id", userResult.data.user.id)
+                .eq("translation", translation);
 
             if (deleteError) throw deleteError;
 
@@ -144,6 +146,7 @@ export function StudyPassage({
                 const { error: insertError } = await table.insert(next.map((item) => ({
                     study_id: studyId,
                     user_id: userResult.data.user.id,
+                    translation,
                     verse_number: item.verseNumber,
                     word_index: item.wordIndex,
                     symbol: item.symbol,
@@ -201,20 +204,10 @@ export function StudyPassage({
     }
 
     return (
-        <section
-            style={{
-                minWidth: 0,
-                border: "1px solid #e5e7eb",
-                borderRadius: 12,
-                background: "#ffffff",
-                padding: 20,
-            }}
-        >
+        <section style={{ minWidth: 0, border: "1px solid #e5e7eb", borderRadius: 12, background: "#ffffff", padding: 20 }}>
             <header style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "baseline", marginBottom: 12 }}>
                 <div>
-                    <p style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280" }}>
-                        Current Passage
-                    </p>
+                    <p style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280" }}>Current Passage</p>
                     <h2 style={{ margin: "4px 0 0", fontSize: 24 }}>{reference}</h2>
                 </div>
                 <span style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>{translation}</span>
@@ -225,16 +218,8 @@ export function StudyPassage({
                     <button type="button" onClick={() => setMarkupMode((current) => !current)} style={{ border: "1px solid #d1d5db", borderRadius: 8, background: markupMode ? "#f3f4f6" : "#fff", padding: "7px 10px", fontWeight: 600 }}>
                         {markupMode ? "Close Markup" : "Word Markup"}
                     </button>
-
                     {markupMode && MARKUP_SYMBOLS.map((item) => (
-                        <button
-                            key={item.symbol}
-                            type="button"
-                            onClick={() => setMarkupSymbol(item.symbol)}
-                            title={item.label}
-                            aria-label={`${item.symbol} — ${item.label}`}
-                            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 36, border: markupSymbol === item.symbol ? "2px solid #111827" : "1px solid #d1d5db", borderRadius: 8, background: markupSymbol === item.symbol ? "#f3f4f6" : "#fff", fontWeight: 700 }}
-                        >
+                        <button key={item.symbol} type="button" onClick={() => setMarkupSymbol(item.symbol)} title={item.label} aria-label={`${item.symbol} — ${item.label}`} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 36, border: markupSymbol === item.symbol ? "2px solid #111827" : "1px solid #d1d5db", borderRadius: 8, background: markupSymbol === item.symbol ? "#f3f4f6" : "#fff", fontWeight: 700 }}>
                             {item.symbol}
                         </button>
                     ))}
@@ -265,20 +250,14 @@ export function StudyPassage({
                                         );
                                     })}
                                 </span>
-                            ) : (
-                                <span>{verse.text}</span>
-                            )}
+                            ) : <span>{verse.text}</span>}
                         </div>
                     );
                 })}
             </div>
 
             <p style={{ margin: "16px 0 0", fontSize: 13, color: "#6b7280" }}>
-                {selectedVerses.length === 0
-                    ? "Click a verse to focus it. Click another verse to select a range."
-                    : selectedVerses.length === 1
-                        ? `Focused verse: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}`
-                        : `Focused range: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}–${selectedVerses[selectedVerses.length - 1]}`}
+                {selectedVerses.length === 0 ? "Click a verse to focus it. Click another verse to select a range." : selectedVerses.length === 1 ? `Focused verse: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}` : `Focused range: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}–${selectedVerses[selectedVerses.length - 1]}`}
             </p>
 
             {wordMarkups.length > 0 && (
