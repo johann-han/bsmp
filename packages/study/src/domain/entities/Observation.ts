@@ -10,9 +10,9 @@ import {
 } from "../value-objects/index.js";
 
 export class Observation extends Entity<ObservationId> {
-    private readonly _statement: ObservationStatement;
-    private readonly _verseReference: ObservationVerseReference;
-    private readonly _target: ObservationTarget;
+    private _statement: ObservationStatement;
+    private _verseReference: ObservationVerseReference;
+    private _target: ObservationTarget;
     private readonly _createdAt: Date;
     private readonly _evidence: Evidence[];
 
@@ -48,6 +48,12 @@ export class Observation extends Entity<ObservationId> {
         target: ObservationTarget = ObservationTarget.verse(verseReference.value),
     ): Observation {
         return new Observation(id, statement, target, createdAt, []);
+    }
+
+    public edit(statement: ObservationStatement, target: ObservationTarget): void {
+        this._statement = statement;
+        this._target = target;
+        this._verseReference = ObservationVerseReference.from(target.verseReference);
     }
 
     public addEvidence(evidence: Evidence): void {
