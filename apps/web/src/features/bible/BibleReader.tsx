@@ -44,14 +44,13 @@ export function BibleReader() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function loadPassage(event?: FormEvent) {
-        event?.preventDefault();
+    async function fetchPassage(referenceValue: string, translationValue: string, preserveVerse = false) {
         setLoading(true);
         setError(null);
 
         try {
             const response = await fetch(
-                `/api/bible/passage?reference=${encodeURIComponent(reference)}&translation=${encodeURIComponent(translation)}`,
+                `/api/bible/passage?reference=${encodeURIComponent(referenceValue)}&translation=${encodeURIComponent(translationValue)}`,
             );
             const payload = await response.json() as BibleResponse | BibleErrorResponse;
 
@@ -60,12 +59,27 @@ export function BibleReader() {
             }
 
             setResult(payload);
-            setSelectedVerse(null);
+            if (!preserveVerse) {
+                setSelectedVerse(null);
+            }
         } catch (reason: unknown) {
             setResult(null);
             setError(reason instanceof Error ? reason.message : "Unable to load passage.");
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function loadPassage(event?: FormEvent) {
+        event?.preventDefault();
+        await fetchPassage(reference, translation);
+    }
+
+    async function handleTranslationChange(nextTranslation: string) {
+        setTranslation(nextTranslation);
+
+        if (result) {
+            await fetchPassage(reference, nextTranslation, true);
         }
     }
 
@@ -80,9 +94,10 @@ export function BibleReader() {
                 />
                 <select
                     value={translation}
-                    onChange={(event) => setTranslation(event.target.value)}
+                    onChange={(event) => void handleTranslationChange(event.target.value)}
                     style={{ padding: "10px 12px", border: "1px solid #d1d5db", borderRadius: 8 }}
                     aria-label="Bible translation"
+                    disabled={loading}
                 >
                     {TRANSLATIONS.map((item) => (
                         <option key={item.id} value={item.id}>{item.name}</option>
