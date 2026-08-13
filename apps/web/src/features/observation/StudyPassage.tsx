@@ -190,6 +190,10 @@ export function StudyPassage({
             (item) => item.verseNumber === verseNumber && item.wordIndex === wordIndex,
         );
 
+        if (existing && onMarkedWordSelect) {
+            onMarkedWordSelect(verse ?? { number: verseNumber, reference: reference, text: "" }, existing, word);
+        }
+
         if (existing?.symbol === markupSymbol) {
             void saveWordMarkups(
                 wordMarkups.filter(
@@ -206,9 +210,6 @@ export function StudyPassage({
             ),
             nextMarkup,
         ]);
-        if (verse && onMarkedWordSelect) {
-            onMarkedWordSelect(verse, nextMarkup, word);
-        }
     }
 
     return (
@@ -252,7 +253,7 @@ export function StudyPassage({
                                         const markup = wordMarkups.find((item) => item.verseNumber === verse.number && item.wordIndex === index);
                                         const label = markup ? markupLabel(markup.symbol) : null;
                                         return (
-                                            <button key={`${verse.number}-${index}`} type="button" onClick={() => toggleWordMarkup(verse.number, index)} aria-label={markup ? `${word}: ${markup.symbol} — ${label}` : `Mark ${word}`} title={markup ? `${markup.symbol} — ${label}` : "Mark this word"} style={{ border: 0, background: markup ? "#f3f4f6" : "transparent", padding: "1px 2px", margin: "0 1px", borderRadius: 4, font: "inherit", cursor: "pointer", textDecoration: markup ? "underline" : "none", textDecorationThickness: markup ? 2 : undefined }}>
+                                            <button key={`${verse.number}-${index}`} type="button" onClick={() => toggleWordMarkup(verse.number, index)} aria-label={markup ? `${word}: ${markup.symbol} — ${label}` : `Mark ${word}`} title={markup ? `${markup.symbol} — ${label}; click to target Observation` : "Mark this word"} style={{ border: 0, background: markup ? "#f3f4f6" : "transparent", padding: "1px 2px", margin: "0 1px", borderRadius: 4, font: "inherit", cursor: "pointer", textDecoration: markup ? "underline" : "none", textDecorationThickness: markup ? 2 : undefined }}>
                                                 {word}{markup ? <sup style={{ marginLeft: 2, fontWeight: 800 }}>{markup.symbol}</sup> : ""}
                                             </button>
                                         );
