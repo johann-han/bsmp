@@ -28,6 +28,7 @@ export function SermonPreparationWorkspace() {
     const [purpose, setPurpose] = useState("");
     const [heading, setHeading] = useState("");
     const [truth, setTruth] = useState("");
+    const [editingOutlinePointId, setEditingOutlinePointId] = useState<string | null>(null);
     const [supportingObservationIds, setSupportingObservationIds] = useState<string[]>([]);
     const [supportingInterpretationIds, setSupportingInterpretationIds] = useState<string[]>([]);
     const [supportingEvidenceIds, setSupportingEvidenceIds] = useState<string[]>([]);
@@ -68,7 +69,7 @@ export function SermonPreparationWorkspace() {
         setSelectedStudyId(studyId);
         setMessage(null);
         setError(null);
-        resetOutlineSupport();
+        resetOutlineEditor();
         if (!studyId) {
             setSermon(null);
             setTitle("");
@@ -124,6 +125,12 @@ export function SermonPreparationWorkspace() {
         }
     }
 
+    async function reloadSermon() {
+        if (!selectedStudyId) return;
+        const persisted = await sermonRepository.findByStudyId(selectedStudyId);
+        if (persisted) setSermon(persisted);
+    }
+
     async function addOutlinePoint() {
         if (!sermon || !selectedStudyId) return;
         setMessage(null);
@@ -138,17 +145,12 @@ export function SermonPreparationWorkspace() {
             });
 
             await sermonRepository.save(sermon);
-
-            const persisted = await sermonRepository.findByStudyId(selectedStudyId);
-            setSermon(persisted ?? sermon);
-            setHeading("");
-            setTruth("");
-            resetOutlineSupport();
+            await reloadSermon();
+            resetOutlineEditor();
             setMessage("Outline point saved.");
         } catch (reason: unknown) {
             try {
-                const persisted = await sermonRepository.findByStudyId(selectedStudyId);
-                if (persisted) setSermon(persisted);
+                await reloadSermon();
             } catch {
                 // Preserve the original save error when recovery also fails.
             }
@@ -156,6 +158,102 @@ export function SermonPreparationWorkspace() {
             const details = reason instanceof Error ? reason.message : String(reason);
             setError(`Unable to save outline point: ${details}`);
         }
+    }
+
+    function editOutlinePoint(id: string) {
+        if (!sermon) return;
+        const point = sermon.outline.find((item) => item.id === id);
+        if (!point) return;
+
+        setEditingOutlinePointId(point.id);
+        setHeading(point.heading);
+        setTruth(point.truth);
+        setSupportingObservationIds([...point.supportingObservationIds]);
+        setSupportingInterpretationIds([...point.supportingInterpretationIds]);
+        setSupportingEvidenceIds([...point.supportingEvidenceIds]);
+        setSupportingApplicationIds([...point.supportingApplicationIds]);
+        setMessage(null);
+        setError(null);
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+
+    async function saveEditedOutlinePoint() {
+        if (!sermon || !selectedStudyId || !editingOutlinePointId) return;
+        setMessage(null);
+        setError(null);
+
+        try {
+            sermon.updateOutlinePoint(editingOutlinePointId, heading, truth, {
+                supportingObservationIds,
+                supportingInterpretationIds,
+                supportingEvidenceIds,
+                supportingApplicationIds,
+            });
+            await sermonRepository.save(sermon);
+            await reloadSermon();
+            resetOutlineEditor();
+            setMessage("Outline point updated.");
+        } catch (reason: unknown) {
+            try {
+                await reloadSermon();
+            } catch {
+                // Preserve the original save error when recovery also fails.
+            }
+            const details = reason instanceof Error ? reason.message : String(reason);
+            setError(`Unable to update outline point: ${details}`);
+        }
+    }
+
+    async function deleteOutlinePoint(id: string) {
+        if (!sermon || !selectedStudyId) return;
+        setMessage(null);
+        setError(null);
+
+        if (!window.confirm("Delete this outline point?")) return;
+
+        try {
+            sermon.removeOutlinePoint(id);
+            await sermonRepository.save(sermon);
+            await reloadSermon();
+            if (editingOutlinePointId === id) resetOutlineEditor();
+            setMessage("Outline point deleted.");
+        } catch (reason: unknown) {
+            try {
+                await reloadSermon();
+            } catch {
+                // Preserve the original save error when recovery also fails.
+            }
+            const details = reason instanceof Error ? reason.message : String(reason);
+            setError(`Unable to delete outline point: ${details}`);
+        }
+    }
+
+    async function moveOutlinePoint(id: string, direction: "up" | "down") {
+        if (!sermon || !selectedStudyId) return;
+        setMessage(null);
+        setError(null);
+
+        try {
+            sermon.moveOutlinePoint(id, direction);
+            await sermonRepository.save(sermon);
+            await reloadSermon();
+            setMessage("Outline order saved.");
+        } catch (reason: unknown) {
+            try {
+                await reloadSermon();
+            } catch {
+                // Preserve the original save error when recovery also fails.
+            }
+            const details = reason instanceof Error ? reason.message : String(reason);
+            setError(`Unable to move outline point: ${details}`);
+        }
+    }
+
+    function resetOutlineEditor() {
+        setEditingOutlinePointId(null);
+        setHeading("");
+        setTruth("");
+        resetOutlineSupport();
     }
 
     function resetOutlineSupport() {
@@ -207,16 +305,30 @@ export function SermonPreparationWorkspace() {
                             <button onClick={() => void saveSermon()} style={{ padding: "10px 16px" }}>Save Sermon Preparation</button>
 
                             <div style={{ borderTop: "1px solid #eee", paddingTop: 16 }}>
-                                <h3>Outline</h3>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                                    <h3>Outline</h3>
+                                    {editingOutlinePointId && <button type="button" onClick={resetOutlineEditor}>Cancel Edit</button>}
+                                </div>
+
                                 {sermon.outline.map((point, index) => {
                                     const observationTexts = point.supportingObservationIds.map((id) => selectedStudy.observations.find((item) => item.id.value === id)?.statement.value).filter(Boolean);
                                     const interpretationTexts = point.supportingInterpretationIds.map((id) => selectedStudy.interpretations.find((item) => item.id.value === id)?.statement.value).filter(Boolean);
                                     const evidenceTexts = point.supportingEvidenceIds.map((id) => studyEvidence.find((item) => item.id.value === id)).filter(Boolean);
                                     const applicationTexts = point.supportingApplicationIds.map((id) => selectedStudy.applications.find((item) => item.id.value === id)?.principle.value).filter(Boolean);
                                     return (
-                                        <div key={point.id} style={{ marginBottom: 16, border: "1px solid #eee", borderRadius: 8, padding: 12 }}>
-                                            <strong>{index + 1}. {point.heading}</strong>
-                                            <div>{point.truth}</div>
+                                        <div key={point.id} style={{ marginBottom: 16, border: editingOutlinePointId === point.id ? "2px solid #333" : "1px solid #eee", borderRadius: 8, padding: 12 }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <strong>{index + 1}. {point.heading}</strong>
+                                                    <div>{point.truth}</div>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                                                    <button type="button" onClick={() => editOutlinePoint(point.id)}>Edit</button>
+                                                    <button type="button" onClick={() => void deleteOutlinePoint(point.id)}>Delete</button>
+                                                    <button type="button" onClick={() => void moveOutlinePoint(point.id, "up")} disabled={index === 0}>↑</button>
+                                                    <button type="button" onClick={() => void moveOutlinePoint(point.id, "down")} disabled={index === sermon.outline.length - 1}>↓</button>
+                                                </div>
+                                            </div>
                                             {(observationTexts.length + interpretationTexts.length + evidenceTexts.length + applicationTexts.length) > 0 && (
                                                 <div style={{ marginTop: 10, fontSize: 13, color: "#4b5563" }}>
                                                     <strong>Study support</strong>
@@ -229,6 +341,7 @@ export function SermonPreparationWorkspace() {
                                         </div>
                                     );
                                 })}
+
                                 <input value={heading} onChange={(event) => setHeading(event.target.value)} placeholder="Outline heading" style={{ width: "100%", padding: 10, marginBottom: 8 }} />
                                 <textarea value={truth} onChange={(event) => setTruth(event.target.value)} placeholder="Truth statement" rows={2} style={{ width: "100%", padding: 10, marginBottom: 12 }} />
 
@@ -284,7 +397,9 @@ export function SermonPreparationWorkspace() {
                                     )}
                                 </div>
 
-                                <button onClick={() => void addOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Add Outline Point</button>
+                                <button onClick={() => void (editingOutlinePointId ? saveEditedOutlinePoint() : addOutlinePoint())} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>
+                                    {editingOutlinePointId ? "Save Outline Point" : "Add Outline Point"}
+                                </button>
                             </div>
                         </section>
                     </div>
