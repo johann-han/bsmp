@@ -124,8 +124,11 @@ export function SermonPreparationWorkspace() {
         }
     }
 
-    function addOutlinePoint() {
-        if (!sermon) return;
+    async function addOutlinePoint() {
+        if (!sermon || !selectedStudyId) return;
+        setMessage(null);
+        setError(null);
+
         try {
             sermon.addOutlinePoint(heading, truth, {
                 supportingObservationIds,
@@ -133,16 +136,25 @@ export function SermonPreparationWorkspace() {
                 supportingEvidenceIds,
                 supportingApplicationIds,
             });
+
+            await sermonRepository.save(sermon);
+
+            const persisted = await sermonRepository.findByStudyId(selectedStudyId);
+            setSermon(persisted ?? sermon);
             setHeading("");
             setTruth("");
             resetOutlineSupport();
-            setSermon(Object.assign(Object.create(Object.getPrototypeOf(sermon)), sermon));
-            void sermonRepository.save(sermon).then(
-                () => setMessage("Outline point saved."),
-                (reason: unknown) => setError(reason instanceof Error ? reason.message : "Unable to save outline point."),
-            );
+            setMessage("Outline point saved.");
         } catch (reason: unknown) {
-            setError(reason instanceof Error ? reason.message : "Unable to add outline point.");
+            try {
+                const persisted = await sermonRepository.findByStudyId(selectedStudyId);
+                if (persisted) setSermon(persisted);
+            } catch {
+                // Preserve the original save error when recovery also fails.
+            }
+
+            const details = reason instanceof Error ? reason.message : String(reason);
+            setError(`Unable to save outline point: ${details}`);
         }
     }
 
@@ -272,7 +284,7 @@ export function SermonPreparationWorkspace() {
                                     )}
                                 </div>
 
-                                <button onClick={addOutlinePoint} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Add Outline Point</button>
+                                <button onClick={() => void addOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Add Outline Point</button>
                             </div>
                         </section>
                     </div>
