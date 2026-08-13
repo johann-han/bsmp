@@ -12,6 +12,7 @@ export interface ObservationComposerProps {
     readonly selectedVerse: StudyVerse | null;
     readonly targetWord?: string | null;
     readonly targetMarkup?: StudyWordMarkup | null;
+    readonly translation: string;
     readonly getVerseReference: (verseNumber: number) => VerseReference;
     readonly onSaved: () => Promise<void> | void;
 }
@@ -28,6 +29,7 @@ export function ObservationComposer({
     selectedVerse,
     targetWord,
     targetMarkup,
+    translation,
     getVerseReference,
     onSaved,
 }: ObservationComposerProps) {
@@ -52,7 +54,7 @@ export function ObservationComposer({
         try {
             const wordTarget: ObservationWordTargetInput | undefined = targetWord && targetMarkup
                 ? {
-                    translation: targetMarkup.translation,
+                    translation,
                     wordIndex: targetMarkup.wordIndex,
                     wordText: targetWord,
                     markupSymbol: targetMarkup.symbol,
@@ -87,7 +89,6 @@ export function ObservationComposer({
 
     return (
         <section
-            id="observation-composer"
             style={{
                 marginTop: 20,
                 border: "1px solid #e5e7eb",
@@ -127,7 +128,7 @@ export function ObservationComposer({
                         fontSize: 13,
                     }}
                 >
-                    Observation target: <strong>{targetWord}</strong> · {targetMarkup.symbol} {targetLabel}
+                    Observation target: <strong>{targetWord}</strong> · {targetMarkup.symbol} {targetLabel} · {translation.toUpperCase()}
                 </div>
             )}
 
