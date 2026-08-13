@@ -74,6 +74,9 @@ export function InterpretationTools({
             return;
         }
 
+        setError(null);
+        setMessage(null);
+
         const previous = selected;
         const next: InterpretationViewModel = {
             ...selected,
