@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import type { InterpretationViewModel, ObservationWorkspaceService } from "@bsmp/study";
+import type { ApplicationViewModel, InterpretationViewModel, ObservationWorkspaceService } from "@bsmp/study";
 
 export interface ApplicationComposerProps {
     readonly workspace: ObservationWorkspaceService;
     readonly interpretations: readonly InterpretationViewModel[];
     readonly onSaved: () => Promise<void> | void;
+    readonly onOptimisticCreate?: (application: ApplicationViewModel) => void;
+    readonly onRollbackCreate?: (id: string) => void;
 }
 
-export function ApplicationComposer({ workspace, interpretations, onSaved }: ApplicationComposerProps) {
+export function ApplicationComposer({ workspace, interpretations, onSaved, onOptimisticCreate, onRollbackCreate }: ApplicationComposerProps) {
     const [interpretationId, setInterpretationId] = useState(interpretations[0]?.id ?? "");
     const [principle, setPrinciple] = useState("");
     const [personal, setPersonal] = useState("");
@@ -17,21 +19,37 @@ export function ApplicationComposer({ workspace, interpretations, onSaved }: App
     const [action, setAction] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
 
     async function save() {
-        if (!interpretationId || !principle.trim() || !personal.trim() || !ministry.trim() || !action.trim()) {
+        const values = [principle, personal, ministry, action].map((value) => value.trim());
+        if (!interpretationId || values.some((value) => !value)) {
             setError("Complete all four application fields and select an interpretation.");
             return;
         }
         setError(null);
         setMessage(null);
+        setSaving(true);
+        const optimisticId = crypto.randomUUID();
+        onOptimisticCreate?.({
+            id: optimisticId,
+            interpretationId,
+            principle: values[0],
+            personal: values[1],
+            ministry: values[2],
+            action: values[3],
+            createdAt: new Date().toISOString(),
+        });
         try {
-            await workspace.addApplication(interpretationId, principle, personal, ministry, action);
-            await onSaved();
+            await workspace.addApplication(interpretationId, values[0], values[1], values[2], values[3]);
             setPrinciple(""); setPersonal(""); setMinistry(""); setAction("");
             setMessage("Application saved.");
+            await onSaved();
         } catch (reason) {
+            onRollbackCreate?.(optimisticId);
             setError(reason instanceof Error ? reason.message : "Unable to save application.");
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -46,15 +64,17 @@ export function ApplicationComposer({ workspace, interpretations, onSaved }: App
                 <>
                     <label style={{ display: "grid", gap: 6, marginBottom: 12 }}>
                         <span style={{ fontSize: 13, fontWeight: 600 }}>Interpretation</span>
-                        <select value={interpretationId} onChange={(event) => setInterpretationId(event.target.value)} style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 10 }}>
+                        <select value={interpretationId} onChange={(event) => setInterpretationId(event.target.value)} disabled={saving} style={{ border: "1px solid #d1d5db", borderRadius: 8, padding: 10 }}>
                             {interpretations.map((interpretation) => <option key={interpretation.id} value={interpretation.id}>{interpretation.statement}</option>)}
                         </select>
                     </label>
-                    <Field label="Principle" value={principle} onChange={setPrinciple} placeholder="What enduring truth should govern this response?" />
-                    <Field label="Personal Application" value={personal} onChange={setPersonal} placeholder="How should this change me?" />
-                    <Field label="Ministry Application" value={ministry} onChange={setMinistry} placeholder="How should this shape my ministry toward others?" />
-                    <Field label="Action" value={action} onChange={setAction} placeholder="What concrete step will I take?" />
-                    <button type="button" onClick={save} style={{ marginTop: 4, border: 0, borderRadius: 8, background: "#111827", color: "#fff", padding: "10px 14px", fontWeight: 600 }}>Save Application</button>
+                    <Field label="Principle" value={principle} onChange={setPrinciple} placeholder="What enduring truth should govern this response?" disabled={saving} />
+                    <Field label="Personal Application" value={personal} onChange={setPersonal} placeholder="How should this change me?" disabled={saving} />
+                    <Field label="Ministry Application" value={ministry} onChange={setMinistry} placeholder="How should this shape my ministry toward others?" disabled={saving} />
+                    <Field label="Action" value={action} onChange={setAction} placeholder="What concrete step will I take?" disabled={saving} />
+                    <button type="button" onClick={save} disabled={saving} style={{ marginTop: 4, border: 0, borderRadius: 8, background: saving ? "#9ca3af" : "#111827", color: "#fff", padding: "10px 14px", fontWeight: 600 }}>
+                        {saving ? "Saving..." : "Save Application"}
+                    </button>
                 </>
             )}
 
@@ -64,11 +84,11 @@ export function ApplicationComposer({ workspace, interpretations, onSaved }: App
     );
 }
 
-function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder: string }) {
+function Field({ label, value, onChange, placeholder, disabled = false }: { label: string; value: string; onChange: (value: string) => void; placeholder: string; disabled?: boolean }) {
     return (
         <label style={{ display: "grid", gap: 6, marginBottom: 12 }}>
             <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
-            <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} style={{ width: "100%", boxSizing: "border-box", resize: "vertical", border: "1px solid #d1d5db", borderRadius: 8, padding: 10, font: "inherit" }} />
+            <textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={3} disabled={disabled} style={{ width: "100%", boxSizing: "border-box", resize: "vertical", border: "1px solid #d1d5db", borderRadius: 8, padding: 10, font: "inherit" }} />
         </label>
     );
 }
