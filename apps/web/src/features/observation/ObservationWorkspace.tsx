@@ -195,7 +195,11 @@ export function ObservationWorkspace() {
                     onSaved={refreshWorkspace}
                 />
             </div>
-            <ObservationHistory observations={data.observations} selectedVerseReference={selectedVerseReference} />
+            <ObservationHistory
+                observations={data.observations}
+                selectedVerseReference={selectedVerseReference}
+                onChanged={refreshWorkspace}
+            />
             <InterpretationComposer workspace={workspace} observations={data.observations} onSaved={refreshWorkspace} />
             <InterpretationHistory interpretations={data.interpretations} observations={data.observations} />
             <InterpretationTools interpretations={data.interpretations} observations={data.observations} workspace={workspace} onSaved={refreshWorkspace} />
