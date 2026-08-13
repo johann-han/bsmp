@@ -29,6 +29,7 @@ import { ApplicationId } from "../../domain/value-objects/ApplicationId.js";
 import { ObservationId } from "../../domain/value-objects/ObservationId.js";
 import { InterpretationId } from "../../domain/value-objects/InterpretationId.js";
 import type { ObservationWordTargetInput, StudyId } from "../../domain/value-objects/index.js";
+import { ObservationStatement, ObservationTarget } from "../../domain/value-objects/index.js";
 
 export interface ObservationWorkspaceData {
     observationQuestions: readonly ObservationQuestionViewModel[];
@@ -90,6 +91,55 @@ export class ObservationWorkspaceService {
             throw new Error("Observation persistence is not configured for this workspace.");
         }
         return this.addObservationCommand.execute(this.studyId, verseReference, statement, wordTarget);
+    }
+
+    public async updateObservation(
+        observationId: string,
+        verseReference: VerseReference,
+        statement: string,
+        wordTarget?: ObservationWordTargetInput,
+    ): Promise<void> {
+        if (!this.studyRepository || !this.studyId) {
+            throw new Error("Observation persistence is not configured for this workspace.");
+        }
+
+        const study = await this.studyRepository.find(this.studyId);
+        if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
+
+        const target = wordTarget
+            ? ObservationTarget.word(verseReference, wordTarget)
+            : ObservationTarget.verse(verseReference);
+        const normalizedStatement = statement.trim();
+        const currentId = ObservationId.from(observationId);
+
+        const duplicate = study.observations.find((existing) =>
+            existing.id.value !== currentId.value &&
+            existing.statement.value === normalizedStatement &&
+            this.sameTarget(existing.target, target),
+        );
+
+        if (duplicate) {
+            throw new Error("An identical observation already exists for this study target.");
+        }
+
+        study.updateObservation(
+            currentId,
+            ObservationStatement.from(normalizedStatement),
+            target,
+        );
+        await this.studyRepository.save(study);
+    }
+
+    public async removeObservation(observationId: string): Promise<void> {
+        if (!this.studyRepository || !this.studyId) {
+            throw new Error("Observation persistence is not configured for this workspace.");
+        }
+
+        const study = await this.studyRepository.find(this.studyId);
+        if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
+
+        study.removeObservation(ObservationId.from(observationId));
+        await this.studyRepository.save(study);
     }
 
     public async addInterpretation(statement: string, observationIds: readonly string[] = []): Promise<Interpretation> {
@@ -160,6 +210,14 @@ export class ObservationWorkspaceService {
             ministry,
             action,
         );
+    }
+
+    private sameTarget(left: ObservationTarget, right: ObservationTarget): boolean {
+        return left.verseReference.toString() === right.verseReference.toString()
+            && left.translation === right.translation
+            && left.wordIndex === right.wordIndex
+            && left.wordText === right.wordText
+            && left.markupSymbol === right.markupSymbol;
     }
 
     private toObservationQuestionViewModel(question: ObservationQuestion): ObservationQuestionViewModel {
