@@ -47,6 +47,31 @@ describe("ExpositorySermon", () => {
         expect(sermon.outline).toHaveLength(2);
     });
 
+    it("manages outline points without duplication", () => {
+        const sermon = ExpositorySermon.create(
+            ExpositorySermonId.create("sermon-3"),
+            StudyId.from("study-3"),
+            SermonTitle.from("Test"),
+            john15(),
+        );
+
+        const first = sermon.addOutlinePoint("First", "Truth one");
+        const second = sermon.addOutlinePoint("Second", "Truth two");
+
+        expect(() => sermon.addOutlinePoint("First", "Truth one")).toThrow("already part of the sermon");
+
+        sermon.updateOutlinePoint(second.id, "Second revised", "Truth two revised");
+        expect(sermon.outline[1]?.heading).toBe("Second revised");
+
+        sermon.moveOutlinePoint(second.id, "up");
+        expect(sermon.outline[0]?.id).toBe(second.id);
+        expect(sermon.outline[1]?.id).toBe(first.id);
+
+        sermon.removeOutlinePoint(first.id);
+        expect(sermon.outline).toHaveLength(1);
+        expect(sermon.outline[0]?.id).toBe(second.id);
+    });
+
     it("rejects empty outline content", () => {
         const sermon = ExpositorySermon.create(
             ExpositorySermonId.create("sermon-2"),
