@@ -82,7 +82,7 @@ export function ObservationWorkspace() {
     const [passageService, setPassageService] = useState<StudyPassageService | null>(null);
     const [data, setData] = useState<ObservationWorkspaceData | null>(null);
     const [passage, setPassage] = useState<StudyPassageData | null>(null);
-    const [selectedVerse, setSelectedVerse] = useState<StudyVerse | null>(null);
+    const [selectedVerses, setSelectedVerses] = useState<readonly StudyVerse[]>([]);
     const [studyTitle, setStudyTitle] = useState("");
     const [translation, setTranslation] = useState<TranslationId>("asv");
     const [passageLoading, setPassageLoading] = useState(false);
@@ -132,12 +132,11 @@ export function ObservationWorkspace() {
 
             setPassage(nextPassage);
 
-            if (
-                selectedVerse &&
-                !nextPassage.verses.some((verse) => verse.number === selectedVerse.number)
-            ) {
-                setSelectedVerse(null);
-            }
+            setSelectedVerses((current) =>
+                current.filter((selected) =>
+                    nextPassage.verses.some((verse) => verse.number === selected.number),
+                ),
+            );
         } catch (reason: unknown) {
             setPassageError(
                 reason instanceof Error
@@ -152,6 +151,7 @@ export function ObservationWorkspace() {
     if (error) return <p>{error}</p>;
     if (!workspace || !passageService || !data || !passage) return <p>Loading study workspace...</p>;
 
+    const selectedVerse = selectedVerses[0] ?? null;
     const selectedVerseReference = selectedVerse
         ? passage.verses.find((verse) => verse.number === selectedVerse.number)?.reference ?? null
         : null;
@@ -190,9 +190,7 @@ export function ObservationWorkspace() {
                     }}
                 >
                     {TRANSLATIONS.map((item) => (
-                        <option key={item.id} value={item.id}>
-                            {item.name}
-                        </option>
+                        <option key={item.id} value={item.id}>{item.name}</option>
                     ))}
                 </select>
             </div>
@@ -208,8 +206,9 @@ export function ObservationWorkspace() {
                     reference={passage.reference}
                     translation={passage.translation}
                     verses={passage.verses}
-                    selectedVerse={selectedVerse?.number ?? null}
-                    onSelectVerse={setSelectedVerse}
+                    selectedVerses={selectedVerses.map((verse) => verse.number)}
+                    onSelectVerse={(verse) => setSelectedVerses([verse])}
+                    onSelectVerseRange={setSelectedVerses}
                 />
                 <ObservationPanel data={data} />
             </div>
