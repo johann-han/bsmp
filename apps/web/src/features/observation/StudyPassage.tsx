@@ -24,6 +24,7 @@ export interface StudyPassageProps {
     readonly selectedVerses?: readonly number[];
     readonly onSelectVerseRange?: (verses: readonly StudyVerse[]) => void;
     readonly onSelectVerse?: (verse: StudyVerse) => void;
+    readonly onMarkedWordSelect?: (verse: StudyVerse, markup: StudyWordMarkup, word: string) => void;
 }
 
 const MARKUP_SYMBOLS = [
@@ -57,6 +58,7 @@ export function StudyPassage({
     selectedVerses = [],
     onSelectVerseRange,
     onSelectVerse,
+    onMarkedWordSelect,
 }: StudyPassageProps) {
     const [rangeStart, setRangeStart] = useState<number | null>(selectedVerses[0] ?? null);
     const [wordMarkups, setWordMarkups] = useState<readonly StudyWordMarkup[]>([]);
@@ -182,6 +184,8 @@ export function StudyPassage({
     }
 
     function toggleWordMarkup(verseNumber: number, wordIndex: number) {
+        const verse = verses.find((item) => item.number === verseNumber);
+        const word = verse ? tokenize(verse.text)[wordIndex] ?? "" : "";
         const existing = wordMarkups.find(
             (item) => item.verseNumber === verseNumber && item.wordIndex === wordIndex,
         );
@@ -195,12 +199,16 @@ export function StudyPassage({
             return;
         }
 
+        const nextMarkup = { verseNumber, wordIndex, symbol: markupSymbol };
         void saveWordMarkups([
             ...wordMarkups.filter(
                 (item) => !(item.verseNumber === verseNumber && item.wordIndex === wordIndex),
             ),
-            { verseNumber, wordIndex, symbol: markupSymbol },
+            nextMarkup,
         ]);
+        if (verse && onMarkedWordSelect) {
+            onMarkedWordSelect(verse, nextMarkup, word);
+        }
     }
 
     return (
