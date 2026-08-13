@@ -157,63 +157,45 @@ export function StudyPassage({
                 <span style={{ fontSize: 13, color: "#6b7280", whiteSpace: "nowrap" }}>{translation}</span>
             </header>
 
-            <div style={{ display: "grid", gap: 10, marginBottom: 12 }}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, alignItems: "center" }}>
+                <button
+                    type="button"
+                    onClick={() => setMarkupMode((current) => !current)}
+                    style={{
+                        border: "1px solid #d1d5db",
+                        borderRadius: 8,
+                        background: markupMode ? "#f3f4f6" : "#fff",
+                        padding: "7px 10px",
+                        fontWeight: 600,
+                    }}
+                >
+                    {markupMode ? "Close Markup" : "Word Markup"}
+                </button>
+
+                {markupMode && MARKUP_SYMBOLS.map((item) => (
                     <button
+                        key={item.symbol}
                         type="button"
-                        onClick={() => setMarkupMode((current) => !current)}
-                        style={{ border: "1px solid #d1d5db", borderRadius: 8, background: markupMode ? "#f3f4f6" : "#fff", padding: "7px 10px", fontWeight: 600 }}
-                    >
-                        {markupMode ? "Close Markup" : "Word Markup"}
-                    </button>
-
-                    {markupMode && MARKUP_SYMBOLS.map((item) => (
-                        <button
-                            key={item.symbol}
-                            type="button"
-                            onClick={() => setMarkupSymbol(item.symbol)}
-                            title={item.label}
-                            aria-label={`${item.symbol} — ${item.label}`}
-                            style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 6,
-                                border: markupSymbol === item.symbol ? "2px solid #111827" : "1px solid #d1d5db",
-                                borderRadius: 8,
-                                background: markupSymbol === item.symbol ? "#f3f4f6" : "#fff",
-                                padding: "7px 10px",
-                                fontWeight: 700,
-                            }}
-                        >
-                            <span>{item.symbol}</span>
-                            <span style={{ fontWeight: 600 }}>{item.label}</span>
-                        </button>
-                    ))}
-                </div>
-
-                {markupMode && (
-                    <div
-                        aria-label="Markup legend"
+                        onClick={() => setMarkupSymbol(item.symbol)}
+                        title={`${item.symbol} — ${item.label}`}
+                        aria-label={`${item.symbol} — ${item.label}`}
+                        aria-pressed={markupSymbol === item.symbol}
                         style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-                            gap: 8,
-                            padding: 10,
-                            border: "1px solid #e5e7eb",
+                            width: 36,
+                            height: 36,
+                            border: markupSymbol === item.symbol ? "2px solid #111827" : "1px solid #d1d5db",
                             borderRadius: 8,
-                            background: "#f9fafb",
-                            fontSize: 12,
-                            color: "#374151",
+                            background: markupSymbol === item.symbol ? "#f3f4f6" : "#fff",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 800,
+                            cursor: "pointer",
                         }}
                     >
-                        {MARKUP_SYMBOLS.map((item) => (
-                            <div key={item.symbol} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <strong style={{ minWidth: 20, textAlign: "center" }}>{item.symbol}</strong>
-                                <span>{item.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                        {item.symbol}
+                    </button>
+                ))}
             </div>
 
             <div style={{ display: "grid", gap: 10, lineHeight: 1.7 }}>
@@ -253,7 +235,17 @@ export function StudyPassage({
                                                 onClick={() => toggleWordMarkup(verse.number, index)}
                                                 aria-label={markup ? `${word}: ${markup.symbol} — ${label}` : `Mark ${word}`}
                                                 title={markup ? `${markup.symbol} — ${label}` : "Mark this word"}
-                                                style={{ border: 0, background: markup ? "#f3f4f6" : "transparent", padding: "1px 2px", margin: "0 1px", borderRadius: 4, font: "inherit", cursor: "pointer", textDecoration: markup ? "underline" : "none", textDecorationThickness: markup ? 2 : undefined }}
+                                                style={{
+                                                    border: 0,
+                                                    background: markup ? "#f3f4f6" : "transparent",
+                                                    padding: "1px 2px",
+                                                    margin: "0 1px",
+                                                    borderRadius: 4,
+                                                    font: "inherit",
+                                                    cursor: "pointer",
+                                                    textDecoration: markup ? "underline" : "none",
+                                                    textDecorationThickness: markup ? 2 : undefined,
+                                                }}
                                             >
                                                 {word}{markup ? <sup style={{ marginLeft: 2, fontWeight: 800 }}>{markup.symbol}</sup> : ""}
                                             </button>
