@@ -197,6 +197,8 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
 
         const current = this._outline[index];
         const target = this._outline[targetIndex];
+        if (!current || !target) throw new Error("Outline point could not be moved.");
+
         this._outline[index] = target;
         this._outline[targetIndex] = current;
     }
