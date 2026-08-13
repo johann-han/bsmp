@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import type { VerseReference } from "@bsmp/bible";
-import type { ObservationWorkspaceService } from "@bsmp/study";
+import type { ObservationWordTargetInput, ObservationWorkspaceService } from "@bsmp/study";
 
 import type { StudyWordMarkup, StudyVerse } from "./StudyPassage";
 
@@ -50,15 +50,27 @@ export function ObservationComposer({
         setSavedMessage(null);
 
         try {
+            const wordTarget: ObservationWordTargetInput | undefined = targetWord && targetMarkup
+                ? {
+                    translation: targetMarkup.translation,
+                    wordIndex: targetMarkup.wordIndex,
+                    wordText: targetWord,
+                    markupSymbol: targetMarkup.symbol,
+                }
+                : undefined;
+
             await workspace.addObservation(
                 getVerseReference(selectedVerse.number),
                 statement,
+                wordTarget,
             );
 
             await onSaved();
             setStatement("");
             setSavedMessage(
-                `Observation saved to verse ${selectedVerse.number}.`,
+                targetWord && targetMarkup
+                    ? `Observation saved for ${targetWord} in verse ${selectedVerse.number}.`
+                    : `Observation saved to verse ${selectedVerse.number}.`,
             );
         } catch (saveError) {
             setError(
@@ -75,6 +87,7 @@ export function ObservationComposer({
 
     return (
         <section
+            id="observation-composer"
             style={{
                 marginTop: 20,
                 border: "1px solid #e5e7eb",
