@@ -5,6 +5,8 @@ import type { ObservationViewModel } from "@bsmp/study";
 export interface ObservationHistoryProps {
     readonly observations: readonly ObservationViewModel[];
     readonly selectedVerseReference?: string | null;
+    readonly onEdit?: (observation: ObservationViewModel) => void;
+    readonly onDelete?: (observation: ObservationViewModel) => void;
 }
 
 const MARKUP_LABELS: Record<string, string> = {
@@ -17,6 +19,8 @@ const MARKUP_LABELS: Record<string, string> = {
 export function ObservationHistory({
     observations,
     selectedVerseReference = null,
+    onEdit,
+    onDelete,
 }: ObservationHistoryProps) {
     const visibleObservations = selectedVerseReference
         ? observations.filter((observation) => observation.verseReference === selectedVerseReference)
@@ -52,17 +56,34 @@ export function ObservationHistory({
 
                         return (
                             <article key={observation.id} style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}>
-                                <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#6b7280" }}>
-                                    {observation.verseReference}
-                                    {isWordTarget && (
-                                        <span style={{ marginLeft: 8, color: "#1e3a8a" }}>
-                                            · {observation.target.wordText}
-                                            {observation.target.markupSymbol && markupLabel
-                                                ? ` · ${observation.target.markupSymbol} ${markupLabel}`
-                                                : ""}
-                                        </span>
+                                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+                                    <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#6b7280" }}>
+                                        {observation.verseReference}
+                                        {isWordTarget && (
+                                            <span style={{ marginLeft: 8, color: "#1e3a8a" }}>
+                                                · {observation.target.wordText}
+                                                {observation.target.markupSymbol && markupLabel
+                                                    ? ` · ${observation.target.markupSymbol} ${markupLabel}`
+                                                    : ""}
+                                            </span>
+                                        )}
+                                    </p>
+
+                                    {(onEdit || onDelete) && (
+                                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                                            {onEdit && (
+                                                <button type="button" onClick={() => onEdit(observation)} style={{ border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>
+                                                    Edit
+                                                </button>
+                                            )}
+                                            {onDelete && (
+                                                <button type="button" onClick={() => onDelete(observation)} style={{ border: "1px solid #fecaca", borderRadius: 6, background: "#fff", color: "#b91c1c", padding: "4px 8px", cursor: "pointer", fontSize: 12 }}>
+                                                    Delete
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
-                                </p>
+                                </div>
 
                                 <p style={{ margin: "6px 0 0", lineHeight: 1.6 }}>
                                     {observation.statement}
