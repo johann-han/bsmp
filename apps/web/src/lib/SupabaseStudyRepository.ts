@@ -24,6 +24,7 @@ import {
     Observation,
     ObservationId,
     ObservationStatement,
+    ObservationTarget,
     ObservationVerseReference,
     StudyId,
     StudySession,
@@ -68,8 +69,14 @@ export class SupabaseStudyRepository implements StudyRepository {
         if (study.observations.length > 0) {
             const { error } = await this.client.from("study_observations").upsert(study.observations.map((observation) => ({
                 id: observation.id.value, study_id: study.id.value, user_id: user.id,
-                verse_book: observation.verseReference.value.book.value, verse_chapter: observation.verseReference.value.chapter.value,
-                verse_verse: observation.verseReference.value.verse.value, statement: observation.statement.value,
+                verse_book: observation.verseReference.value.book.value,
+                verse_chapter: observation.verseReference.value.chapter.value,
+                verse_verse: observation.verseReference.value.verse.value,
+                target_translation: observation.target.translation,
+                target_word_index: observation.target.wordIndex,
+                target_word_text: observation.target.wordText,
+                target_markup_symbol: observation.target.markupSymbol,
+                statement: observation.statement.value,
                 created_at: observation.createdAt.toISOString(),
             })));
             if (error) throw error;
@@ -155,9 +162,20 @@ export class SupabaseStudyRepository implements StudyRepository {
                 VerseNumber.from(observationRow.verse_verse),
             );
 
+            const target = observationRow.target_word_index !== null
+                ? ObservationTarget.word(observationReference, {
+                    translation: observationRow.target_translation ?? "",
+                    wordIndex: observationRow.target_word_index,
+                    wordText: observationRow.target_word_text ?? "",
+                    markupSymbol: observationRow.target_markup_symbol ?? "",
+                })
+                : ObservationTarget.verse(observationReference);
+
             study.addObservation(Observation.create(
-                ObservationId.from(observationRow.id), ObservationStatement.from(observationRow.statement),
+                ObservationId.from(observationRow.id),
+                ObservationStatement.from(observationRow.statement),
                 ObservationVerseReference.from(observationReference),
+                target,
             ));
         }
 
