@@ -22,8 +22,12 @@ export function ApplicationComposer({ workspace, interpretations, onSaved, onOpt
     const [saving, setSaving] = useState(false);
 
     async function save() {
-        const values = [principle, personal, ministry, action].map((value) => value.trim());
-        if (!interpretationId || values.some((value) => !value)) {
+        const principleValue = principle.trim();
+        const personalValue = personal.trim();
+        const ministryValue = ministry.trim();
+        const actionValue = action.trim();
+
+        if (!interpretationId || !principleValue || !personalValue || !ministryValue || !actionValue) {
             setError("Complete all four application fields and select an interpretation.");
             return;
         }
@@ -34,14 +38,14 @@ export function ApplicationComposer({ workspace, interpretations, onSaved, onOpt
         onOptimisticCreate?.({
             id: optimisticId,
             interpretationId,
-            principle: values[0],
-            personal: values[1],
-            ministry: values[2],
-            action: values[3],
+            principle: principleValue,
+            personal: personalValue,
+            ministry: ministryValue,
+            action: actionValue,
             createdAt: new Date().toISOString(),
         });
         try {
-            await workspace.addApplication(interpretationId, values[0], values[1], values[2], values[3]);
+            await workspace.addApplication(interpretationId, principleValue, personalValue, ministryValue, actionValue);
             setPrinciple(""); setPersonal(""); setMinistry(""); setAction("");
             setMessage("Application saved.");
             await onSaved();
