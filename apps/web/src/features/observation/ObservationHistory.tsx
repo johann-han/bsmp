@@ -1,7 +1,7 @@
 "use client";
 
 import type { ObservationViewModel } from "@bsmp/study";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
 
@@ -28,11 +28,17 @@ export function ObservationHistory({
     selectedVerseReference = null,
     onChanged,
 }: ObservationHistoryProps) {
+    const [localObservations, setLocalObservations] = useState<readonly ObservationViewModel[]>(observations);
     const [busyId, setBusyId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        setLocalObservations(observations);
+    }, [observations]);
+
     const visibleObservations = selectedVerseReference
-        ? observations.filter((observation) => observation.verseReference === selectedVerseReference)
-        : observations;
+        ? localObservations.filter((observation) => observation.verseReference === selectedVerseReference)
+        : localObservations;
 
     async function editObservation(observation: ObservationViewModel) {
         const statement = window.prompt("Edit observation", observation.statement);
@@ -40,6 +46,15 @@ export function ObservationHistory({
 
         setBusyId(observation.id);
         setError(null);
+
+        const optimisticObservation: ObservationViewModel = {
+            ...observation,
+            statement,
+        };
+
+        setLocalObservations((current) => current.map((item) =>
+            item.id === observation.id ? optimisticObservation : item,
+        ));
 
         try {
             const studyId = new URLSearchParams(window.location.search).get("studyId") ?? undefined;
@@ -61,8 +76,11 @@ export function ObservationHistory({
                     : undefined,
             );
 
-            await onChanged?.();
+            void onChanged?.();
         } catch (reason: unknown) {
+            setLocalObservations((current) => current.map((item) =>
+                item.id === observation.id ? observation : item,
+            ));
             setError(reason instanceof Error ? reason.message : "Unable to update observation.");
         } finally {
             setBusyId(null);
@@ -75,12 +93,18 @@ export function ObservationHistory({
         setBusyId(observation.id);
         setError(null);
 
+        setLocalObservations((current) => current.filter((item) => item.id !== observation.id));
+
         try {
             const studyId = new URLSearchParams(window.location.search).get("studyId") ?? undefined;
             const { workspace } = await createSupabaseObservationWorkspace(studyId);
             await workspace.removeObservation(observation.id);
-            await onChanged?.();
+            void onChanged?.();
         } catch (reason: unknown) {
+            setLocalObservations((current) => {
+                if (current.some((item) => item.id === observation.id)) return current;
+                return [...current, observation];
+            });
             setError(reason instanceof Error ? reason.message : "Unable to delete observation.");
         } finally {
             setBusyId(null);
@@ -140,7 +164,7 @@ export function ObservationHistory({
                                             disabled={busy}
                                             style={{ border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", padding: "4px 8px", cursor: busy ? "not-allowed" : "pointer", fontSize: 12 }}
                                         >
-                                            {busy ? "Working..." : "Edit"}
+                                            {busy ? "Saving..." : "Edit"}
                                         </button>
                                         <button
                                             type="button"
