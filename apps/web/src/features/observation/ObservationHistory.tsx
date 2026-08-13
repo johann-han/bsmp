@@ -4,6 +4,7 @@ import type { ObservationViewModel } from "@bsmp/study";
 import { useState } from "react";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
+import { supabase } from "../../lib/supabase";
 
 export interface ObservationHistoryProps {
     readonly observations: readonly ObservationViewModel[];
@@ -77,6 +78,13 @@ export function ObservationHistory({
             const studyId = new URLSearchParams(window.location.search).get("studyId") ?? undefined;
             const { workspace } = await createSupabaseObservationWorkspace(studyId);
             await workspace.removeObservation(observation.id);
+
+            const { error: deleteError } = await supabase
+                .from("study_observations")
+                .delete()
+                .eq("id", observation.id);
+            if (deleteError) throw deleteError;
+
             window.location.reload();
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to delete observation.");
