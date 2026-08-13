@@ -83,4 +83,54 @@ describe("ObservationWorkspaceService", () => {
             statement: "The command is to abide in Christ.",
         });
     });
+
+    it("updates an observation while preserving its id and target", async () => {
+        const { service, verseReference } = createService();
+
+        const created = await service.addObservation(
+            verseReference,
+            "The command is to abide in Christ.",
+            {
+                translation: "asv",
+                wordIndex: 1,
+                wordText: "abide",
+                markupSymbol: "N",
+            },
+        );
+
+        await service.updateObservation(
+            created.id.value,
+            verseReference,
+            "The repeated command emphasizes continuing dependence on Christ.",
+            {
+                translation: "asv",
+                wordIndex: 1,
+                wordText: "abide",
+                markupSymbol: "N",
+            },
+        );
+
+        const workspace = await service.load();
+        expect(workspace.observations).toHaveLength(1);
+        expect(workspace.observations[0]).toMatchObject({
+            id: created.id.value,
+            statement: "The repeated command emphasizes continuing dependence on Christ.",
+            target: {
+                translation: "asv",
+                wordIndex: 1,
+                wordText: "abide",
+                markupSymbol: "N",
+            },
+        });
+    });
+
+    it("removes an observation that is not linked to an interpretation", async () => {
+        const { service, verseReference } = createService();
+        const created = await service.addObservation(verseReference, "Temporary observation.");
+
+        await service.removeObservation(created.id.value);
+
+        const workspace = await service.load();
+        expect(workspace.observations).toHaveLength(0);
+    });
 });
