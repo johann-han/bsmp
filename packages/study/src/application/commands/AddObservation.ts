@@ -6,12 +6,13 @@ import { StudyRepository } from "../../domain/repositories/StudyRepository.js";
 import {
     ObservationId,
     ObservationStatement,
+    ObservationTarget,
     ObservationVerseReference,
+    ObservationWordTargetInput,
     StudyId,
 } from "../../domain/value-objects/index.js";
 
 export class AddObservation {
-
     public constructor(
         private readonly repository: StudyRepository,
     ) { }
@@ -20,27 +21,45 @@ export class AddObservation {
         studyId: StudyId,
         verseReference: VerseReference,
         statement: string,
+        wordTarget?: ObservationWordTargetInput,
     ): Promise<Observation> {
-
         const study = await this.repository.find(studyId);
 
         if (!study) {
-            throw new Error(
-                `Study not found: ${studyId.toString()}`,
-            );
+            throw new Error(`Study not found: ${studyId.toString()}`);
+        }
+
+        const target = wordTarget
+            ? ObservationTarget.word(verseReference, wordTarget)
+            : ObservationTarget.verse(verseReference);
+        const normalizedStatement = statement.trim();
+
+        const duplicate = study.observations.find((existing) =>
+            existing.statement.value === normalizedStatement &&
+            this.sameTarget(existing.target, target),
+        );
+
+        if (duplicate) {
+            throw new Error("An identical observation already exists for this study target.");
         }
 
         const observation = Observation.create(
             ObservationId.create(),
-            ObservationStatement.from(statement),
+            ObservationStatement.from(normalizedStatement),
             ObservationVerseReference.from(verseReference),
+            target,
         );
 
         study.addObservation(observation);
-
         await this.repository.save(study);
-
         return observation;
     }
 
+    private sameTarget(left: ObservationTarget, right: ObservationTarget): boolean {
+        return left.verseReference.toString() === right.verseReference.toString()
+            && left.translation === right.translation
+            && left.wordIndex === right.wordIndex
+            && left.wordText === right.wordText
+            && left.markupSymbol === right.markupSymbol;
+    }
 }
