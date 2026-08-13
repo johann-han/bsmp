@@ -212,6 +212,18 @@ export class ObservationWorkspaceService {
         );
     }
 
+    public async removeApplication(applicationId: string): Promise<void> {
+        if (!this.studyRepository || !this.studyId) {
+            throw new Error("Application persistence is not configured for this workspace.");
+        }
+
+        const study = await this.studyRepository.find(this.studyId);
+        if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
+
+        study.removeApplication(ApplicationId.from(applicationId));
+        await this.studyRepository.save(study);
+    }
+
     private sameTarget(left: ObservationTarget, right: ObservationTarget): boolean {
         return left.verseReference.toString() === right.verseReference.toString()
             && left.translation === right.translation
