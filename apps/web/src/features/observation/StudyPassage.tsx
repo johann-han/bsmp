@@ -190,16 +190,8 @@ export function StudyPassage({
             (item) => item.verseNumber === verseNumber && item.wordIndex === wordIndex,
         );
 
-        if (existing && onMarkedWordSelect) {
-            onMarkedWordSelect(verse ?? { number: verseNumber, reference: reference, text: "" }, existing, word);
-        }
-
-        if (existing?.symbol === markupSymbol) {
-            void saveWordMarkups(
-                wordMarkups.filter(
-                    (item) => !(item.verseNumber === verseNumber && item.wordIndex === wordIndex),
-                ),
-            );
+        if (existing) {
+            onMarkedWordSelect?.(verse ?? { number: verseNumber, reference, text: "" }, existing, word);
             return;
         }
 
