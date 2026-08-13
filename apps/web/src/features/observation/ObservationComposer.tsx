@@ -5,18 +5,29 @@ import { useState } from "react";
 import type { VerseReference } from "@bsmp/bible";
 import type { ObservationWorkspaceService } from "@bsmp/study";
 
-import type { StudyVerse } from "./StudyPassage";
+import type { StudyWordMarkup, StudyVerse } from "./StudyPassage";
 
 export interface ObservationComposerProps {
     readonly workspace: ObservationWorkspaceService;
     readonly selectedVerse: StudyVerse | null;
+    readonly targetWord?: string | null;
+    readonly targetMarkup?: StudyWordMarkup | null;
     readonly getVerseReference: (verseNumber: number) => VerseReference;
     readonly onSaved: () => Promise<void> | void;
 }
 
+const MARKUP_LABELS: Record<string, string> = {
+    N: "Note",
+    "?": "Question",
+    "!": "Important",
+    "→": "Action / Result",
+};
+
 export function ObservationComposer({
     workspace,
     selectedVerse,
+    targetWord,
+    targetMarkup,
     getVerseReference,
     onSaved,
 }: ObservationComposerProps) {
@@ -58,6 +69,10 @@ export function ObservationComposer({
         }
     }
 
+    const targetLabel = targetMarkup
+        ? MARKUP_LABELS[targetMarkup.symbol] ?? targetMarkup.symbol
+        : null;
+
     return (
         <section
             style={{
@@ -86,6 +101,22 @@ export function ObservationComposer({
                     ? `Verse ${selectedVerse.number}`
                     : "Select a verse"}
             </h2>
+
+            {targetWord && targetMarkup && targetLabel && (
+                <div
+                    style={{
+                        marginBottom: 12,
+                        padding: "10px 12px",
+                        border: "1px solid #dbeafe",
+                        borderRadius: 8,
+                        background: "#eff6ff",
+                        color: "#1e3a8a",
+                        fontSize: 13,
+                    }}
+                >
+                    Observation target: <strong>{targetWord}</strong> · {targetMarkup.symbol} {targetLabel}
+                </div>
+            )}
 
             <textarea
                 value={statement}
