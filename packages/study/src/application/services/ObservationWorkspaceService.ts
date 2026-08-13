@@ -28,7 +28,7 @@ import type { StudyRepository } from "../../domain/repositories/StudyRepository.
 import { ApplicationId } from "../../domain/value-objects/ApplicationId.js";
 import { ObservationId } from "../../domain/value-objects/ObservationId.js";
 import { InterpretationId } from "../../domain/value-objects/InterpretationId.js";
-import type { StudyId } from "../../domain/value-objects/StudyId.js";
+import type { ObservationWordTargetInput, StudyId } from "../../domain/value-objects/index.js";
 
 export interface ObservationWorkspaceData {
     observationQuestions: readonly ObservationQuestionViewModel[];
@@ -81,11 +81,15 @@ export class ObservationWorkspaceService {
         };
     }
 
-    public async addObservation(verseReference: VerseReference, statement: string): Promise<Observation> {
+    public async addObservation(
+        verseReference: VerseReference,
+        statement: string,
+        wordTarget?: ObservationWordTargetInput,
+    ): Promise<Observation> {
         if (!this.addObservationCommand || !this.studyId) {
             throw new Error("Observation persistence is not configured for this workspace.");
         }
-        return this.addObservationCommand.execute(this.studyId, verseReference, statement);
+        return this.addObservationCommand.execute(this.studyId, verseReference, statement, wordTarget);
     }
 
     public async addInterpretation(statement: string, observationIds: readonly string[] = []): Promise<Interpretation> {
@@ -167,7 +171,19 @@ export class ObservationWorkspaceService {
     }
 
     private toObservationViewModel(observation: Observation): ObservationViewModel {
-        return { id: observation.id.value, verseReference: observation.verseReference.toString(), statement: observation.statement.value, createdAt: observation.createdAt.toISOString() };
+        return {
+            id: observation.id.value,
+            verseReference: observation.verseReference.toString(),
+            target: {
+                verseReference: observation.target.verseReference.toString(),
+                translation: observation.target.translation,
+                wordIndex: observation.target.wordIndex,
+                wordText: observation.target.wordText,
+                markupSymbol: observation.target.markupSymbol,
+            },
+            statement: observation.statement.value,
+            createdAt: observation.createdAt.toISOString(),
+        };
     }
 
     private toEvidenceViewModel(evidence: Evidence): EvidenceViewModel {
