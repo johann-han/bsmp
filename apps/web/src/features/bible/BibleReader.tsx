@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 interface BibleVerse {
     readonly number: number;
@@ -36,15 +36,25 @@ function getBibleError(payload: BibleResponse | BibleErrorResponse): string {
         : "Unable to load passage.";
 }
 
+function focusStorageKey(reference: string, translation: string): string {
+    return `bsmp:bible-focus:${translation}:${reference.trim().toLowerCase()}`;
+}
+
+interface SavedFocus {
+    readonly start: number | null;
+    readonly end: number | null;
+}
+
 export function BibleReader() {
     const [reference, setReference] = useState("Romans 12");
     const [translation, setTranslation] = useState("asv");
     const [result, setResult] = useState<BibleResponse | null>(null);
-    const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
+    const [selectedStart, setSelectedStart] = useState<number | null>(null);
+    const [selectedEnd, setSelectedEnd] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function fetchPassage(referenceValue: string, translationValue: string, preserveVerse = false) {
+    async function fetchPassage(referenceValue: string, translationValue: string, preserveFocus = false) {
         setLoading(true);
         setError(null);
 
@@ -59,8 +69,10 @@ export function BibleReader() {
             }
 
             setResult(payload);
-            if (!preserveVerse) {
-                setSelectedVerse(null);
+
+            if (!preserveFocus) {
+                setSelectedStart(null);
+                setSelectedEnd(null);
             }
         } catch (reason: unknown) {
             setResult(null);
@@ -82,6 +94,68 @@ export function BibleReader() {
             await fetchPassage(reference, nextTranslation, true);
         }
     }
+
+    useEffect(() => {
+        if (!result) return;
+
+        const key = focusStorageKey(result.reference, translation);
+        const raw = window.localStorage.getItem(key);
+        if (!raw) return;
+
+        try {
+            const saved = JSON.parse(raw) as SavedFocus;
+            const validStart = typeof saved.start === "number" && result.verses.some((verse) => verse.number === saved.start);
+            const validEnd = typeof saved.end === "number" && result.verses.some((verse) => verse.number === saved.end);
+
+            if (validStart) setSelectedStart(saved.start);
+            if (validEnd) setSelectedEnd(saved.end);
+        } catch {
+            window.localStorage.removeItem(key);
+        }
+    }, [result, translation]);
+
+    useEffect(() => {
+        if (!result) return;
+
+        const key = focusStorageKey(result.reference, translation);
+        window.localStorage.setItem(
+            key,
+            JSON.stringify({ start: selectedStart, end: selectedEnd } satisfies SavedFocus),
+        );
+    }, [result, translation, selectedStart, selectedEnd]);
+
+    function selectVerse(number: number) {
+        if (selectedStart === null || (selectedStart !== null && selectedEnd !== null)) {
+            setSelectedStart(number);
+            setSelectedEnd(null);
+            return;
+        }
+
+        if (number === selectedStart) {
+            setSelectedEnd(null);
+            return;
+        }
+
+        setSelectedEnd(number);
+    }
+
+    const selectedRange = useMemo(() => {
+        if (selectedStart === null) return [];
+
+        const end = selectedEnd ?? selectedStart;
+        const lower = Math.min(selectedStart, end);
+        const upper = Math.max(selectedStart, end);
+
+        return result?.verses
+            .filter((verse) => verse.number >= lower && verse.number <= upper)
+            .map((verse) => verse.number) ?? [];
+    }, [result, selectedStart, selectedEnd]);
+
+    const focusLabel = selectedRange.length === 0
+        ? "Select a verse to focus your study."
+        : selectedRange.length === 1
+            ? `Focused verse: ${result?.verses.find((verse) => verse.number === selectedRange[0])?.reference ?? selectedRange[0]}`
+            : `Focused range: ${result?.verses.find((verse) => verse.number === selectedRange[0])?.reference ?? selectedRange[0]}–${selectedRange[selectedRange.length - 1]}`;
 
     return (
         <div style={{ display: "grid", gap: 16, maxWidth: 900 }}>
@@ -125,12 +199,12 @@ export function BibleReader() {
 
                     <div style={{ display: "grid", gap: 8, lineHeight: 1.8 }}>
                         {result.verses.map((verse) => {
-                            const active = selectedVerse === verse.number;
+                            const active = selectedRange.includes(verse.number);
                             return (
                                 <button
                                     key={verse.reference}
                                     type="button"
-                                    onClick={() => setSelectedVerse(verse.number)}
+                                    onClick={() => selectVerse(verse.number)}
                                     style={{
                                         textAlign: "left",
                                         border: active ? "2px solid #111827" : "1px solid transparent",
@@ -149,8 +223,13 @@ export function BibleReader() {
                     </div>
 
                     <p style={{ margin: "16px 0 0", fontSize: 13, color: "#6b7280" }}>
-                        {selectedVerse === null ? "Select a verse to focus your reading." : `Focused verse: ${selectedVerse}`}
+                        {focusLabel}
                     </p>
+                    {selectedEnd !== null && (
+                        <p style={{ margin: "6px 0 0", fontSize: 12, color: "#6b7280" }}>
+                            Click another verse to start a new range.
+                        </p>
+                    )}
                 </section>
             )}
         </div>
