@@ -95,6 +95,7 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
         const { data: outlineRows, error: outlineError } = await supabase.from("sermon_outline_points").select("*").eq("sermon_id", row.id).order("position", { ascending: true });
         if (outlineError) throw outlineError;
         for (const point of outlineRows ?? []) {
+            const pointId = point.id as `${string}-${string}-${string}-${string}-${string}`;
             sermon.addOutlinePoint(
                 point.heading,
                 point.truth,
@@ -104,7 +105,7 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
                     supportingEvidenceIds: point.supporting_evidence_ids ?? [],
                     supportingApplicationIds: point.supporting_application_ids ?? [],
                 },
-                point.id,
+                pointId,
             );
         }
         return sermon;
