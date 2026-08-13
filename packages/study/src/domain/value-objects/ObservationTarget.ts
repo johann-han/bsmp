@@ -80,7 +80,7 @@ export class ObservationTarget extends ValueObject<ObservationTargetProps> {
         return this.wordIndex !== null;
     }
 
-    public toString(): string {
+    public override toString(): string {
         if (!this.isWordTarget) return this.verseReference.toString();
         return `${this.verseReference.toString()} · ${this.wordText}`;
     }
