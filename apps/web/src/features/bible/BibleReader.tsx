@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 interface BibleVerse {
     readonly number: number;
@@ -23,7 +23,7 @@ export function BibleReader() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function loadPassage(event?: React.FormEvent) {
+    async function loadPassage(event?: FormEvent) {
         event?.preventDefault();
         setLoading(true);
         setError(null);
