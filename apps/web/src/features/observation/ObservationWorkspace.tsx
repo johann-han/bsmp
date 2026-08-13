@@ -190,6 +190,7 @@ export function ObservationWorkspace() {
                     selectedVerse={selectedVerse}
                     targetWord={targetWord}
                     targetMarkup={targetMarkup}
+                    translation={translation}
                     getVerseReference={passageService.getVerseReference.bind(passageService)}
                     onSaved={refreshWorkspace}
                 />
