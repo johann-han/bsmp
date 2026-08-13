@@ -48,10 +48,7 @@ function buildBibleApiReference(passage: StudyPassageService["passageReference"]
     const endChapter = end.chapter.value;
     const endVerse = end.verse.value;
 
-    if (startChapter === endChapter) {
-        return `${book} ${startChapter}:${startVerse}-${endVerse}`;
-    }
-
+    if (startChapter === endChapter) return `${book} ${startChapter}:${startVerse}-${endVerse}`;
     return `${book} ${startChapter}:${startVerse}-${endChapter}:${endVerse}`;
 }
 
@@ -64,17 +61,10 @@ async function loadRealBiblePassage(
         `/api/bible/passage?reference=${encodeURIComponent(reference)}&translation=${encodeURIComponent(translation)}`,
     );
 
-    if (!response.ok) {
-        return null;
-    }
+    if (!response.ok) return null;
 
     const payload = await response.json() as RealBiblePassageResponse;
-
-    return {
-        reference: payload.reference,
-        translation: payload.translation,
-        verses: payload.verses,
-    };
+    return { reference: payload.reference, translation: payload.translation, verses: payload.verses };
 }
 
 export function ObservationWorkspace() {
@@ -83,6 +73,7 @@ export function ObservationWorkspace() {
     const [data, setData] = useState<ObservationWorkspaceData | null>(null);
     const [passage, setPassage] = useState<StudyPassageData | null>(null);
     const [selectedVerses, setSelectedVerses] = useState<readonly StudyVerse[]>([]);
+    const [studyId, setStudyId] = useState<string | null>(null);
     const [studyTitle, setStudyTitle] = useState("");
     const [translation, setTranslation] = useState<TranslationId>("asv");
     const [passageLoading, setPassageLoading] = useState(false);
@@ -90,9 +81,9 @@ export function ObservationWorkspace() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const studyId = new URLSearchParams(window.location.search).get("studyId") ?? undefined;
+        const requestedStudyId = new URLSearchParams(window.location.search).get("studyId") ?? undefined;
 
-        createSupabaseObservationWorkspace(studyId)
+        createSupabaseObservationWorkspace(requestedStudyId)
             .then(async ({ workspace: nextWorkspace, passageService: nextPassageService, study }) => {
                 const [workspaceData, developmentPassage, realPassage] = await Promise.all([
                     nextWorkspace.load(),
@@ -104,6 +95,7 @@ export function ObservationWorkspace() {
                 setPassageService(nextPassageService);
                 setData(workspaceData);
                 setPassage(realPassage ?? developmentPassage);
+                setStudyId(study.id.value);
                 setStudyTitle(study.title.value);
             })
             .catch((reason: unknown) => {
@@ -125,31 +117,18 @@ export function ObservationWorkspace() {
 
         try {
             const nextPassage = await loadRealBiblePassage(passageService, nextTranslation);
-
-            if (!nextPassage) {
-                throw new Error("Unable to load the selected Bible translation.");
-            }
-
+            if (!nextPassage) throw new Error("Unable to load the selected Bible translation.");
             setPassage(nextPassage);
-
-            setSelectedVerses((current) =>
-                current.filter((selected) =>
-                    nextPassage.verses.some((verse) => verse.number === selected.number),
-                ),
-            );
+            setSelectedVerses((current) => current.filter((selected) => nextPassage.verses.some((verse) => verse.number === selected.number)));
         } catch (reason: unknown) {
-            setPassageError(
-                reason instanceof Error
-                    ? reason.message
-                    : "Unable to load the selected Bible translation.",
-            );
+            setPassageError(reason instanceof Error ? reason.message : "Unable to load the selected Bible translation.");
         } finally {
             setPassageLoading(false);
         }
     }
 
     if (error) return <p>{error}</p>;
-    if (!workspace || !passageService || !data || !passage) return <p>Loading study workspace...</p>;
+    if (!workspace || !passageService || !data || !passage || !studyId) return <p>Loading study workspace...</p>;
 
     const selectedVerse = selectedVerses[0] ?? null;
     const selectedVerseReference = selectedVerse
@@ -158,53 +137,22 @@ export function ObservationWorkspace() {
 
     return (
         <div>
-            {studyTitle && (
-                <p style={{ margin: "0 0 16px", fontWeight: 600 }}>
-                    Study: {studyTitle}
-                </p>
-            )}
+            {studyTitle && <p style={{ margin: "0 0 16px", fontWeight: 600 }}>Study: {studyTitle}</p>}
 
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    gap: 10,
-                    marginBottom: 12,
-                }}
-            >
-                <label htmlFor="study-translation" style={{ fontSize: 13, color: "#6b7280" }}>
-                    Translation
-                </label>
-                <select
-                    id="study-translation"
-                    value={translation}
-                    onChange={(event) => void changeTranslation(event.target.value as TranslationId)}
-                    disabled={passageLoading}
-                    style={{
-                        minWidth: 240,
-                        padding: "9px 12px",
-                        border: "1px solid #d1d5db",
-                        borderRadius: 8,
-                        background: "#fff",
-                    }}
-                >
-                    {TRANSLATIONS.map((item) => (
-                        <option key={item.id} value={item.id}>{item.name}</option>
-                    ))}
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <label htmlFor="study-translation" style={{ fontSize: 13, color: "#6b7280" }}>Translation</label>
+                <select id="study-translation" value={translation} onChange={(event) => void changeTranslation(event.target.value as TranslationId)} disabled={passageLoading} style={{ minWidth: 240, padding: "9px 12px", border: "1px solid #d1d5db", borderRadius: 8, background: "#fff" }}>
+                    {TRANSLATIONS.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
                 </select>
             </div>
 
-            {passageError && (
-                <p style={{ margin: "0 0 12px", color: "#b91c1c", fontSize: 13 }}>
-                    {passageError}
-                </p>
-            )}
+            {passageError && <p style={{ margin: "0 0 12px", color: "#b91c1c", fontSize: 13 }}>{passageError}</p>}
 
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(300px, 360px)", gap: 20, alignItems: "start" }}>
                 <StudyPassage
+                    studyId={studyId}
                     reference={passage.reference}
-                    translation={passage.translation}
+                    translation={translation}
                     verses={passage.verses}
                     selectedVerses={selectedVerses.map((verse) => verse.number)}
                     onSelectVerse={(verse) => setSelectedVerses([verse])}
@@ -213,19 +161,11 @@ export function ObservationWorkspace() {
                 <ObservationPanel data={data} />
             </div>
 
-            <ObservationComposer
-                workspace={workspace}
-                selectedVerse={selectedVerse}
-                getVerseReference={passageService.getVerseReference.bind(passageService)}
-                onSaved={refreshWorkspace}
-            />
-
+            <ObservationComposer workspace={workspace} selectedVerse={selectedVerse} getVerseReference={passageService.getVerseReference.bind(passageService)} onSaved={refreshWorkspace} />
             <ObservationHistory observations={data.observations} selectedVerseReference={selectedVerseReference} />
-
             <InterpretationComposer workspace={workspace} observations={data.observations} onSaved={refreshWorkspace} />
             <InterpretationHistory interpretations={data.interpretations} observations={data.observations} />
             <InterpretationTools interpretations={data.interpretations} observations={data.observations} workspace={workspace} onSaved={refreshWorkspace} />
-
             <ApplicationComposer workspace={workspace} interpretations={data.interpretations} onSaved={refreshWorkspace} />
             <ApplicationHistory applications={data.applications} interpretations={data.interpretations} />
         </div>
