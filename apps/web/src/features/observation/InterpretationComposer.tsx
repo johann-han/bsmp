@@ -2,23 +2,28 @@
 
 import { useState } from "react";
 
-import type { ObservationWorkspaceService, ObservationViewModel } from "@bsmp/study";
+import type { InterpretationViewModel, ObservationWorkspaceService, ObservationViewModel } from "@bsmp/study";
 
 export interface InterpretationComposerProps {
     readonly workspace: ObservationWorkspaceService;
     readonly observations: readonly ObservationViewModel[];
     readonly onSaved: () => Promise<void> | void;
+    readonly onOptimisticCreate?: (interpretation: InterpretationViewModel) => void;
+    readonly onRollbackCreate?: (id: string) => void;
 }
 
 export function InterpretationComposer({
     workspace,
     observations,
     onSaved,
+    onOptimisticCreate,
+    onRollbackCreate,
 }: InterpretationComposerProps) {
     const [statement, setStatement] = useState("");
     const [selectedObservationIds, setSelectedObservationIds] = useState<string[]>([]);
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [saving, setSaving] = useState(false);
 
     function toggleObservation(id: string) {
         setSelectedObservationIds((current) =>
@@ -29,26 +34,36 @@ export function InterpretationComposer({
     }
 
     async function saveInterpretation() {
-        if (!statement.trim()) {
+        const trimmed = statement.trim();
+        if (!trimmed) {
             setError("Enter an interpretation before saving.");
             return;
         }
 
         setError(null);
         setMessage(null);
+        setSaving(true);
+
+        const optimisticId = crypto.randomUUID();
+        onOptimisticCreate?.({
+            id: optimisticId,
+            statement: trimmed,
+            observationIds: [...selectedObservationIds],
+            evidence: [],
+            createdAt: new Date().toISOString(),
+        });
 
         try {
-            await workspace.addInterpretation(statement, selectedObservationIds);
-            await onSaved();
+            await workspace.addInterpretation(trimmed, selectedObservationIds);
             setStatement("");
             setSelectedObservationIds([]);
             setMessage("Interpretation saved.");
+            await onSaved();
         } catch (saveError) {
-            setError(
-                saveError instanceof Error
-                    ? saveError.message
-                    : "Unable to save interpretation.",
-            );
+            onRollbackCreate?.(optimisticId);
+            setError(saveError instanceof Error ? saveError.message : "Unable to save interpretation.");
+        } finally {
+            setSaving(false);
         }
     }
 
@@ -76,15 +91,8 @@ export function InterpretationComposer({
                     </p>
                     {observations.map((observation) => (
                         <label key={observation.id} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                            <input
-                                type="checkbox"
-                                checked={selectedObservationIds.includes(observation.id)}
-                                onChange={() => toggleObservation(observation.id)}
-                            />
-                            <span>
-                                <strong>{observation.verseReference}</strong>{" "}
-                                {observation.statement}
-                            </span>
+                            <input type="checkbox" checked={selectedObservationIds.includes(observation.id)} onChange={() => toggleObservation(observation.id)} disabled={saving} />
+                            <span><strong>{observation.verseReference}</strong>{" "}{observation.statement}</span>
                         </label>
                     ))}
                 </div>
@@ -92,20 +100,10 @@ export function InterpretationComposer({
                 <p style={{ color: "#6b7280" }}>Record observations first so they can support this interpretation.</p>
             )}
 
-            <textarea
-                value={statement}
-                onChange={(event) => setStatement(event.target.value)}
-                placeholder="State what you believe the passage means..."
-                rows={5}
-                style={{ width: "100%", resize: "vertical", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 12, font: "inherit" }}
-            />
+            <textarea value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="State what you believe the passage means..." rows={5} disabled={saving} style={{ width: "100%", resize: "vertical", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 12, font: "inherit" }} />
 
-            <button
-                type="button"
-                onClick={saveInterpretation}
-                style={{ marginTop: 12, border: 0, borderRadius: 8, background: "#111827", color: "#ffffff", padding: "10px 14px", fontWeight: 600 }}
-            >
-                Save Interpretation
+            <button type="button" onClick={saveInterpretation} disabled={saving} style={{ marginTop: 12, border: 0, borderRadius: 8, background: saving ? "#9ca3af" : "#111827", color: "#ffffff", padding: "10px 14px", fontWeight: 600 }}>
+                {saving ? "Saving..." : "Save Interpretation"}
             </button>
 
             {error && <p style={{ margin: "10px 0 0", color: "#b91c1c" }}>{error}</p>}
