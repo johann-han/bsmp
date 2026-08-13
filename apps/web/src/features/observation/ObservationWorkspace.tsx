@@ -190,6 +190,34 @@ export function ObservationWorkspace() {
             : current);
     }
 
+    function addOptimisticApplication(application: ObservationWorkspaceData["applications"][number]) {
+        setData((current) => current
+            ? { ...current, applications: [...current.applications, application] }
+            : current);
+    }
+
+    function rollbackOptimisticApplication(id: string) {
+        setData((current) => current
+            ? { ...current, applications: current.applications.filter((item) => item.id !== id) }
+            : current);
+    }
+
+    function updateApplication(application: ObservationWorkspaceData["applications"][number]) {
+        setData((current) => current
+            ? {
+                ...current,
+                applications: current.applications.map((item) =>
+                    item.id === application.id ? application : item),
+            }
+            : current);
+    }
+
+    function removeApplication(applicationId: string) {
+        setData((current) => current
+            ? { ...current, applications: current.applications.filter((item) => item.id !== applicationId) }
+            : current);
+    }
+
     if (error) return <p>{error}</p>;
     if (!workspace || !passageService || !data || !passage || !studyId) return <p>Loading study workspace...</p>;
 
@@ -266,8 +294,20 @@ export function ObservationWorkspace() {
                 onEvidenceChanged={addOptimisticEvidence}
                 onEvidenceRollback={rollbackOptimisticEvidence}
             />
-            <ApplicationComposer workspace={workspace} interpretations={data.interpretations} onSaved={refreshWorkspace} />
-            <ApplicationHistory applications={data.applications} interpretations={data.interpretations} />
+            <ApplicationComposer
+                workspace={workspace}
+                interpretations={data.interpretations}
+                onSaved={refreshWorkspace}
+                onOptimisticCreate={addOptimisticApplication}
+                onRollbackCreate={rollbackOptimisticApplication}
+            />
+            <ApplicationHistory
+                applications={data.applications}
+                interpretations={data.interpretations}
+                workspace={workspace}
+                onUpdated={updateApplication}
+                onDeleted={removeApplication}
+            />
         </div>
     );
 }
