@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface StudyVerse {
     readonly number: number;
@@ -51,7 +51,7 @@ export function StudyPassage({
     const [markupSymbol, setMarkupSymbol] = useState("N");
     const [markupMode, setMarkupMode] = useState(false);
 
-    useMemo(() => {
+    useEffect(() => {
         if (typeof window === "undefined") return;
 
         const raw = window.localStorage.getItem(storageKey(reference, translation));
@@ -69,6 +69,10 @@ export function StudyPassage({
         }
     }, [reference, translation]);
 
+    useEffect(() => {
+        setRangeStart(selectedVerses.length === 1 ? selectedVerses[0] ?? null : null);
+    }, [selectedVerses]);
+
     function saveWordMarkups(next: readonly StudyWordMarkup[]) {
         setWordMarkups(next);
         window.localStorage.setItem(storageKey(reference, translation), JSON.stringify(next));
@@ -79,8 +83,14 @@ export function StudyPassage({
 
         if (!onSelectVerseRange) return;
 
-        if (rangeStart === null || selectedVerses.length > 0) {
+        if (rangeStart === null) {
             setRangeStart(verse.number);
+            onSelectVerseRange([verse]);
+            return;
+        }
+
+        if (verse.number === rangeStart) {
+            setRangeStart(null);
             onSelectVerseRange([verse]);
             return;
         }
