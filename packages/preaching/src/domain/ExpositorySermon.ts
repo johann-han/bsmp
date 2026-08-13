@@ -113,6 +113,7 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
         heading: string,
         truth: string,
         support: SermonOutlineSupport = {},
+        id = crypto.randomUUID(),
     ): SermonOutlinePoint {
         const normalizedHeading = heading.trim();
         const normalizedTruth = truth.trim();
@@ -120,8 +121,55 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             throw new Error("An outline point requires both a heading and truth statement.");
         }
 
+        const normalizedSupport = {
+            supportingObservationIds: [...(support.supportingObservationIds ?? [])],
+            supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])],
+            supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])],
+            supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
+        };
+
+        const duplicate = this._outline.some(
+            (point) =>
+                point.heading === normalizedHeading &&
+                point.truth === normalizedTruth &&
+                JSON.stringify(point.supportingObservationIds) === JSON.stringify(normalizedSupport.supportingObservationIds) &&
+                JSON.stringify(point.supportingInterpretationIds) === JSON.stringify(normalizedSupport.supportingInterpretationIds) &&
+                JSON.stringify(point.supportingEvidenceIds) === JSON.stringify(normalizedSupport.supportingEvidenceIds) &&
+                JSON.stringify(point.supportingApplicationIds) === JSON.stringify(normalizedSupport.supportingApplicationIds),
+        );
+
+        if (duplicate) {
+            throw new Error("This outline point is already part of the sermon.");
+        }
+
         const point = {
-            id: crypto.randomUUID(),
+            id,
+            heading: normalizedHeading,
+            truth: normalizedTruth,
+            ...normalizedSupport,
+        } satisfies SermonOutlinePoint;
+
+        this._outline.push(point);
+        return point;
+    }
+
+    public updateOutlinePoint(
+        id: string,
+        heading: string,
+        truth: string,
+        support: SermonOutlineSupport = {},
+    ): SermonOutlinePoint {
+        const index = this._outline.findIndex((point) => point.id === id);
+        if (index < 0) throw new Error("Outline point was not found.");
+
+        const normalizedHeading = heading.trim();
+        const normalizedTruth = truth.trim();
+        if (!normalizedHeading || !normalizedTruth) {
+            throw new Error("An outline point requires both a heading and truth statement.");
+        }
+
+        const updated = {
+            id,
             heading: normalizedHeading,
             truth: normalizedTruth,
             supportingObservationIds: [...(support.supportingObservationIds ?? [])],
@@ -130,8 +178,27 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
         } satisfies SermonOutlinePoint;
 
-        this._outline.push(point);
-        return point;
+        this._outline[index] = updated;
+        return updated;
+    }
+
+    public removeOutlinePoint(id: string): void {
+        const index = this._outline.findIndex((point) => point.id === id);
+        if (index < 0) throw new Error("Outline point was not found.");
+        this._outline.splice(index, 1);
+    }
+
+    public moveOutlinePoint(id: string, direction: "up" | "down"): void {
+        const index = this._outline.findIndex((point) => point.id === id);
+        if (index < 0) throw new Error("Outline point was not found.");
+
+        const targetIndex = direction === "up" ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= this._outline.length) return;
+
+        const current = this._outline[index];
+        const target = this._outline[targetIndex];
+        this._outline[index] = target;
+        this._outline[targetIndex] = current;
     }
 
     public get title(): SermonTitle {
