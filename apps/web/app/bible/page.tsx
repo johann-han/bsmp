@@ -1,15 +1,11 @@
 import { AppShell } from "@repo/ui";
 
+import { BibleReader } from "../../src/features/bible/BibleReader";
+
 export default function BiblePage() {
-
     return (
-
         <AppShell title="Bible">
-
-            <p>Bible Reader coming soon.</p>
-
+            <BibleReader />
         </AppShell>
-
     );
-
 }
