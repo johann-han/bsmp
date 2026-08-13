@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
 
 const BIBLE_API_BASE = "https://bible-api.com";
-const DEFAULT_TRANSLATION = "web";
+const DEFAULT_TRANSLATION = "asv";
+const DEFAULT_TRANSLATION_NAME = "American Standard Version";
+
+const SUPPORTED_TRANSLATIONS = new Map<string, string>([
+    ["asv", "American Standard Version (1901)"],
+    ["kjv", "King James Version"],
+    ["web", "World English Bible"],
+]);
 
 export async function GET(request: Request) {
     const url = new URL(request.url);
     const reference = url.searchParams.get("reference")?.trim();
-    const translation = url.searchParams.get("translation")?.trim() || DEFAULT_TRANSLATION;
+    const translation = url.searchParams.get("translation")?.trim().toLowerCase() || DEFAULT_TRANSLATION;
 
     if (!reference) {
         return NextResponse.json({ error: "A Bible passage reference is required." }, { status: 400 });
@@ -16,8 +23,14 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "The Bible passage reference is too long." }, { status: 400 });
     }
 
-    if (!/^[a-z0-9-]+$/i.test(translation)) {
-        return NextResponse.json({ error: "Invalid Bible translation." }, { status: 400 });
+    if (!/^[a-z0-9-]+$/i.test(translation) || !SUPPORTED_TRANSLATIONS.has(translation)) {
+        return NextResponse.json(
+            {
+                error: "Unsupported Bible translation.",
+                supportedTranslations: Array.from(SUPPORTED_TRANSLATIONS.entries()).map(([id, name]) => ({ id, name })),
+            },
+            { status: 400 },
+        );
     }
 
     try {
@@ -53,7 +66,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
             reference: payload.reference ?? reference,
-            translation: payload.translation_name ?? "World English Bible",
+            translation: payload.translation_name ?? SUPPORTED_TRANSLATIONS.get(translation) ?? DEFAULT_TRANSLATION_NAME,
             translationId: payload.translation_id ?? translation,
             translationNote: payload.translation_note ?? "Public Domain",
             verses: payload.verses.map((verse) => ({
