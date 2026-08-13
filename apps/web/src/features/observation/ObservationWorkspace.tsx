@@ -31,6 +31,14 @@ interface RealBiblePassageResponse {
     }[];
 }
 
+const TRANSLATIONS = [
+    { id: "asv", name: "American Standard Version (1901)" },
+    { id: "kjv", name: "King James Version" },
+    { id: "web", name: "World English Bible" },
+] as const;
+
+type TranslationId = (typeof TRANSLATIONS)[number]["id"];
+
 function buildBibleApiReference(passage: StudyPassageService["passageReference"]): string {
     const start = passage.start;
     const end = passage.end;
@@ -49,9 +57,12 @@ function buildBibleApiReference(passage: StudyPassageService["passageReference"]
 
 async function loadRealBiblePassage(
     passageService: StudyPassageService,
+    translation: TranslationId,
 ): Promise<StudyPassageData | null> {
     const reference = buildBibleApiReference(passageService.passageReference);
-    const response = await fetch(`/api/bible/passage?reference=${encodeURIComponent(reference)}`);
+    const response = await fetch(
+        `/api/bible/passage?reference=${encodeURIComponent(reference)}&translation=${encodeURIComponent(translation)}`,
+    );
 
     if (!response.ok) {
         return null;
@@ -73,6 +84,9 @@ export function ObservationWorkspace() {
     const [passage, setPassage] = useState<StudyPassageData | null>(null);
     const [selectedVerse, setSelectedVerse] = useState<StudyVerse | null>(null);
     const [studyTitle, setStudyTitle] = useState("");
+    const [translation, setTranslation] = useState<TranslationId>("asv");
+    const [passageLoading, setPassageLoading] = useState(false);
+    const [passageError, setPassageError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -83,7 +97,7 @@ export function ObservationWorkspace() {
                 const [workspaceData, developmentPassage, realPassage] = await Promise.all([
                     nextWorkspace.load(),
                     nextPassageService.load(),
-                    loadRealBiblePassage(nextPassageService).catch(() => null),
+                    loadRealBiblePassage(nextPassageService, "asv").catch(() => null),
                 ]);
 
                 setWorkspace(nextWorkspace);
@@ -102,6 +116,39 @@ export function ObservationWorkspace() {
         setData(await workspace.load());
     }
 
+    async function changeTranslation(nextTranslation: TranslationId) {
+        if (!passageService || nextTranslation === translation) return;
+
+        setTranslation(nextTranslation);
+        setPassageLoading(true);
+        setPassageError(null);
+
+        try {
+            const nextPassage = await loadRealBiblePassage(passageService, nextTranslation);
+
+            if (!nextPassage) {
+                throw new Error("Unable to load the selected Bible translation.");
+            }
+
+            setPassage(nextPassage);
+
+            if (
+                selectedVerse &&
+                !nextPassage.verses.some((verse) => verse.number === selectedVerse.number)
+            ) {
+                setSelectedVerse(null);
+            }
+        } catch (reason: unknown) {
+            setPassageError(
+                reason instanceof Error
+                    ? reason.message
+                    : "Unable to load the selected Bible translation.",
+            );
+        } finally {
+            setPassageLoading(false);
+        }
+    }
+
     if (error) return <p>{error}</p>;
     if (!workspace || !passageService || !data || !passage) return <p>Loading study workspace...</p>;
 
@@ -114,6 +161,45 @@ export function ObservationWorkspace() {
             {studyTitle && (
                 <p style={{ margin: "0 0 16px", fontWeight: 600 }}>
                     Study: {studyTitle}
+                </p>
+            )}
+
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 12,
+                }}
+            >
+                <label htmlFor="study-translation" style={{ fontSize: 13, color: "#6b7280" }}>
+                    Translation
+                </label>
+                <select
+                    id="study-translation"
+                    value={translation}
+                    onChange={(event) => void changeTranslation(event.target.value as TranslationId)}
+                    disabled={passageLoading}
+                    style={{
+                        minWidth: 240,
+                        padding: "9px 12px",
+                        border: "1px solid #d1d5db",
+                        borderRadius: 8,
+                        background: "#fff",
+                    }}
+                >
+                    {TRANSLATIONS.map((item) => (
+                        <option key={item.id} value={item.id}>
+                            {item.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {passageError && (
+                <p style={{ margin: "0 0 12px", color: "#b91c1c", fontSize: 13 }}>
+                    {passageError}
                 </p>
             )}
 
