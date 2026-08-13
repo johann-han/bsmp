@@ -141,55 +141,6 @@ export function ObservationWorkspace() {
         });
     }
 
-    function addOptimisticInterpretation(interpretation: ObservationWorkspaceData["interpretations"][number]) {
-        setData((current) => current
-            ? { ...current, interpretations: [...current.interpretations, interpretation] }
-            : current);
-    }
-
-    function rollbackOptimisticInterpretation(id: string) {
-        setData((current) => current
-            ? { ...current, interpretations: current.interpretations.filter((item) => item.id !== id) }
-            : current);
-    }
-
-    function updateInterpretation(next: ObservationWorkspaceData["interpretations"][number]) {
-        setData((current) => current
-            ? {
-                ...current,
-                interpretations: current.interpretations.map((item) =>
-                    item.id === next.id ? next : item),
-            }
-            : current);
-    }
-
-    function addOptimisticEvidence(
-        interpretationId: string,
-        evidence: ObservationWorkspaceData["interpretations"][number]["evidence"][number],
-    ) {
-        setData((current) => current
-            ? {
-                ...current,
-                interpretations: current.interpretations.map((item) =>
-                    item.id === interpretationId
-                        ? { ...item, evidence: [...item.evidence, evidence] }
-                        : item),
-            }
-            : current);
-    }
-
-    function rollbackOptimisticEvidence(interpretationId: string, evidenceId: string) {
-        setData((current) => current
-            ? {
-                ...current,
-                interpretations: current.interpretations.map((item) =>
-                    item.id === interpretationId
-                        ? { ...item, evidence: item.evidence.filter((evidence) => evidence.id !== evidenceId) }
-                        : item),
-            }
-            : current);
-    }
-
     if (error) return <p>{error}</p>;
     if (!workspace || !passageService || !data || !passage || !studyId) return <p>Loading study workspace...</p>;
 
@@ -249,23 +200,9 @@ export function ObservationWorkspace() {
                 selectedVerseReference={selectedVerseReference}
                 onChanged={refreshWorkspace}
             />
-            <InterpretationComposer
-                workspace={workspace}
-                observations={data.observations}
-                onSaved={refreshWorkspace}
-                onOptimisticCreate={addOptimisticInterpretation}
-                onRollbackCreate={rollbackOptimisticInterpretation}
-            />
+            <InterpretationComposer workspace={workspace} observations={data.observations} onSaved={refreshWorkspace} />
             <InterpretationHistory interpretations={data.interpretations} observations={data.observations} />
-            <InterpretationTools
-                interpretations={data.interpretations}
-                observations={data.observations}
-                workspace={workspace}
-                onSaved={refreshWorkspace}
-                onChanged={updateInterpretation}
-                onEvidenceChanged={addOptimisticEvidence}
-                onEvidenceRollback={rollbackOptimisticEvidence}
-            />
+            <InterpretationTools interpretations={data.interpretations} observations={data.observations} workspace={workspace} onSaved={refreshWorkspace} />
             <ApplicationComposer workspace={workspace} interpretations={data.interpretations} onSaved={refreshWorkspace} />
             <ApplicationHistory applications={data.applications} interpretations={data.interpretations} />
         </div>

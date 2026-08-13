@@ -24,15 +24,6 @@ export interface InterpretationToolsProps {
     readonly observations: readonly ObservationViewModel[];
     readonly workspace: ObservationWorkspaceService;
     readonly onSaved: () => Promise<void> | void;
-    readonly onChanged?: (interpretation: InterpretationViewModel) => void;
-    readonly onEvidenceChanged?: (
-        interpretationId: string,
-        evidence: InterpretationViewModel["evidence"][number],
-    ) => void;
-    readonly onEvidenceRollback?: (
-        interpretationId: string,
-        evidenceId: string,
-    ) => void;
 }
 
 export function InterpretationTools({
@@ -40,9 +31,6 @@ export function InterpretationTools({
     observations,
     workspace,
     onSaved,
-    onChanged,
-    onEvidenceChanged,
-    onEvidenceRollback,
 }: InterpretationToolsProps) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [statement, setStatement] = useState("");
@@ -74,23 +62,12 @@ export function InterpretationTools({
             return;
         }
 
-        const previous = selected;
-        const next: InterpretationViewModel = {
-            ...selected,
-            statement: statement.trim(),
-            observationIds: [...selectedObservationIds],
-        };
-
-        onChanged?.(next);
-        setEditingId(null);
-        setMessage("Interpretation updated.");
-
         try {
-            await workspace.updateInterpretation(selected.id, next.statement, next.observationIds);
-            void onSaved();
+            await workspace.updateInterpretation(selected.id, statement, selectedObservationIds);
+            await onSaved();
+            setMessage("Interpretation updated.");
+            setEditingId(null);
         } catch (reason) {
-            onChanged?.(previous);
-            setEditingId(selected.id);
             setError(reason instanceof Error ? reason.message : "Unable to update interpretation.");
         }
     }
@@ -101,24 +78,13 @@ export function InterpretationTools({
             return;
         }
 
-        const description = evidenceDescription.trim();
-        const optimisticEvidence: InterpretationViewModel["evidence"][number] = {
-            id: crypto.randomUUID(),
-            type: evidenceType,
-            description,
-            createdAt: new Date().toISOString(),
-        };
-
-        onEvidenceChanged?.(interpretationId, optimisticEvidence);
-        setEvidenceDescription("");
-        setMessage("Evidence added.");
-        setError(null);
-
         try {
-            await workspace.addEvidence(interpretationId, evidenceType, description);
-            void onSaved();
+            await workspace.addEvidence(interpretationId, evidenceType, evidenceDescription);
+            await onSaved();
+            setEvidenceDescription("");
+            setMessage("Evidence added.");
+            setError(null);
         } catch (reason) {
-            onEvidenceRollback?.(interpretationId, optimisticEvidence.id);
             setError(reason instanceof Error ? reason.message : "Unable to save evidence.");
         }
     }
