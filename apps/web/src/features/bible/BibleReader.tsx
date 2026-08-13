@@ -20,6 +20,12 @@ interface BibleErrorResponse {
     readonly error?: string;
 }
 
+const TRANSLATIONS = [
+    { id: "asv", name: "American Standard Version (1901)" },
+    { id: "kjv", name: "King James Version" },
+    { id: "web", name: "World English Bible" },
+] as const;
+
 function isBibleResponse(payload: BibleResponse | BibleErrorResponse): payload is BibleResponse {
     return "verses" in payload && Array.isArray(payload.verses);
 }
@@ -32,6 +38,7 @@ function getBibleError(payload: BibleResponse | BibleErrorResponse): string {
 
 export function BibleReader() {
     const [reference, setReference] = useState("Romans 12");
+    const [translation, setTranslation] = useState("asv");
     const [result, setResult] = useState<BibleResponse | null>(null);
     const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
@@ -43,7 +50,9 @@ export function BibleReader() {
         setError(null);
 
         try {
-            const response = await fetch(`/api/bible/passage?reference=${encodeURIComponent(reference)}`);
+            const response = await fetch(
+                `/api/bible/passage?reference=${encodeURIComponent(reference)}&translation=${encodeURIComponent(translation)}`,
+            );
             const payload = await response.json() as BibleResponse | BibleErrorResponse;
 
             if (!response.ok || !isBibleResponse(payload)) {
@@ -62,13 +71,23 @@ export function BibleReader() {
 
     return (
         <div style={{ display: "grid", gap: 16, maxWidth: 900 }}>
-            <form onSubmit={loadPassage} style={{ display: "flex", gap: 10 }}>
+            <form onSubmit={loadPassage} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10 }}>
                 <input
                     value={reference}
                     onChange={(event) => setReference(event.target.value)}
                     placeholder="John 3:16 or Romans 12"
-                    style={{ flex: 1, padding: 12, border: "1px solid #d1d5db", borderRadius: 8 }}
+                    style={{ minWidth: 0, padding: 12, border: "1px solid #d1d5db", borderRadius: 8 }}
                 />
+                <select
+                    value={translation}
+                    onChange={(event) => setTranslation(event.target.value)}
+                    style={{ padding: "10px 12px", border: "1px solid #d1d5db", borderRadius: 8 }}
+                    aria-label="Bible translation"
+                >
+                    {TRANSLATIONS.map((item) => (
+                        <option key={item.id} value={item.id}>{item.name}</option>
+                    ))}
+                </select>
                 <button type="submit" disabled={loading || !reference.trim()} style={{ padding: "10px 16px" }}>
                     {loading ? "Loading..." : "Read"}
                 </button>
