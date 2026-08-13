@@ -4,11 +4,11 @@ import type { ObservationViewModel } from "@bsmp/study";
 import { useState } from "react";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
-import { supabase } from "../../lib/supabase";
 
 export interface ObservationHistoryProps {
     readonly observations: readonly ObservationViewModel[];
     readonly selectedVerseReference?: string | null;
+    readonly onChanged?: () => Promise<void> | void;
 }
 
 const MARKUP_LABELS: Record<string, string> = {
@@ -26,6 +26,7 @@ function verseNumberOf(reference: string): number | null {
 export function ObservationHistory({
     observations,
     selectedVerseReference = null,
+    onChanged,
 }: ObservationHistoryProps) {
     const [busyId, setBusyId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -60,7 +61,7 @@ export function ObservationHistory({
                     : undefined,
             );
 
-            window.location.reload();
+            await onChanged?.();
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to update observation.");
         } finally {
@@ -78,14 +79,7 @@ export function ObservationHistory({
             const studyId = new URLSearchParams(window.location.search).get("studyId") ?? undefined;
             const { workspace } = await createSupabaseObservationWorkspace(studyId);
             await workspace.removeObservation(observation.id);
-
-            const { error: deleteError } = await supabase
-                .from("study_observations")
-                .delete()
-                .eq("id", observation.id);
-            if (deleteError) throw deleteError;
-
-            window.location.reload();
+            await onChanged?.();
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to delete observation.");
         } finally {
