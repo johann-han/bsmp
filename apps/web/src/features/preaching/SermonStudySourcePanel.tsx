@@ -6,8 +6,14 @@ interface Props {
     study: StudySession;
 }
 
-function workspaceHref(studyId: string, target: string): string {
-    return `/workspace?studyId=${encodeURIComponent(studyId)}#${encodeURIComponent(target)}`;
+function workspaceHref(studyId: string, target?: string): string {
+    const params = new URLSearchParams({
+        studyId,
+        returnTo: `/preaching?studyId=${encodeURIComponent(studyId)}`,
+    });
+    return target
+        ? `/workspace?${params.toString()}#${encodeURIComponent(target)}`
+        : `/workspace?${params.toString()}`;
 }
 
 const linkStyle = {
@@ -28,7 +34,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 <p style={{ margin: "4px 0" }}>Interpretations: {study.interpretations.length}</p>
                 <p style={{ marginTop: 4 }}>Applications: {study.applications.length}</p>
                 <a
-                    href={`/workspace?studyId=${encodeURIComponent(studyId)}`}
+                    href={workspaceHref(studyId)}
                     style={{ display: "inline-block", marginTop: 8, fontWeight: 600 }}
                 >
                     Open Study Workspace
@@ -70,7 +76,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                                 <div style={{ marginTop: 8 }}>
                                     <strong>Evidence</strong>
                                     {interpretation.evidence.map((evidence) => (
-                                        <div key={evidence.id.value} id={`evidence-${evidence.id.value}`} style={{ marginTop: 4, scrollMarginTop: 24 }}>
+                                        <div key={evidence.id.value} style={{ marginTop: 4 }}>
                                             <a href={workspaceHref(studyId, `evidence-${evidence.id.value}`)} style={linkStyle}>
                                                 <span>{evidence.type.value}: </span>{evidence.description.value}
                                             </a>
