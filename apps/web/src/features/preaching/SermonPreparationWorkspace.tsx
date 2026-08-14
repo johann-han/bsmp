@@ -18,6 +18,10 @@ import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpository
 import { supabase } from "../../lib/supabase";
 import { SermonStudySourcePanel } from "./SermonStudySourcePanel";
 
+function verseReferenceText(reference: StudySession["observations"][number]["target"]["verseReference"]): string {
+    return reference.toString();
+}
+
 export function SermonPreparationWorkspace() {
     const router = useRouter();
     const [studies, setStudies] = useState<readonly StudySession[]>([]);
@@ -357,7 +361,7 @@ export function SermonPreparationWorkspace() {
                                                         type="checkbox"
                                                         checked={supportingObservationIds.includes(observation.id.value)}
                                                         onChange={() => toggleValue(supportingObservationIds, observation.id.value, setSupportingObservationIds)}
-                                                    /> {observation.target.verseReference} — {observation.statement.value}
+                                                    /> {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}
                                                 </label>
                                             ))}
                                         </div>
@@ -410,17 +414,17 @@ export function SermonPreparationWorkspace() {
                                 </div>
 
                                 {editingOutlinePointId ? (
-                                    <button type="button" onClick={() => void saveEditedOutlinePoint()} style={{ padding: "10px 16px" }}>Save Changes</button>
+                                    <button type="button" onClick={() => void saveEditedOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Save Outline Changes</button>
                                 ) : (
                                     <button type="button" onClick={() => void addOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Add Outline Point</button>
                                 )}
-
-                                {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
-                                {message && <p style={{ color: "#166534" }}>{message}</p>}
                             </div>
                         </section>
                     </div>
                 )}
+
+                {message && <p style={{ color: "green" }}>{message}</p>}
+                {error && <p style={{ color: "red" }}>{error}</p>}
             </div>
         </AppShell>
     );
