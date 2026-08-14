@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const items = [
@@ -11,15 +12,41 @@ const items = [
     ["Sermon Preparation", "/preaching"],
 ] as const;
 
-export function GlobalNav() {
+function NavigationLinks() {
     const searchParams = useSearchParams();
     const studyId = searchParams.get("studyId");
+    const preachingHref = studyId ? `/preaching?studyId=${encodeURIComponent(studyId)}` : "/preaching";
 
-    const hrefFor = (href: string) => {
-        if (href !== "/preaching" || !studyId) return href;
-        return `/preaching?studyId=${encodeURIComponent(studyId)}`;
-    };
+    return (
+        <nav
+            aria-label="Primary navigation"
+            style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 18,
+                minHeight: 52,
+                padding: "0 20px",
+                overflowX: "auto",
+                whiteSpace: "nowrap",
+            }}
+        >
+            <a href="/" style={{ fontWeight: 800, color: "#0f172a", textDecoration: "none", marginRight: 6 }}>
+                BSMP
+            </a>
+            {items.map(([label, href]) => (
+                <a
+                    key={href}
+                    href={href === "/preaching" ? preachingHref : href}
+                    style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
+                >
+                    {label}
+                </a>
+            ))}
+        </nav>
+    );
+}
 
+export function GlobalNav() {
     return (
         <header
             style={{
@@ -32,31 +59,9 @@ export function GlobalNav() {
                 boxShadow: "0 1px 8px rgba(15,23,42,0.06)",
             }}
         >
-            <nav
-                aria-label="Primary navigation"
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 18,
-                    minHeight: 52,
-                    padding: "0 20px",
-                    overflowX: "auto",
-                    whiteSpace: "nowrap",
-                }}
-            >
-                <a href="/" style={{ fontWeight: 800, color: "#0f172a", textDecoration: "none", marginRight: 6 }}>
-                    BSMP
-                </a>
-                {items.map(([label, href]) => (
-                    <a
-                        key={href}
-                        href={hrefFor(href)}
-                        style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
-                    >
-                        {label}
-                    </a>
-                ))}
-            </nav>
+            <Suspense fallback={<div style={{ minHeight: 52 }} />}>
+                <NavigationLinks />
+            </Suspense>
         </header>
     );
 }
