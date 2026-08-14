@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BookCode, ChapterNumber, Passage, VerseNumber, VerseReference } from "@bsmp/bible";
 import { StudyId } from "@bsmp/study";
-
 import { ExpositorySermon, ExpositorySermonId, SermonBigIdea, SermonContext, SermonConclusion, SermonIntroduction, SermonPurpose, SermonTitle } from "./ExpositorySermon.js";
 
 function john15(): Passage {
@@ -45,23 +44,23 @@ describe("ExpositorySermon", () => {
         expect(sermon.outline[0]?.id).toBe(second.id);
     });
 
-    it("stores and updates exposition for an outline point", () => {
+    it("stores exposition and maps study support to text and meaning", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-4"), StudyId.from("study-4"), SermonTitle.from("Test"), john15());
-        const point = sermon.addOutlinePoint("Abide in Christ", "Fruitfulness comes from remaining in Christ.", {}, "point-4", {
-            explanation: "Explain the command and its relationship to fruitfulness.",
+        const point = sermon.addOutlinePoint("Abide in Christ", "Fruitfulness comes from remaining in Christ.", { supportingObservationIds: ["obs-1"], supportingInterpretationIds: ["int-1"] }, "point-4", {
+            text: "Jesus commands His disciples to remain in Him.",
+            explanation: "The command describes dependent union with Christ.",
             illustration: "Use a branch and vine illustration.",
             application: "Call believers to remain dependent on Christ.",
             transition: "Move from abiding to the fruit it produces.",
+            textObservationIds: ["obs-1"],
+            meaningInterpretationIds: ["int-1"],
         });
-        expect(point.explanation).toContain("relationship to fruitfulness");
-        expect(point.illustration).toContain("branch and vine");
-        expect(point.application).toContain("dependent on Christ");
-        expect(point.transition).toContain("fruit it produces");
-        sermon.defineOutlinePointExposition(point.id, { explanation: "Revised explanation.", application: "Revised application." });
-        expect(sermon.outline[0]?.explanation).toBe("Revised explanation.");
-        expect(sermon.outline[0]?.illustration).toContain("branch and vine");
-        expect(sermon.outline[0]?.application).toBe("Revised application.");
-        expect(sermon.outline[0]?.transition).toContain("fruit it produces");
+        expect(point.textObservationIds).toEqual(["obs-1"]);
+        expect(point.meaningInterpretationIds).toEqual(["int-1"]);
+        sermon.defineOutlinePointExposition(point.id, { textObservationIds: ["obs-2"], meaningInterpretationIds: ["int-2"] });
+        expect(sermon.outline[0]?.textObservationIds).toEqual(["obs-2"]);
+        expect(sermon.outline[0]?.meaningInterpretationIds).toEqual(["int-2"]);
+        expect(sermon.outline[0]?.explanation).toContain("dependent union");
     });
 
     it("rejects empty outline content", () => {
