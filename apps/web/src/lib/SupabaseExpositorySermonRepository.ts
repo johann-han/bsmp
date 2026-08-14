@@ -33,6 +33,7 @@ type DatabaseOutlinePointRow = {
     heading: string;
     truth: string;
     position: number;
+    text?: string | null;
     explanation?: string | null;
     illustration?: string | null;
     application?: string | null;
@@ -94,6 +95,7 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
                 heading: point.heading,
                 truth: point.truth,
                 position: index,
+                text: point.text || null,
                 explanation: point.explanation || null,
                 illustration: point.illustration || null,
                 application: point.application || null,
@@ -114,16 +116,8 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
         if (studyError) throw studyError;
         if (!study) throw new Error(`Study ${row.study_id} for sermon ${row.id} was not found.`);
 
-        const start = VerseReference.create(
-            BookCode.from(study.passage_start_book),
-            ChapterNumber.of(study.passage_start_chapter),
-            VerseNumber.from(study.passage_start_verse),
-        );
-        const end = VerseReference.create(
-            BookCode.from(study.passage_end_book),
-            ChapterNumber.of(study.passage_end_chapter),
-            VerseNumber.from(study.passage_end_verse),
-        );
+        const start = VerseReference.create(BookCode.from(study.passage_start_book), ChapterNumber.of(study.passage_start_chapter), VerseNumber.from(study.passage_start_verse));
+        const end = VerseReference.create(BookCode.from(study.passage_end_book), ChapterNumber.of(study.passage_end_chapter), VerseNumber.from(study.passage_end_verse));
         const sermon = ExpositorySermon.create(
             ExpositorySermonId.create(row.id as `${string}-${string}-${string}-${string}-${string}`),
             StudyId.from(row.study_id),
@@ -153,6 +147,7 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
                 },
                 pointId,
                 {
+                    text: point.text ?? "",
                     explanation: point.explanation ?? "",
                     illustration: point.illustration ?? "",
                     application: point.application ?? "",
