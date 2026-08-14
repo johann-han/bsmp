@@ -18,20 +18,10 @@ import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpository
 import { supabase } from "../../lib/supabase";
 import { SermonStudySourcePanel } from "./SermonStudySourcePanel";
 
-function getInitialStudyId(): string {
-    if (typeof window === "undefined") return "";
-
-    return (
-        new URLSearchParams(window.location.search).get("studyId")
-        ?? window.localStorage.getItem("bsmp:last-study-id")
-        ?? ""
-    );
-}
-
 export function SermonPreparationWorkspace() {
     const router = useRouter();
     const [studies, setStudies] = useState<readonly StudySession[]>([]);
-    const [selectedStudyId, setSelectedStudyId] = useState<string>(getInitialStudyId);
+    const [selectedStudyId, setSelectedStudyId] = useState<string>("");
     const [sermon, setSermon] = useState<ExpositorySermon | null>(null);
     const [title, setTitle] = useState("");
     const [bigIdea, setBigIdea] = useState("");
@@ -119,11 +109,12 @@ export function SermonPreparationWorkspace() {
 
                 const requestedStudyId =
                     new URLSearchParams(window.location.search).get("studyId")
-                    ?? selectedStudyId;
+                    ?? window.localStorage.getItem("bsmp:last-study-id")
+                    ?? "";
 
                 if (requestedStudyId && nextStudies.some((study) => study.id.value === requestedStudyId)) {
                     await loadStudy(requestedStudyId, nextStudies);
-                } else if (!requestedStudyId) {
+                } else {
                     setSelectedStudyId("");
                 }
             } catch (reason: unknown) {
@@ -361,9 +352,12 @@ export function SermonPreparationWorkspace() {
                                         <div style={{ marginTop: 10 }}>
                                             <div style={{ fontSize: 13, fontWeight: 600 }}>Observations</div>
                                             {selectedStudy.observations.map((observation) => (
-                                                <label key={observation.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                                                    <input type="checkbox" checked={supportingObservationIds.includes(observation.id.value)} onChange={() => toggleValue(supportingObservationIds, observation.id.value, setSupportingObservationIds)} />
-                                                    <span>{observation.verseReference.value.toString()} — {observation.statement.value}</span>
+                                                <label key={observation.id.value} style={{ display: "block", marginTop: 6 }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={supportingObservationIds.includes(observation.id.value)}
+                                                        onChange={() => toggleValue(supportingObservationIds, observation.id.value, setSupportingObservationIds)}
+                                                    /> {observation.target.verseReference} — {observation.statement.value}
                                                 </label>
                                             ))}
                                         </div>
@@ -373,9 +367,12 @@ export function SermonPreparationWorkspace() {
                                         <div style={{ marginTop: 10 }}>
                                             <div style={{ fontSize: 13, fontWeight: 600 }}>Interpretations</div>
                                             {selectedStudy.interpretations.map((interpretation) => (
-                                                <label key={interpretation.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                                                    <input type="checkbox" checked={supportingInterpretationIds.includes(interpretation.id.value)} onChange={() => toggleValue(supportingInterpretationIds, interpretation.id.value, setSupportingInterpretationIds)} />
-                                                    <span>{interpretation.statement.value}</span>
+                                                <label key={interpretation.id.value} style={{ display: "block", marginTop: 6 }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={supportingInterpretationIds.includes(interpretation.id.value)}
+                                                        onChange={() => toggleValue(supportingInterpretationIds, interpretation.id.value, setSupportingInterpretationIds)}
+                                                    /> {interpretation.statement.value}
                                                 </label>
                                             ))}
                                         </div>
@@ -385,9 +382,12 @@ export function SermonPreparationWorkspace() {
                                         <div style={{ marginTop: 10 }}>
                                             <div style={{ fontSize: 13, fontWeight: 600 }}>Evidence</div>
                                             {studyEvidence.map((evidence) => (
-                                                <label key={evidence.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                                                    <input type="checkbox" checked={supportingEvidenceIds.includes(evidence.id.value)} onChange={() => toggleValue(supportingEvidenceIds, evidence.id.value, setSupportingEvidenceIds)} />
-                                                    <span>{evidence.type.value}: {evidence.description.value}</span>
+                                                <label key={evidence.id.value} style={{ display: "block", marginTop: 6 }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={supportingEvidenceIds.includes(evidence.id.value)}
+                                                        onChange={() => toggleValue(supportingEvidenceIds, evidence.id.value, setSupportingEvidenceIds)}
+                                                    /> {evidence.type.value}: {evidence.description.value}
                                                 </label>
                                             ))}
                                         </div>
@@ -397,25 +397,30 @@ export function SermonPreparationWorkspace() {
                                         <div style={{ marginTop: 10 }}>
                                             <div style={{ fontSize: 13, fontWeight: 600 }}>Applications</div>
                                             {selectedStudy.applications.map((application) => (
-                                                <label key={application.id.value} style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                                                    <input type="checkbox" checked={supportingApplicationIds.includes(application.id.value)} onChange={() => toggleValue(supportingApplicationIds, application.id.value, setSupportingApplicationIds)} />
-                                                    <span>{application.principle.value}</span>
+                                                <label key={application.id.value} style={{ display: "block", marginTop: 6 }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={supportingApplicationIds.includes(application.id.value)}
+                                                        onChange={() => toggleValue(supportingApplicationIds, application.id.value, setSupportingApplicationIds)}
+                                                    /> {application.principle.value}
                                                 </label>
                                             ))}
                                         </div>
                                     )}
                                 </div>
 
-                                <button onClick={() => void (editingOutlinePointId ? saveEditedOutlinePoint() : addOutlinePoint())} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>
-                                    {editingOutlinePointId ? "Save Outline Point" : "Add Outline Point"}
-                                </button>
+                                {editingOutlinePointId ? (
+                                    <button type="button" onClick={() => void saveEditedOutlinePoint()} style={{ padding: "10px 16px" }}>Save Changes</button>
+                                ) : (
+                                    <button type="button" onClick={() => void addOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Add Outline Point</button>
+                                )}
+
+                                {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
+                                {message && <p style={{ color: "#166534" }}>{message}</p>}
                             </div>
                         </section>
                     </div>
                 )}
-
-                {message && <p>{message}</p>}
-                {error && <p>{error}</p>}
             </div>
         </AppShell>
     );
