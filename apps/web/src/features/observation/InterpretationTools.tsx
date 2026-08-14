@@ -133,7 +133,7 @@ export function InterpretationTools({
             </p>
 
             {interpretations.map((interpretation) => (
-                <article key={interpretation.id} style={{ marginTop: 12, borderTop: "1px solid #f3f4f6", paddingTop: 12 }}>
+                <article key={interpretation.id} id={`interpretation-tools-${interpretation.id}`} style={{ marginTop: 12, borderTop: "1px solid #f3f4f6", paddingTop: 12, scrollMarginTop: 24 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                         <strong>{interpretation.statement}</strong>
                         <button type="button" onClick={() => startEdit(interpretation)}>Edit</button>
@@ -142,7 +142,9 @@ export function InterpretationTools({
                     {interpretation.evidence.length > 0 && (
                         <ul style={{ fontSize: 13, color: "#4b5563" }}>
                             {interpretation.evidence.map((evidence) => (
-                                <li key={evidence.id}><strong>{evidence.type}:</strong> {evidence.description}</li>
+                                <li key={evidence.id} id={`evidence-${evidence.id}`} style={{ scrollMarginTop: 24 }}>
+                                    <strong>{evidence.type}:</strong> {evidence.description}
+                                </li>
                             ))}
                         </ul>
                     )}
