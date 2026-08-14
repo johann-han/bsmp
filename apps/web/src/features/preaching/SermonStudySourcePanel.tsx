@@ -64,13 +64,22 @@ export function SermonStudySourcePanel({ study }: Props) {
                 <p style={{ marginBottom: 4 }}>Observations: {study.observations.length}</p>
                 <p style={{ margin: "4px 0" }}>Interpretations: {study.interpretations.length}</p>
                 <p style={{ marginTop: 4 }}>Applications: {study.applications.length}</p>
-                <WorkspaceLink
-                    href={workspaceHref(studyId)}
-                    study={study}
-                    style={{ display: "inline-block", marginTop: 8, fontWeight: 600 }}
-                >
-                    Open Study Workspace
-                </WorkspaceLink>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
+                    <WorkspaceLink
+                        href={workspaceHref(studyId)}
+                        study={study}
+                        style={{ fontWeight: 600 }}
+                    >
+                        Open Study Workspace
+                    </WorkspaceLink>
+                    <Link
+                        href={`/preaching/framework?studyId=${encodeURIComponent(studyId)}`}
+                        prefetch
+                        style={{ ...linkStyle, fontWeight: 600 }}
+                    >
+                        Open Sermon Framework
+                    </Link>
+                </div>
             </section>
 
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
