@@ -143,7 +143,11 @@ export function ObservationHistory({
                         const busy = busyId === observation.id;
 
                         return (
-                            <article key={observation.id} style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12 }}>
+                            <article
+                                id={`observation-${observation.id}`}
+                                key={observation.id}
+                                style={{ border: "1px solid #e5e7eb", borderRadius: 8, padding: 12, scrollMarginTop: 24 }}
+                            >
                                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
                                     <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#6b7280" }}>
                                         {observation.verseReference}
