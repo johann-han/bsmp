@@ -13,6 +13,19 @@ import { BookCode, ChapterNumber, Passage, VerseNumber, VerseReference } from "@
 import { StudyId } from "@bsmp/study";
 import { supabase } from "./supabase";
 
+type DatabaseSermonRow = {
+    id: string;
+    study_id: string;
+    user_id: string;
+    title: string;
+    big_idea: string | null;
+    purpose: string | null;
+    introduction?: string | null;
+    context?: string | null;
+    conclusion?: string | null;
+    created_at: string;
+};
+
 export class SupabaseExpositorySermonRepository implements ExpositorySermonRepository {
     public async find(id: ExpositorySermonId): Promise<ExpositorySermon | undefined> {
         const { data, error } = await supabase.from("expository_sermons").select("*").eq("id", id.value).maybeSingle();
@@ -120,16 +133,3 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
         return sermon;
     }
 }
-
-type DatabaseSermonRow = {
-    id: string;
-    study_id: string;
-    user_id: string;
-    title: string;
-    big_idea: string | null;
-    purpose: string | null;
-    introduction: string | null;
-    context: string | null;
-    conclusion: string | null;
-    created_at: string;
-};
