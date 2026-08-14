@@ -226,7 +226,7 @@ export function ObservationWorkspace() {
 
     function focusObservation(observation: ObservationWorkspaceData["observations"][number]) {
         const verseNumber = Number.parseInt(observation.target.verseReference.split(":").at(-1) ?? "", 10);
-        if (Number.isInteger(verseNumber)) {
+        if (Number.isInteger(verseNumber) && passage) {
             const verse = passage.verses.find((item) => item.number === verseNumber);
             if (verse) setSelectedVerses([verse]);
         }
