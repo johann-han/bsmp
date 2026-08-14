@@ -39,37 +39,26 @@ export function SermonPreparationWorkspace() {
     const studyRepository = new SupabaseStudyRepository();
     const sermonRepository = new SupabaseExpositorySermonRepository();
 
-    useEffect(() => {
-        let cancelled = false;
+    function resetOutlineSupport() {
+        setSupportingObservationIds([]);
+        setSupportingInterpretationIds([]);
+        setSupportingEvidenceIds([]);
+        setSupportingApplicationIds([]);
+    }
 
-        async function initialize() {
-            const { data, error: authError } = await supabase.auth.getUser();
+    function resetOutlineEditor() {
+        setEditingOutlinePointId(null);
+        setHeading("");
+        setTruth("");
+        resetOutlineSupport();
+    }
 
-            if (authError || !data.user) {
-                router.replace(`/login?next=${encodeURIComponent("/preaching")}`);
-                return;
-            }
-
-            try {
-                const nextStudies = await studyRepository.findAll();
-                if (!cancelled) setStudies(nextStudies);
-            } catch (reason: unknown) {
-                if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load studies.");
-            }
-        }
-
-        void initialize();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [router]);
-
-    async function selectStudy(studyId: string) {
+    async function loadStudy(studyId: string, availableStudies: readonly StudySession[]) {
         setSelectedStudyId(studyId);
         setMessage(null);
         setError(null);
         resetOutlineEditor();
+
         if (!studyId) {
             setSermon(null);
             setTitle("");
@@ -79,21 +68,57 @@ export function SermonPreparationWorkspace() {
         }
 
         try {
+            const study = availableStudies.find((item) => item.id.value === studyId);
             const existing = await sermonRepository.findByStudyId(studyId);
+
             setSermon(existing ?? null);
             if (existing) {
                 setTitle(existing.title.value);
                 setBigIdea(existing.bigIdea?.value ?? "");
                 setPurpose(existing.purpose?.value ?? "");
             } else {
-                const study = studies.find((item) => item.id.value === studyId);
-                setTitle(study ? study.title.value : "");
+                setTitle(study?.title.value ?? "");
                 setBigIdea("");
                 setPurpose("");
             }
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to load sermon preparation.");
         }
+    }
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function initialize() {
+            const { data, error: authError } = await supabase.auth.getUser();
+            if (authError || !data.user) {
+                router.replace(`/login?next=${encodeURIComponent("/preaching")}`);
+                return;
+            }
+
+            try {
+                const nextStudies = await studyRepository.findAll();
+                if (cancelled) return;
+
+                setStudies(nextStudies);
+
+                const requestedStudyId = new URLSearchParams(window.location.search).get("studyId");
+                if (requestedStudyId && nextStudies.some((study) => study.id.value === requestedStudyId)) {
+                    await loadStudy(requestedStudyId, nextStudies);
+                }
+            } catch (reason: unknown) {
+                if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load studies.");
+            }
+        }
+
+        void initialize();
+        return () => {
+            cancelled = true;
+        };
+    }, [router]);
+
+    function selectStudy(studyId: string) {
+        void loadStudy(studyId, studies);
     }
 
     async function createSermon() {
@@ -143,18 +168,12 @@ export function SermonPreparationWorkspace() {
                 supportingEvidenceIds,
                 supportingApplicationIds,
             });
-
             await sermonRepository.save(sermon);
             await reloadSermon();
             resetOutlineEditor();
             setMessage("Outline point saved.");
         } catch (reason: unknown) {
-            try {
-                await reloadSermon();
-            } catch {
-                // Preserve the original save error when recovery also fails.
-            }
-
+            try { await reloadSermon(); } catch { /* preserve original error */ }
             const details = reason instanceof Error ? reason.message : String(reason);
             setError(`Unable to save outline point: ${details}`);
         }
@@ -181,7 +200,6 @@ export function SermonPreparationWorkspace() {
         if (!sermon || !selectedStudyId || !editingOutlinePointId) return;
         setMessage(null);
         setError(null);
-
         try {
             sermon.updateOutlinePoint(editingOutlinePointId, heading, truth, {
                 supportingObservationIds,
@@ -194,11 +212,7 @@ export function SermonPreparationWorkspace() {
             resetOutlineEditor();
             setMessage("Outline point updated.");
         } catch (reason: unknown) {
-            try {
-                await reloadSermon();
-            } catch {
-                // Preserve the original save error when recovery also fails.
-            }
+            try { await reloadSermon(); } catch { /* preserve original error */ }
             const details = reason instanceof Error ? reason.message : String(reason);
             setError(`Unable to update outline point: ${details}`);
         }
@@ -206,11 +220,9 @@ export function SermonPreparationWorkspace() {
 
     async function deleteOutlinePoint(id: string) {
         if (!sermon || !selectedStudyId) return;
+        if (!window.confirm("Delete this outline point?")) return;
         setMessage(null);
         setError(null);
-
-        if (!window.confirm("Delete this outline point?")) return;
-
         try {
             sermon.removeOutlinePoint(id);
             await sermonRepository.save(sermon);
@@ -218,11 +230,7 @@ export function SermonPreparationWorkspace() {
             if (editingOutlinePointId === id) resetOutlineEditor();
             setMessage("Outline point deleted.");
         } catch (reason: unknown) {
-            try {
-                await reloadSermon();
-            } catch {
-                // Preserve the original save error when recovery also fails.
-            }
+            try { await reloadSermon(); } catch { /* preserve original error */ }
             const details = reason instanceof Error ? reason.message : String(reason);
             setError(`Unable to delete outline point: ${details}`);
         }
@@ -232,35 +240,16 @@ export function SermonPreparationWorkspace() {
         if (!sermon || !selectedStudyId) return;
         setMessage(null);
         setError(null);
-
         try {
             sermon.moveOutlinePoint(id, direction);
             await sermonRepository.save(sermon);
             await reloadSermon();
             setMessage("Outline order saved.");
         } catch (reason: unknown) {
-            try {
-                await reloadSermon();
-            } catch {
-                // Preserve the original save error when recovery also fails.
-            }
+            try { await reloadSermon(); } catch { /* preserve original error */ }
             const details = reason instanceof Error ? reason.message : String(reason);
             setError(`Unable to move outline point: ${details}`);
         }
-    }
-
-    function resetOutlineEditor() {
-        setEditingOutlinePointId(null);
-        setHeading("");
-        setTruth("");
-        resetOutlineSupport();
-    }
-
-    function resetOutlineSupport() {
-        setSupportingObservationIds([]);
-        setSupportingInterpretationIds([]);
-        setSupportingEvidenceIds([]);
-        setSupportingApplicationIds([]);
     }
 
     function toggleValue(current: string[], value: string, setter: (values: string[]) => void) {
@@ -275,7 +264,7 @@ export function SermonPreparationWorkspace() {
             <div style={{ display: "grid", gap: 20 }}>
                 <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20 }}>
                     <h2>Study Source</h2>
-                    <select value={selectedStudyId} onChange={(event) => void selectStudy(event.target.value)} style={{ width: "100%", padding: 10 }}>
+                    <select value={selectedStudyId} onChange={(event) => selectStudy(event.target.value)} style={{ width: "100%", padding: 10 }}>
                         <option value="">Select a study</option>
                         {studies.map((study) => (
                             <option key={study.id.value} value={study.id.value}>
