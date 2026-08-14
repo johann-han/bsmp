@@ -16,6 +16,7 @@ import {
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
 import { supabase } from "../../lib/supabase";
+import { cacheStudyForWorkspace } from "../../lib/studyWorkspaceNavigationCache";
 import { SermonStudySourcePanel } from "./SermonStudySourcePanel";
 
 function verseReferenceText(reference: StudySession["observations"][number]["target"]["verseReference"]): string {
@@ -366,7 +367,11 @@ export function SermonPreparationWorkspace() {
                                                             {observations.map((observation, itemIndex) => (
                                                                 <span key={observation.id.value}>
                                                                     {itemIndex > 0 && " • "}
-                                                                    <a href={workspaceHref(selectedStudy.id.value, `observation-${observation.id.value}`)} style={studySupportLinkStyle}>
+                                                                    <a
+                                                                        href={workspaceHref(selectedStudy.id.value, `observation-${observation.id.value}`)}
+                                                                        style={studySupportLinkStyle}
+                                                                        onClick={() => cacheStudyForWorkspace(selectedStudy)}
+                                                                    >
                                                                         {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}
                                                                     </a>
                                                                 </span>
@@ -379,7 +384,11 @@ export function SermonPreparationWorkspace() {
                                                             {interpretations.map((interpretation, itemIndex) => (
                                                                 <span key={interpretation.id.value}>
                                                                     {itemIndex > 0 && " • "}
-                                                                    <a href={workspaceHref(selectedStudy.id.value, `interpretation-${interpretation.id.value}`)} style={studySupportLinkStyle}>
+                                                                    <a
+                                                                        href={workspaceHref(selectedStudy.id.value, `interpretation-${interpretation.id.value}`)}
+                                                                        style={studySupportLinkStyle}
+                                                                        onClick={() => cacheStudyForWorkspace(selectedStudy)}
+                                                                    >
                                                                         {interpretation.statement.value}
                                                                     </a>
                                                                 </span>
@@ -392,7 +401,11 @@ export function SermonPreparationWorkspace() {
                                                             {evidence.map((item, itemIndex) => (
                                                                 <span key={item.id.value}>
                                                                     {itemIndex > 0 && " • "}
-                                                                    <a href={workspaceHref(selectedStudy.id.value, `evidence-${item.id.value}`)} style={studySupportLinkStyle}>
+                                                                    <a
+                                                                        href={workspaceHref(selectedStudy.id.value, `evidence-${item.id.value}`)}
+                                                                        style={studySupportLinkStyle}
+                                                                        onClick={() => cacheStudyForWorkspace(selectedStudy)}
+                                                                    >
                                                                         {item.type.value}: {item.description.value}
                                                                     </a>
                                                                 </span>
@@ -405,7 +418,11 @@ export function SermonPreparationWorkspace() {
                                                             {applications.map((application, itemIndex) => (
                                                                 <span key={application.id.value}>
                                                                     {itemIndex > 0 && " • "}
-                                                                    <a href={workspaceHref(selectedStudy.id.value, `application-${application.id.value}`)} style={studySupportLinkStyle}>
+                                                                    <a
+                                                                        href={workspaceHref(selectedStudy.id.value, `application-${application.id.value}`)}
+                                                                        style={studySupportLinkStyle}
+                                                                        onClick={() => cacheStudyForWorkspace(selectedStudy)}
+                                                                    >
                                                                         {application.principle.value}
                                                                     </a>
                                                                 </span>
