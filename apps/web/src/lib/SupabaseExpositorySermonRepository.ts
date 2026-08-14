@@ -3,6 +3,9 @@ import {
     ExpositorySermon,
     ExpositorySermonId,
     SermonBigIdea,
+    SermonConclusion,
+    SermonContext,
+    SermonIntroduction,
     SermonPurpose,
     SermonTitle,
 } from "@bsmp/preaching";
@@ -41,6 +44,9 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
             title: sermon.title.value,
             big_idea: sermon.bigIdea?.value ?? null,
             purpose: sermon.purpose?.value ?? null,
+            introduction: sermon.introduction?.value ?? null,
+            context: sermon.context?.value ?? null,
+            conclusion: sermon.conclusion?.value ?? null,
             created_at: sermon.createdAt.toISOString(),
         });
         if (error) throw error;
@@ -91,6 +97,9 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
 
         if (row.big_idea) sermon.defineBigIdea(SermonBigIdea.from(row.big_idea));
         if (row.purpose) sermon.definePurpose(SermonPurpose.from(row.purpose));
+        if (row.introduction) sermon.defineIntroduction(SermonIntroduction.from(row.introduction));
+        if (row.context) sermon.defineContext(SermonContext.from(row.context));
+        if (row.conclusion) sermon.defineConclusion(SermonConclusion.from(row.conclusion));
 
         const { data: outlineRows, error: outlineError } = await supabase.from("sermon_outline_points").select("*").eq("sermon_id", row.id).order("position", { ascending: true });
         if (outlineError) throw outlineError;
@@ -119,5 +128,8 @@ type DatabaseSermonRow = {
     title: string;
     big_idea: string | null;
     purpose: string | null;
+    introduction: string | null;
+    context: string | null;
+    conclusion: string | null;
     created_at: string;
 };
