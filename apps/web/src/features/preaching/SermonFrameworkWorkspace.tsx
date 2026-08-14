@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ExpositorySermon } from "@bsmp/preaching";
-import { SermonContext, SermonConclusion, SermonIntroduction, StudyId } from "@bsmp/preaching";
+import { SermonContext, SermonConclusion, SermonIntroduction } from "@bsmp/preaching";
+import { StudyId } from "@bsmp/study";
 import type { StudySession } from "@bsmp/study";
 import { AppShell } from "@repo/ui";
 
