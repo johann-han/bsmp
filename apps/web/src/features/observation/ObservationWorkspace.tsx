@@ -218,6 +218,25 @@ export function ObservationWorkspace() {
             : current);
     }
 
+    function scrollToElement(id: string) {
+        window.setTimeout(() => {
+            document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 0);
+    }
+
+    function focusObservation(observation: ObservationWorkspaceData["observations"][number]) {
+        const verseNumber = Number.parseInt(observation.target.verseReference.split(":").at(-1) ?? "", 10);
+        if (Number.isInteger(verseNumber)) {
+            const verse = passage.verses.find((item) => item.number === verseNumber);
+            if (verse) setSelectedVerses([verse]);
+        }
+        window.requestAnimationFrame(() => scrollToElement(`observation-${observation.id}`));
+    }
+
+    function focusInterpretation(interpretationId: string) {
+        scrollToElement(`interpretation-${interpretationId}`);
+    }
+
     if (error) return <p>{error}</p>;
     if (!workspace || !passageService || !data || !passage || !studyId) return <p>Loading study workspace...</p>;
 
@@ -284,7 +303,11 @@ export function ObservationWorkspace() {
                 onOptimisticCreate={addOptimisticInterpretation}
                 onRollbackCreate={rollbackOptimisticInterpretation}
             />
-            <InterpretationHistory interpretations={data.interpretations} observations={data.observations} />
+            <InterpretationHistory
+                interpretations={data.interpretations}
+                observations={data.observations}
+                onObservationSelect={focusObservation}
+            />
             <InterpretationTools
                 interpretations={data.interpretations}
                 observations={data.observations}
@@ -307,6 +330,7 @@ export function ObservationWorkspace() {
                 workspace={workspace}
                 onUpdated={updateApplication}
                 onDeleted={removeApplication}
+                onInterpretationSelect={focusInterpretation}
             />
         </div>
     );
