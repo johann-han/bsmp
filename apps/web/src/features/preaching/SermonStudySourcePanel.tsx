@@ -4,6 +4,8 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import type { StudySession } from "@bsmp/study";
 
+import { cacheStudyForWorkspace } from "../../lib/studyWorkspaceNavigationCache";
+
 interface Props {
     study: StudySession;
 }
@@ -23,9 +25,14 @@ const linkStyle: CSSProperties = {
     textDecoration: "none",
 };
 
-function WorkspaceLink({ href, children, style }: { href: string; children: ReactNode; style?: CSSProperties }) {
+function WorkspaceLink({ href, study, children, style }: { href: string; study: StudySession; children: ReactNode; style?: CSSProperties }) {
     return (
-        <Link href={href} prefetch style={style}>
+        <Link
+            href={href}
+            prefetch
+            style={style}
+            onClick={() => cacheStudyForWorkspace(study)}
+        >
             {children}
         </Link>
     );
@@ -56,6 +63,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 <p style={{ marginTop: 4 }}>Applications: {study.applications.length}</p>
                 <WorkspaceLink
                     href={workspaceHref(studyId)}
+                    study={study}
                     style={{ display: "inline-block", marginTop: 8, fontWeight: 600 }}
                 >
                     Open Study Workspace
@@ -69,7 +77,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 ) : (
                     study.observations.map((observation) => (
                         <article key={observation.id.value} style={{ marginBottom: 12 }}>
-                            <WorkspaceLink href={workspaceHref(studyId, `observation-${observation.id.value}`)} style={linkStyle}>
+                            <WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation.id.value}`)} style={linkStyle}>
                                 <strong>{observation.verseReference.value.toString()}</strong>
                             </WorkspaceLink>
                             <div>{observation.statement.value}</div>
@@ -85,7 +93,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 ) : (
                     study.interpretations.map((interpretation) => (
                         <article key={interpretation.id.value} style={{ marginBottom: 16 }}>
-                            <WorkspaceLink href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)} style={linkStyle}>
+                            <WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)} style={linkStyle}>
                                 <strong>{interpretation.statement.value}</strong>
                             </WorkspaceLink>
                             {interpretation.observationIds.length > 0 && (
@@ -98,7 +106,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                                     <strong>Evidence</strong>
                                     {interpretation.evidence.map((evidence) => (
                                         <div key={evidence.id.value} style={{ marginTop: 4 }}>
-                                            <WorkspaceLink href={workspaceHref(studyId, `evidence-${evidence.id.value}`)} style={linkStyle}>
+                                            <WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${evidence.id.value}`)} style={linkStyle}>
                                                 <span>{evidence.type.value}: </span>{evidence.description.value}
                                             </WorkspaceLink>
                                         </div>
@@ -117,7 +125,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 ) : (
                     study.applications.map((application) => (
                         <article key={application.id.value} style={{ marginBottom: 14 }}>
-                            <WorkspaceLink href={workspaceHref(studyId, `application-${application.id.value}`)} style={linkStyle}>
+                            <WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application.id.value}`)} style={linkStyle}>
                                 <div><strong>Principle:</strong> {application.principle.value}</div>
                             </WorkspaceLink>
                             <div><strong>Personal:</strong> {application.personal.value}</div>
