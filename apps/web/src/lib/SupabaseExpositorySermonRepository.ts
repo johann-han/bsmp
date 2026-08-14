@@ -50,7 +50,7 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
         if (userError) throw userError;
         if (!userData.user) throw new Error("A signed-in Supabase user is required for sermon persistence.");
 
-        const { error } = await supabase.from("expository_sermons").upsert({
+        const row = {
             id: sermon.id.value,
             study_id: sermon.studyId.value,
             user_id: userData.user.id,
@@ -61,7 +61,12 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
             context: sermon.context?.value ?? null,
             conclusion: sermon.conclusion?.value ?? null,
             created_at: sermon.createdAt.toISOString(),
-        });
+        };
+
+        // The checked-in Supabase Database type definitions may lag behind the
+        // framework migration. Keep the runtime row strongly shaped here while
+        // bridging only this repository call until generated DB types are refreshed.
+        const { error } = await supabase.from("expository_sermons").upsert(row as unknown as never);
         if (error) throw error;
 
         const { error: deleteError } = await supabase.from("sermon_outline_points").delete().eq("sermon_id", sermon.id.value);
