@@ -5,6 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { StudySession } from "@bsmp/study";
 
 import { cacheStudyForWorkspace } from "../../lib/studyWorkspaceNavigationCache";
+import { prefetchStudyWorkspace } from "../../lib/prefetchStudyWorkspace";
 
 interface Props {
     study: StudySession;
@@ -31,6 +32,8 @@ function WorkspaceLink({ href, study, children, style }: { href: string; study: 
             href={href}
             prefetch
             style={style}
+            onMouseEnter={() => prefetchStudyWorkspace(study)}
+            onFocus={() => prefetchStudyWorkspace(study)}
             onClick={() => cacheStudyForWorkspace(study)}
         >
             {children}
