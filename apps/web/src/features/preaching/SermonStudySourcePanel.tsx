@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { StudySession } from "@bsmp/study";
 
 interface Props {
@@ -18,12 +18,12 @@ function workspaceHref(studyId: string, target?: string): string {
         : `/workspace?${params.toString()}`;
 }
 
-const linkStyle = {
+const linkStyle: CSSProperties = {
     color: "#1d4ed8",
     textDecoration: "none",
 };
 
-function WorkspaceLink({ href, children, style }: { href: string; children: ReactNode; style?: React.CSSProperties }) {
+function WorkspaceLink({ href, children, style }: { href: string; children: ReactNode; style?: CSSProperties }) {
     return (
         <Link href={href} prefetch style={style}>
             {children}
