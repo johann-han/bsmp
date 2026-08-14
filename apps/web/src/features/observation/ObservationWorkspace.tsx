@@ -12,6 +12,7 @@ import type {
 import { ObservationPanel } from "@repo/ui";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
+import { takePreparedStudyWorkspace } from "../../lib/studyWorkspaceNavigationCache";
 import { ApplicationComposer } from "./ApplicationComposer";
 import { ApplicationHistory } from "./ApplicationHistory";
 import { InterpretationComposer } from "./InterpretationComposer";
@@ -90,13 +91,25 @@ export function ObservationWorkspace() {
         const requestedReturnTo = params.get("returnTo");
         if (requestedReturnTo) setReturnTo(requestedReturnTo);
 
-        void createSupabaseObservationWorkspace(requestedStudyId)
-            .then(async ({ workspace: nextWorkspace, passageService: nextPassageService, study }) => {
+        const prepared = requestedStudyId ? takePreparedStudyWorkspace(requestedStudyId) : undefined;
+
+        const bootstrapPromise = prepared
+            ? Promise.resolve(prepared)
+            : createSupabaseObservationWorkspace(requestedStudyId).then(async (created) => {
                 const [workspaceData, developmentPassage] = await Promise.all([
-                    nextWorkspace.load(),
-                    nextPassageService.load(),
+                    created.workspace.load(),
+                    created.passageService.load(),
                 ]);
 
+                return {
+                    ...created,
+                    data: workspaceData,
+                    passage: developmentPassage,
+                };
+            });
+
+        void bootstrapPromise
+            .then(({ workspace: nextWorkspace, passageService: nextPassageService, study, data: workspaceData, passage: developmentPassage }) => {
                 if (cancelled) return;
 
                 setWorkspace(nextWorkspace);
