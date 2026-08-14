@@ -42,6 +42,8 @@ export interface SermonOutlinePoint {
     readonly transition: string;
     readonly textObservationIds: readonly string[];
     readonly meaningInterpretationIds: readonly string[];
+    readonly meaningEvidenceIds: readonly string[];
+    readonly responseApplicationIds: readonly string[];
     readonly supportingObservationIds: readonly string[];
     readonly supportingInterpretationIds: readonly string[];
     readonly supportingEvidenceIds: readonly string[];
@@ -61,6 +63,8 @@ export interface SermonOutlineExposition {
     readonly transition?: string;
     readonly textObservationIds?: readonly string[];
     readonly meaningInterpretationIds?: readonly string[];
+    readonly meaningEvidenceIds?: readonly string[];
+    readonly responseApplicationIds?: readonly string[];
 }
 
 export class ExpositorySermon extends Entity<ExpositorySermonId> {
@@ -103,6 +107,8 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             transition: exposition.transition?.trim() ?? "",
             textObservationIds: [...(exposition.textObservationIds ?? [])],
             meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? [])],
+            meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? [])],
+            responseApplicationIds: [...(exposition.responseApplicationIds ?? [])],
         };
         const duplicate = this._outline.some((point) => point.heading === normalizedHeading && point.truth === normalizedTruth && JSON.stringify(point.supportingObservationIds) === JSON.stringify(normalizedSupport.supportingObservationIds) && JSON.stringify(point.supportingInterpretationIds) === JSON.stringify(normalizedSupport.supportingInterpretationIds) && JSON.stringify(point.supportingEvidenceIds) === JSON.stringify(normalizedSupport.supportingEvidenceIds) && JSON.stringify(point.supportingApplicationIds) === JSON.stringify(normalizedSupport.supportingApplicationIds));
         if (duplicate) throw new Error("This outline point is already part of the sermon.");
@@ -124,6 +130,8 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             transition: exposition.transition?.trim() ?? current.transition,
             textObservationIds: [...(exposition.textObservationIds ?? current.textObservationIds)],
             meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? current.meaningInterpretationIds)],
+            meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? current.meaningEvidenceIds)],
+            responseApplicationIds: [...(exposition.responseApplicationIds ?? current.responseApplicationIds)],
             supportingObservationIds: [...(support.supportingObservationIds ?? [])],
             supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])],
             supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])],
@@ -144,6 +152,8 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             transition: exposition.transition?.trim() ?? current.transition,
             textObservationIds: exposition.textObservationIds ? [...exposition.textObservationIds] : current.textObservationIds,
             meaningInterpretationIds: exposition.meaningInterpretationIds ? [...exposition.meaningInterpretationIds] : current.meaningInterpretationIds,
+            meaningEvidenceIds: exposition.meaningEvidenceIds ? [...exposition.meaningEvidenceIds] : current.meaningEvidenceIds,
+            responseApplicationIds: exposition.responseApplicationIds ? [...exposition.responseApplicationIds] : current.responseApplicationIds,
         } satisfies SermonOutlinePoint;
         this._outline[index] = updated; return updated;
     }
