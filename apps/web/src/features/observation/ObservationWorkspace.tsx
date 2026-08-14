@@ -252,6 +252,9 @@ export function ObservationWorkspace() {
     const selectedVerseReference = selectedVerse
         ? passage.verses.find((verse) => verse.number === selectedVerse.number)?.reference ?? null
         : null;
+    const returnLabel = returnTo?.includes("/preaching/exposition")
+        ? "← Back to Sermon Exposition"
+        : "← Back to Sermon Study Source";
 
     return (
         <div>
@@ -262,7 +265,7 @@ export function ObservationWorkspace() {
                         onClick={() => window.location.assign(returnTo)}
                         style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", fontWeight: 600 }}
                     >
-                        ← Back to Sermon Study Source
+                        {returnLabel}
                     </button>
                 </div>
             )}
