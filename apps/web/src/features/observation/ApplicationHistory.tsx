@@ -10,6 +10,7 @@ export interface ApplicationHistoryProps {
     readonly workspace: ObservationWorkspaceService;
     readonly onUpdated?: (application: ApplicationViewModel) => void;
     readonly onDeleted?: (applicationId: string) => void;
+    readonly onInterpretationSelect?: (interpretationId: string) => void;
 }
 
 export function ApplicationHistory({
@@ -18,6 +19,7 @@ export function ApplicationHistory({
     workspace,
     onUpdated,
     onDeleted,
+    onInterpretationSelect,
 }: ApplicationHistoryProps) {
     const interpretationMap = new Map(interpretations.map((item) => [item.id, item.statement]));
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -116,6 +118,7 @@ export function ApplicationHistory({
                         return (
                             <article
                                 key={application.id}
+                                id={`application-${application.id}`}
                                 style={{
                                     border: "1px solid #e5e7eb",
                                     borderRadius: 12,
@@ -125,7 +128,13 @@ export function ApplicationHistory({
                             >
                                 <p style={{ marginTop: 0, fontSize: 13, color: "#6b7280" }}>
                                     <strong>From interpretation:</strong>{" "}
-                                    {interpretationMap.get(application.interpretationId) ?? application.interpretationId}
+                                    <button
+                                        type="button"
+                                        onClick={() => onInterpretationSelect?.(application.interpretationId)}
+                                        style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", textAlign: "left" }}
+                                    >
+                                        {interpretationMap.get(application.interpretationId) ?? application.interpretationId}
+                                    </button>
                                 </p>
 
                                 {editing && draft ? (
