@@ -267,12 +267,13 @@ export function ObservationWorkspace() {
         <div>
             {returnTo && (
                 <div style={{ marginBottom: 12 }}>
-                    <a
-                        href={returnTo}
-                        style={{ color: "#1d4ed8", textDecoration: "none", fontWeight: 600 }}
+                    <button
+                        type="button"
+                        onClick={() => window.history.back()}
+                        style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", fontWeight: 600 }}
                     >
                         ← Back to Sermon Study Source
-                    </a>
+                    </button>
                 </div>
             )}
             {studyTitle && <p style={{ margin: "0 0 16px", fontWeight: 600 }}>Study: {studyTitle}</p>}
