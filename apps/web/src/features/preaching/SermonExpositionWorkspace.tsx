@@ -23,8 +23,12 @@ type Draft = {
     transition: string;
     textObservationIds: string[];
     meaningInterpretationIds: string[];
+    meaningEvidenceIds: string[];
+    responseApplicationIds: string[];
 };
-function emptyDraft(): Draft { return { text: "", explanation: "", illustration: "", application: "", transition: "", textObservationIds: [], meaningInterpretationIds: [] }; }
+function emptyDraft(): Draft {
+    return { text: "", explanation: "", illustration: "", application: "", transition: "", textObservationIds: [], meaningInterpretationIds: [], meaningEvidenceIds: [], responseApplicationIds: [] };
+}
 function workspaceHref(studyId: string, target: string): string {
     const params = new URLSearchParams({ studyId, returnTo: `/preaching/exposition?studyId=${encodeURIComponent(studyId)}` });
     return `/workspace?${params.toString()}#${encodeURIComponent(target)}`;
@@ -58,8 +62,15 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                 if (!nextSermon) throw new Error("Create Sermon Preparation before developing exposition.");
                 setStudy(nextStudy); setSermon(nextSermon);
                 setDrafts(Object.fromEntries(nextSermon.outline.map((point) => [point.id, {
-                    text: point.text, explanation: point.explanation, illustration: point.illustration, application: point.application, transition: point.transition,
-                    textObservationIds: [...point.textObservationIds], meaningInterpretationIds: [...point.meaningInterpretationIds],
+                    text: point.text,
+                    explanation: point.explanation,
+                    illustration: point.illustration,
+                    application: point.application,
+                    transition: point.transition,
+                    textObservationIds: [...point.textObservationIds],
+                    meaningInterpretationIds: [...point.meaningInterpretationIds],
+                    meaningEvidenceIds: [...point.meaningEvidenceIds],
+                    responseApplicationIds: [...point.responseApplicationIds],
                 }])));
             } catch (reason: unknown) {
                 if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load sermon exposition.");
@@ -95,7 +106,7 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
             <p style={{ margin: "4px 0" }}><strong>Study:</strong> {study.title.value}</p>
             <p style={{ margin: "4px 0" }}><strong>Passage:</strong> {sermon.passage.toString()}</p>
             {sermon.bigIdea && <p style={{ margin: "12px 0 4px" }}><strong>Big Idea:</strong> {sermon.bigIdea.value}</p>}
-            <p style={{ margin: "12px 0 0", color: "#6b7280" }}>Map the exact observations to the Text and interpretations to the Meaning of each sermon point.</p>
+            <p style={{ margin: "12px 0 0", color: "#6b7280" }}>Complete the traceable chain from the inductive study into Text, Meaning, Preaching, and Response.</p>
         </section>
 
         {sermon.outline.length === 0 ? <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><strong>No outline points yet.</strong><p>Create at least one outline point before developing the exposition.</p><button type="button" onClick={() => router.push(`/preaching?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>Back to Sermon Preparation</button></section> : sermon.outline.map((point, index) => {
@@ -116,15 +127,24 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                         <div style={{ borderLeft: "3px solid #93c5fd", paddingLeft: 12 }}>
                             <strong>Text foundation</strong>
                             <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the observations that directly establish what the Text section says.</div>
-                            {study.observations.length === 0 ? <p style={{ color: "#6b7280", marginBottom: 0 }}>No observations are available.</p> : study.observations.map((observation) => <label key={observation.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.textObservationIds.includes(observation.id.value)} onChange={() => updateDraft(point.id, "textObservationIds", toggleId(draft.textObservationIds, observation.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation.id.value}`)}>{observation.verseReference.value.toString()}</WorkspaceLink> — {observation.statement.value}</span></label>)}
+                            {study.observations.map((observation) => <label key={observation.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.textObservationIds.includes(observation.id.value)} onChange={() => updateDraft(point.id, "textObservationIds", toggleId(draft.textObservationIds, observation.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation.id.value}`)}>{observation.verseReference.value.toString()}</WorkspaceLink> — {observation.statement.value}</span></label>)}
                         </div>
                         <div style={{ borderLeft: "3px solid #a78bfa", paddingLeft: 12 }}>
                             <strong>Meaning foundation</strong>
                             <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the interpretations that directly support the Meaning section.</div>
-                            {study.interpretations.length === 0 ? <p style={{ color: "#6b7280", marginBottom: 0 }}>No interpretations are available.</p> : study.interpretations.map((interpretation) => <label key={interpretation.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.meaningInterpretationIds.includes(interpretation.id.value)} onChange={() => updateDraft(point.id, "meaningInterpretationIds", toggleId(draft.meaningInterpretationIds, interpretation.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)}>{interpretation.statement.value}</WorkspaceLink></span></label>)}
+                            {study.interpretations.map((interpretation) => <label key={interpretation.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.meaningInterpretationIds.includes(interpretation.id.value)} onChange={() => updateDraft(point.id, "meaningInterpretationIds", toggleId(draft.meaningInterpretationIds, interpretation.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)}>{interpretation.statement.value}</WorkspaceLink></span></label>)}
                         </div>
-                        {evidence.length > 0 && <div style={{ borderLeft: "3px solid #c4b5fd", paddingLeft: 12 }}><strong>Exegetical support</strong><div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Evidence already attached to the point remains available here.</div>{evidence.map((item) => <div key={item!.id.value} style={{ marginTop: 6 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${item!.id.value}`)}>{item!.type.value}</WorkspaceLink> — {item!.description.value}</div>)}</div>}
-                        {applications.length > 0 && <div style={{ borderLeft: "3px solid #86efac", paddingLeft: 12 }}><strong>Response implications</strong><div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Existing applications remain available to shape the Response section.</div>{applications.map((application) => <div key={application!.id.value} style={{ marginTop: 6 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application!.id.value}`)}><strong>Principle:</strong> {application!.principle.value}</WorkspaceLink><div><strong>Personal:</strong> {application!.personal.value}</div><div><strong>Ministry:</strong> {application!.ministry.value}</div><div><strong>Action:</strong> {application!.action.value}</div></div>)}</div>}
+                        <div style={{ borderLeft: "3px solid #c4b5fd", paddingLeft: 12 }}>
+                            <strong>Meaning support</strong>
+                            <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the evidence that directly strengthens the Meaning section.</div>
+                            {studyEvidence.length === 0 ? <p style={{ color: "#6b7280" }}>No evidence is available.</p> : studyEvidence.map((item) => <label key={item.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.meaningEvidenceIds.includes(item.id.value)} onChange={() => updateDraft(point.id, "meaningEvidenceIds", toggleId(draft.meaningEvidenceIds, item.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${item.id.value}`)}>{item.type.value}</WorkspaceLink> — {item.description.value}</span></label>)}
+                        </div>
+                        <div style={{ borderLeft: "3px solid #86efac", paddingLeft: 12 }}>
+                            <strong>Response foundation</strong>
+                            <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the applications that directly shape the Response section.</div>
+                            {study.applications.length === 0 ? <p style={{ color: "#6b7280" }}>No applications are available.</p> : study.applications.map((application) => <label key={application.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.responseApplicationIds.includes(application.id.value)} onChange={() => updateDraft(point.id, "responseApplicationIds", toggleId(draft.responseApplicationIds, application.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application.id.value}`)}><strong>Principle:</strong> {application.principle.value}</WorkspaceLink> — {application.action.value}</span></label>)}
+                        </div>
+                        {(evidence.length > 0 || applications.length > 0) && <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 10, color: "#6b7280", fontSize: 13 }}>Existing outline support remains preserved separately; these mappings identify the specific evidence and applications used in the exposition.</div>}
                     </div>
                 </details>
 
