@@ -259,11 +259,20 @@ export function ObservationWorkspace() {
     return (
         <div>
             {returnTo && (
-                <div style={{ marginBottom: 12 }}>
+                <div style={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 30,
+                    marginBottom: 12,
+                    padding: "8px 0",
+                    background: "rgba(255,255,255,0.96)",
+                    backdropFilter: "blur(8px)",
+                    borderBottom: "1px solid #e5e7eb",
+                }}>
                     <button
                         type="button"
                         onClick={() => window.location.assign(returnTo)}
-                        style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", fontWeight: 600 }}
+                        style={{ border: 0, padding: "7px 10px", background: "transparent", color: "#1d4ed8", cursor: "pointer", fontWeight: 700 }}
                     >
                         {returnLabel}
                     </button>
