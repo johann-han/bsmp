@@ -38,6 +38,8 @@ type DatabaseOutlinePointRow = {
     illustration?: string | null;
     application?: string | null;
     transition?: string | null;
+    text_observation_ids?: string[] | null;
+    meaning_interpretation_ids?: string[] | null;
     supporting_observation_ids?: string[] | null;
     supporting_interpretation_ids?: string[] | null;
     supporting_evidence_ids?: string[] | null;
@@ -50,24 +52,20 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
         if (error) throw error;
         return data ? this.hydrate(data) : undefined;
     }
-
     public async findByStudyId(studyId: string): Promise<ExpositorySermon | undefined> {
         const { data, error } = await supabase.from("expository_sermons").select("*").eq("study_id", studyId).order("created_at", { ascending: false }).limit(1).maybeSingle();
         if (error) throw error;
         return data ? this.hydrate(data) : undefined;
     }
-
     public async findAll(): Promise<readonly ExpositorySermon[]> {
         const { data, error } = await supabase.from("expository_sermons").select("*").order("created_at", { ascending: false });
         if (error) throw error;
         return Promise.all((data ?? []).map((row) => this.hydrate(row)));
     }
-
     public async save(sermon: ExpositorySermon): Promise<void> {
         const { data: userData, error: userError } = await supabase.auth.getUser();
         if (userError) throw userError;
         if (!userData.user) throw new Error("A signed-in Supabase user is required for sermon persistence.");
-
         const row = {
             id: sermon.id.value,
             study_id: sermon.studyId.value,
@@ -80,13 +78,10 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
             conclusion: sermon.conclusion?.value ?? null,
             created_at: sermon.createdAt.toISOString(),
         };
-
         const { error } = await supabase.from("expository_sermons").upsert(row as unknown as never);
         if (error) throw error;
-
         const { error: deleteError } = await supabase.from("sermon_outline_points").delete().eq("sermon_id", sermon.id.value);
         if (deleteError) throw deleteError;
-
         if (sermon.outline.length > 0) {
             const outlineRows = sermon.outline.map((point, index) => ({
                 id: point.id,
@@ -100,60 +95,48 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
                 illustration: point.illustration || null,
                 application: point.application || null,
                 transition: point.transition || null,
+                text_observation_ids: [...point.textObservationIds],
+                meaning_interpretation_ids: [...point.meaningInterpretationIds],
                 supporting_observation_ids: [...point.supportingObservationIds],
                 supporting_interpretation_ids: [...point.supportingInterpretationIds],
                 supporting_evidence_ids: [...point.supportingEvidenceIds],
                 supporting_application_ids: [...point.supportingApplicationIds],
             }));
-
             const { error: outlineError } = await supabase.from("sermon_outline_points").insert(outlineRows as unknown as never);
             if (outlineError) throw outlineError;
         }
     }
-
     private async hydrate(row: DatabaseSermonRow): Promise<ExpositorySermon> {
         const { data: study, error: studyError } = await supabase.from("studies").select("*").eq("id", row.study_id).maybeSingle();
         if (studyError) throw studyError;
         if (!study) throw new Error(`Study ${row.study_id} for sermon ${row.id} was not found.`);
-
         const start = VerseReference.create(BookCode.from(study.passage_start_book), ChapterNumber.of(study.passage_start_chapter), VerseNumber.from(study.passage_start_verse));
         const end = VerseReference.create(BookCode.from(study.passage_end_book), ChapterNumber.of(study.passage_end_chapter), VerseNumber.from(study.passage_end_verse));
-        const sermon = ExpositorySermon.create(
-            ExpositorySermonId.create(row.id as `${string}-${string}-${string}-${string}-${string}`),
-            StudyId.from(row.study_id),
-            SermonTitle.from(row.title),
-            Passage.create(start, end),
-        );
-
+        const sermon = ExpositorySermon.create(ExpositorySermonId.create(row.id as `${string}-${string}-${string}-${string}-${string}`), StudyId.from(row.study_id), SermonTitle.from(row.title), Passage.create(start, end));
         if (row.big_idea) sermon.defineBigIdea(SermonBigIdea.from(row.big_idea));
         if (row.purpose) sermon.definePurpose(SermonPurpose.from(row.purpose));
         if (row.introduction) sermon.defineIntroduction(SermonIntroduction.from(row.introduction));
         if (row.context) sermon.defineContext(SermonContext.from(row.context));
         if (row.conclusion) sermon.defineConclusion(SermonConclusion.from(row.conclusion));
-
         const { data: outlineRows, error: outlineError } = await supabase.from("sermon_outline_points").select("*").eq("sermon_id", row.id).order("position", { ascending: true });
         if (outlineError) throw outlineError;
         for (const rawPoint of outlineRows ?? []) {
             const point = rawPoint as unknown as DatabaseOutlinePointRow;
             const pointId = point.id as `${string}-${string}-${string}-${string}-${string}`;
-            sermon.addOutlinePoint(
-                point.heading,
-                point.truth,
-                {
-                    supportingObservationIds: point.supporting_observation_ids ?? [],
-                    supportingInterpretationIds: point.supporting_interpretation_ids ?? [],
-                    supportingEvidenceIds: point.supporting_evidence_ids ?? [],
-                    supportingApplicationIds: point.supporting_application_ids ?? [],
-                },
-                pointId,
-                {
-                    text: point.text ?? "",
-                    explanation: point.explanation ?? "",
-                    illustration: point.illustration ?? "",
-                    application: point.application ?? "",
-                    transition: point.transition ?? "",
-                },
-            );
+            sermon.addOutlinePoint(point.heading, point.truth, {
+                supportingObservationIds: point.supporting_observation_ids ?? [],
+                supportingInterpretationIds: point.supporting_interpretation_ids ?? [],
+                supportingEvidenceIds: point.supporting_evidence_ids ?? [],
+                supportingApplicationIds: point.supporting_application_ids ?? [],
+            }, pointId, {
+                text: point.text ?? "",
+                explanation: point.explanation ?? "",
+                illustration: point.illustration ?? "",
+                application: point.application ?? "",
+                transition: point.transition ?? "",
+                textObservationIds: point.text_observation_ids ?? [],
+                meaningInterpretationIds: point.meaning_interpretation_ids ?? [],
+            });
         }
         return sermon;
     }
