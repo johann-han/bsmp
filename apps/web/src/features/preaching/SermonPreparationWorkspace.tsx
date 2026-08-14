@@ -22,6 +22,19 @@ function verseReferenceText(reference: StudySession["observations"][number]["tar
     return reference.toString();
 }
 
+function workspaceHref(studyId: string, target: string): string {
+    const params = new URLSearchParams({
+        studyId,
+        returnTo: `/preaching?studyId=${encodeURIComponent(studyId)}`,
+    });
+    return `/workspace?${params.toString()}#${encodeURIComponent(target)}`;
+}
+
+const studySupportLinkStyle = {
+    color: "#1d4ed8",
+    textDecoration: "none",
+};
+
 export function SermonPreparationWorkspace() {
     const router = useRouter();
     const [studies, setStudies] = useState<readonly StudySession[]>([]);
@@ -315,10 +328,20 @@ export function SermonPreparationWorkspace() {
                                 </div>
 
                                 {sermon.outline.map((point, index) => {
-                                    const observationTexts = point.supportingObservationIds.map((id) => selectedStudy.observations.find((item) => item.id.value === id)?.statement.value).filter(Boolean);
-                                    const interpretationTexts = point.supportingInterpretationIds.map((id) => selectedStudy.interpretations.find((item) => item.id.value === id)?.statement.value).filter(Boolean);
-                                    const evidenceTexts = point.supportingEvidenceIds.map((id) => studyEvidence.find((item) => item.id.value === id)).filter(Boolean);
-                                    const applicationTexts = point.supportingApplicationIds.map((id) => selectedStudy.applications.find((item) => item.id.value === id)?.principle.value).filter(Boolean);
+                                    const observations = point.supportingObservationIds
+                                        .map((id) => selectedStudy.observations.find((item) => item.id.value === id))
+                                        .filter((item): item is StudySession["observations"][number] => Boolean(item));
+                                    const interpretations = point.supportingInterpretationIds
+                                        .map((id) => selectedStudy.interpretations.find((item) => item.id.value === id))
+                                        .filter((item): item is StudySession["interpretations"][number] => Boolean(item));
+                                    const evidence = point.supportingEvidenceIds
+                                        .map((id) => studyEvidence.find((item) => item.id.value === id))
+                                        .filter((item): item is NonNullable<typeof studyEvidence[number]> => Boolean(item));
+                                    const applications = point.supportingApplicationIds
+                                        .map((id) => selectedStudy.applications.find((item) => item.id.value === id))
+                                        .filter((item): item is StudySession["applications"][number] => Boolean(item));
+                                    const hasStudySupport = observations.length + interpretations.length + evidence.length + applications.length > 0;
+
                                     return (
                                         <div key={point.id} style={{ marginBottom: 16, border: editingOutlinePointId === point.id ? "2px solid #333" : "1px solid #eee", borderRadius: 8, padding: 12 }}>
                                             <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
@@ -333,13 +356,62 @@ export function SermonPreparationWorkspace() {
                                                     <button type="button" onClick={() => void moveOutlinePoint(point.id, "down")} disabled={index === sermon.outline.length - 1}>↓</button>
                                                 </div>
                                             </div>
-                                            {(observationTexts.length + interpretationTexts.length + evidenceTexts.length + applicationTexts.length) > 0 && (
+
+                                            {hasStudySupport && (
                                                 <div style={{ marginTop: 10, fontSize: 13, color: "#4b5563" }}>
                                                     <strong>Study support</strong>
-                                                    {observationTexts.length > 0 && <div>Observations: {observationTexts.join(" • ")}</div>}
-                                                    {interpretationTexts.length > 0 && <div>Interpretations: {interpretationTexts.join(" • ")}</div>}
-                                                    {evidenceTexts.length > 0 && <div>Evidence: {evidenceTexts.map((item) => `${item?.type.value}: ${item?.description.value}`).join(" • ")}</div>}
-                                                    {applicationTexts.length > 0 && <div>Applications: {applicationTexts.join(" • ")}</div>}
+                                                    {observations.length > 0 && (
+                                                        <div style={{ marginTop: 4 }}>
+                                                            <span>Observations: </span>
+                                                            {observations.map((observation, itemIndex) => (
+                                                                <span key={observation.id.value}>
+                                                                    {itemIndex > 0 && " • "}
+                                                                    <a href={workspaceHref(selectedStudy.id.value, `observation-${observation.id.value}`)} style={studySupportLinkStyle}>
+                                                                        {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}
+                                                                    </a>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {interpretations.length > 0 && (
+                                                        <div style={{ marginTop: 4 }}>
+                                                            <span>Interpretations: </span>
+                                                            {interpretations.map((interpretation, itemIndex) => (
+                                                                <span key={interpretation.id.value}>
+                                                                    {itemIndex > 0 && " • "}
+                                                                    <a href={workspaceHref(selectedStudy.id.value, `interpretation-${interpretation.id.value}`)} style={studySupportLinkStyle}>
+                                                                        {interpretation.statement.value}
+                                                                    </a>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {evidence.length > 0 && (
+                                                        <div style={{ marginTop: 4 }}>
+                                                            <span>Evidence: </span>
+                                                            {evidence.map((item, itemIndex) => (
+                                                                <span key={item.id.value}>
+                                                                    {itemIndex > 0 && " • "}
+                                                                    <a href={workspaceHref(selectedStudy.id.value, `evidence-${item.id.value}`)} style={studySupportLinkStyle}>
+                                                                        {item.type.value}: {item.description.value}
+                                                                    </a>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {applications.length > 0 && (
+                                                        <div style={{ marginTop: 4 }}>
+                                                            <span>Applications: </span>
+                                                            {applications.map((application, itemIndex) => (
+                                                                <span key={application.id.value}>
+                                                                    {itemIndex > 0 && " • "}
+                                                                    <a href={workspaceHref(selectedStudy.id.value, `application-${application.id.value}`)} style={studySupportLinkStyle}>
+                                                                        {application.principle.value}
+                                                                    </a>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
