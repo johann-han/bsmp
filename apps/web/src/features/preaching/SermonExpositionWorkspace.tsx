@@ -60,10 +60,7 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
             try {
                 const studyRepository = new SupabaseStudyRepository();
                 const sermonRepository = new SupabaseExpositorySermonRepository();
-                const [nextStudy, nextSermon] = await Promise.all([
-                    studyRepository.find(StudyId.from(studyId)),
-                    sermonRepository.findByStudyId(studyId),
-                ]);
+                const [nextStudy, nextSermon] = await Promise.all([studyRepository.find(StudyId.from(studyId)), sermonRepository.findByStudyId(studyId)]);
                 if (cancelled) return;
                 if (!nextStudy) throw new Error("The selected study could not be found.");
                 if (!nextSermon) throw new Error("Create Sermon Preparation before developing exposition.");
@@ -128,6 +125,7 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                         const interpretations = point.supportingInterpretationIds.map((id) => study.interpretations.find((item) => item.id.value === id)).filter(Boolean);
                         const evidence = point.supportingEvidenceIds.map((id) => studyEvidence.find((item) => item.id.value === id)).filter(Boolean);
                         const applications = point.supportingApplicationIds.map((id) => study.applications.find((item) => item.id.value === id)).filter(Boolean);
+                        const hasStudySupport = observations.length + interpretations.length + evidence.length + applications.length > 0;
                         const draft = drafts[point.id] ?? emptyDraft();
 
                         return (
@@ -141,19 +139,23 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                                     <WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${point.supportingObservationIds[0] ?? ""}`)}>Study Workspace</WorkspaceLink>
                                 </div>
 
-                                <section style={{ marginTop: 16, border: "1px solid #e5e7eb", borderRadius: 10, padding: 16, background: "#f8fafc" }}>
-                                    <h3 style={{ marginTop: 0 }}>Study Support</h3>
-                                    {observations.length === 0 && interpretations.length === 0 && evidence.length === 0 && applications.length === 0 ? (
-                                        <p style={{ color: "#6b7280", marginBottom: 0 }}>No study support has been attached to this outline point.</p>
-                                    ) : (
-                                        <div style={{ display: "grid", gap: 12 }}>
-                                            {observations.length > 0 && <div><strong>Observations</strong>{observations.map((observation) => <div key={observation!.id.value} style={{ marginTop: 5 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation!.id.value}`)}>{observation!.verseReference.value.toString()}</WorkspaceLink> — {observation!.statement.value}</div>)}</div>}
-                                            {interpretations.length > 0 && <div><strong>Interpretations</strong>{interpretations.map((interpretation) => <div key={interpretation!.id.value} style={{ marginTop: 5 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation!.id.value}`)}>{interpretation!.statement.value}</WorkspaceLink></div>)}</div>}
-                                            {evidence.length > 0 && <div><strong>Evidence</strong>{evidence.map((item) => <div key={item!.id.value} style={{ marginTop: 5 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${item!.id.value}`)}>{item!.type.value}</WorkspaceLink> — {item!.description.value}</div>)}</div>}
-                                            {applications.length > 0 && <div><strong>Applications</strong>{applications.map((application) => <div key={application!.id.value} style={{ marginTop: 5 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application!.id.value}`)}><strong>Principle:</strong> {application!.principle.value}</WorkspaceLink><div><strong>Personal:</strong> {application!.personal.value}</div><div><strong>Ministry:</strong> {application!.ministry.value}</div><div><strong>Action:</strong> {application!.action.value}</div></div>)}</div>}
-                                        </div>
-                                    )}
-                                </section>
+                                <details open={index === 0} style={{ marginTop: 16, border: "1px solid #e5e7eb", borderRadius: 10, background: "#f8fafc" }}>
+                                    <summary style={{ cursor: "pointer", padding: "14px 16px", fontWeight: 700, listStylePosition: "inside" }}>
+                                        Study Support {hasStudySupport ? `(${observations.length + interpretations.length + evidence.length + applications.length})` : "(none attached)"}
+                                    </summary>
+                                    <div style={{ padding: "0 16px 16px" }}>
+                                        {!hasStudySupport ? (
+                                            <p style={{ color: "#6b7280", marginBottom: 0 }}>No study support has been attached to this outline point.</p>
+                                        ) : (
+                                            <div style={{ display: "grid", gap: 12 }}>
+                                                {observations.length > 0 && <div><strong>Observations</strong>{observations.map((observation) => <div key={observation!.id.value} style={{ marginTop: 5 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation!.id.value}`)}>{observation!.verseReference.value.toString()}</WorkspaceLink> — {observation!.statement.value}</div>)}</div>}
+                                                {interpretations.length > 0 && <div><strong>Interpretations</strong>{interpretations.map((interpretation) => <div key={interpretation!.id.value} style={{ marginTop: 5 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation!.id.value}`)}>{interpretation!.statement.value}</WorkspaceLink></div>)}</div>}
+                                                {evidence.length > 0 && <div><strong>Evidence</strong>{evidence.map((item) => <div key={item!.id.value} style={{ marginTop: 5 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${item!.id.value}`)}>{item!.type.value}</WorkspaceLink> — {item!.description.value}</div>)}</div>}
+                                                {applications.length > 0 && <div><strong>Applications</strong>{applications.map((application) => <div key={application!.id.value} style={{ marginTop: 5 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application!.id.value}`)}><strong>Principle:</strong> {application!.principle.value}</WorkspaceLink><div><strong>Personal:</strong> {application!.personal.value}</div><div><strong>Ministry:</strong> {application!.ministry.value}</div><div><strong>Action:</strong> {application!.action.value}</div></div>)}</div>}
+                                            </div>
+                                        )}
+                                    </div>
+                                </details>
 
                                 <div style={{ display: "grid", gap: 14, marginTop: 16 }}>
                                     <label><strong>Explanation</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>What does the text say, and how does the point develop from the passage?</div><textarea value={draft.explanation} onChange={(event) => updateDraft(point.id, "explanation", event.target.value)} rows={6} placeholder="Explain the meaning and movement of the text..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
