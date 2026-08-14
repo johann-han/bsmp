@@ -12,6 +12,9 @@ import {
     ExpositorySermon,
     ExpositorySermonId,
     SermonBigIdea,
+    SermonContext,
+    SermonConclusion,
+    SermonIntroduction,
     SermonPurpose,
     SermonTitle,
 } from "./ExpositorySermon.js";
@@ -36,6 +39,9 @@ describe("ExpositorySermon", () => {
 
         sermon.defineBigIdea(SermonBigIdea.from("Jesus calls His people to abide in Him."));
         sermon.definePurpose(SermonPurpose.from("Lead the church toward dependent obedience."));
+        sermon.defineIntroduction(SermonIntroduction.from("Open with the believer's need for Christ."));
+        sermon.defineContext(SermonContext.from("Jesus teaches this in the farewell discourse before the cross."));
+        sermon.defineConclusion(SermonConclusion.from("Call the church to remain in Christ and bear fruit."));
         sermon.addOutlinePoint("Abide in the vine", "Life and fruitfulness come from Christ.");
         sermon.addOutlinePoint("Bear lasting fruit", "Abiding produces visible obedience.");
 
@@ -44,6 +50,9 @@ describe("ExpositorySermon", () => {
         expect(sermon.passage.toString()).toBe("JHN 15:1");
         expect(sermon.bigIdea?.value).toContain("abide in Him");
         expect(sermon.purpose?.value).toContain("dependent obedience");
+        expect(sermon.introduction?.value).toContain("believer's need");
+        expect(sermon.context?.value).toContain("farewell discourse");
+        expect(sermon.conclusion?.value).toContain("bear fruit");
         expect(sermon.outline).toHaveLength(2);
     });
 
