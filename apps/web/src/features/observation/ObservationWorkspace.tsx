@@ -60,7 +60,6 @@ async function loadRealBiblePassage(
     const response = await fetch(
         `/api/bible/passage?reference=${encodeURIComponent(reference)}&translation=${encodeURIComponent(translation)}`,
     );
-
     if (!response.ok) return null;
 
     const payload = await response.json() as RealBiblePassageResponse;
@@ -85,29 +84,43 @@ export function ObservationWorkspace() {
     const [returnTo, setReturnTo] = useState<string | null>(null);
 
     useEffect(() => {
+        let cancelled = false;
         const params = new URLSearchParams(window.location.search);
         const requestedStudyId = params.get("studyId") ?? undefined;
         const requestedReturnTo = params.get("returnTo");
         if (requestedReturnTo) setReturnTo(requestedReturnTo);
 
-        createSupabaseObservationWorkspace(requestedStudyId)
+        void createSupabaseObservationWorkspace(requestedStudyId)
             .then(async ({ workspace: nextWorkspace, passageService: nextPassageService, study }) => {
-                const [workspaceData, developmentPassage, realPassage] = await Promise.all([
+                const [workspaceData, developmentPassage] = await Promise.all([
                     nextWorkspace.load(),
                     nextPassageService.load(),
-                    loadRealBiblePassage(nextPassageService, "asv").catch(() => null),
                 ]);
+
+                if (cancelled) return;
 
                 setWorkspace(nextWorkspace);
                 setPassageService(nextPassageService);
                 setData(workspaceData);
-                setPassage(realPassage ?? developmentPassage);
+                setPassage(developmentPassage);
                 setStudyId(study.id.value);
                 setStudyTitle(study.title.value);
+
+                void loadRealBiblePassage(nextPassageService, "asv")
+                    .then((realPassage) => {
+                        if (!cancelled && realPassage) setPassage(realPassage);
+                    })
+                    .catch(() => {
+                        // Keep the development passage if the real translation service is unavailable.
+                    });
             })
             .catch((reason: unknown) => {
-                setError(reason instanceof Error ? reason.message : "Unable to load the study workspace.");
+                if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load the study workspace.");
             });
+
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     async function refreshWorkspace() {
@@ -117,7 +130,6 @@ export function ObservationWorkspace() {
 
     async function changeTranslation(nextTranslation: TranslationId) {
         if (!passageService || nextTranslation === translation) return;
-
         setTranslation(nextTranslation);
         setPassageLoading(true);
         setPassageError(null);
@@ -140,92 +152,62 @@ export function ObservationWorkspace() {
         setSelectedVerses([verse]);
         setTargetWord(word);
         setTargetMarkup(markup);
-        window.requestAnimationFrame(() => {
-            observationComposerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        });
+        window.requestAnimationFrame(() => observationComposerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
     }
 
     function addOptimisticInterpretation(interpretation: ObservationWorkspaceData["interpretations"][number]) {
-        setData((current) => current
-            ? { ...current, interpretations: [...current.interpretations, interpretation] }
-            : current);
+        setData((current) => current ? { ...current, interpretations: [...current.interpretations, interpretation] } : current);
     }
 
     function rollbackOptimisticInterpretation(id: string) {
-        setData((current) => current
-            ? { ...current, interpretations: current.interpretations.filter((item) => item.id !== id) }
-            : current);
+        setData((current) => current ? { ...current, interpretations: current.interpretations.filter((item) => item.id !== id) } : current);
     }
 
     function updateInterpretation(next: ObservationWorkspaceData["interpretations"][number]) {
-        setData((current) => current
-            ? {
-                ...current,
-                interpretations: current.interpretations.map((item) =>
-                    item.id === next.id ? next : item),
-            }
-            : current);
+        setData((current) => current ? {
+            ...current,
+            interpretations: current.interpretations.map((item) => item.id === next.id ? next : item),
+        } : current);
     }
 
     function addOptimisticEvidence(
         interpretationId: string,
         evidence: ObservationWorkspaceData["interpretations"][number]["evidence"][number],
     ) {
-        setData((current) => current
-            ? {
-                ...current,
-                interpretations: current.interpretations.map((item) =>
-                    item.id === interpretationId
-                        ? { ...item, evidence: [...item.evidence, evidence] }
-                        : item),
-            }
-            : current);
+        setData((current) => current ? {
+            ...current,
+            interpretations: current.interpretations.map((item) => item.id === interpretationId ? { ...item, evidence: [...item.evidence, evidence] } : item),
+        } : current);
     }
 
     function rollbackOptimisticEvidence(interpretationId: string, evidenceId: string) {
-        setData((current) => current
-            ? {
-                ...current,
-                interpretations: current.interpretations.map((item) =>
-                    item.id === interpretationId
-                        ? { ...item, evidence: item.evidence.filter((evidence) => evidence.id !== evidenceId) }
-                        : item),
-            }
-            : current);
+        setData((current) => current ? {
+            ...current,
+            interpretations: current.interpretations.map((item) => item.id === interpretationId ? { ...item, evidence: item.evidence.filter((item) => item.id !== evidenceId) } : item),
+        } : current);
     }
 
     function addOptimisticApplication(application: ObservationWorkspaceData["applications"][number]) {
-        setData((current) => current
-            ? { ...current, applications: [...current.applications, application] }
-            : current);
+        setData((current) => current ? { ...current, applications: [...current.applications, application] } : current);
     }
 
     function rollbackOptimisticApplication(id: string) {
-        setData((current) => current
-            ? { ...current, applications: current.applications.filter((item) => item.id !== id) }
-            : current);
+        setData((current) => current ? { ...current, applications: current.applications.filter((item) => item.id !== id) } : current);
     }
 
     function updateApplication(application: ObservationWorkspaceData["applications"][number]) {
-        setData((current) => current
-            ? {
-                ...current,
-                applications: current.applications.map((item) =>
-                    item.id === application.id ? application : item),
-            }
-            : current);
+        setData((current) => current ? {
+            ...current,
+            applications: current.applications.map((item) => item.id === application.id ? application : item),
+        } : current);
     }
 
     function removeApplication(applicationId: string) {
-        setData((current) => current
-            ? { ...current, applications: current.applications.filter((item) => item.id !== applicationId) }
-            : current);
+        setData((current) => current ? { ...current, applications: current.applications.filter((item) => item.id !== applicationId) } : current);
     }
 
     function scrollToElement(id: string) {
-        window.setTimeout(() => {
-            document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 0);
+        window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
     }
 
     function focusObservation(observation: ObservationWorkspaceData["observations"][number]) {
@@ -243,15 +225,10 @@ export function ObservationWorkspace() {
 
     useEffect(() => {
         if (!data || !passage || !studyId) return;
-
         const hash = window.location.hash.replace(/^#/, "");
         if (!hash) return;
-
         window.setTimeout(() => {
-            document.getElementById(decodeURIComponent(hash))?.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-            });
+            document.getElementById(decodeURIComponent(hash))?.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 0);
     }, [data, passage, studyId]);
 
@@ -269,13 +246,14 @@ export function ObservationWorkspace() {
                 <div style={{ marginBottom: 12 }}>
                     <button
                         type="button"
-                        onClick={() => window.history.back()}
+                        onClick={() => window.location.assign(returnTo)}
                         style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", fontWeight: 600 }}
                     >
                         ← Back to Sermon Study Source
                     </button>
                 </div>
             )}
+
             {studyTitle && <p style={{ margin: "0 0 16px", fontWeight: 600 }}>Study: {studyTitle}</p>}
 
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 12 }}>
@@ -320,11 +298,7 @@ export function ObservationWorkspace() {
                     onSaved={refreshWorkspace}
                 />
             </div>
-            <ObservationHistory
-                observations={data.observations}
-                selectedVerseReference={selectedVerseReference}
-                onChanged={refreshWorkspace}
-            />
+            <ObservationHistory observations={data.observations} selectedVerseReference={selectedVerseReference} onChanged={refreshWorkspace} />
             <InterpretationComposer
                 workspace={workspace}
                 observations={data.observations}
@@ -332,11 +306,7 @@ export function ObservationWorkspace() {
                 onOptimisticCreate={addOptimisticInterpretation}
                 onRollbackCreate={rollbackOptimisticInterpretation}
             />
-            <InterpretationHistory
-                interpretations={data.interpretations}
-                observations={data.observations}
-                onObservationSelect={focusObservation}
-            />
+            <InterpretationHistory interpretations={data.interpretations} observations={data.observations} onObservationSelect={focusObservation} />
             <InterpretationTools
                 interpretations={data.interpretations}
                 observations={data.observations}
