@@ -17,6 +17,15 @@ function NavigationLinks() {
     const studyId = searchParams.get("studyId");
     const preachingHref = studyId ? `/preaching?studyId=${encodeURIComponent(studyId)}` : "/preaching";
 
+    function openSermonPreparation(event: React.MouseEvent<HTMLAnchorElement>) {
+        event.preventDefault();
+        const currentStudyId = new URLSearchParams(window.location.search).get("studyId");
+        const target = currentStudyId
+            ? `/preaching?studyId=${encodeURIComponent(currentStudyId)}`
+            : preachingHref;
+        window.location.assign(target);
+    }
+
     return (
         <nav
             aria-label="Primary navigation"
@@ -37,6 +46,7 @@ function NavigationLinks() {
                 <a
                     key={href}
                     href={href === "/preaching" ? preachingHref : href}
+                    onClick={href === "/preaching" ? openSermonPreparation : undefined}
                     style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
                 >
                     {label}
