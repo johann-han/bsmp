@@ -63,6 +63,19 @@ describe("ExpositorySermon", () => {
         expect(sermon.outline[0]?.explanation).toContain("dependent union");
     });
 
+    it("maps evidence to meaning and applications to response", () => {
+        const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-5"), StudyId.from("study-5"), SermonTitle.from("Test"), john15());
+        const point = sermon.addOutlinePoint("Remain in Christ", "Fruitfulness depends on abiding.", {}, "point-5", {
+            meaningEvidenceIds: ["evidence-1", "evidence-2"],
+            responseApplicationIds: ["application-1"],
+        });
+        expect(point.meaningEvidenceIds).toEqual(["evidence-1", "evidence-2"]);
+        expect(point.responseApplicationIds).toEqual(["application-1"]);
+        sermon.defineOutlinePointExposition(point.id, { meaningEvidenceIds: ["evidence-3"], responseApplicationIds: ["application-2", "application-3"] });
+        expect(sermon.outline[0]?.meaningEvidenceIds).toEqual(["evidence-3"]);
+        expect(sermon.outline[0]?.responseApplicationIds).toEqual(["application-2", "application-3"]);
+    });
+
     it("rejects empty outline content", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-2"), StudyId.from("study-2"), SermonTitle.from("Test"), john15());
         expect(() => sermon.addOutlinePoint("", "truth")).toThrow();
