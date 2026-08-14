@@ -1,3 +1,7 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+
 const items = [
     ["Dashboard", "/"],
     ["Bible", "/bible"],
@@ -8,12 +12,20 @@ const items = [
 ] as const;
 
 export function GlobalNav() {
+    const searchParams = useSearchParams();
+    const studyId = searchParams.get("studyId");
+
+    const hrefFor = (href: string) => {
+        if (href !== "/preaching" || !studyId) return href;
+        return `/preaching?studyId=${encodeURIComponent(studyId)}`;
+    };
+
     return (
         <header
             style={{
                 position: "sticky",
                 top: 0,
-                zIndex: 100,
+                zIndex: 1000,
                 borderBottom: "1px solid #e5e7eb",
                 background: "rgba(255,255,255,0.96)",
                 backdropFilter: "blur(10px)",
@@ -38,7 +50,7 @@ export function GlobalNav() {
                 {items.map(([label, href]) => (
                     <a
                         key={href}
-                        href={href}
+                        href={hrefFor(href)}
                         style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
                     >
                         {label}
