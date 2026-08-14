@@ -82,9 +82,13 @@ export function ObservationWorkspace() {
     const [passageLoading, setPassageLoading] = useState(false);
     const [passageError, setPassageError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [returnTo, setReturnTo] = useState<string | null>(null);
 
     useEffect(() => {
-        const requestedStudyId = new URLSearchParams(window.location.search).get("studyId") ?? undefined;
+        const params = new URLSearchParams(window.location.search);
+        const requestedStudyId = params.get("studyId") ?? undefined;
+        const requestedReturnTo = params.get("returnTo");
+        if (requestedReturnTo) setReturnTo(requestedReturnTo);
 
         createSupabaseObservationWorkspace(requestedStudyId)
             .then(async ({ workspace: nextWorkspace, passageService: nextPassageService, study }) => {
@@ -237,6 +241,20 @@ export function ObservationWorkspace() {
         scrollToElement(`interpretation-${interpretationId}`);
     }
 
+    useEffect(() => {
+        if (!data || !passage || !studyId) return;
+
+        const hash = window.location.hash.replace(/^#/, "");
+        if (!hash) return;
+
+        window.setTimeout(() => {
+            document.getElementById(decodeURIComponent(hash))?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+        }, 0);
+    }, [data, passage, studyId]);
+
     if (error) return <p>{error}</p>;
     if (!workspace || !passageService || !data || !passage || !studyId) return <p>Loading study workspace...</p>;
 
@@ -247,6 +265,16 @@ export function ObservationWorkspace() {
 
     return (
         <div>
+            {returnTo && (
+                <div style={{ marginBottom: 12 }}>
+                    <a
+                        href={returnTo}
+                        style={{ color: "#1d4ed8", textDecoration: "none", fontWeight: 600 }}
+                    >
+                        ← Back to Sermon Study Source
+                    </a>
+                </div>
+            )}
             {studyTitle && <p style={{ margin: "0 0 16px", fontWeight: 600 }}>Study: {studyTitle}</p>}
 
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 12 }}>
