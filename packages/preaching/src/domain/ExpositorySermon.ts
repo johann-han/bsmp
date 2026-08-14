@@ -82,6 +82,10 @@ export interface SermonOutlinePoint {
     readonly id: string;
     readonly heading: string;
     readonly truth: string;
+    readonly explanation: string;
+    readonly illustration: string;
+    readonly application: string;
+    readonly transition: string;
     readonly supportingObservationIds: readonly string[];
     readonly supportingInterpretationIds: readonly string[];
     readonly supportingEvidenceIds: readonly string[];
@@ -93,6 +97,13 @@ export interface SermonOutlineSupport {
     readonly supportingInterpretationIds?: readonly string[];
     readonly supportingEvidenceIds?: readonly string[];
     readonly supportingApplicationIds?: readonly string[];
+}
+
+export interface SermonOutlineExposition {
+    readonly explanation?: string;
+    readonly illustration?: string;
+    readonly application?: string;
+    readonly transition?: string;
 }
 
 export class ExpositorySermon extends Entity<ExpositorySermonId> {
@@ -159,6 +170,7 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
         truth: string,
         support: SermonOutlineSupport = {},
         id = crypto.randomUUID(),
+        exposition: SermonOutlineExposition = {},
     ): SermonOutlinePoint {
         const normalizedHeading = heading.trim();
         const normalizedTruth = truth.trim();
@@ -171,6 +183,13 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])],
             supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])],
             supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
+        };
+
+        const normalizedExposition = {
+            explanation: exposition.explanation?.trim() ?? "",
+            illustration: exposition.illustration?.trim() ?? "",
+            application: exposition.application?.trim() ?? "",
+            transition: exposition.transition?.trim() ?? "",
         };
 
         const duplicate = this._outline.some(
@@ -191,6 +210,7 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             id,
             heading: normalizedHeading,
             truth: normalizedTruth,
+            ...normalizedExposition,
             ...normalizedSupport,
         } satisfies SermonOutlinePoint;
 
@@ -203,6 +223,7 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
         heading: string,
         truth: string,
         support: SermonOutlineSupport = {},
+        exposition: SermonOutlineExposition = {},
     ): SermonOutlinePoint {
         const index = this._outline.findIndex((point) => point.id === id);
         if (index < 0) throw new Error("Outline point was not found.");
@@ -213,14 +234,40 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             throw new Error("An outline point requires both a heading and truth statement.");
         }
 
+        const current = this._outline[index];
+        if (!current) throw new Error("Outline point was not found.");
+
         const updated = {
             id,
             heading: normalizedHeading,
             truth: normalizedTruth,
+            explanation: exposition.explanation?.trim() ?? current.explanation,
+            illustration: exposition.illustration?.trim() ?? current.illustration,
+            application: exposition.application?.trim() ?? current.application,
+            transition: exposition.transition?.trim() ?? current.transition,
             supportingObservationIds: [...(support.supportingObservationIds ?? [])],
             supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])],
             supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])],
             supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
+        } satisfies SermonOutlinePoint;
+
+        this._outline[index] = updated;
+        return updated;
+    }
+
+    public defineOutlinePointExposition(id: string, exposition: SermonOutlineExposition): SermonOutlinePoint {
+        const index = this._outline.findIndex((point) => point.id === id);
+        if (index < 0) throw new Error("Outline point was not found.");
+
+        const current = this._outline[index];
+        if (!current) throw new Error("Outline point was not found.");
+
+        const updated = {
+            ...current,
+            explanation: exposition.explanation?.trim() ?? current.explanation,
+            illustration: exposition.illustration?.trim() ?? current.illustration,
+            application: exposition.application?.trim() ?? current.application,
+            transition: exposition.transition?.trim() ?? current.transition,
         } satisfies SermonOutlinePoint;
 
         this._outline[index] = updated;
@@ -248,43 +295,14 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
         this._outline[targetIndex] = current;
     }
 
-    public get title(): SermonTitle {
-        return this._title;
-    }
-
-    public get studyId(): StudyId {
-        return this._studyId;
-    }
-
-    public get passage(): Passage {
-        return this._passage;
-    }
-
-    public get bigIdea(): SermonBigIdea | undefined {
-        return this._bigIdea;
-    }
-
-    public get purpose(): SermonPurpose | undefined {
-        return this._purpose;
-    }
-
-    public get introduction(): SermonIntroduction | undefined {
-        return this._introduction;
-    }
-
-    public get context(): SermonContext | undefined {
-        return this._context;
-    }
-
-    public get conclusion(): SermonConclusion | undefined {
-        return this._conclusion;
-    }
-
-    public get outline(): readonly SermonOutlinePoint[] {
-        return this._outline;
-    }
-
-    public get createdAt(): Date {
-        return this._createdAt;
-    }
+    public get title(): SermonTitle { return this._title; }
+    public get studyId(): StudyId { return this._studyId; }
+    public get passage(): Passage { return this._passage; }
+    public get bigIdea(): SermonBigIdea | undefined { return this._bigIdea; }
+    public get purpose(): SermonPurpose | undefined { return this._purpose; }
+    public get introduction(): SermonIntroduction | undefined { return this._introduction; }
+    public get context(): SermonContext | undefined { return this._context; }
+    public get conclusion(): SermonConclusion | undefined { return this._conclusion; }
+    public get outline(): readonly SermonOutlinePoint[] { return this._outline; }
+    public get createdAt(): Date { return this._createdAt; }
 }
