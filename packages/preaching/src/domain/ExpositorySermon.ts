@@ -48,6 +48,36 @@ export class SermonPurpose extends ValueObject<{ value: string }> {
     }
 }
 
+export class SermonIntroduction extends ValueObject<{ value: string }> {
+    public static from(value: string): SermonIntroduction {
+        return new SermonIntroduction({ value: value.trim() });
+    }
+
+    public get value(): string {
+        return this.get("value");
+    }
+}
+
+export class SermonContext extends ValueObject<{ value: string }> {
+    public static from(value: string): SermonContext {
+        return new SermonContext({ value: value.trim() });
+    }
+
+    public get value(): string {
+        return this.get("value");
+    }
+}
+
+export class SermonConclusion extends ValueObject<{ value: string }> {
+    public static from(value: string): SermonConclusion {
+        return new SermonConclusion({ value: value.trim() });
+    }
+
+    public get value(): string {
+        return this.get("value");
+    }
+}
+
 export interface SermonOutlinePoint {
     readonly id: string;
     readonly heading: string;
@@ -71,6 +101,9 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
     private readonly _passage: Passage;
     private _bigIdea?: SermonBigIdea;
     private _purpose?: SermonPurpose;
+    private _introduction?: SermonIntroduction;
+    private _context?: SermonContext;
+    private _conclusion?: SermonConclusion;
     private _outline: SermonOutlinePoint[] = [];
     private readonly _createdAt: Date;
 
@@ -107,6 +140,18 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
 
     public definePurpose(purpose: SermonPurpose): void {
         this._purpose = purpose;
+    }
+
+    public defineIntroduction(introduction: SermonIntroduction): void {
+        this._introduction = introduction;
+    }
+
+    public defineContext(context: SermonContext): void {
+        this._context = context;
+    }
+
+    public defineConclusion(conclusion: SermonConclusion): void {
+        this._conclusion = conclusion;
     }
 
     public addOutlinePoint(
@@ -221,6 +266,18 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
 
     public get purpose(): SermonPurpose | undefined {
         return this._purpose;
+    }
+
+    public get introduction(): SermonIntroduction | undefined {
+        return this._introduction;
+    }
+
+    public get context(): SermonContext | undefined {
+        return this._context;
+    }
+
+    public get conclusion(): SermonConclusion | undefined {
+        return this._conclusion;
     }
 
     public get outline(): readonly SermonOutlinePoint[] {
