@@ -6,22 +6,18 @@ export class ExpositorySermonId extends ValueObject<{ value: string }> {
     public static create(value = crypto.randomUUID()): ExpositorySermonId { return new ExpositorySermonId({ value }); }
     public get value(): string { return this.get("value"); }
 }
-
 export class SermonTitle extends ValueObject<{ value: string }> {
     public static from(value: string): SermonTitle { const normalized = value.trim(); if (!normalized) throw new Error("Sermon title cannot be empty."); return new SermonTitle({ value: normalized }); }
     public get value(): string { return this.get("value"); }
 }
-
 export class SermonBigIdea extends ValueObject<{ value: string }> {
     public static from(value: string): SermonBigIdea { const normalized = value.trim(); if (!normalized) throw new Error("Sermon big idea cannot be empty."); return new SermonBigIdea({ value: normalized }); }
     public get value(): string { return this.get("value"); }
 }
-
 export class SermonPurpose extends ValueObject<{ value: string }> {
     public static from(value: string): SermonPurpose { const normalized = value.trim(); if (!normalized) throw new Error("Sermon purpose cannot be empty."); return new SermonPurpose({ value: normalized }); }
     public get value(): string { return this.get("value"); }
 }
-
 export class SermonIntroduction extends ValueObject<{ value: string }> {
     public static from(value: string): SermonIntroduction { return new SermonIntroduction({ value: value.trim() }); }
     public get value(): string { return this.get("value"); }
@@ -44,25 +40,27 @@ export interface SermonOutlinePoint {
     readonly illustration: string;
     readonly application: string;
     readonly transition: string;
+    readonly textObservationIds: readonly string[];
+    readonly meaningInterpretationIds: readonly string[];
     readonly supportingObservationIds: readonly string[];
     readonly supportingInterpretationIds: readonly string[];
     readonly supportingEvidenceIds: readonly string[];
     readonly supportingApplicationIds: readonly string[];
 }
-
 export interface SermonOutlineSupport {
     readonly supportingObservationIds?: readonly string[];
     readonly supportingInterpretationIds?: readonly string[];
     readonly supportingEvidenceIds?: readonly string[];
     readonly supportingApplicationIds?: readonly string[];
 }
-
 export interface SermonOutlineExposition {
     readonly text?: string;
     readonly explanation?: string;
     readonly illustration?: string;
     readonly application?: string;
     readonly transition?: string;
+    readonly textObservationIds?: readonly string[];
+    readonly meaningInterpretationIds?: readonly string[];
 }
 
 export class ExpositorySermon extends Entity<ExpositorySermonId> {
@@ -89,8 +87,7 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
     public defineConclusion(conclusion: SermonConclusion): void { this._conclusion = conclusion; }
 
     public addOutlinePoint(heading: string, truth: string, support: SermonOutlineSupport = {}, id = crypto.randomUUID(), exposition: SermonOutlineExposition = {}): SermonOutlinePoint {
-        const normalizedHeading = heading.trim();
-        const normalizedTruth = truth.trim();
+        const normalizedHeading = heading.trim(); const normalizedTruth = truth.trim();
         if (!normalizedHeading || !normalizedTruth) throw new Error("An outline point requires both a heading and truth statement.");
         const normalizedSupport = {
             supportingObservationIds: [...(support.supportingObservationIds ?? [])],
@@ -104,6 +101,8 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             illustration: exposition.illustration?.trim() ?? "",
             application: exposition.application?.trim() ?? "",
             transition: exposition.transition?.trim() ?? "",
+            textObservationIds: [...(exposition.textObservationIds ?? [])],
+            meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? [])],
         };
         const duplicate = this._outline.some((point) => point.heading === normalizedHeading && point.truth === normalizedTruth && JSON.stringify(point.supportingObservationIds) === JSON.stringify(normalizedSupport.supportingObservationIds) && JSON.stringify(point.supportingInterpretationIds) === JSON.stringify(normalizedSupport.supportingInterpretationIds) && JSON.stringify(point.supportingEvidenceIds) === JSON.stringify(normalizedSupport.supportingEvidenceIds) && JSON.stringify(point.supportingApplicationIds) === JSON.stringify(normalizedSupport.supportingApplicationIds));
         if (duplicate) throw new Error("This outline point is already part of the sermon.");
@@ -116,14 +115,36 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
         const normalizedHeading = heading.trim(); const normalizedTruth = truth.trim();
         if (!normalizedHeading || !normalizedTruth) throw new Error("An outline point requires both a heading and truth statement.");
         const current = this._outline[index]; if (!current) throw new Error("Outline point was not found.");
-        const updated = { id, heading: normalizedHeading, truth: normalizedTruth, text: exposition.text?.trim() ?? current.text, explanation: exposition.explanation?.trim() ?? current.explanation, illustration: exposition.illustration?.trim() ?? current.illustration, application: exposition.application?.trim() ?? current.application, transition: exposition.transition?.trim() ?? current.transition, supportingObservationIds: [...(support.supportingObservationIds ?? [])], supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])], supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])], supportingApplicationIds: [...(support.supportingApplicationIds ?? [])] } satisfies SermonOutlinePoint;
+        const updated = {
+            id, heading: normalizedHeading, truth: normalizedTruth,
+            text: exposition.text?.trim() ?? current.text,
+            explanation: exposition.explanation?.trim() ?? current.explanation,
+            illustration: exposition.illustration?.trim() ?? current.illustration,
+            application: exposition.application?.trim() ?? current.application,
+            transition: exposition.transition?.trim() ?? current.transition,
+            textObservationIds: [...(exposition.textObservationIds ?? current.textObservationIds)],
+            meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? current.meaningInterpretationIds)],
+            supportingObservationIds: [...(support.supportingObservationIds ?? [])],
+            supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])],
+            supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])],
+            supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
+        } satisfies SermonOutlinePoint;
         this._outline[index] = updated; return updated;
     }
 
     public defineOutlinePointExposition(id: string, exposition: SermonOutlineExposition): SermonOutlinePoint {
         const index = this._outline.findIndex((point) => point.id === id); if (index < 0) throw new Error("Outline point was not found.");
         const current = this._outline[index]; if (!current) throw new Error("Outline point was not found.");
-        const updated = { ...current, text: exposition.text?.trim() ?? current.text, explanation: exposition.explanation?.trim() ?? current.explanation, illustration: exposition.illustration?.trim() ?? current.illustration, application: exposition.application?.trim() ?? current.application, transition: exposition.transition?.trim() ?? current.transition } satisfies SermonOutlinePoint;
+        const updated = {
+            ...current,
+            text: exposition.text?.trim() ?? current.text,
+            explanation: exposition.explanation?.trim() ?? current.explanation,
+            illustration: exposition.illustration?.trim() ?? current.illustration,
+            application: exposition.application?.trim() ?? current.application,
+            transition: exposition.transition?.trim() ?? current.transition,
+            textObservationIds: exposition.textObservationIds ? [...exposition.textObservationIds] : current.textObservationIds,
+            meaningInterpretationIds: exposition.meaningInterpretationIds ? [...exposition.meaningInterpretationIds] : current.meaningInterpretationIds,
+        } satisfies SermonOutlinePoint;
         this._outline[index] = updated; return updated;
     }
 
@@ -134,7 +155,6 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
         const current = this._outline[index]; const target = this._outline[targetIndex]; if (!current || !target) throw new Error("Outline point could not be moved.");
         this._outline[index] = target; this._outline[targetIndex] = current;
     }
-
     public get title(): SermonTitle { return this._title; }
     public get studyId(): StudyId { return this._studyId; }
     public get passage(): Passage { return this._passage; }
