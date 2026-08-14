@@ -18,10 +18,20 @@ import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpository
 import { supabase } from "../../lib/supabase";
 import { SermonStudySourcePanel } from "./SermonStudySourcePanel";
 
+function getInitialStudyId(): string {
+    if (typeof window === "undefined") return "";
+
+    return (
+        new URLSearchParams(window.location.search).get("studyId")
+        ?? window.localStorage.getItem("bsmp:last-study-id")
+        ?? ""
+    );
+}
+
 export function SermonPreparationWorkspace() {
     const router = useRouter();
     const [studies, setStudies] = useState<readonly StudySession[]>([]);
-    const [selectedStudyId, setSelectedStudyId] = useState<string>("");
+    const [selectedStudyId, setSelectedStudyId] = useState<string>(getInitialStudyId);
     const [sermon, setSermon] = useState<ExpositorySermon | null>(null);
     const [title, setTitle] = useState("");
     const [bigIdea, setBigIdea] = useState("");
@@ -58,6 +68,11 @@ export function SermonPreparationWorkspace() {
         setMessage(null);
         setError(null);
         resetOutlineEditor();
+
+        if (typeof window !== "undefined") {
+            if (studyId) window.localStorage.setItem("bsmp:last-study-id", studyId);
+            else window.localStorage.removeItem("bsmp:last-study-id");
+        }
 
         if (!studyId) {
             setSermon(null);
@@ -102,9 +117,14 @@ export function SermonPreparationWorkspace() {
 
                 setStudies(nextStudies);
 
-                const requestedStudyId = new URLSearchParams(window.location.search).get("studyId");
+                const requestedStudyId =
+                    new URLSearchParams(window.location.search).get("studyId")
+                    ?? selectedStudyId;
+
                 if (requestedStudyId && nextStudies.some((study) => study.id.value === requestedStudyId)) {
                     await loadStudy(requestedStudyId, nextStudies);
+                } else if (!requestedStudyId) {
+                    setSelectedStudyId("");
                 }
             } catch (reason: unknown) {
                 if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load studies.");
@@ -115,7 +135,7 @@ export function SermonPreparationWorkspace() {
         return () => {
             cancelled = true;
         };
-    }, [router]);
+    }, [router, selectedStudyId]);
 
     function selectStudy(studyId: string) {
         void loadStudy(studyId, studies);
