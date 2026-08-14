@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import type { ExpositorySermon, StudySession } from "@bsmp/preaching";
-import { SermonBigIdea, SermonContext, SermonConclusion, SermonIntroduction, SermonPurpose, StudyId } from "@bsmp/preaching";
+import { useRouter } from "next/navigation";
+import type { ExpositorySermon } from "@bsmp/preaching";
+import { SermonContext, SermonConclusion, SermonIntroduction, StudyId } from "@bsmp/preaching";
+import type { StudySession } from "@bsmp/study";
 import { AppShell } from "@repo/ui";
 
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
 
-export function SermonFrameworkWorkspace() {
+interface Props {
+    studyId: string;
+}
+
+export function SermonFrameworkWorkspace({ studyId }: Props) {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const studyId = searchParams.get("studyId") ?? "";
     const [study, setStudy] = useState<StudySession | null>(null);
     const [sermon, setSermon] = useState<ExpositorySermon | null>(null);
     const [introduction, setIntroduction] = useState("");
