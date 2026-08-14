@@ -40,6 +40,8 @@ type DatabaseOutlinePointRow = {
     transition?: string | null;
     text_observation_ids?: string[] | null;
     meaning_interpretation_ids?: string[] | null;
+    meaning_evidence_ids?: string[] | null;
+    response_application_ids?: string[] | null;
     supporting_observation_ids?: string[] | null;
     supporting_interpretation_ids?: string[] | null;
     supporting_evidence_ids?: string[] | null;
@@ -97,6 +99,8 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
                 transition: point.transition || null,
                 text_observation_ids: [...point.textObservationIds],
                 meaning_interpretation_ids: [...point.meaningInterpretationIds],
+                meaning_evidence_ids: [...point.meaningEvidenceIds],
+                response_application_ids: [...point.responseApplicationIds],
                 supporting_observation_ids: [...point.supportingObservationIds],
                 supporting_interpretation_ids: [...point.supportingInterpretationIds],
                 supporting_evidence_ids: [...point.supportingEvidenceIds],
@@ -136,6 +140,8 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
                 transition: point.transition ?? "",
                 textObservationIds: point.text_observation_ids ?? [],
                 meaningInterpretationIds: point.meaning_interpretation_ids ?? [],
+                meaningEvidenceIds: point.meaning_evidence_ids ?? [],
+                responseApplicationIds: point.response_application_ids ?? [],
             });
         }
         return sermon;
