@@ -26,6 +26,23 @@ type DatabaseSermonRow = {
     created_at: string;
 };
 
+type DatabaseOutlinePointRow = {
+    id: string;
+    sermon_id: string;
+    user_id: string;
+    heading: string;
+    truth: string;
+    position: number;
+    explanation?: string | null;
+    illustration?: string | null;
+    application?: string | null;
+    transition?: string | null;
+    supporting_observation_ids?: string[] | null;
+    supporting_interpretation_ids?: string[] | null;
+    supporting_evidence_ids?: string[] | null;
+    supporting_application_ids?: string[] | null;
+};
+
 export class SupabaseExpositorySermonRepository implements ExpositorySermonRepository {
     public async find(id: ExpositorySermonId): Promise<ExpositorySermon | undefined> {
         const { data, error } = await supabase.from("expository_sermons").select("*").eq("id", id.value).maybeSingle();
@@ -63,9 +80,6 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
             created_at: sermon.createdAt.toISOString(),
         };
 
-        // The checked-in Supabase Database type definitions may lag behind the
-        // framework migration. Keep the runtime row strongly shaped here while
-        // bridging only this repository call until generated DB types are refreshed.
         const { error } = await supabase.from("expository_sermons").upsert(row as unknown as never);
         if (error) throw error;
 
@@ -73,20 +87,24 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
         if (deleteError) throw deleteError;
 
         if (sermon.outline.length > 0) {
-            const { error: outlineError } = await supabase.from("sermon_outline_points").insert(
-                sermon.outline.map((point, index) => ({
-                    id: point.id,
-                    sermon_id: sermon.id.value,
-                    user_id: userData.user!.id,
-                    heading: point.heading,
-                    truth: point.truth,
-                    position: index,
-                    supporting_observation_ids: [...point.supportingObservationIds],
-                    supporting_interpretation_ids: [...point.supportingInterpretationIds],
-                    supporting_evidence_ids: [...point.supportingEvidenceIds],
-                    supporting_application_ids: [...point.supportingApplicationIds],
-                })),
-            );
+            const outlineRows = sermon.outline.map((point, index) => ({
+                id: point.id,
+                sermon_id: sermon.id.value,
+                user_id: userData.user!.id,
+                heading: point.heading,
+                truth: point.truth,
+                position: index,
+                explanation: point.explanation || null,
+                illustration: point.illustration || null,
+                application: point.application || null,
+                transition: point.transition || null,
+                supporting_observation_ids: [...point.supportingObservationIds],
+                supporting_interpretation_ids: [...point.supportingInterpretationIds],
+                supporting_evidence_ids: [...point.supportingEvidenceIds],
+                supporting_application_ids: [...point.supportingApplicationIds],
+            }));
+
+            const { error: outlineError } = await supabase.from("sermon_outline_points").insert(outlineRows as unknown as never);
             if (outlineError) throw outlineError;
         }
     }
@@ -121,7 +139,8 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
 
         const { data: outlineRows, error: outlineError } = await supabase.from("sermon_outline_points").select("*").eq("sermon_id", row.id).order("position", { ascending: true });
         if (outlineError) throw outlineError;
-        for (const point of outlineRows ?? []) {
+        for (const rawPoint of outlineRows ?? []) {
+            const point = rawPoint as unknown as DatabaseOutlinePointRow;
             const pointId = point.id as `${string}-${string}-${string}-${string}-${string}`;
             sermon.addOutlinePoint(
                 point.heading,
@@ -133,6 +152,12 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
                     supportingApplicationIds: point.supporting_application_ids ?? [],
                 },
                 pointId,
+                {
+                    explanation: point.explanation ?? "",
+                    illustration: point.illustration ?? "",
+                    application: point.application ?? "",
+                    transition: point.transition ?? "",
+                },
             );
         }
         return sermon;
