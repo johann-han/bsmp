@@ -25,8 +25,19 @@ export function SermonStudySourcePanel({ study }: Props) {
     const studyId = study.id.value;
 
     return (
-        <aside style={{ display: "grid", gap: 16 }}>
-            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}>
+        <aside
+            style={{
+                display: "grid",
+                gap: 16,
+                position: "sticky",
+                top: 68,
+                alignSelf: "start",
+                maxHeight: "calc(100vh - 84px)",
+                overflowY: "auto",
+                paddingRight: 4,
+            }}
+        >
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
                 <h2 style={{ marginTop: 0 }}>Study Source</h2>
                 <p style={{ marginBottom: 4 }}><strong>{study.title.value}</strong></p>
                 <p style={{ marginTop: 0 }}>Passage: {study.passage.toString()}</p>
@@ -41,7 +52,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 </a>
             </section>
 
-            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}>
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
                 <h3 style={{ marginTop: 0 }}>Observations</h3>
                 {study.observations.length === 0 ? (
                     <p>No observations recorded.</p>
@@ -57,7 +68,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 )}
             </section>
 
-            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}>
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
                 <h3 style={{ marginTop: 0 }}>Interpretations & Evidence</h3>
                 {study.interpretations.length === 0 ? (
                     <p>No interpretations recorded.</p>
@@ -89,7 +100,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 )}
             </section>
 
-            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16 }}>
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
                 <h3 style={{ marginTop: 0 }}>Applications</h3>
                 {study.applications.length === 0 ? (
                     <p>No applications recorded.</p>
