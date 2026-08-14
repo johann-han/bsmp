@@ -135,7 +135,7 @@ export function SermonPreparationWorkspace() {
         return () => {
             cancelled = true;
         };
-    }, [router, selectedStudyId]);
+    }, [router]);
 
     function selectStudy(studyId: string) {
         void loadStudy(studyId, studies);
