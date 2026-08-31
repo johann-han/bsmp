@@ -69,6 +69,24 @@ function getReadiness(draft: Draft, isLastPoint: boolean): Readiness {
     return { complete: missing.length === 0, completed: checks.length - missing.length, total: checks.length, missing };
 }
 
+function readinessTarget(pointId: string, label: string): string {
+    const suffixes: Record<string, string> = {
+        Text: "text",
+        "Text foundation": "text-foundation",
+        Meaning: "meaning",
+        "Meaning foundation": "meaning-foundation",
+        "Meaning evidence": "meaning-evidence",
+        Preaching: "preaching",
+        Response: "response",
+        "Response foundation": "response-foundation",
+        Transition: "transition",
+    };
+    return `point-${pointId}-${suffixes[label] ?? label.toLowerCase().replace(/\\s+/g, "-")}`;
+}
+
+const readinessLinkStyle = { color: "#1d4ed8", textDecoration: "underline", textUnderlineOffset: 2 };
+const readinessTargetStyle = { scrollMarginTop: 96 };
+
 export function SermonExpositionWorkspace({ studyId }: Props) {
     const router = useRouter();
     const [study, setStudy] = useState<StudySession | null>(null);
@@ -168,7 +186,7 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                         <strong>{readiness.complete ? "Ready to preach this point" : "Point preparation in progress"}</strong>
                         <span style={{ color: readiness.complete ? "#047857" : "#6b7280" }}>{readiness.completed}/{readiness.total} complete</span>
                     </div>
-                    {!readiness.complete && <div style={{ marginTop: 8, color: "#6b7280", fontSize: 13 }}><strong>Still needed:</strong> {readiness.missing.join(", ")}</div>}
+                    {!readiness.complete && <div style={{ marginTop: 8, color: "#6b7280", fontSize: 13 }}><strong>Still needed:</strong>{" "}{readiness.missing.map((missing, missingIndex) => <span key={missing}><a href={`#${readinessTarget(point.id, missing)}`} style={readinessLinkStyle}>{missing}</a>{missingIndex < readiness.missing.length - 1 ? ", " : ""}</span>)}</div>}
                 </div>
 
                 <details open={index === 0} style={{ marginTop: 16, border: "1px solid #e5e7eb", borderRadius: 10, background: "#f8fafc" }}>
@@ -199,11 +217,15 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                 </details>
 
                 <div style={{ display: "grid", gap: 14, marginTop: 16 }}>
-                    <label><strong>Text</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>What does the passage actually say?</div><textarea value={draft.text} onChange={(event) => updateDraft(point.id, "text", event.target.value)} rows={6} placeholder="Record what the text says..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
-                    <label><strong>Meaning</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>What does this part of the passage mean, and how does it support the truth of the outline point?</div><textarea value={draft.explanation} onChange={(event) => updateDraft(point.id, "explanation", event.target.value)} rows={6} placeholder="Explain the meaning of the text..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
-                    <label><strong>Preaching</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How will you communicate this truth clearly?</div><textarea value={draft.illustration} onChange={(event) => updateDraft(point.id, "illustration", event.target.value)} rows={5} placeholder="Develop how you will preach this truth..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
-                    <label><strong>Response</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How should the hearer respond to this truth?</div><textarea value={draft.application} onChange={(event) => updateDraft(point.id, "application", event.target.value)} rows={5} placeholder="Develop the appropriate response..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
-                    <label><strong>Transition</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How will you move naturally from this point to the next?</div><textarea value={draft.transition} onChange={(event) => updateDraft(point.id, "transition", event.target.value)} rows={4} placeholder="Write the transition..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
+                    <label id={readinessTarget(point.id, "Text")} style={{ ...readinessTargetStyle }}><strong>Text</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>What does the passage actually say?</div><textarea value={draft.text} onChange={(event) => updateDraft(point.id, "text", event.target.value)} rows={6} placeholder="Record what the text says..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
+                    <label id={readinessTarget(point.id, "Meaning")} style={{ ...readinessTargetStyle }}><strong>Meaning</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>What does this part of the passage mean, and how does it support the truth of the outline point?</div><textarea value={draft.explanation} onChange={(event) => updateDraft(point.id, "explanation", event.target.value)} rows={6} placeholder="Explain the meaning of the text..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
+                    <label id={readinessTarget(point.id, "Preaching")} style={{ ...readinessTargetStyle }}><strong>Preaching</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How will you communicate this truth clearly?</div><textarea value={draft.illustration} onChange={(event) => updateDraft(point.id, "illustration", event.target.value)} rows={5} placeholder="Develop how you will preach this truth..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
+                    <label id={readinessTarget(point.id, "Response")} style={{ ...readinessTargetStyle }}><strong>Response</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How should the hearer respond to this truth?</div><textarea value={draft.application} onChange={(event) => updateDraft(point.id, "application", event.target.value)} rows={5} placeholder="Develop the appropriate response..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
+                    <label id={readinessTarget(point.id, "Transition")} style={{ ...readinessTargetStyle }}><strong>Transition</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How will you move naturally from this point to the next?</div><textarea value={draft.transition} onChange={(event) => updateDraft(point.id, "transition", event.target.value)} rows={4} placeholder="Write the transition..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
+                    <div id={readinessTarget(point.id, "Text foundation")} style={{ ...readinessTargetStyle, position: "relative", top: -1 }} />
+                    <div id={readinessTarget(point.id, "Meaning foundation")} style={{ ...readinessTargetStyle, position: "relative", top: -1 }} />
+                    <div id={readinessTarget(point.id, "Meaning evidence")} style={{ ...readinessTargetStyle, position: "relative", top: -1 }} />
+                    <div id={readinessTarget(point.id, "Response foundation")} style={{ ...readinessTargetStyle, position: "relative", top: -1 }} />
                 </div>
             </section>;
         })}
