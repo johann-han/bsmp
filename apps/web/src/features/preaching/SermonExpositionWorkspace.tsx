@@ -81,7 +81,7 @@ function readinessTarget(pointId: string, label: string): string {
         "Response foundation": "response-foundation",
         Transition: "transition",
     };
-    return `point-${pointId}-${suffixes[label] ?? label.toLowerCase().replace(/\\s+/g, "-")}`;
+    return `point-${pointId}-${suffixes[label] ?? label.toLowerCase().replace(/\s+/g, "-")}`;
 }
 
 const readinessLinkStyle = { color: "#1d4ed8", textDecoration: "underline", textUnderlineOffset: 2 };
@@ -192,27 +192,26 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                 <details open={index === 0} style={{ marginTop: 16, border: "1px solid #e5e7eb", borderRadius: 10, background: "#f8fafc" }}>
                     <summary style={{ cursor: "pointer", padding: "14px 16px", fontWeight: 700, listStylePosition: "inside" }}>Study Support</summary>
                     <div style={{ padding: "0 16px 16px", display: "grid", gap: 16 }}>
-                        <div style={{ borderLeft: "3px solid #93c5fd", paddingLeft: 12 }}>
+                        <div id={readinessTarget(point.id, "Text foundation")} style={{ ...readinessTargetStyle, borderLeft: "3px solid #93c5fd", paddingLeft: 12 }}>
                             <strong>Text foundation</strong>
                             <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the observations that directly establish what the Text section says.</div>
                             {study.observations.map((observation) => <label key={observation.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.textObservationIds.includes(observation.id.value)} onChange={() => updateDraft(point.id, "textObservationIds", toggleId(draft.textObservationIds, observation.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation.id.value}`)}>{observation.verseReference.value.toString()}</WorkspaceLink> — {observation.statement.value}</span></label>)}
                         </div>
-                        <div style={{ borderLeft: "3px solid #a78bfa", paddingLeft: 12 }}>
+                        <div id={readinessTarget(point.id, "Meaning foundation")} style={{ ...readinessTargetStyle, borderLeft: "3px solid #a78bfa", paddingLeft: 12 }}>
                             <strong>Meaning foundation</strong>
                             <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the interpretations that directly support the Meaning section.</div>
                             {study.interpretations.map((interpretation) => <label key={interpretation.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.meaningInterpretationIds.includes(interpretation.id.value)} onChange={() => updateDraft(point.id, "meaningInterpretationIds", toggleId(draft.meaningInterpretationIds, interpretation.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)}>{interpretation.statement.value}</WorkspaceLink></span></label>)}
                         </div>
-                        <div style={{ borderLeft: "3px solid #c4b5fd", paddingLeft: 12 }}>
+                        <div id={readinessTarget(point.id, "Meaning evidence")} style={{ ...readinessTargetStyle, borderLeft: "3px solid #c4b5fd", paddingLeft: 12 }}>
                             <strong>Meaning support</strong>
                             <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the evidence that directly strengthens the Meaning section.</div>
                             {studyEvidence.length === 0 ? <p style={{ color: "#6b7280" }}>No evidence is available.</p> : studyEvidence.map((item) => <label key={item.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.meaningEvidenceIds.includes(item.id.value)} onChange={() => updateDraft(point.id, "meaningEvidenceIds", toggleId(draft.meaningEvidenceIds, item.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${item.id.value}`)}>{item.type.value}</WorkspaceLink> — {item.description.value}</span></label>)}
                         </div>
-                        <div style={{ borderLeft: "3px solid #86efac", paddingLeft: 12 }}>
+                        <div id={readinessTarget(point.id, "Response foundation")} style={{ ...readinessTargetStyle, borderLeft: "3px solid #86efac", paddingLeft: 12 }}>
                             <strong>Response foundation</strong>
                             <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the applications that directly shape the Response section.</div>
                             {study.applications.length === 0 ? <p style={{ color: "#6b7280" }}>No applications are available.</p> : study.applications.map((application) => <label key={application.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.responseApplicationIds.includes(application.id.value)} onChange={() => updateDraft(point.id, "responseApplicationIds", toggleId(draft.responseApplicationIds, application.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application.id.value}`)}><strong>Principle:</strong> {application.principle.value}</WorkspaceLink> — {application.action.value}</span></label>)}
                         </div>
-                        {(evidence.length > 0 || applications.length > 0) && <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 10, color: "#6b7280", fontSize: 13 }}>Existing outline support remains preserved separately; these mappings identify the specific evidence and applications used in the exposition.</div>}
                     </div>
                 </details>
 
@@ -222,10 +221,6 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                     <label id={readinessTarget(point.id, "Preaching")} style={{ ...readinessTargetStyle }}><strong>Preaching</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How will you communicate this truth clearly?</div><textarea value={draft.illustration} onChange={(event) => updateDraft(point.id, "illustration", event.target.value)} rows={5} placeholder="Develop how you will preach this truth..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
                     <label id={readinessTarget(point.id, "Response")} style={{ ...readinessTargetStyle }}><strong>Response</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How should the hearer respond to this truth?</div><textarea value={draft.application} onChange={(event) => updateDraft(point.id, "application", event.target.value)} rows={5} placeholder="Develop the appropriate response..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
                     <label id={readinessTarget(point.id, "Transition")} style={{ ...readinessTargetStyle }}><strong>Transition</strong><div style={{ color: "#6b7280", margin: "4px 0 6px" }}>How will you move naturally from this point to the next?</div><textarea value={draft.transition} onChange={(event) => updateDraft(point.id, "transition", event.target.value)} rows={4} placeholder="Write the transition..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></label>
-                    <div id={readinessTarget(point.id, "Text foundation")} style={{ ...readinessTargetStyle, position: "relative", top: -1 }} />
-                    <div id={readinessTarget(point.id, "Meaning foundation")} style={{ ...readinessTargetStyle, position: "relative", top: -1 }} />
-                    <div id={readinessTarget(point.id, "Meaning evidence")} style={{ ...readinessTargetStyle, position: "relative", top: -1 }} />
-                    <div id={readinessTarget(point.id, "Response foundation")} style={{ ...readinessTargetStyle, position: "relative", top: -1 }} />
                 </div>
             </section>;
         })}
