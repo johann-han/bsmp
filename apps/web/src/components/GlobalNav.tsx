@@ -10,12 +10,14 @@ const items = [
     ["Workspace", "/workspace"],
     ["Settings", "/settings"],
     ["Sermon Preparation", "/preaching"],
+    ["Sermon Overview", "/preaching/overview"],
 ] as const;
 
 function NavigationLinks() {
     const searchParams = useSearchParams();
     const studyId = searchParams.get("studyId");
     const preachingHref = studyId ? `/preaching?studyId=${encodeURIComponent(studyId)}` : "/preaching";
+    const overviewHref = studyId ? `/preaching/overview?studyId=${encodeURIComponent(studyId)}` : "/preaching/overview";
 
     function openSermonPreparation(event: React.MouseEvent<HTMLAnchorElement>) {
         event.preventDefault();
@@ -23,6 +25,15 @@ function NavigationLinks() {
         const target = currentStudyId
             ? `/preaching?studyId=${encodeURIComponent(currentStudyId)}`
             : preachingHref;
+        window.location.assign(target);
+    }
+
+    function openSermonOverview(event: React.MouseEvent<HTMLAnchorElement>) {
+        event.preventDefault();
+        const currentStudyId = new URLSearchParams(window.location.search).get("studyId");
+        const target = currentStudyId
+            ? `/preaching/overview?studyId=${encodeURIComponent(currentStudyId)}`
+            : overviewHref;
         window.location.assign(target);
     }
 
@@ -45,8 +56,8 @@ function NavigationLinks() {
             {items.map(([label, href]) => (
                 <a
                     key={href}
-                    href={href === "/preaching" ? preachingHref : href}
-                    onClick={href === "/preaching" ? openSermonPreparation : undefined}
+                    href={href === "/preaching" ? preachingHref : href === "/preaching/overview" ? overviewHref : href}
+                    onClick={href === "/preaching" ? openSermonPreparation : href === "/preaching/overview" ? openSermonOverview : undefined}
                     style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
                 >
                     {label}
