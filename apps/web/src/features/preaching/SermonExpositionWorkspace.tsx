@@ -26,18 +26,48 @@ type Draft = {
     meaningEvidenceIds: string[];
     responseApplicationIds: string[];
 };
+
+type Readiness = {
+    complete: boolean;
+    completed: number;
+    total: number;
+    missing: string[];
+};
+
 function emptyDraft(): Draft {
     return { text: "", explanation: "", illustration: "", application: "", transition: "", textObservationIds: [], meaningInterpretationIds: [], meaningEvidenceIds: [], responseApplicationIds: [] };
 }
+
 function workspaceHref(studyId: string, target: string): string {
     const params = new URLSearchParams({ studyId, returnTo: `/preaching/exposition?studyId=${encodeURIComponent(studyId)}` });
     return `/workspace?${params.toString()}#${encodeURIComponent(target)}`;
 }
+
 const linkStyle = { color: "#1d4ed8", textDecoration: "none" };
+
 function WorkspaceLink({ study, href, children }: { study: StudySession; href: string; children: React.ReactNode }) {
     return <Link href={href} prefetch style={linkStyle} onMouseEnter={() => prefetchStudyWorkspace(study)} onFocus={() => prefetchStudyWorkspace(study)} onClick={() => cacheStudyForWorkspace(study)}>{children}</Link>;
 }
-function toggleId(values: string[], id: string): string[] { return values.includes(id) ? values.filter((value) => value !== id) : [...values, id]; }
+
+function toggleId(values: string[], id: string): string[] {
+    return values.includes(id) ? values.filter((value) => value !== id) : [...values, id];
+}
+
+function getReadiness(draft: Draft, isLastPoint: boolean): Readiness {
+    const checks = [
+        { label: "Text", ready: Boolean(draft.text.trim()) },
+        { label: "Text foundation", ready: draft.textObservationIds.length > 0 },
+        { label: "Meaning", ready: Boolean(draft.explanation.trim()) },
+        { label: "Meaning foundation", ready: draft.meaningInterpretationIds.length > 0 },
+        { label: "Meaning evidence", ready: draft.meaningEvidenceIds.length > 0 },
+        { label: "Preaching", ready: Boolean(draft.illustration.trim()) },
+        { label: "Response", ready: Boolean(draft.application.trim()) },
+        { label: "Response foundation", ready: draft.responseApplicationIds.length > 0 },
+        ...(!isLastPoint ? [{ label: "Transition", ready: Boolean(draft.transition.trim()) }] : []),
+    ];
+    const missing = checks.filter((check) => !check.ready).map((check) => check.label);
+    return { complete: missing.length === 0, completed: checks.length - missing.length, total: checks.length, missing };
+}
 
 export function SermonExpositionWorkspace({ studyId }: Props) {
     const router = useRouter();
@@ -98,6 +128,8 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
     if (error || !sermon || !study) return <AppShell title="Sermon Exposition"><p style={{ color: "#b91c1c" }}>{error ?? "Sermon exposition could not be loaded."}</p><button type="button" onClick={() => router.push(`/preaching?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>← Back to Sermon Preparation</button></AppShell>;
 
     const studyEvidence = study.interpretations.flatMap((interpretation) => interpretation.evidence);
+    const readinessByPoint = Object.fromEntries(sermon.outline.map((point, index) => [point.id, getReadiness(drafts[point.id] ?? emptyDraft(), index === sermon.outline.length - 1)]));
+    const readyCount = sermon.outline.filter((point) => readinessByPoint[point.id]?.complete).length;
 
     return <AppShell title="Sermon Exposition"><div style={{ display: "grid", gap: 20 }}>
         <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
@@ -107,6 +139,15 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
             <p style={{ margin: "4px 0" }}><strong>Passage:</strong> {sermon.passage.toString()}</p>
             {sermon.bigIdea && <p style={{ margin: "12px 0 4px" }}><strong>Big Idea:</strong> {sermon.bigIdea.value}</p>}
             <p style={{ margin: "12px 0 0", color: "#6b7280" }}>Complete the traceable chain from the inductive study into Text, Meaning, Preaching, and Response.</p>
+            {sermon.outline.length > 0 && <div style={{ marginTop: 16, padding: 14, borderRadius: 10, border: "1px solid #e5e7eb", background: "#f8fafc" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                    <strong>Exposition readiness</strong>
+                    <span style={{ color: readyCount === sermon.outline.length ? "#047857" : "#6b7280" }}>{readyCount} of {sermon.outline.length} outline points ready</span>
+                </div>
+                <div style={{ height: 8, borderRadius: 999, background: "#e5e7eb", overflow: "hidden", marginTop: 10 }}>
+                    <div style={{ width: `${(readyCount / sermon.outline.length) * 100}%`, height: "100%", background: readyCount === sermon.outline.length ? "#10b981" : "#93c5fd" }} />
+                </div>
+            </div>}
         </section>
 
         {sermon.outline.length === 0 ? <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><strong>No outline points yet.</strong><p>Create at least one outline point before developing the exposition.</p><button type="button" onClick={() => router.push(`/preaching?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>Back to Sermon Preparation</button></section> : sermon.outline.map((point, index) => {
@@ -115,10 +156,19 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
             const evidence = point.supportingEvidenceIds.map((id) => studyEvidence.find((item) => item.id.value === id)).filter(Boolean);
             const applications = point.supportingApplicationIds.map((id) => study.applications.find((item) => item.id.value === id)).filter(Boolean);
             const draft = drafts[point.id] ?? emptyDraft();
+            const readiness = readinessByPoint[point.id] ?? getReadiness(draft, index === sermon.outline.length - 1);
             return <section key={point.id} style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
                     <div><div style={{ fontSize: 13, color: "#6b7280" }}>Outline Point {index + 1}</div><h2 style={{ margin: "4px 0" }}>{point.heading}</h2><p style={{ marginTop: 0 }}><strong>Truth:</strong> {point.truth}</p></div>
                     <WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${point.textObservationIds[0] ?? point.supportingObservationIds[0] ?? ""}`)}>Study Workspace</WorkspaceLink>
+                </div>
+
+                <div style={{ marginTop: 16, padding: 14, borderRadius: 10, border: `1px solid ${readiness.complete ? "#a7f3d0" : "#e5e7eb"}`, background: readiness.complete ? "#ecfdf5" : "#f8fafc" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                        <strong>{readiness.complete ? "Ready to preach this point" : "Point preparation in progress"}</strong>
+                        <span style={{ color: readiness.complete ? "#047857" : "#6b7280" }}>{readiness.completed}/{readiness.total} complete</span>
+                    </div>
+                    {!readiness.complete && <div style={{ marginTop: 8, color: "#6b7280", fontSize: 13 }}><strong>Still needed:</strong> {readiness.missing.join(", ")}</div>}
                 </div>
 
                 <details open={index === 0} style={{ marginTop: 16, border: "1px solid #e5e7eb", borderRadius: 10, background: "#f8fafc" }}>
