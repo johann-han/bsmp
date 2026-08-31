@@ -11,9 +11,7 @@ import { AppShell } from "@repo/ui";
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
 
-interface Props {
-    studyId: string;
-}
+interface Props { studyId: string; }
 
 type PointDraft = {
     text: string;
@@ -27,12 +25,7 @@ type PointDraft = {
     responseApplicationIds: string[];
 };
 
-type PointReadiness = {
-    complete: boolean;
-    completed: number;
-    total: number;
-    missing: string[];
-};
+type PointReadiness = { complete: boolean; completed: number; total: number; missing: string[] };
 
 function getPointDraft(point: ExpositorySermon["outline"][number]): PointDraft {
     return {
@@ -61,16 +54,11 @@ function getPointReadiness(draft: PointDraft, isLastPoint: boolean): PointReadin
         ...(!isLastPoint ? [{ label: "Transition", ready: Boolean(draft.transition.trim()) }] : []),
     ];
     const missing = checks.filter((check) => !check.ready).map((check) => check.label);
-    return {
-        complete: missing.length === 0,
-        completed: checks.length - missing.length,
-        total: checks.length,
-        missing,
-    };
+    return { complete: missing.length === 0, completed: checks.length - missing.length, total: checks.length, missing };
 }
 
-function sectionLink(studyId: string, section: string): string {
-    return `/preaching/exposition?studyId=${encodeURIComponent(studyId)}#${encodeURIComponent(section)}`;
+function link(path: string, studyId: string): string {
+    return `${path}?studyId=${encodeURIComponent(studyId)}`;
 }
 
 export function SermonPreparationOverview({ studyId }: Props) {
@@ -82,14 +70,12 @@ export function SermonPreparationOverview({ studyId }: Props) {
 
     useEffect(() => {
         let cancelled = false;
-
         async function load() {
             if (!studyId) {
                 setError("A study is required to open the sermon overview.");
                 setLoading(false);
                 return;
             }
-
             try {
                 const studyRepository = new SupabaseStudyRepository();
                 const sermonRepository = new SupabaseExpositorySermonRepository();
@@ -108,46 +94,18 @@ export function SermonPreparationOverview({ studyId }: Props) {
                 if (!cancelled) setLoading(false);
             }
         }
-
         void load();
-        return () => {
-            cancelled = true;
-        };
+        return () => { cancelled = true; };
     }, [studyId]);
 
-    const readiness = useMemo(() => {
-        if (!sermon) return [];
-        return sermon.outline.map((point, index) => ({
-            point,
-            readiness: getPointReadiness(getPointDraft(point), index === sermon.outline.length - 1),
-        }));
-    }, [sermon]);
+    const readiness = useMemo(() => sermon?.outline.map((point, index) => ({
+        point,
+        readiness: getPointReadiness(getPointDraft(point), index === sermon.outline.length - 1),
+    })) ?? [], [sermon]);
 
-    if (loading) {
-        return (
-            <AppShell title="Sermon Overview">
-                <div style={{ display: "grid", gap: 16 }}>
-                    {[1, 2, 3, 4].map((item) => (
-                        <section key={item} style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, background: "#fff" }}>
-                            <div style={{ width: 220, height: 18, background: "#e5e7eb", borderRadius: 6, marginBottom: 14 }} />
-                            <div style={{ width: "100%", height: 70, background: "#f3f4f6", borderRadius: 8 }} />
-                        </section>
-                    ))}
-                </div>
-            </AppShell>
-        );
-    }
+    if (loading) return <AppShell title="Sermon Overview"><div style={{ display: "grid", gap: 16 }}>{[1, 2, 3, 4].map((item) => <section key={item} style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, background: "#fff" }}><div style={{ width: 220, height: 18, background: "#e5e7eb", borderRadius: 6, marginBottom: 14 }} /><div style={{ width: "100%", height: 70, background: "#f3f4f6", borderRadius: 8 }} /></section>)}</div></AppShell>;
 
-    if (error || !sermon || !study) {
-        return (
-            <AppShell title="Sermon Overview">
-                <p style={{ color: "#b91c1c" }}>{error ?? "Sermon overview could not be loaded."}</p>
-                <button type="button" onClick={() => router.push(`/preaching?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>
-                    ← Back to Sermon Preparation
-                </button>
-            </AppShell>
-        );
-    }
+    if (error || !sermon || !study) return <AppShell title="Sermon Overview"><p style={{ color: "#b91c1c" }}>{error ?? "Sermon overview could not be loaded."}</p><button type="button" onClick={() => router.push(link("/preaching", studyId))} style={{ padding: "10px 16px" }}>← Back to Sermon Preparation</button></AppShell>;
 
     const frameworkChecks = [
         { label: "Sermon title", complete: Boolean(sermon.title.value.trim()) },
@@ -159,8 +117,17 @@ export function SermonPreparationOverview({ studyId }: Props) {
     ];
     const frameworkComplete = frameworkChecks.filter((check) => check.complete).length;
     const readyPoints = readiness.filter((item) => item.readiness.complete).length;
-    const outlineComplete = sermon.outline.length > 0;
-    const overviewReady = frameworkComplete === frameworkChecks.length && outlineComplete && readyPoints === sermon.outline.length;
+    const studyEvidenceCount = study.interpretations.reduce((count, interpretation) => count + interpretation.evidence.length, 0);
+    const supportCount = study.observations.length + study.interpretations.length + studyEvidenceCount + study.applications.length;
+    const overviewReady = frameworkComplete === frameworkChecks.length && sermon.outline.length > 0 && readyPoints === sermon.outline.length;
+
+    const nextAction = !frameworkChecks.every((check) => check.complete)
+        ? { title: "Complete the Sermon Framework", description: "Finish the framework before refining the exposition.", href: link("/preaching", studyId), label: "Open Sermon Framework" }
+        : sermon.outline.length === 0
+            ? { title: "Build the Sermon Outline", description: "Create at least one clear outline point from the passage.", href: link("/preaching", studyId), label: "Open Sermon Outline" }
+            : readyPoints < sermon.outline.length
+                ? { title: "Complete the Exposition", description: `${sermon.outline.length - readyPoints} outline point${sermon.outline.length - readyPoints === 1 ? "" : "s"} still need preparation.`, href: link("/preaching/exposition", studyId), label: "Open Sermon Exposition" }
+                : { title: "Ready for Final Drafting", description: "The framework and every exposition point are complete.", href: "#final-stage", label: "Review Final Stage" };
 
     return (
         <AppShell title="Sermon Overview">
@@ -170,81 +137,43 @@ export function SermonPreparationOverview({ studyId }: Props) {
                     <h2 style={{ margin: "4px 0 8px" }}>{sermon.title.value}</h2>
                     <p style={{ margin: "4px 0" }}><strong>Study:</strong> {study.title.value}</p>
                     <p style={{ margin: "4px 0" }}><strong>Passage:</strong> {sermon.passage.toString()}</p>
-                    <p style={{ margin: "12px 0 0", color: "#6b7280" }}>Use this overview to move from the sermon framework through the outline and exposition without losing sight of the whole sermon.</p>
                 </section>
 
                 <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: overviewReady ? "#ecfdf5" : "#fff" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                        <div>
-                            <div style={{ fontSize: 13, color: "#6b7280" }}>Overall readiness</div>
-                            <h2 style={{ margin: "4px 0" }}>{overviewReady ? "Ready for final sermon drafting" : "Preparation still in progress"}</h2>
-                        </div>
-                        <strong style={{ color: overviewReady ? "#047857" : "#6b7280" }}>{readyPoints}/{sermon.outline.length} points ready</strong>
-                    </div>
-                    <div style={{ height: 8, borderRadius: 999, background: "#e5e7eb", overflow: "hidden", marginTop: 12 }}>
-                        <div style={{ width: `${sermon.outline.length === 0 ? 0 : (readyPoints / sermon.outline.length) * 100}%`, height: "100%", background: overviewReady ? "#10b981" : "#93c5fd" }} />
+                        <div><div style={{ fontSize: 13, color: "#6b7280" }}>Next best action</div><h2 style={{ margin: "4px 0" }}>{nextAction.title}</h2><p style={{ margin: 0, color: "#6b7280" }}>{nextAction.description}</p></div>
+                        <Link href={nextAction.href} style={{ padding: "10px 16px", borderRadius: 8, border: "1px solid #d1d5db", textDecoration: "none", fontWeight: 600 }}>{nextAction.label}</Link>
                     </div>
                 </section>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
-                    <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
-                        <div style={{ fontSize: 13, color: "#6b7280" }}>1. Sermon Framework</div>
-                        <h3 style={{ margin: "4px 0 10px" }}>{frameworkComplete}/{frameworkChecks.length} complete</h3>
-                        <div style={{ display: "grid", gap: 7 }}>
-                            {frameworkChecks.map((check) => (
-                                <div key={check.label} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                                    <span>{check.label}</span>
-                                    <strong style={{ color: check.complete ? "#047857" : "#b91c1c" }}>{check.complete ? "Complete" : "Needed"}</strong>
-                                </div>
-                            ))}
-                        </div>
-                        <Link href={`/preaching?studyId=${encodeURIComponent(studyId)}`} style={{ display: "inline-block", marginTop: 14 }}>Open Sermon Preparation</Link>
-                    </section>
-
-                    <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
-                        <div style={{ fontSize: 13, color: "#6b7280" }}>2. Sermon Outline</div>
-                        <h3 style={{ margin: "4px 0 10px" }}>{sermon.outline.length} outline points</h3>
-                        {sermon.outline.length === 0 ? (
-                            <p style={{ color: "#6b7280" }}>Create at least one outline point before developing the exposition.</p>
-                        ) : (
-                            <div style={{ display: "grid", gap: 8 }}>
-                                {sermon.outline.map((point, index) => <div key={point.id} style={{ display: "flex", gap: 10 }}><strong>{index + 1}.</strong><span>{point.heading}</span></div>)}
-                            </div>
-                        )}
-                        <Link href={`/preaching?studyId=${encodeURIComponent(studyId)}`} style={{ display: "inline-block", marginTop: 14 }}>Edit Outline</Link>
-                    </section>
-
-                    <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
-                        <div style={{ fontSize: 13, color: "#6b7280" }}>3. Exposition</div>
-                        <h3 style={{ margin: "4px 0 10px" }}>{readyPoints}/{sermon.outline.length} points ready</h3>
-                        {readiness.length === 0 ? (
-                            <p style={{ color: "#6b7280" }}>No exposition points are available yet.</p>
-                        ) : (
-                            <div style={{ display: "grid", gap: 8 }}>
-                                {readiness.map(({ point, readiness: pointReadiness }) => (
-                                    <Link key={point.id} href={`${sectionLink(studyId, `point-${point.id}`)}`} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                                        <span>{point.heading}</span>
-                                        <strong style={{ color: pointReadiness.complete ? "#047857" : "#6b7280" }}>{pointReadiness.completed}/{pointReadiness.total}</strong>
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                        <Link href={`/preaching/exposition?studyId=${encodeURIComponent(studyId)}`} style={{ display: "inline-block", marginTop: 14 }}>Open Sermon Exposition</Link>
-                    </section>
-
-                    <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
-                        <div style={{ fontSize: 13, color: "#6b7280" }}>4. Final Sermon</div>
-                        <h3 style={{ margin: "4px 0 10px" }}>Next stage</h3>
-                        <p style={{ color: "#6b7280" }}>The final sermon manuscript and delivery workspace will build on the completed framework and exposition.</p>
-                        <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: overviewReady ? "#ecfdf5" : "#f8fafc", color: overviewReady ? "#047857" : "#6b7280" }}>
-                            {overviewReady ? "The sermon is ready to move into final drafting." : "Complete the framework and exposition first."}
-                        </div>
-                    </section>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+                    {[
+                        ["Framework", `${frameworkComplete}/${frameworkChecks.length}`, "sections complete"],
+                        ["Outline", String(sermon.outline.length), "sermon points"],
+                        ["Exposition", `${readyPoints}/${sermon.outline.length || 0}`, "points ready"],
+                        ["Study Support", String(supportCount), "source items available"],
+                    ].map(([label, value, caption]) => <section key={label} style={{ border: "1px solid #ddd", borderRadius: 12, padding: 18, background: "#fff" }}><div style={{ color: "#6b7280", fontSize: 13 }}>{label}</div><div style={{ fontSize: 28, fontWeight: 800 }}>{value}</div><div style={{ color: "#6b7280" }}>{caption}</div></section>)}
                 </div>
 
+                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}><div><div style={{ fontSize: 13, color: "#6b7280" }}>Sermon Framework</div><h3 style={{ margin: "4px 0" }}>{frameworkComplete}/{frameworkChecks.length} complete</h3></div><Link href={link("/preaching", studyId)}>Open Framework</Link></div>
+                    <div style={{ display: "grid", gap: 7, marginTop: 12 }}>{frameworkChecks.map((check) => <div key={check.label} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span>{check.label}</span><strong style={{ color: check.complete ? "#047857" : "#b91c1c" }}>{check.complete ? "Complete" : "Needed"}</strong></div>)}</div>
+                </section>
+
+                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}><div><div style={{ fontSize: 13, color: "#6b7280" }}>Sermon Outline & Exposition</div><h3 style={{ margin: "4px 0" }}>{readyPoints}/{sermon.outline.length} points ready</h3></div><Link href={link("/preaching/exposition", studyId)}>Open Exposition</Link></div>
+                    {sermon.outline.length === 0 ? <p style={{ color: "#6b7280" }}>No outline points have been created yet.</p> : <div style={{ display: "grid", gap: 10, marginTop: 12 }}>{readiness.map(({ point, readiness: pointReadiness }, index) => <div key={point.id} style={{ padding: 12, borderRadius: 8, background: "#f8fafc", display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}><div><strong>{index + 1}. {point.heading}</strong><div style={{ fontSize: 13, color: "#6b7280" }}>{point.truth}</div>{pointReadiness.missing.length > 0 && <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>Needs: {pointReadiness.missing.join(", ")}</div>}</div><strong style={{ color: pointReadiness.complete ? "#047857" : "#6b7280" }}>{pointReadiness.completed}/{pointReadiness.total}</strong></div>)}</div>}
+                </section>
+
+                <section id="final-stage" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                    <div style={{ fontSize: 13, color: "#6b7280" }}>Final Sermon</div>
+                    <h3 style={{ margin: "4px 0 8px" }}>{overviewReady ? "Ready for final drafting" : "Final drafting comes next"}</h3>
+                    <p style={{ margin: 0, color: "#6b7280" }}>{overviewReady ? "The sermon framework and exposition are complete. This is the point at which BSMP can move into manuscript and delivery preparation." : "Complete the framework and exposition before moving into the final manuscript and delivery stage."}</p>
+                </section>
+
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                    <Link href={`/preaching?studyId=${encodeURIComponent(studyId)}`} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>← Sermon Preparation</Link>
-                    <Link href={`/preaching/exposition?studyId=${encodeURIComponent(studyId)}`} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>Open Exposition</Link>
+                    <Link href={link("/preaching", studyId)} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>← Sermon Preparation</Link>
+                    <Link href={link("/preaching/exposition", studyId)} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>Open Exposition</Link>
                 </div>
             </div>
         </AppShell>
