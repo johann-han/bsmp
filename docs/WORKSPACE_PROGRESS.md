@@ -48,15 +48,29 @@ The delivery view provides:
 - Big Idea context
 - manuscript word count
 - estimated preaching duration at 130 words per minute
-- separate Delivery Notes view
 - Print / Save PDF support
 - direct return to Final Draft
+
+## Sermon Scheduling & Preaching History
+
+The `/preaching/history` workspace now manages repeatable preaching occurrences for a sermon rather than storing a single preaching date on the sermon itself.
+
+Each occurrence stores:
+
+- scheduled date and time
+- service name
+- venue
+- occurrence notes
+- scheduled / completed / cancelled status
+- actual preached time when completed
+
+The occurrence model and Supabase persistence use row-level security scoped to the signed-in user. This allows one sermon to have multiple scheduled or completed preaching occasions while keeping the manuscript and sermon content unchanged.
 
 ## Current Branches
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, and Workspace evidence-navigation improvements.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, and Workspace evidence-navigation improvements.
 
 ## Verification
 
@@ -64,7 +78,9 @@ Repository CI is defined in `.github/workflows/ci.yml` for feature branches and 
 
 The final-drafting migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
 
-The local verification completed successfully on `feat/final-sermon-drafting`:
+The scheduling migration is committed at `supabase/migrations/20260901110000_sermon_occurrences.sql`. It must be applied to the connected Supabase project before the `/preaching/history` workspace can persist occurrences.
+
+The local verification completed successfully before the scheduling/history changes:
 
 - `pnpm typecheck` — 14/14 tasks successful
 - `pnpm test` — all reported workspace test suites passed
@@ -74,6 +90,6 @@ Supabase security advisors currently report one pre-existing Auth warning: leake
 
 ## Next Work
 
-1. Perform authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft → Delivery Mode, including the print/PDF paths.
-2. Add sermon scheduling and preaching history after the delivery workflow is stable.
-3. Harden Supabase Auth by enabling leaked-password protection.
+1. Apply and browser-verify Sermon Scheduling & Preaching History, including persistence and repeated preaching occurrences.
+2. Harden Supabase Auth by enabling leaked-password protection.
+3. Continue strengthening the complete Study → Sermon → Delivery workflow with authenticated end-to-end checks.
