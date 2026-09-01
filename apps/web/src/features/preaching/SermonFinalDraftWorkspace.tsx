@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ExpositorySermon, SermonDeliveryNotes, SermonManuscript } from "@bsmp/preaching";
-import { SermonBigIdea, SermonPurpose, SermonTitle } from "@bsmp/preaching";
+import { buildSermonManuscript, SermonDeliveryNotes as SermonDeliveryNotesValue, SermonManuscript as SermonManuscriptValue } from "@bsmp/preaching";
 import { StudyId } from "@bsmp/study";
 import type { StudySession } from "@bsmp/study";
 import { AppShell } from "@repo/ui";
@@ -49,15 +49,24 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
         return () => { cancelled = true; };
     }, [studyId]);
 
+    const wordCount = useMemo(() => manuscript.trim() ? manuscript.trim().split(/\s+/).length : 0, [manuscript]);
+    const estimatedMinutes = Math.max(0, Math.round((wordCount / 130) * 10) / 10);
+    const hasOutlineMaterial = Boolean(sermon?.outline.some((point) => point.text || point.explanation || point.illustration || point.application));
+
+    function insertStructuredDraft() {
+        if (!sermon) return;
+        if (manuscript.trim() && !window.confirm("Replace the current manuscript with a structured draft from the sermon preparation?")) return;
+        setManuscript(buildSermonManuscript(sermon));
+        setMessage("Structured draft inserted. Revise it into your final preaching manuscript.");
+        setError(null);
+    }
+
     async function save() {
         if (!sermon) return;
         setSaving(true); setMessage(null); setError(null);
         try {
-            sermon.reviseTitle(SermonTitle.from(sermon.title.value));
-            if (sermon.bigIdea) sermon.defineBigIdea(SermonBigIdea.from(sermon.bigIdea.value));
-            if (sermon.purpose) sermon.definePurpose(SermonPurpose.from(sermon.purpose.value));
-            sermon.defineManuscript(SermonManuscript.from(manuscript));
-            sermon.defineDeliveryNotes(SermonDeliveryNotes.from(deliveryNotes));
+            sermon.defineManuscript(SermonManuscriptValue.from(manuscript));
+            sermon.defineDeliveryNotes(SermonDeliveryNotesValue.from(deliveryNotes));
             await new SupabaseExpositorySermonRepository().save(sermon);
             setMessage("Final sermon draft saved.");
         } catch (reason: unknown) {
@@ -81,8 +90,19 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                 </section>
 
                 <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
-                    <h2>Final Manuscript</h2>
-                    <p style={{ color: "#6b7280", marginTop: 0 }}>Bring the completed framework and exposition together into the sermon manuscript you intend to preach. The Study remains the source of biblical observations, interpretations, evidence, and applications; this field is the preacher's final composed message.</p>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
+                        <div>
+                            <h2 style={{ marginBottom: 6 }}>Final Manuscript</h2>
+                            <p style={{ color: "#6b7280", marginTop: 0 }}>Bring the completed framework and exposition together into the sermon manuscript you intend to preach. The Study remains the source of biblical observations, interpretations, evidence, and applications; this field is the preacher's final composed message.</p>
+                        </div>
+                        <button type="button" onClick={insertStructuredDraft} disabled={!hasOutlineMaterial} style={{ padding: "10px 14px", fontWeight: 600 }}>
+                            Build Draft from Outline
+                        </button>
+                    </div>
+                    <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: "#6b7280", marginBottom: 10 }}>
+                        <span><strong>{wordCount}</strong> words</span>
+                        <span>≈ <strong>{estimatedMinutes}</strong> min at 130 wpm</span>
+                    </div>
                     <textarea value={manuscript} onChange={(event) => setManuscript(event.target.value)} rows={24} placeholder="Write the final sermon manuscript..." style={{ width: "100%", boxSizing: "border-box", padding: 12, resize: "vertical" }} />
                 </section>
 
