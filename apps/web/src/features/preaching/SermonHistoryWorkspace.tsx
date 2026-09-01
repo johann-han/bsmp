@@ -20,6 +20,10 @@ function formatDate(date: Date): string {
     return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
+function asUuid(value: string): `${string}-${string}-${string}-${string}-${string}` {
+    return value as `${string}-${string}-${string}-${string}-${string}`;
+}
+
 export function SermonHistoryWorkspace({ studyId }: Props) {
     const router = useRouter();
     const [sermon, setSermon] = useState<ExpositorySermon | null>(null);
@@ -58,7 +62,7 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
         try {
             const occurrence = SermonOccurrence.create(
                 SermonOccurrenceId.create(),
-                ExpositorySermonId.create(sermon.id.value),
+                ExpositorySermonId.create(asUuid(sermon.id.value)),
                 new Date(scheduledAt),
                 venue,
                 serviceName,
