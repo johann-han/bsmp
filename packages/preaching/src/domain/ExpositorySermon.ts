@@ -30,6 +30,14 @@ export class SermonConclusion extends ValueObject<{ value: string }> {
     public static from(value: string): SermonConclusion { return new SermonConclusion({ value: value.trim() }); }
     public get value(): string { return this.get("value"); }
 }
+export class SermonManuscript extends ValueObject<{ value: string }> {
+    public static from(value: string): SermonManuscript { return new SermonManuscript({ value: value.trim() }); }
+    public get value(): string { return this.get("value"); }
+}
+export class SermonDeliveryNotes extends ValueObject<{ value: string }> {
+    public static from(value: string): SermonDeliveryNotes { return new SermonDeliveryNotes({ value: value.trim() }); }
+    public get value(): string { return this.get("value"); }
+}
 
 export interface SermonOutlinePoint {
     readonly id: string;
@@ -76,6 +84,8 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
     private _introduction?: SermonIntroduction;
     private _context?: SermonContext;
     private _conclusion?: SermonConclusion;
+    private _manuscript?: SermonManuscript;
+    private _deliveryNotes?: SermonDeliveryNotes;
     private _outline: SermonOutlinePoint[] = [];
     private readonly _createdAt: Date;
 
@@ -89,6 +99,8 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
     public defineIntroduction(introduction: SermonIntroduction): void { this._introduction = introduction; }
     public defineContext(context: SermonContext): void { this._context = context; }
     public defineConclusion(conclusion: SermonConclusion): void { this._conclusion = conclusion; }
+    public defineManuscript(manuscript: SermonManuscript): void { this._manuscript = manuscript; }
+    public defineDeliveryNotes(notes: SermonDeliveryNotes): void { this._deliveryNotes = notes; }
 
     public addOutlinePoint(heading: string, truth: string, support: SermonOutlineSupport = {}, id = crypto.randomUUID(), exposition: SermonOutlineExposition = {}): SermonOutlinePoint {
         const normalizedHeading = heading.trim(); const normalizedTruth = truth.trim();
@@ -100,71 +112,29 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
         };
         const normalizedExposition = {
-            text: exposition.text?.trim() ?? "",
-            explanation: exposition.explanation?.trim() ?? "",
-            illustration: exposition.illustration?.trim() ?? "",
-            application: exposition.application?.trim() ?? "",
-            transition: exposition.transition?.trim() ?? "",
-            textObservationIds: [...(exposition.textObservationIds ?? [])],
-            meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? [])],
-            meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? [])],
-            responseApplicationIds: [...(exposition.responseApplicationIds ?? [])],
+            text: exposition.text?.trim() ?? "", explanation: exposition.explanation?.trim() ?? "", illustration: exposition.illustration?.trim() ?? "", application: exposition.application?.trim() ?? "", transition: exposition.transition?.trim() ?? "",
+            textObservationIds: [...(exposition.textObservationIds ?? [])], meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? [])], meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? [])], responseApplicationIds: [...(exposition.responseApplicationIds ?? [])],
         };
         const duplicate = this._outline.some((point) => point.heading === normalizedHeading && point.truth === normalizedTruth && JSON.stringify(point.supportingObservationIds) === JSON.stringify(normalizedSupport.supportingObservationIds) && JSON.stringify(point.supportingInterpretationIds) === JSON.stringify(normalizedSupport.supportingInterpretationIds) && JSON.stringify(point.supportingEvidenceIds) === JSON.stringify(normalizedSupport.supportingEvidenceIds) && JSON.stringify(point.supportingApplicationIds) === JSON.stringify(normalizedSupport.supportingApplicationIds));
         if (duplicate) throw new Error("This outline point is already part of the sermon.");
         const point = { id, heading: normalizedHeading, truth: normalizedTruth, ...normalizedExposition, ...normalizedSupport } satisfies SermonOutlinePoint;
         this._outline.push(point); return point;
     }
-
     public updateOutlinePoint(id: string, heading: string, truth: string, support: SermonOutlineSupport = {}, exposition: SermonOutlineExposition = {}): SermonOutlinePoint {
         const index = this._outline.findIndex((point) => point.id === id); if (index < 0) throw new Error("Outline point was not found.");
-        const normalizedHeading = heading.trim(); const normalizedTruth = truth.trim();
-        if (!normalizedHeading || !normalizedTruth) throw new Error("An outline point requires both a heading and truth statement.");
+        const normalizedHeading = heading.trim(); const normalizedTruth = truth.trim(); if (!normalizedHeading || !normalizedTruth) throw new Error("An outline point requires both a heading and truth statement.");
         const current = this._outline[index]; if (!current) throw new Error("Outline point was not found.");
-        const updated = {
-            id, heading: normalizedHeading, truth: normalizedTruth,
-            text: exposition.text?.trim() ?? current.text,
-            explanation: exposition.explanation?.trim() ?? current.explanation,
-            illustration: exposition.illustration?.trim() ?? current.illustration,
-            application: exposition.application?.trim() ?? current.application,
-            transition: exposition.transition?.trim() ?? current.transition,
-            textObservationIds: [...(exposition.textObservationIds ?? current.textObservationIds)],
-            meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? current.meaningInterpretationIds)],
-            meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? current.meaningEvidenceIds)],
-            responseApplicationIds: [...(exposition.responseApplicationIds ?? current.responseApplicationIds)],
-            supportingObservationIds: [...(support.supportingObservationIds ?? [])],
-            supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])],
-            supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])],
-            supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
-        } satisfies SermonOutlinePoint;
+        const updated = { id, heading: normalizedHeading, truth: normalizedTruth, text: exposition.text?.trim() ?? current.text, explanation: exposition.explanation?.trim() ?? current.explanation, illustration: exposition.illustration?.trim() ?? current.illustration, application: exposition.application?.trim() ?? current.application, transition: exposition.transition?.trim() ?? current.transition, textObservationIds: [...(exposition.textObservationIds ?? current.textObservationIds)], meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? current.meaningInterpretationIds)], meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? current.meaningEvidenceIds)], responseApplicationIds: [...(exposition.responseApplicationIds ?? current.responseApplicationIds)], supportingObservationIds: [...(support.supportingObservationIds ?? [])], supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])], supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])], supportingApplicationIds: [...(support.supportingApplicationIds ?? [])] } satisfies SermonOutlinePoint;
         this._outline[index] = updated; return updated;
     }
-
     public defineOutlinePointExposition(id: string, exposition: SermonOutlineExposition): SermonOutlinePoint {
         const index = this._outline.findIndex((point) => point.id === id); if (index < 0) throw new Error("Outline point was not found.");
         const current = this._outline[index]; if (!current) throw new Error("Outline point was not found.");
-        const updated = {
-            ...current,
-            text: exposition.text?.trim() ?? current.text,
-            explanation: exposition.explanation?.trim() ?? current.explanation,
-            illustration: exposition.illustration?.trim() ?? current.illustration,
-            application: exposition.application?.trim() ?? current.application,
-            transition: exposition.transition?.trim() ?? current.transition,
-            textObservationIds: exposition.textObservationIds ? [...exposition.textObservationIds] : current.textObservationIds,
-            meaningInterpretationIds: exposition.meaningInterpretationIds ? [...exposition.meaningInterpretationIds] : current.meaningInterpretationIds,
-            meaningEvidenceIds: exposition.meaningEvidenceIds ? [...exposition.meaningEvidenceIds] : current.meaningEvidenceIds,
-            responseApplicationIds: exposition.responseApplicationIds ? [...exposition.responseApplicationIds] : current.responseApplicationIds,
-        } satisfies SermonOutlinePoint;
+        const updated = { ...current, text: exposition.text?.trim() ?? current.text, explanation: exposition.explanation?.trim() ?? current.explanation, illustration: exposition.illustration?.trim() ?? current.illustration, application: exposition.application?.trim() ?? current.application, transition: exposition.transition?.trim() ?? current.transition, textObservationIds: exposition.textObservationIds ? [...exposition.textObservationIds] : current.textObservationIds, meaningInterpretationIds: exposition.meaningInterpretationIds ? [...exposition.meaningInterpretationIds] : current.meaningInterpretationIds, meaningEvidenceIds: exposition.meaningEvidenceIds ? [...exposition.meaningEvidenceIds] : current.meaningEvidenceIds, responseApplicationIds: exposition.responseApplicationIds ? [...exposition.responseApplicationIds] : current.responseApplicationIds } satisfies SermonOutlinePoint;
         this._outline[index] = updated; return updated;
     }
-
     public removeOutlinePoint(id: string): void { const index = this._outline.findIndex((point) => point.id === id); if (index < 0) throw new Error("Outline point was not found."); this._outline.splice(index, 1); }
-    public moveOutlinePoint(id: string, direction: "up" | "down"): void {
-        const index = this._outline.findIndex((point) => point.id === id); if (index < 0) throw new Error("Outline point was not found.");
-        const targetIndex = direction === "up" ? index - 1 : index + 1; if (targetIndex < 0 || targetIndex >= this._outline.length) return;
-        const current = this._outline[index]; const target = this._outline[targetIndex]; if (!current || !target) throw new Error("Outline point could not be moved.");
-        this._outline[index] = target; this._outline[targetIndex] = current;
-    }
+    public moveOutlinePoint(id: string, direction: "up" | "down"): void { const index = this._outline.findIndex((point) => point.id === id); if (index < 0) throw new Error("Outline point was not found."); const targetIndex = direction === "up" ? index - 1 : index + 1; if (targetIndex < 0 || targetIndex >= this._outline.length) return; const current = this._outline[index]; const target = this._outline[targetIndex]; if (!current || !target) throw new Error("Outline point could not be moved."); this._outline[index] = target; this._outline[targetIndex] = current; }
     public get title(): SermonTitle { return this._title; }
     public get studyId(): StudyId { return this._studyId; }
     public get passage(): Passage { return this._passage; }
@@ -173,6 +143,8 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
     public get introduction(): SermonIntroduction | undefined { return this._introduction; }
     public get context(): SermonContext | undefined { return this._context; }
     public get conclusion(): SermonConclusion | undefined { return this._conclusion; }
+    public get manuscript(): SermonManuscript | undefined { return this._manuscript; }
+    public get deliveryNotes(): SermonDeliveryNotes | undefined { return this._deliveryNotes; }
     public get outline(): readonly SermonOutlinePoint[] { return this._outline; }
     public get createdAt(): Date { return this._createdAt; }
 }
