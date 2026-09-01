@@ -36,20 +36,42 @@ export function SermonPreparationOverview({ studyId }: Props) {
     useEffect(() => {
         let cancelled = false;
         async function load() {
-            if (!studyId) { setError("A study is required to open the sermon overview."); setLoading(false); return; }
             try {
-                const studyRepository = new SupabaseStudyRepository(); const sermonRepository = new SupabaseExpositorySermonRepository();
-                const [nextStudy, nextSermon] = await Promise.all([studyRepository.find(StudyId.from(studyId)), sermonRepository.findByStudyId(studyId)]);
-                if (cancelled) return; if (!nextStudy) throw new Error("The selected study could not be found."); if (!nextSermon) throw new Error("Create Sermon Preparation before opening the overview.");
-                setStudy(nextStudy); setSermon(nextSermon);
-            } catch (reason: unknown) { if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load sermon overview."); }
-            finally { if (!cancelled) setLoading(false); }
+                const studyRepository = new SupabaseStudyRepository();
+                const sermonRepository = new SupabaseExpositorySermonRepository();
+                let resolvedStudyId = studyId;
+                let nextSermon: ExpositorySermon | undefined;
+
+                if (resolvedStudyId) {
+                    nextSermon = await sermonRepository.findByStudyId(resolvedStudyId);
+                } else {
+                    const sermons = await sermonRepository.findAll();
+                    nextSermon = sermons[0];
+                    resolvedStudyId = nextSermon?.studyId.value ?? "";
+                    if (resolvedStudyId && !cancelled) {
+                        router.replace(link("/preaching/overview", resolvedStudyId));
+                    }
+                }
+
+                if (!resolvedStudyId) throw new Error("No sermon preparation record is available yet. Create a sermon from a Study first.");
+                const nextStudy = await studyRepository.find(StudyId.from(resolvedStudyId));
+                if (cancelled) return;
+                if (!nextStudy) throw new Error("The study connected to this sermon could not be found.");
+                if (!nextSermon) throw new Error("The sermon preparation record could not be found.");
+
+                setStudy(nextStudy);
+                setSermon(nextSermon);
+            } catch (reason: unknown) {
+                if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load sermon overview.");
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
         }
         void load(); return () => { cancelled = true; };
-    }, [studyId]);
+    }, [router, studyId]);
     const readiness = useMemo(() => sermon?.outline.map((point, index) => ({ point, readiness: getPointReadiness(getPointDraft(point), index === sermon.outline.length - 1) })) ?? [], [sermon]);
     if (loading) return <AppShell title="Sermon Overview"><p>Loading sermon overview...</p></AppShell>;
-    if (error || !sermon || !study) return <AppShell title="Sermon Overview"><p style={{ color: "#b91c1c" }}>{error ?? "Sermon overview could not be loaded."}</p><button type="button" onClick={() => router.push(link("/preaching", studyId))} style={{ padding: "10px 16px" }}>← Back to Sermon Preparation</button></AppShell>;
+    if (error || !sermon || !study) return <AppShell title="Sermon Overview"><p style={{ color: "#b91c1c" }}>{error ?? "Sermon overview could not be loaded."}</p><button type="button" onClick={() => router.push(studyId ? link("/preaching", studyId) : "/preaching")} style={{ padding: "10px 16px" }}>← Back to Sermon Preparation</button></AppShell>;
 
     const frameworkChecks = [
         { label: "Sermon title", complete: Boolean(sermon.title.value.trim()) }, { label: "Big Idea", complete: Boolean(sermon.bigIdea?.value.trim()) },
@@ -64,14 +86,15 @@ export function SermonPreparationOverview({ studyId }: Props) {
     const finalReady = frameworkComplete === frameworkChecks.length && expositionReady;
     const finalDraftComplete = Boolean(sermon.manuscript?.value.trim());
     const nextAction = !frameworkChecks.every((check) => check.complete)
-        ? { title: "Complete the Sermon Framework", description: "Finish the framework before refining the exposition.", href: link("/preaching", studyId), label: "Open Sermon Framework" }
+        ? { title: "Complete the Sermon Framework", description: "Finish the framework before refining the exposition.", href: link("/preaching", studyId || study.id.value), label: "Open Sermon Framework" }
         : sermon.outline.length === 0
-            ? { title: "Build the Sermon Outline", description: "Create at least one clear outline point from the passage.", href: link("/preaching", studyId), label: "Open Sermon Outline" }
+            ? { title: "Build the Sermon Outline", description: "Create at least one clear outline point from the passage.", href: link("/preaching", studyId || study.id.value), label: "Open Sermon Outline" }
             : !expositionReady
-                ? { title: "Complete the Exposition", description: `${sermon.outline.length - readyPoints} outline point${sermon.outline.length - readyPoints === 1 ? "" : "s"} still need preparation.`, href: link("/preaching/exposition", studyId), label: "Open Sermon Exposition" }
+                ? { title: "Complete the Exposition", description: `${sermon.outline.length - readyPoints} outline point${sermon.outline.length - readyPoints === 1 ? "" : "s"} still need preparation.`, href: link("/preaching/exposition", studyId || study.id.value), label: "Open Sermon Exposition" }
                 : !finalDraftComplete
-                    ? { title: "Draft the Final Sermon", description: "Bring the completed framework and exposition together into a preach-ready manuscript.", href: link("/preaching/final", studyId), label: "Open Final Draft" }
-                    : { title: "Review the Final Sermon", description: "Your manuscript exists. Review the delivery notes and final message before preaching.", href: link("/preaching/final", studyId), label: "Review Final Draft" };
+                    ? { title: "Draft the Final Sermon", description: "Bring the completed framework and exposition together into a preach-ready manuscript.", href: link("/preaching/final", studyId || study.id.value), label: "Open Final Draft" }
+                    : { title: "Review the Final Sermon", description: "Your manuscript exists. Review the delivery notes and final message before preaching.", href: link("/preaching/final", studyId || study.id.value), label: "Review Final Draft" };
+    const activeStudyId = studyId || study.id.value;
 
     return (
         <AppShell title="Sermon Overview">
@@ -81,10 +104,10 @@ export function SermonPreparationOverview({ studyId }: Props) {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
                     {[["Framework", `${frameworkComplete}/${frameworkChecks.length}`, "sections complete"], ["Outline", String(sermon.outline.length), "sermon points"], ["Exposition", `${readyPoints}/${sermon.outline.length || 0}`, "points ready"], ["Final Draft", finalDraftComplete ? "Ready" : "Not started", "manuscript status"], ["Study Support", String(supportCount), "source items available"]].map(([label, value, caption]) => <section key={label} style={{ border: "1px solid #ddd", borderRadius: 12, padding: 18, background: "#fff" }}><div style={{ color: "#6b7280", fontSize: 13 }}>{label}</div><div style={{ fontSize: 24, fontWeight: 800 }}>{value}</div><div style={{ color: "#6b7280" }}>{caption}</div></section>)}
                 </div>
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}><div><div style={{ fontSize: 13, color: "#6b7280" }}>Sermon Framework</div><h3 style={{ margin: "4px 0" }}>{frameworkComplete}/{frameworkChecks.length} complete</h3></div><Link href={link("/preaching", studyId)}>Open Framework</Link></div><div style={{ display: "grid", gap: 7, marginTop: 12 }}>{frameworkChecks.map((check) => <div key={check.label} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span>{check.label}</span><strong style={{ color: check.complete ? "#047857" : "#b91c1c" }}>{check.complete ? "Complete" : "Needed"}</strong></div>)}</div></section>
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}><div><div style={{ fontSize: 13, color: "#6b7280" }}>Sermon Outline & Exposition</div><h3 style={{ margin: "4px 0" }}>{readyPoints}/{sermon.outline.length} points ready</h3></div><Link href={link("/preaching/exposition", studyId)}>Open Exposition</Link></div>{sermon.outline.length === 0 ? <p style={{ color: "#6b7280" }}>No outline points have been created yet.</p> : <div style={{ display: "grid", gap: 10, marginTop: 12 }}>{readiness.map(({ point, readiness: pointReadiness }, index) => <div key={point.id} style={{ padding: 12, borderRadius: 8, background: "#f8fafc", display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}><div><strong>{index + 1}. {point.heading}</strong><div style={{ fontSize: 13, color: "#6b7280" }}>{point.truth}</div>{pointReadiness.missing.length > 0 && <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>Needs: {pointReadiness.missing.join(", ")}</div>}</div><strong style={{ color: pointReadiness.complete ? "#047857" : "#6b7280" }}>{pointReadiness.completed}/{pointReadiness.total}</strong></div>)}</div>}</section>
-                <section id="final-stage" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><div style={{ fontSize: 13, color: "#6b7280" }}>Final Sermon</div><h3 style={{ margin: "4px 0 8px" }}>{finalReady ? (finalDraftComplete ? "Final sermon drafted" : "Ready for final drafting") : "Final drafting comes next"}</h3><p style={{ margin: "0 0 12px", color: "#6b7280" }}>{finalReady ? (finalDraftComplete ? "The manuscript is present. Continue refining wording and delivery notes as you prepare to preach." : "The framework and exposition are complete. The next stage is to compose the final manuscript and delivery plan.") : "Complete the framework and exposition before moving into the final manuscript and delivery stage."}</p><Link href={link("/preaching/final", studyId)} style={{ display: "inline-block", padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none", fontWeight: 600 }}>{finalDraftComplete ? "Open Final Draft" : "Start Final Draft"}</Link></section>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}><Link href={link("/preaching", studyId)} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>← Sermon Preparation</Link><Link href={link("/preaching/exposition", studyId)} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>Open Exposition</Link><Link href={link("/preaching/final", studyId)} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>Final Draft</Link></div>
+                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}><div><div style={{ fontSize: 13, color: "#6b7280" }}>Sermon Framework</div><h3 style={{ margin: "4px 0" }}>{frameworkComplete}/{frameworkChecks.length} complete</h3></div><Link href={link("/preaching", activeStudyId)}>Open Framework</Link></div><div style={{ display: "grid", gap: 7, marginTop: 12 }}>{frameworkChecks.map((check) => <div key={check.label} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span>{check.label}</span><strong style={{ color: check.complete ? "#047857" : "#b91c1c" }}>{check.complete ? "Complete" : "Needed"}</strong></div>)}</div></section>
+                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}><div><div style={{ fontSize: 13, color: "#6b7280" }}>Sermon Outline & Exposition</div><h3 style={{ margin: "4px 0" }}>{readyPoints}/{sermon.outline.length} points ready</h3></div><Link href={link("/preaching/exposition", activeStudyId)}>Open Exposition</Link></div>{sermon.outline.length === 0 ? <p style={{ color: "#6b7280" }}>No outline points have been created yet.</p> : <div style={{ display: "grid", gap: 10, marginTop: 12 }}>{readiness.map(({ point, readiness: pointReadiness }, index) => <div key={point.id} style={{ padding: 12, borderRadius: 8, background: "#f8fafc", display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}><div><strong>{index + 1}. {point.heading}</strong><div style={{ fontSize: 13, color: "#6b7280" }}>{point.truth}</div>{pointReadiness.missing.length > 0 && <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>Needs: {pointReadiness.missing.join(", ")}</div>}</div><strong style={{ color: pointReadiness.complete ? "#047857" : "#6b7280" }}>{pointReadiness.completed}/{pointReadiness.total}</strong></div>)}</div>}</section>
+                <section id="final-stage" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><div style={{ fontSize: 13, color: "#6b7280" }}>Final Sermon</div><h3 style={{ margin: "4px 0 8px" }}>{finalReady ? (finalDraftComplete ? "Final sermon drafted" : "Ready for final drafting") : "Final drafting comes next"}</h3><p style={{ margin: "0 0 12px", color: "#6b7280" }}>{finalReady ? (finalDraftComplete ? "The manuscript is present. Continue refining wording and delivery notes as you prepare to preach." : "The framework and exposition are complete. The next stage is to compose the final manuscript and delivery plan.") : "Complete the framework and exposition before moving into the final manuscript and delivery stage."}</p><Link href={link("/preaching/final", activeStudyId)} style={{ display: "inline-block", padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none", fontWeight: 600 }}>{finalDraftComplete ? "Open Final Draft" : "Start Final Draft"}</Link></section>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}><Link href={link("/preaching", activeStudyId)} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>← Sermon Preparation</Link><Link href={link("/preaching/exposition", activeStudyId)} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>Open Exposition</Link><Link href={link("/preaching/final", activeStudyId)} style={{ padding: "10px 16px", border: "1px solid #d1d5db", borderRadius: 8, textDecoration: "none" }}>Final Draft</Link></div>
             </div>
         </AppShell>
     );
