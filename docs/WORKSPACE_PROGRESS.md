@@ -8,38 +8,21 @@ The Study remains the source of truth for passage-linked observations, interpret
 
 ## Sermon Preparation
 
-The `/preaching` workspace creates one expository sermon preparation record from a Study and provides:
+The `/preaching` workspace creates an expository sermon preparation record from a Study and provides sermon title, Big Idea, Purpose, outline construction, editing, deletion, ordering, and links to Study source material.
 
-- sermon title
-- Big Idea
-- Purpose
-- outline construction, editing, deletion, and ordering
-- links from outline points to Study observations, interpretations, evidence, and applications
+Each outline point can be supported by Study observations, interpretations, evidence, and applications.
 
 ## Sermon Framework
 
-The framework stage provides:
-
-- Introduction
-- Context / Setting
-- Conclusion
+The framework stage provides Introduction, Context / Setting, and Conclusion.
 
 ## Sermon Exposition
 
-Each outline point can be developed through:
-
-- Text
-- Meaning / explanation
-- Illustration
-- Application
-- Transition
-- explicit links back to observation, interpretation, evidence, and application foundations
-
-The Sermon Overview tracks readiness and directs the preacher to the next incomplete stage.
+Each outline point can be developed through Text, Meaning / explanation, Illustration, Application, and Transition, with explicit links to the relevant Study foundations. Sermon Overview readiness directs the preacher to the next incomplete stage.
 
 ## Final Sermon Drafting
 
-The `/preaching/final` workspace now provides:
+The `/preaching/final` workspace provides:
 
 - Final Manuscript
 - Delivery Notes
@@ -48,17 +31,17 @@ The `/preaching/final` workspace now provides:
 - deterministic structured-draft assembly from the completed framework and outline
 - persistent Supabase storage
 
-The structured-draft builder is a starting point only. It intentionally preserves the distinction between source study material and the preacher's final authored manuscript.
+The structured-draft builder is a starting point only. It preserves the distinction between source study material and the preacher's final authored manuscript.
 
-## Current Branch
+## Current Branches
 
-The integrated development baseline is `feat/observation-workspace-route`.
-
-The current continuation is `feat/final-sermon-drafting`, reviewed through PR #3.
+- `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
+- `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline.
 
 ## Verification
 
-Repository CI is now defined in `.github/workflows/ci.yml` for feature branches and pull requests. GitHub has not yet reported a workflow run for the latest branch commits, so local validation remains required before merging.
+Repository CI is defined in `.github/workflows/ci.yml` for feature branches and pull requests. GitHub has not yet reported a workflow run for the latest commits, so local validation remains required before merging.
 
 The final-drafting migration is:
 
@@ -68,7 +51,7 @@ It must be applied to the connected Supabase project before final manuscript and
 
 ## Next Work
 
-1. Validate the integrated branch locally with `pnpm install`, `pnpm typecheck`, `pnpm test`, and `pnpm build`.
+1. Run `pnpm install`, `pnpm typecheck`, `pnpm test`, and `pnpm build` locally on `feat/final-sermon-drafting`.
 2. Apply and verify the final-drafting Supabase migration.
-3. Add authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft.
+3. Perform authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft.
 4. Continue with sermon delivery tooling after the final drafting stage is stable.
