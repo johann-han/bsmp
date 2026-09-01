@@ -19,6 +19,7 @@ import { InterpretationHistory } from "./InterpretationHistory";
 import { InterpretationTools } from "./InterpretationTools";
 import { ObservationComposer } from "./ObservationComposer";
 import { ObservationHistory } from "./ObservationHistory";
+import { ObservationMentorPanel } from "./ObservationMentorPanel";
 import { StudyPassage, type StudyWordMarkup, type StudyVerse } from "./StudyPassage";
 
 interface RealBiblePassageResponse {
@@ -262,6 +263,8 @@ export function ObservationWorkspace() {
             )}
 
             {studyTitle && <p style={{ margin: "0 0 16px", fontWeight: 600 }}>Study: {studyTitle}</p>}
+
+            <ObservationMentorPanel studyId={studyId} />
 
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <label htmlFor="study-translation" style={{ fontSize: 13, color: "#6b7280" }}>Translation</label>
