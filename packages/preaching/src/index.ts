@@ -1,8 +1,2 @@
-export {
-    ExpositorySermon,
-    ExpositorySermonId,
-    SermonBigIdea,
-    SermonPurpose,
-    SermonTitle,
-    type SermonOutlinePoint,
-} from "./domain/ExpositorySermon.js";
+export * from "./domain/ExpositorySermon.js";
+export * from "./domain/StudyContext.js";
