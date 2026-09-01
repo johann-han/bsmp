@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-import type { Database } from "../../../../../src/lib/database.types";
+import type { Database } from "../../../../src/lib/database.types";
 
 interface MentorRequest {
     readonly passageReference?: unknown;
