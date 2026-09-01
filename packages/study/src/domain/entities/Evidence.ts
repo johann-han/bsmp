@@ -9,9 +9,9 @@ import {
 export class Evidence
     extends Entity<EvidenceId> {
 
-    private readonly _type: EvidenceType;
+    private _type: EvidenceType;
 
-    private readonly _description: EvidenceDescription;
+    private _description: EvidenceDescription;
 
     private readonly _createdAt: Date;
 
@@ -43,6 +43,14 @@ export class Evidence
             new Date(),
         );
 
+    }
+
+    public revise(
+        type: EvidenceType,
+        description: EvidenceDescription,
+    ): void {
+        this._type = type;
+        this._description = description;
     }
 
     public get type(): EvidenceType {
