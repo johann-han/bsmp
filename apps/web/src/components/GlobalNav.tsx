@@ -11,6 +11,7 @@ const items = [
     ["Settings", "/settings"],
     ["Sermon Preparation", "/preaching"],
     ["Sermon Overview", "/preaching/overview"],
+    ["Preaching History", "/preaching/history"],
 ] as const;
 
 function NavigationLinks() {
@@ -18,50 +19,36 @@ function NavigationLinks() {
     const studyId = searchParams.get("studyId");
     const preachingHref = studyId ? `/preaching?studyId=${encodeURIComponent(studyId)}` : "/preaching";
     const overviewHref = studyId ? `/preaching/overview?studyId=${encodeURIComponent(studyId)}` : "/preaching/overview";
+    const historyHref = studyId ? `/preaching/history?studyId=${encodeURIComponent(studyId)}` : "/preaching/history";
 
     function openSermonPreparation(event: React.MouseEvent<HTMLAnchorElement>) {
         event.preventDefault();
         const currentStudyId = new URLSearchParams(window.location.search).get("studyId");
-        const target = currentStudyId
-            ? `/preaching?studyId=${encodeURIComponent(currentStudyId)}`
-            : preachingHref;
-        window.location.assign(target);
+        window.location.assign(currentStudyId ? `/preaching?studyId=${encodeURIComponent(currentStudyId)}` : preachingHref);
     }
 
     function openSermonOverview(event: React.MouseEvent<HTMLAnchorElement>) {
         event.preventDefault();
         const currentStudyId = new URLSearchParams(window.location.search).get("studyId");
-        const target = currentStudyId
-            ? `/preaching/overview?studyId=${encodeURIComponent(currentStudyId)}`
-            : overviewHref;
-        window.location.assign(target);
+        window.location.assign(currentStudyId ? `/preaching/overview?studyId=${encodeURIComponent(currentStudyId)}` : overviewHref);
+    }
+
+    function openPreachingHistory(event: React.MouseEvent<HTMLAnchorElement>) {
+        event.preventDefault();
+        const currentStudyId = new URLSearchParams(window.location.search).get("studyId");
+        window.location.assign(currentStudyId ? `/preaching/history?studyId=${encodeURIComponent(currentStudyId)}` : historyHref);
     }
 
     return (
-        <nav
-            aria-label="Primary navigation"
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 18,
-                minHeight: 52,
-                padding: "0 20px",
-                overflowX: "auto",
-                whiteSpace: "nowrap",
-            }}
-        >
-            <a href="/" style={{ fontWeight: 800, color: "#0f172a", textDecoration: "none", marginRight: 6 }}>
-                BSMP
-            </a>
+        <nav aria-label="Primary navigation" style={{ display: "flex", alignItems: "center", gap: 18, minHeight: 52, padding: "0 20px", overflowX: "auto", whiteSpace: "nowrap" }}>
+            <a href="/" style={{ fontWeight: 800, color: "#0f172a", textDecoration: "none", marginRight: 6 }}>BSMP</a>
             {items.map(([label, href]) => (
                 <a
                     key={href}
-                    href={href === "/preaching" ? preachingHref : href === "/preaching/overview" ? overviewHref : href}
-                    onClick={href === "/preaching" ? openSermonPreparation : href === "/preaching/overview" ? openSermonOverview : undefined}
+                    href={href === "/preaching" ? preachingHref : href === "/preaching/overview" ? overviewHref : href === "/preaching/history" ? historyHref : href}
+                    onClick={href === "/preaching" ? openSermonPreparation : href === "/preaching/overview" ? openSermonOverview : href === "/preaching/history" ? openPreachingHistory : undefined}
                     style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
-                >
-                    {label}
-                </a>
+                >{label}</a>
             ))}
         </nav>
     );
@@ -69,18 +56,7 @@ function NavigationLinks() {
 
 export function GlobalNav() {
     return (
-        <header
-            className="bsmp-print-hide"
-            style={{
-                position: "sticky",
-                top: 0,
-                zIndex: 1000,
-                borderBottom: "1px solid #e5e7eb",
-                background: "rgba(255,255,255,0.96)",
-                backdropFilter: "blur(10px)",
-                boxShadow: "0 1px 8px rgba(15,23,42,0.06)",
-            }}
-        >
+        <header className="bsmp-print-hide" style={{ position: "sticky", top: 0, zIndex: 1000, borderBottom: "1px solid #e5e7eb", background: "rgba(255,255,255,0.96)", backdropFilter: "blur(10px)", boxShadow: "0 1px 8px rgba(15,23,42,0.06)" }}>
             <Suspense fallback={<div style={{ minHeight: 52 }} />}>
                 <NavigationLinks />
             </Suspense>
