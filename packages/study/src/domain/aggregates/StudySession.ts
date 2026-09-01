@@ -7,6 +7,9 @@ import { Observation } from "../entities/Observation.js";
 import { Interpretation } from "../entities/Interpretation.js";
 
 import {
+    EvidenceDescription,
+    EvidenceId,
+    EvidenceType,
     ObservationId,
     StudyId,
     StudyStatus,
@@ -84,6 +87,17 @@ export class StudySession
 
     public addInterpretation(interpretation: Interpretation): void {
         this._interpretations.push(interpretation);
+    }
+
+    public updateEvidence(
+        interpretationId: import("../value-objects/InterpretationId.js").InterpretationId,
+        evidenceId: EvidenceId,
+        type: EvidenceType,
+        description: EvidenceDescription,
+    ): void {
+        const interpretation = this._interpretations.find((item) => item.id.value === interpretationId.value);
+        if (!interpretation) throw new Error(`Interpretation not found: ${interpretationId.value}`);
+        interpretation.updateEvidence(evidenceId, type, description);
     }
 
     public addApplication(application: Application): void {
