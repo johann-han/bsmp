@@ -1,6 +1,8 @@
 import { Entity, ValueObject } from "@bsmp/shared";
 import type { Passage } from "@bsmp/bible";
 
+import type { SermonStudyContext } from "./StudyContext.js";
+
 export class ExpositorySermonId extends ValueObject<{ value: string }> {
     public static create(value = crypto.randomUUID()): ExpositorySermonId {
         return new ExpositorySermonId({ value });
@@ -51,6 +53,14 @@ export interface SermonOutlinePoint {
     readonly id: string;
     readonly heading: string;
     readonly truth: string;
+    readonly supportingObservationIds: readonly string[];
+    readonly supportingInterpretationIds: readonly string[];
+    readonly supportingEvidenceIds: readonly string[];
+    readonly supportingApplicationIds: readonly string[];
+    readonly explanation: string;
+    readonly illustration: string;
+    readonly application: string;
+    readonly transition: string;
 }
 
 export class ExpositorySermon extends Entity<ExpositorySermonId> {
@@ -104,10 +114,76 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             id: crypto.randomUUID(),
             heading: normalizedHeading,
             truth: normalizedTruth,
+            supportingObservationIds: [],
+            supportingInterpretationIds: [],
+            supportingEvidenceIds: [],
+            supportingApplicationIds: [],
+            explanation: "",
+            illustration: "",
+            application: "",
+            transition: "",
         } satisfies SermonOutlinePoint;
 
         this._outline.push(point);
         return point;
+    }
+
+    public attachStudySupport(
+        pointId: string,
+        context: Pick<SermonStudyContext, "observations" | "interpretations" | "applications">,
+        support: {
+            readonly observationIds?: readonly string[];
+            readonly interpretationIds?: readonly string[];
+            readonly evidenceIds?: readonly string[];
+            readonly applicationIds?: readonly string[];
+        },
+    ): void {
+        const index = this._outline.findIndex((point) => point.id === pointId);
+        if (index < 0) throw new Error("Sermon outline point not found.");
+
+        const observationIds = new Set(context.observations.map((item) => item.id));
+        const interpretationIds = new Set(context.interpretations.map((item) => item.id));
+        const evidenceIds = new Set(context.interpretations.flatMap((item) => item.evidence.map((evidence) => evidence.id)));
+        const applicationIds = new Set(context.applications.map((item) => item.id));
+
+        const observations = [...(support.observationIds ?? [])];
+        const interpretations = [...(support.interpretationIds ?? [])];
+        const evidence = [...(support.evidenceIds ?? [])];
+        const applications = [...(support.applicationIds ?? [])];
+
+        if (observations.some((id) => !observationIds.has(id))) throw new Error("Outline point references an observation outside the originating study.");
+        if (interpretations.some((id) => !interpretationIds.has(id))) throw new Error("Outline point references an interpretation outside the originating study.");
+        if (evidence.some((id) => !evidenceIds.has(id))) throw new Error("Outline point references evidence outside the originating study.");
+        if (applications.some((id) => !applicationIds.has(id))) throw new Error("Outline point references an application outside the originating study.");
+
+        this._outline[index] = {
+            ...this._outline[index],
+            supportingObservationIds: [...new Set(observations)],
+            supportingInterpretationIds: [...new Set(interpretations)],
+            supportingEvidenceIds: [...new Set(evidence)],
+            supportingApplicationIds: [...new Set(applications)],
+        };
+    }
+
+    public defineOutlinePointExposition(
+        pointId: string,
+        exposition: {
+            readonly explanation: string;
+            readonly illustration: string;
+            readonly application: string;
+            readonly transition: string;
+        },
+    ): void {
+        const index = this._outline.findIndex((point) => point.id === pointId);
+        if (index < 0) throw new Error("Sermon outline point not found.");
+
+        this._outline[index] = {
+            ...this._outline[index],
+            explanation: exposition.explanation.trim(),
+            illustration: exposition.illustration.trim(),
+            application: exposition.application.trim(),
+            transition: exposition.transition.trim(),
+        };
     }
 
     public get title(): SermonTitle {
