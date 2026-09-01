@@ -251,6 +251,7 @@ export function ObservationWorkspace() {
     const returnLabel = returnTo?.includes("/preaching/exposition")
         ? "← Back to Sermon Exposition"
         : "← Back to Sermon Study Source";
+    const mentorPassageText = passage.verses.map((verse) => `${verse.reference} ${verse.text}`).join("\n");
 
     return (
         <div>
@@ -264,7 +265,11 @@ export function ObservationWorkspace() {
 
             {studyTitle && <p style={{ margin: "0 0 16px", fontWeight: 600 }}>Study: {studyTitle}</p>}
 
-            <ObservationMentorPanel studyId={studyId} />
+            <ObservationMentorPanel
+                studyId={studyId}
+                passageReference={passage.reference}
+                passageText={mentorPassageText}
+            />
 
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <label htmlFor="study-translation" style={{ fontSize: 13, color: "#6b7280" }}>Translation</label>
