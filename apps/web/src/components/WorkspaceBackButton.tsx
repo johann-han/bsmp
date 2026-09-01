@@ -27,7 +27,7 @@ export function WorkspaceBackButton() {
                 boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
             }}
         >
-            ← Back
+            Back to Sermon Exposition
         </button>
     );
 }
