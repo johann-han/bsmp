@@ -6,6 +6,8 @@ The `/workspace` route renders the integrated Study Workspace with the Bible pas
 
 The Study remains the source of truth for passage-linked observations, interpretations, evidence, and applications.
 
+When Sermon Exposition links back to an interpretation, the Workspace now resolves the interpretation anchor to the visible Refine Interpretation / Evidence editor so the preacher can add missing evidence without manually searching the page.
+
 ## Sermon Preparation
 
 The `/preaching` workspace creates an expository sermon preparation record from a Study and provides sermon title, Big Idea, Purpose, outline construction, editing, deletion, ordering, and links to Study source material.
@@ -50,24 +52,25 @@ The delivery view provides:
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes the final drafting and delivery stages.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes the final drafting, delivery, and Workspace evidence-navigation improvements.
 
 ## Verification
 
-Repository CI is defined in `.github/workflows/ci.yml` for feature branches and pull requests. GitHub has not yet reported a workflow run for the latest commits, so local validation remains required before merging.
+Repository CI is defined in `.github/workflows/ci.yml` for feature branches and pull requests.
 
-The final-drafting migration is:
+The final-drafting migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
 
-`supabase/migrations/20260901100000_sermon_final_drafting.sql`
+The local verification completed successfully on `feat/final-sermon-drafting`:
 
-The migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
+- `pnpm typecheck` — 14/14 tasks successful
+- `pnpm test` — all reported workspace test suites passed
+- `pnpm build` — production build successful, including `/preaching/final` and `/preaching/delivery`
 
-Supabase security advisors currently report one pre-existing Auth warning: leaked-password protection is disabled. This is separate from the final-drafting schema change and should be addressed as an Auth hardening task.
+Supabase security advisors currently report one pre-existing Auth warning: leaked-password protection is disabled. This is separate from the sermon schema and should be addressed as an Auth hardening task.
 
 ## Next Work
 
-1. Run `pnpm install`, `pnpm typecheck`, `pnpm test`, and `pnpm build` locally on `feat/final-sermon-drafting`.
-2. Perform authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft → Delivery Mode.
-3. Add export/print support for the final manuscript and delivery view.
-4. Add sermon scheduling and preaching history after the delivery workflow is stable.
-5. Harden Supabase Auth by enabling leaked-password protection.
+1. Perform authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft → Delivery Mode, including the missing-evidence navigation path.
+2. Add export/print support for the final manuscript and delivery view.
+3. Add sermon scheduling and preaching history after the delivery workflow is stable.
+4. Harden Supabase Auth by enabling leaked-password protection.
