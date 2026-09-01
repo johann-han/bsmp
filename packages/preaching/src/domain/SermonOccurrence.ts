@@ -15,7 +15,7 @@ export class SermonOccurrence extends Entity<SermonOccurrenceId> {
     private _venue: string;
     private _serviceName: string;
     private _notes: string;
-    private _preachedAt?: Date;
+    private _preachedAt: Date | undefined;
     private readonly _createdAt: Date;
 
     private constructor(
