@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { AuthGate } from "../src/components/AuthGate";
 import { GlobalNav } from "../src/components/GlobalNav";
 import { WorkspaceBackButton } from "../src/components/WorkspaceBackButton";
 import "./globals.css";
@@ -27,8 +28,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <GlobalNav />
-        <WorkspaceBackButton />
-        {children}
+        <AuthGate>
+          <WorkspaceBackButton />
+          {children}
+        </AuthGate>
       </body>
     </html>
   );
