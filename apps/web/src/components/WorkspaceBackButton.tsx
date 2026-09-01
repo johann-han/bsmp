@@ -1,16 +1,22 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export function WorkspaceBackButton() {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     if (pathname !== "/workspace") return null;
+
+    const studyId = searchParams.get("studyId");
+    const expositionUrl = studyId
+        ? `/preaching/exposition?studyId=${encodeURIComponent(studyId)}`
+        : "/preaching/exposition";
 
     return (
         <button
             type="button"
-            onClick={() => window.history.back()}
+            onClick={() => window.location.assign(expositionUrl)}
             style={{
                 position: "fixed",
                 left: 20,
