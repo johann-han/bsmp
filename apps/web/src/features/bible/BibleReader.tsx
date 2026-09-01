@@ -45,6 +45,27 @@ interface SavedFocus {
     readonly end: number | null;
 }
 
+function buildStudyPassage(result: BibleResponse, selectedRange: readonly number[]): string | null {
+    if (selectedRange.length === 0) return null;
+
+    const first = result.verses.find((verse) => verse.number === selectedRange[0]);
+    const last = result.verses.find((verse) => verse.number === selectedRange[selectedRange.length - 1]);
+    if (!first || !last) return null;
+
+    const firstParts = first.reference.split(" ");
+    const firstVerse = firstParts.pop();
+    const firstChapter = firstParts.pop();
+    const book = firstParts.join(" ");
+    const lastParts = last.reference.split(" ");
+    const lastVerse = lastParts.pop();
+    const lastChapter = lastParts.pop();
+    if (!book || !firstChapter || !firstVerse || !lastChapter || !lastVerse) return result.reference;
+
+    return firstChapter === lastChapter
+        ? `${book} ${firstChapter}:${firstVerse}-${lastVerse}`
+        : `${book} ${firstChapter}:${firstVerse}-${lastChapter}:${lastVerse}`;
+}
+
 export function BibleReader() {
     const [reference, setReference] = useState("Romans 12");
     const [translation, setTranslation] = useState("asv");
@@ -157,6 +178,15 @@ export function BibleReader() {
             ? `Focused verse: ${result?.verses.find((verse) => verse.number === selectedRange[0])?.reference ?? selectedRange[0]}`
             : `Focused range: ${result?.verses.find((verse) => verse.number === selectedRange[0])?.reference ?? selectedRange[0]}–${selectedRange[selectedRange.length - 1]}`;
 
+    const studyPassage = result ? buildStudyPassage(result, selectedRange) : null;
+
+    function studySelectedPassage() {
+        if (!studyPassage) return;
+        const title = encodeURIComponent(`${studyPassage} Study`);
+        const passage = encodeURIComponent(studyPassage);
+        window.location.assign(`/studies?newStudy=1&title=${title}&passage=${passage}`);
+    }
+
     return (
         <div style={{ display: "grid", gap: 16, maxWidth: 900 }}>
             <form onSubmit={loadPassage} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10 }}>
@@ -222,9 +252,18 @@ export function BibleReader() {
                         })}
                     </div>
 
-                    <p style={{ margin: "16px 0 0", fontSize: 13, color: "#6b7280" }}>
-                        {focusLabel}
-                    </p>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, marginTop: 16, flexWrap: "wrap" }}>
+                        <p style={{ margin: 0, fontSize: 13, color: "#6b7280" }}>{focusLabel}</p>
+                        <button
+                            type="button"
+                            onClick={studySelectedPassage}
+                            disabled={!studyPassage}
+                            style={{ padding: "9px 14px", border: "1px solid #1d4ed8", borderRadius: 8, background: "#1d4ed8", color: "#fff", cursor: studyPassage ? "pointer" : "not-allowed", fontWeight: 700, opacity: studyPassage ? 1 : 0.55 }}
+                        >
+                            Study this passage
+                        </button>
+                    </div>
+
                     {selectedEnd !== null && (
                         <p style={{ margin: "6px 0 0", fontSize: 12, color: "#6b7280" }}>
                             Click another verse to start a new range.
