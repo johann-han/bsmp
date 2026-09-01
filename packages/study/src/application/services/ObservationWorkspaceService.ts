@@ -28,8 +28,14 @@ import type { StudyRepository } from "../../domain/repositories/StudyRepository.
 import { ApplicationId } from "../../domain/value-objects/ApplicationId.js";
 import { ObservationId } from "../../domain/value-objects/ObservationId.js";
 import { InterpretationId } from "../../domain/value-objects/InterpretationId.js";
+import {
+    EvidenceDescription,
+    EvidenceId,
+    EvidenceType,
+    ObservationStatement,
+    ObservationTarget,
+} from "../../domain/value-objects/index.js";
 import type { ObservationWordTargetInput, StudyId } from "../../domain/value-objects/index.js";
-import { ObservationStatement, ObservationTarget } from "../../domain/value-objects/index.js";
 
 export interface ObservationWorkspaceData {
     observationQuestions: readonly ObservationQuestionViewModel[];
@@ -172,6 +178,33 @@ export class ObservationWorkspaceService {
         return this.createEvidenceCommand.execute(this.studyId, interpretationId, type, description);
     }
 
+    public async updateEvidence(
+        interpretationId: string,
+        evidenceId: string,
+        type: string,
+        description: string,
+    ): Promise<void> {
+        if (!this.studyRepository || !this.studyId) {
+            throw new Error("Evidence editing is not configured for this workspace.");
+        }
+
+        const study = await this.studyRepository.find(this.studyId);
+        if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
+
+        const normalizedDescription = description.trim();
+        const evidenceType = this.toEvidenceType(type);
+        const currentInterpretationId = InterpretationId.from(interpretationId);
+        const currentEvidenceId = EvidenceId.from(evidenceId);
+
+        study.updateEvidence(
+            currentInterpretationId,
+            currentEvidenceId,
+            evidenceType,
+            EvidenceDescription.from(normalizedDescription),
+        );
+        await this.studyRepository.save(study);
+    }
+
     public async addApplication(
         interpretationId: string,
         principle: string,
@@ -222,6 +255,19 @@ export class ObservationWorkspaceService {
 
         study.removeApplication(ApplicationId.from(applicationId));
         await this.studyRepository.save(study);
+    }
+
+    private toEvidenceType(value: string): EvidenceType {
+        switch (value) {
+            case "Scripture": return EvidenceType.scripture();
+            case "CrossReference": return EvidenceType.crossReference();
+            case "OriginalLanguage": return EvidenceType.originalLanguage();
+            case "Historical": return EvidenceType.historical();
+            case "Geographical": return EvidenceType.geographical();
+            case "Literary": return EvidenceType.literary();
+            case "PersonalNote": return EvidenceType.personalNote();
+            default: return EvidenceType.other();
+        }
     }
 
     private sameTarget(left: ObservationTarget, right: ObservationTarget): boolean {
