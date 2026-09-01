@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type {
+    EvidenceViewModel,
     InterpretationViewModel,
     ObservationViewModel,
     ObservationWorkspaceService,
@@ -18,6 +19,8 @@ const TYPES = [
     "PersonalNote",
     "Other",
 ] as const;
+
+type EvidenceType = (typeof TYPES)[number];
 
 export interface InterpretationToolsProps {
     readonly interpretations: readonly InterpretationViewModel[];
@@ -47,7 +50,7 @@ export function InterpretationTools({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [statement, setStatement] = useState("");
     const [selectedObservationIds, setSelectedObservationIds] = useState<string[]>([]);
-    const [evidenceType, setEvidenceType] = useState<(typeof TYPES)[number]>("Scripture");
+    const [evidenceType, setEvidenceType] = useState<EvidenceType>("Scripture");
     const [evidenceDescription, setEvidenceDescription] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -140,17 +143,21 @@ export function InterpretationTools({
                     </div>
 
                     {interpretation.evidence.length > 0 && (
-                        <ul style={{ fontSize: 13, color: "#4b5563" }}>
+                        <ul style={{ display: "grid", gap: 8, paddingLeft: 20, fontSize: 13, color: "#4b5563" }}>
                             {interpretation.evidence.map((evidence) => (
-                                <li key={evidence.id} id={`evidence-${evidence.id}`} style={{ scrollMarginTop: 24 }}>
-                                    <strong>{evidence.type}:</strong> {evidence.description}
-                                </li>
+                                <EvidenceItem
+                                    key={evidence.id}
+                                    interpretationId={interpretation.id}
+                                    evidence={evidence}
+                                    workspace={workspace}
+                                    onSaved={onSaved}
+                                />
                             ))}
                         </ul>
                     )}
 
                     <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
-                        <select value={evidenceType} onChange={(event) => setEvidenceType(event.target.value as (typeof TYPES)[number])}>
+                        <select value={evidenceType} onChange={(event) => setEvidenceType(event.target.value as EvidenceType)}>
                             {TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
                         </select>
                         <textarea value={evidenceDescription} onChange={(event) => setEvidenceDescription(event.target.value)} placeholder="Add evidence supporting this interpretation..." rows={3} style={{ width: "100%", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 10, font: "inherit" }} />
@@ -182,4 +189,89 @@ export function InterpretationTools({
             {message && <p style={{ color: "#166534" }}>{message}</p>}
         </section>
     );
+}
+
+function EvidenceItem({
+    interpretationId,
+    evidence,
+    workspace,
+    onSaved,
+}: {
+    readonly interpretationId: string;
+    readonly evidence: EvidenceViewModel;
+    readonly workspace: ObservationWorkspaceService;
+    readonly onSaved: () => Promise<void> | void;
+}) {
+    const [editing, setEditing] = useState(false);
+    const [draftType, setDraftType] = useState<EvidenceType>(toEvidenceType(evidence.type));
+    const [draftDescription, setDraftDescription] = useState(evidence.description);
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    function startEdit() {
+        setDraftType(toEvidenceType(evidence.type));
+        setDraftDescription(evidence.description);
+        setError(null);
+        setEditing(true);
+    }
+
+    function cancelEdit() {
+        setDraftType(toEvidenceType(evidence.type));
+        setDraftDescription(evidence.description);
+        setError(null);
+        setEditing(false);
+    }
+
+    async function saveEdit() {
+        const description = draftDescription.trim();
+        if (!description) {
+            setError("Enter an evidence description before saving.");
+            return;
+        }
+
+        setBusy(true);
+        setError(null);
+        try {
+            await workspace.updateEvidence(
+                interpretationId,
+                evidence.id,
+                draftType,
+                description,
+            );
+            setEditing(false);
+            await onSaved();
+        } catch (reason) {
+            setError(reason instanceof Error ? reason.message : "Unable to update evidence.");
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    if (!editing) {
+        return (
+            <li id={`evidence-${evidence.id}`} style={{ scrollMarginTop: 24 }}>
+                <strong>{evidence.type}:</strong> {evidence.description}{" "}
+                <button type="button" onClick={startEdit} style={{ marginLeft: 6 }}>Edit</button>
+                {error && <span style={{ marginLeft: 8, color: "#b91c1c" }}>{error}</span>}
+            </li>
+        );
+    }
+
+    return (
+        <li id={`evidence-${evidence.id}`} style={{ display: "grid", gap: 8, scrollMarginTop: 24, listStyle: "none", marginLeft: -20 }}>
+            <select value={draftType} onChange={(event) => setDraftType(event.target.value as EvidenceType)} disabled={busy}>
+                {TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+            </select>
+            <textarea value={draftDescription} onChange={(event) => setDraftDescription(event.target.value)} disabled={busy} rows={3} style={{ width: "100%", boxSizing: "border-box", resize: "vertical", border: "1px solid #d1d5db", borderRadius: 8, padding: 10, font: "inherit" }} />
+            <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" onClick={() => void saveEdit()} disabled={busy}>{busy ? "Saving..." : "Save Changes"}</button>
+                <button type="button" onClick={cancelEdit} disabled={busy}>Cancel</button>
+            </div>
+            {error && <p style={{ margin: 0, color: "#b91c1c" }}>{error}</p>}
+        </li>
+    );
+}
+
+function toEvidenceType(value: string): EvidenceType {
+    return TYPES.includes(value as EvidenceType) ? value as EvidenceType : "Other";
 }
