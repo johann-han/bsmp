@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ExpositorySermon, SermonDeliveryNotes, SermonManuscript } from "@bsmp/preaching";
+import type { ExpositorySermon } from "@bsmp/preaching";
 import { buildSermonManuscript, SermonDeliveryNotes as SermonDeliveryNotesValue, SermonManuscript as SermonManuscriptValue } from "@bsmp/preaching";
 import { StudyId } from "@bsmp/study";
 import type { StudySession } from "@bsmp/study";
@@ -114,6 +114,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
 
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <button type="button" onClick={() => void save()} disabled={saving} style={{ padding: "10px 16px", fontWeight: 600 }}>{saving ? "Saving..." : "Save Final Draft"}</button>
+                    <button type="button" onClick={() => router.push(`/preaching/delivery?studyId=${encodeURIComponent(studyId)}`)} disabled={!manuscript.trim()} style={{ padding: "10px 16px", fontWeight: 600 }}>Open Delivery Mode</button>
                     <button type="button" onClick={() => router.push(`/preaching/overview?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>← Sermon Overview</button>
                     <button type="button" onClick={() => router.push(`/preaching/exposition?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>Review Exposition</button>
                     {message && <span style={{ color: "#047857" }}>{message}</span>}
