@@ -4,17 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ExpositorySermon } from "@bsmp/preaching";
 import { ExpositorySermonId, SermonOccurrence, SermonOccurrenceId } from "@bsmp/preaching";
-import { StudyId } from "@bsmp/study";
 import { AppShell } from "@repo/ui";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
 import { SupabaseSermonOccurrenceRepository } from "../../lib/SupabaseSermonOccurrenceRepository";
 
 interface Props { studyId: string; }
-
-function toInputValue(date: Date): string {
-    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 16);
-}
 
 function formatDate(date: Date): string {
     return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date);
@@ -22,6 +16,10 @@ function formatDate(date: Date): string {
 
 function asUuid(value: string): `${string}-${string}-${string}-${string}-${string}` {
     return value as `${string}-${string}-${string}-${string}-${string}`;
+}
+
+function link(path: string, studyId: string): string {
+    return studyId ? `${path}?studyId=${encodeURIComponent(studyId)}` : path;
 }
 
 export function SermonHistoryWorkspace({ studyId }: Props) {
@@ -36,25 +34,42 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
+    const [resolvedStudyId, setResolvedStudyId] = useState(studyId);
 
     async function load() {
-        if (!studyId) { setError("A study is required to open preaching history."); setLoading(false); return; }
+        setLoading(true);
+        setError(null);
         try {
             const sermonRepository = new SupabaseExpositorySermonRepository();
-            const nextSermon = await sermonRepository.findByStudyId(studyId);
-            if (!nextSermon) throw new Error("Complete Sermon Preparation before scheduling a preaching occurrence.");
+            const nextSermon = studyId
+                ? await sermonRepository.findByStudyId(studyId)
+                : (await sermonRepository.findAll())[0];
+            if (!nextSermon) throw new Error("Create Sermon Preparation before opening preaching history.");
+
+            const nextStudyId = nextSermon.studyId.value;
             const nextOccurrences = await new SupabaseSermonOccurrenceRepository().findBySermonId(nextSermon.id);
             setSermon(nextSermon);
             setOccurrences(nextOccurrences);
+            setResolvedStudyId(nextStudyId);
+
+            if (!studyId && typeof window !== "undefined") {
+                window.history.replaceState(null, "", link("/preaching/history", nextStudyId));
+            }
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to load preaching history.");
-        } finally { setLoading(false); }
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => { void load(); }, [studyId]);
 
     const upcoming = useMemo(() => occurrences.filter((item) => item.status === "scheduled" && item.scheduledAt.getTime() >= Date.now()), [occurrences]);
     const completed = useMemo(() => occurrences.filter((item) => item.status === "completed"), [occurrences]);
+
+    async function refreshOccurrences(sermonId: ExpositorySermonId) {
+        setOccurrences(await new SupabaseSermonOccurrenceRepository().findBySermonId(sermonId));
+    }
 
     async function createOccurrence() {
         if (!sermon || !scheduledAt) { setError("Choose a date and time before scheduling the sermon."); return; }
@@ -69,7 +84,7 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
                 notes,
             );
             await new SupabaseSermonOccurrenceRepository().save(occurrence);
-            setOccurrences(await new SupabaseSermonOccurrenceRepository().findBySermonId(sermon.id));
+            await refreshOccurrences(sermon.id);
             setScheduledAt(""); setVenue(""); setServiceName(""); setNotes("");
             setMessage("Sermon occurrence scheduled.");
         } catch (reason: unknown) { setError(reason instanceof Error ? reason.message : "Unable to schedule the sermon."); }
@@ -81,7 +96,7 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
         try {
             occurrence.markCompleted();
             await new SupabaseSermonOccurrenceRepository().save(occurrence);
-            if (sermon) setOccurrences(await new SupabaseSermonOccurrenceRepository().findBySermonId(sermon.id));
+            if (sermon) await refreshOccurrences(sermon.id);
             setMessage("Preaching occurrence recorded as completed.");
         } catch (reason: unknown) { setError(reason instanceof Error ? reason.message : "Unable to record preaching occurrence."); }
     }
@@ -91,13 +106,13 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
         try {
             occurrence.cancel();
             await new SupabaseSermonOccurrenceRepository().save(occurrence);
-            if (sermon) setOccurrences(await new SupabaseSermonOccurrenceRepository().findBySermonId(sermon.id));
+            if (sermon) await refreshOccurrences(sermon.id);
             setMessage("Preaching occurrence cancelled.");
         } catch (reason: unknown) { setError(reason instanceof Error ? reason.message : "Unable to cancel preaching occurrence."); }
     }
 
     if (loading) return <AppShell title="Preaching History"><p>Loading preaching history...</p></AppShell>;
-    if (error && !sermon) return <AppShell title="Preaching History"><p style={{ color: "#b91c1c" }}>{error}</p><button type="button" onClick={() => router.push(`/preaching/overview?studyId=${encodeURIComponent(studyId)}`)}>← Sermon Overview</button></AppShell>;
+    if (error && !sermon) return <AppShell title="Preaching History"><p style={{ color: "#b91c1c" }}>{error}</p><button type="button" onClick={() => router.push(link("/preaching/overview", resolvedStudyId))}>← Sermon Overview</button></AppShell>;
     if (!sermon) return null;
 
     return (
@@ -131,7 +146,7 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
                     {completed.length === 0 ? <p style={{ color: "#6b7280" }}>No completed preaching occasions yet.</p> : <div style={{ display: "grid", gap: 10 }}>{completed.map((occurrence) => <article key={occurrence.id.value} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><strong>{formatDate(occurrence.preachedAt ?? occurrence.scheduledAt)}</strong><div style={{ color: "#047857", marginTop: 2 }}>Completed</div>{occurrence.serviceName && <div>{occurrence.serviceName}</div>}{occurrence.venue && <div>{occurrence.venue}</div>}{occurrence.notes && <p style={{ whiteSpace: "pre-wrap", color: "#6b7280" }}>{occurrence.notes}</p>}</article>)}</div>}
                 </section>
 
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><button type="button" onClick={() => router.push(`/preaching/final?studyId=${encodeURIComponent(studyId)}`)}>Final Draft</button><button type="button" onClick={() => router.push(`/preaching/delivery?studyId=${encodeURIComponent(studyId)}`)}>Delivery Mode</button><button type="button" onClick={() => router.push(`/preaching/overview?studyId=${encodeURIComponent(studyId)}`)}>← Sermon Overview</button>{message && <span style={{ color: "#047857" }}>{message}</span>}{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><button type="button" onClick={() => router.push(link("/preaching/final", resolvedStudyId))}>Final Draft</button><button type="button" onClick={() => router.push(link("/preaching/delivery", resolvedStudyId))}>Delivery Mode</button><button type="button" onClick={() => router.push(link("/preaching/overview", resolvedStudyId))}>← Sermon Overview</button>{message && <span style={{ color: "#047857" }}>{message}</span>}{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
             </div>
         </AppShell>
     );
