@@ -66,11 +66,28 @@ Each occurrence stores:
 
 The occurrence model and Supabase persistence use row-level security scoped to the signed-in user. This allows one sermon to have multiple scheduled or completed preaching occasions while keeping the manuscript and sermon content unchanged.
 
+Browser verification is complete, including scheduling an occurrence, marking it preached, refreshing to confirm persistence, and creating multiple independent occurrences for the same sermon.
+
+## Authentication
+
+BSMP now provides:
+
+- visible Sign in / Sign out controls in the global navigation
+- protected application routes for authenticated users
+- safe return to the originally requested protected route after sign-in
+- password change from Settings
+- password recovery via email and Reset Password flow
+- user-scoped Supabase RLS for study, sermon, and preaching occurrence data
+
+Browser verification is complete for sign-in, sign-out, protected routes, password change, and password recovery.
+
+Leaked-password protection remains deferred because the connected Supabase project plan does not expose the Have I Been Pwned password protection feature.
+
 ## Current Branches
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, and Workspace evidence-navigation improvements.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, and Workspace evidence-navigation improvements.
 
 ## Verification
 
@@ -78,18 +95,20 @@ Repository CI is defined in `.github/workflows/ci.yml` for feature branches and 
 
 The final-drafting migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
 
-The scheduling migration is committed at `supabase/migrations/20260901110000_sermon_occurrences.sql`. It must be applied to the connected Supabase project before the `/preaching/history` workspace can persist occurrences.
+The scheduling migration has been applied successfully to the connected Supabase project and browser persistence has been verified.
 
-The local verification completed successfully before the scheduling/history changes:
+The current production build passes, including the `/preaching/history` route and the static `/_not-found` route.
 
-- `pnpm typecheck` — 14/14 tasks successful
+The current verification baseline includes:
+
+- `pnpm typecheck` — successful after the scheduling/authentication fixes
 - `pnpm test` — all reported workspace test suites passed
-- `pnpm build` — production build successful, including `/preaching/final` and `/preaching/delivery`
+- `pnpm build` — production build successful across the web and docs apps
 
-Supabase security advisors currently report one pre-existing Auth warning: leaked-password protection is disabled. This is separate from the sermon schema and should be addressed as an Auth hardening task.
+Supabase leaked-password protection remains a plan-level limitation rather than an application defect.
 
 ## Next Work
 
-1. Apply and browser-verify Sermon Scheduling & Preaching History, including persistence and repeated preaching occurrences.
-2. Harden Supabase Auth by enabling leaked-password protection.
-3. Continue strengthening the complete Study → Sermon → Delivery workflow with authenticated end-to-end checks.
+1. Strengthen authenticated end-to-end coverage of the complete Study → Sermon → Delivery workflow.
+2. Improve the Bible Reader → Study Workspace handoff so focused Scripture becomes an explicit study starting point.
+3. Continue the inductive-study experience toward the responsible AI mentor workflow described in the product vision.
