@@ -1,6 +1,9 @@
 import { Entity } from "@bsmp/shared";
 
 import {
+    EvidenceDescription,
+    EvidenceId,
+    EvidenceType,
     InterpretationId,
     InterpretationStatement,
     ObservationId,
@@ -60,6 +63,16 @@ export class Interpretation
         evidence: Evidence,
     ): void {
         this._evidence.push(evidence);
+    }
+
+    public updateEvidence(
+        evidenceId: EvidenceId,
+        type: EvidenceType,
+        description: EvidenceDescription,
+    ): void {
+        const evidence = this._evidence.find((item) => item.id.value === evidenceId.value);
+        if (!evidence) throw new Error(`Evidence not found: ${evidenceId.value}`);
+        evidence.revise(type, description);
     }
 
     public get statement(): InterpretationStatement {
