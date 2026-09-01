@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { GlobalNav } from "../src/components/GlobalNav";
+import { WorkspaceBackButton } from "../src/components/WorkspaceBackButton";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -26,6 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <GlobalNav />
+        <WorkspaceBackButton />
         {children}
       </body>
     </html>
