@@ -175,6 +175,7 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
             const applications = point.supportingApplicationIds.map((id) => study.applications.find((item) => item.id.value === id)).filter(Boolean);
             const draft = drafts[point.id] ?? emptyDraft();
             const readiness = readinessByPoint[point.id] ?? getReadiness(draft, index === sermon.outline.length - 1);
+            const evidenceWorkspaceTarget = draft.meaningInterpretationIds[0] ?? point.supportingInterpretationIds[0] ?? study.interpretations[0]?.id.value;
             return <section key={point.id} style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
                     <div><div style={{ fontSize: 13, color: "#6b7280" }}>Outline Point {index + 1}</div><h2 style={{ margin: "4px 0" }}>{point.heading}</h2><p style={{ marginTop: 0 }}><strong>Truth:</strong> {point.truth}</p></div>
@@ -205,13 +206,14 @@ export function SermonExpositionWorkspace({ studyId }: Props) {
                         <div id={readinessTarget(point.id, "Meaning evidence")} style={{ ...readinessTargetStyle, borderLeft: "3px solid #c4b5fd", paddingLeft: 12 }}>
                             <strong>Meaning support</strong>
                             <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the evidence that directly strengthens the Meaning section.</div>
-                            {studyEvidence.length === 0 ? <p style={{ color: "#6b7280" }}>No evidence is available.</p> : studyEvidence.map((item) => <label key={item.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.meaningEvidenceIds.includes(item.id.value)} onChange={() => updateDraft(point.id, "meaningEvidenceIds", toggleId(draft.meaningEvidenceIds, item.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${item.id.value}`)}>{item.type.value}</WorkspaceLink> — {item.description.value}</span></label>)}
+                            {studyEvidence.length === 0 ? <div style={{ color: "#6b7280" }}><span>No evidence is available. </span>{evidenceWorkspaceTarget ? <WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${evidenceWorkspaceTarget}`)}>Add Evidence in Study Workspace</WorkspaceLink> : <WorkspaceLink study={study} href={workspaceHref(studyId, "")}>Open Study Workspace to add an interpretation, then add evidence.</WorkspaceLink>}</div> : studyEvidence.map((item) => <label key={item.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.meaningEvidenceIds.includes(item.id.value)} onChange={() => updateDraft(point.id, "meaningEvidenceIds", toggleId(draft.meaningEvidenceIds, item.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${item.id.value}`)}>{item.type.value}</WorkspaceLink> — {item.description.value}</span></label>)}
                         </div>
                         <div id={readinessTarget(point.id, "Response foundation")} style={{ ...readinessTargetStyle, borderLeft: "3px solid #86efac", paddingLeft: 12 }}>
                             <strong>Response foundation</strong>
                             <div style={{ color: "#6b7280", fontSize: 13, margin: "3px 0 7px" }}>Choose the applications that directly shape the Response section.</div>
                             {study.applications.length === 0 ? <p style={{ color: "#6b7280" }}>No applications are available.</p> : study.applications.map((application) => <label key={application.id.value} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginTop: 7 }}><input type="checkbox" checked={draft.responseApplicationIds.includes(application.id.value)} onChange={() => updateDraft(point.id, "responseApplicationIds", toggleId(draft.responseApplicationIds, application.id.value))} /><span><WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application.id.value}`)}><strong>Principle:</strong> {application.principle.value}</WorkspaceLink> — {application.action.value}</span></label>)}
                         </div>
+                        {(evidence.length > 0 || applications.length > 0) && <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 10, color: "#6b7280", fontSize: 13 }}>Existing outline support remains preserved separately; these mappings identify the specific evidence and applications used in the exposition.</div>}
                     </div>
                 </details>
 
