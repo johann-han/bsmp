@@ -70,6 +70,7 @@ function NavigationLinks() {
 export function GlobalNav() {
     return (
         <header
+            className="bsmp-print-hide"
             style={{
                 position: "sticky",
                 top: 0,
