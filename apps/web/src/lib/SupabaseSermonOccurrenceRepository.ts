@@ -7,6 +7,10 @@ type Row = {
     venue: string; service_name: string; notes: string; preached_at: string | null; created_at: string;
 };
 
+function asUuid(value: string): `${string}-${string}-${string}-${string}-${string}` {
+    return value as `${string}-${string}-${string}-${string}-${string}`;
+}
+
 export class SupabaseSermonOccurrenceRepository implements SermonOccurrenceRepository {
     public async find(id: SermonOccurrenceId): Promise<SermonOccurrence | undefined> {
         const { data, error } = await supabase.from("sermon_occurrences").select("*").eq("id", id.value).maybeSingle();
@@ -46,8 +50,8 @@ export class SupabaseSermonOccurrenceRepository implements SermonOccurrenceRepos
 
     private hydrate(row: Row): SermonOccurrence {
         const occurrence = SermonOccurrenceEntity.create(
-            SermonOccurrenceIdValue.create(row.id),
-            ExpositorySermonIdValue.create(row.sermon_id),
+            SermonOccurrenceIdValue.create(asUuid(row.id)),
+            ExpositorySermonIdValue.create(asUuid(row.sermon_id)),
             new Date(row.scheduled_at),
             row.venue,
             row.service_name,
