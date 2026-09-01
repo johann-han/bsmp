@@ -5,9 +5,8 @@ import { CreateInterpretation } from "./CreateInterpretation.js";
 import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
 import { createStudy } from "../../test/index.js";
 
-
 describe("CreateEvidence", () => {
-    it("adds evidence to an interpretation", async () => {
+    it("adds evidence to an interpretation using its raw ID value", async () => {
         const study = createStudy("Romans");
         const repository = new InMemoryStudyRepository([study]);
         const createInterpretation = new CreateInterpretation(repository);
@@ -20,7 +19,7 @@ describe("CreateEvidence", () => {
 
         await createEvidence.execute(
             study.id,
-            interpretation.id.toString(),
+            interpretation.id.value,
             "Scripture",
             "Romans 3:28 reinforces the claim.",
         );
@@ -32,5 +31,20 @@ describe("CreateEvidence", () => {
         expect(loaded!.interpretations[0]!.evidence[0]!.description.value).toBe(
             "Romans 3:28 reinforces the claim.",
         );
+    });
+
+    it("rejects an unknown interpretation ID", async () => {
+        const study = createStudy("Romans");
+        const repository = new InMemoryStudyRepository([study]);
+        const createEvidence = new CreateEvidence(repository);
+
+        await expect(
+            createEvidence.execute(
+                study.id,
+                crypto.randomUUID(),
+                "Scripture",
+                "Romans 3:28 reinforces the claim.",
+            ),
+        ).rejects.toThrow("Interpretation not found.");
     });
 });
