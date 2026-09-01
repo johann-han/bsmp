@@ -12,7 +12,6 @@ import type {
 import { ObservationPanel } from "@repo/ui";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
-import { takePreparedStudyWorkspace } from "../../lib/studyWorkspaceNavigationCache";
 import { ApplicationComposer } from "./ApplicationComposer";
 import { ApplicationHistory } from "./ApplicationHistory";
 import { InterpretationComposer } from "./InterpretationComposer";
@@ -91,22 +90,18 @@ export function ObservationWorkspace() {
         const requestedReturnTo = params.get("returnTo");
         if (requestedReturnTo) setReturnTo(requestedReturnTo);
 
-        const prepared = requestedStudyId ? takePreparedStudyWorkspace(requestedStudyId) : undefined;
+        const bootstrapPromise = createSupabaseObservationWorkspace(requestedStudyId).then(async (created) => {
+            const [workspaceData, developmentPassage] = await Promise.all([
+                created.workspace.load(),
+                created.passageService.load(),
+            ]);
 
-        const bootstrapPromise = prepared
-            ? Promise.resolve(prepared)
-            : createSupabaseObservationWorkspace(requestedStudyId).then(async (created) => {
-                const [workspaceData, developmentPassage] = await Promise.all([
-                    created.workspace.load(),
-                    created.passageService.load(),
-                ]);
-
-                return {
-                    ...created,
-                    data: workspaceData,
-                    passage: developmentPassage,
-                };
-            });
+            return {
+                ...created,
+                data: workspaceData,
+                passage: developmentPassage,
+            };
+        });
 
         void bootstrapPromise
             .then(({ workspace: nextWorkspace, passageService: nextPassageService, study, data: workspaceData, passage: developmentPassage }) => {
@@ -259,30 +254,8 @@ export function ObservationWorkspace() {
     return (
         <div>
             {returnTo && (
-                <div
-                    style={{
-                        position: "fixed",
-                        left: 20,
-                        bottom: 20,
-                        zIndex: 1000,
-                        maxWidth: "calc(100vw - 40px)",
-                    }}
-                >
-                    <button
-                        type="button"
-                        onClick={() => window.location.assign(returnTo)}
-                        style={{
-                            border: "1px solid #d1d5db",
-                            borderRadius: 999,
-                            padding: "10px 16px",
-                            background: "rgba(255,255,255,0.97)",
-                            backdropFilter: "blur(10px)",
-                            color: "#1d4ed8",
-                            cursor: "pointer",
-                            fontWeight: 700,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
-                        }}
-                    >
+                <div style={{ position: "fixed", left: 20, bottom: 20, zIndex: 1000, maxWidth: "calc(100vw - 40px)" }}>
+                    <button type="button" onClick={() => window.location.assign(returnTo)} style={{ border: "1px solid #d1d5db", borderRadius: 999, padding: "10px 16px", background: "rgba(255,255,255,0.97)", backdropFilter: "blur(10px)", color: "#1d4ed8", cursor: "pointer", fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.14)" }}>
                         {returnLabel}
                     </button>
                 </div>
