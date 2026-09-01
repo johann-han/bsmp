@@ -1,17 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
     GetNextObservationQuestion,
     InMemoryObservationQuestionRepository,
 } from "@bsmp/inductive";
 
+import { supabase } from "../../lib/supabase";
+
 const questionRepository = new InMemoryObservationQuestionRepository();
 const nextQuestionQuery = new GetNextObservationQuestion(questionRepository);
 
+interface ObservationMentorPanelProps {
+    readonly studyId: string;
+    readonly passageReference: string;
+    readonly passageText: string;
+}
+
+interface MentorResponse {
+    readonly coaching?: unknown;
+    readonly error?: unknown;
+}
+
 function storageKey(studyId: string): string {
     return `bsmp:observation-mentor:${studyId}`;
+}
+
+function coachingStorageKey(studyId: string): string {
+    return `${storageKey(studyId)}:coaching`;
 }
 
 function loadCompleted(studyId: string): string[] {
@@ -25,16 +42,31 @@ function loadCompleted(studyId: string): string[] {
     }
 }
 
-export function ObservationMentorPanel({ studyId }: { studyId: string }) {
+function loadCoaching(studyId: string): string {
+    try {
+        return window.localStorage.getItem(coachingStorageKey(studyId)) ?? "";
+    } catch {
+        return "";
+    }
+}
+
+export function ObservationMentorPanel({ studyId, passageReference, passageText }: ObservationMentorPanelProps) {
     const [completed, setCompleted] = useState<string[]>([]);
     const [question, setQuestion] = useState<Awaited<ReturnType<GetNextObservationQuestion["execute"]>>>(null);
     const [open, setOpen] = useState(true);
+    const [studentObservation, setStudentObservation] = useState("");
+    const [coaching, setCoaching] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const stored = loadCompleted(studyId);
         setCompleted(stored);
+        setCoaching(loadCoaching(studyId));
         void nextQuestionQuery.execute(stored).then(setQuestion);
     }, [studyId]);
+
+    const passageTextForMentor = useMemo(() => passageText.trim(), [passageText]);
 
     async function considerQuestion() {
         if (!question) return;
@@ -43,12 +75,66 @@ export function ObservationMentorPanel({ studyId }: { studyId: string }) {
         const nextCompleted = completed.includes(id) ? completed : [...completed, id];
         window.localStorage.setItem(storageKey(studyId), JSON.stringify(nextCompleted));
         setCompleted(nextCompleted);
+        setCoaching("");
+        window.localStorage.removeItem(coachingStorageKey(studyId));
         setQuestion(await nextQuestionQuery.execute(nextCompleted));
+        setStudentObservation("");
+        setError(null);
+    }
+
+    async function coachObservation() {
+        if (!question || !studentObservation.trim()) {
+            setError("Write your observation before asking the mentor to coach you.");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token;
+            if (!accessToken) throw new Error("A signed-in Supabase session is required.");
+
+            const response = await fetch("/api/ai/observation-mentor", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    passageReference,
+                    passageText: passageTextForMentor,
+                    question: question.question.value,
+                    purpose: question.purpose.value,
+                    studentObservation: studentObservation.trim(),
+                }),
+            });
+
+            const payload = await response.json() as MentorResponse;
+            if (!response.ok) {
+                throw new Error(typeof payload.error === "string" ? payload.error : "Unable to reach the AI mentor.");
+            }
+
+            const nextCoaching = typeof payload.coaching === "string" ? payload.coaching.trim() : "";
+            if (!nextCoaching) throw new Error("The AI mentor returned no coaching response.");
+
+            setCoaching(nextCoaching);
+            window.localStorage.setItem(coachingStorageKey(studyId), nextCoaching);
+        } catch (reason: unknown) {
+            setError(reason instanceof Error ? reason.message : "Unable to reach the AI mentor.");
+        } finally {
+            setLoading(false);
+        }
     }
 
     function resetMentor() {
         window.localStorage.removeItem(storageKey(studyId));
+        window.localStorage.removeItem(coachingStorageKey(studyId));
         setCompleted([]);
+        setStudentObservation("");
+        setCoaching("");
+        setError(null);
         void nextQuestionQuery.execute([]).then(setQuestion);
     }
 
@@ -71,7 +157,7 @@ export function ObservationMentorPanel({ studyId }: { studyId: string }) {
                     </p>
                     <h2 style={{ margin: "4px 0 6px", fontSize: 20 }}>Observation before interpretation</h2>
                     <p style={{ margin: 0, color: "#475569", fontSize: 13 }}>
-                        Work through the observation questions before drawing conclusions. The mentor asks a question; you supply the observation.
+                        The mentor asks a question, you make the observation, and the AI helps you inspect your answer without doing the interpretation for you.
                     </p>
                 </div>
                 <button type="button" onClick={() => setOpen((value) => !value)}>
@@ -80,7 +166,7 @@ export function ObservationMentorPanel({ studyId }: { studyId: string }) {
             </div>
 
             {open && (
-                <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+                <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
                     <div style={{ fontSize: 12, color: "#64748b" }}>{completed.length} of 6 questions considered</div>
 
                     {!question ? (
@@ -94,17 +180,47 @@ export function ObservationMentorPanel({ studyId }: { studyId: string }) {
                             </button>
                         </div>
                     ) : (
-                        <div style={{ display: "grid", gap: 8 }}>
-                            <strong style={{ fontSize: 18 }}>{question.question.value}</strong>
-                            <span style={{ fontSize: 13, color: "#475569" }}>{question.purpose.value}</span>
-                            <span style={{ fontSize: 13, color: "#475569" }}>
-                                Look at the passage and record what you can actually observe.
-                            </span>
-                            <button type="button" onClick={() => void considerQuestion()} style={{ width: "fit-content" }}>
-                                I have considered this question
-                            </button>
+                        <div style={{ display: "grid", gap: 10 }}>
+                            <div>
+                                <strong style={{ fontSize: 18 }}>{question.question.value}</strong>
+                                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#475569" }}>{question.purpose.value}</p>
+                            </div>
+
+                            <div style={{ padding: 12, borderRadius: 8, background: "#ffffff", border: "1px solid #e2e8f0" }}>
+                                <strong style={{ fontSize: 13 }}>Passage</strong>
+                                <p style={{ margin: "6px 0 0", whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.55 }}>{passageText}</p>
+                            </div>
+
+                            <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 600 }}>
+                                Your observation
+                                <textarea
+                                    value={studentObservation}
+                                    onChange={(event) => setStudentObservation(event.target.value)}
+                                    placeholder="Record only what you can observe in the text..."
+                                    rows={4}
+                                    style={{ width: "100%", boxSizing: "border-box", resize: "vertical", border: "1px solid #cbd5e1", borderRadius: 8, padding: 10, font: "inherit", fontWeight: 400 }}
+                                />
+                            </label>
+
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                <button type="button" onClick={() => void coachObservation()} disabled={loading || !studentObservation.trim()}>
+                                    {loading ? "Mentor is reviewing..." : "Ask the mentor to coach me"}
+                                </button>
+                                <button type="button" onClick={() => void considerQuestion()}>
+                                    I have considered this question
+                                </button>
+                            </div>
+
+                            {coaching && (
+                                <div style={{ padding: 12, borderRadius: 8, background: "#ffffff", border: "1px solid #bfdbfe" }}>
+                                    <strong style={{ fontSize: 13 }}>Mentor coaching</strong>
+                                    <p style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.6 }}>{coaching}</p>
+                                </div>
+                            )}
                         </div>
                     )}
+
+                    {error && <p style={{ margin: 0, color: "#b91c1c", fontSize: 13 }}>{error}</p>}
                 </div>
             )}
         </section>
