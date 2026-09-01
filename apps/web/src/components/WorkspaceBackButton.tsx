@@ -1,22 +1,24 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export function WorkspaceBackButton() {
     const pathname = usePathname();
-    const searchParams = useSearchParams();
 
     if (pathname !== "/workspace") return null;
 
-    const studyId = searchParams.get("studyId");
-    const expositionUrl = studyId
-        ? `/preaching/exposition?studyId=${encodeURIComponent(studyId)}`
-        : "/preaching/exposition";
+    function openExposition() {
+        const studyId = new URLSearchParams(window.location.search).get("studyId");
+        const expositionUrl = studyId
+            ? `/preaching/exposition?studyId=${encodeURIComponent(studyId)}`
+            : "/preaching/exposition";
+        window.location.assign(expositionUrl);
+    }
 
     return (
         <button
             type="button"
-            onClick={() => window.location.assign(expositionUrl)}
+            onClick={openExposition}
             style={{
                 position: "fixed",
                 left: 20,
