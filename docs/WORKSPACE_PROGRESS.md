@@ -1,36 +1,46 @@
-# Study Workspace Progress
+# BSMP Workspace Progress
 
-## Current Integration
+## Authoritative development line
 
-The `/workspace` route renders the Study Workspace feature instead of the temporary placeholder.
+The current integrated Study Workspace and Sermon Preparation implementation lives on `feat/observation-workspace-route`. The older `feat/observation-workspace-ui-next` branch is historical and should not be used as the development baseline.
 
-The workspace now provides:
+## Study Workspace
 
-- a Bible passage pane loaded through `@bsmp/bible` and `@bsmp/study`
-- verse selection/focus
+The Study Workspace now provides:
+
+- Bible passage context and verse selection
 - observation methodology tools
-- a verse-linked observation composer
-- observation persistence through the Study domain repository
-- observation history filtered to the focused verse
+- verse-linked observations
+- observation editing/history
+- interpretation creation and editing
+- categorized interpretation evidence
+- applications with Principle, Personal, Ministry, and Action fields
+- Supabase-backed persistence with authenticated repository access
+- navigation targets allowing preaching work to return to source study material
 
-## Current Architecture
+## Sermon Preparation
 
-- `apps/web/app/workspace/page.tsx` hosts the Study Workspace route.
-- `apps/web/src/features/observation/ObservationWorkspace.tsx` composes passage, observation tools, composer, and history.
-- `apps/web/src/features/observation/StudyPassage.tsx` renders passage context and supports verse selection.
-- `apps/web/src/features/observation/ObservationComposer.tsx` submits observations through the Study application service.
-- `apps/web/src/features/observation/ObservationHistory.tsx` renders saved verse-linked observations.
-- `packages/study` provides `StudyPassageService`, `ObservationWorkspaceService`, `AddObservation`, and Study repository wiring.
-- `packages/inductive` provides observation questions and connecting words through application queries and repositories.
-- `packages/bible` provides the Bible domain, `ReadPassage`, and `BibleRepository` contract.
+The preaching workspace now provides:
 
-## Persistence Status
+- Study source selection
+- sermon creation from a StudySession
+- sermon title, Big Idea, and Purpose
+- sermon introduction, context/setting, and conclusion
+- outline creation, editing, deletion, and reordering
+- links from outline points to source observations, interpretations, evidence, and applications
+- outline exposition with Text, Explanation, Illustration, Application, and Transition
+- explicit text/meaning/response support mappings
+- sermon overview and readiness tracking
 
-The current workspace uses `InMemoryStudyRepository`, so observations survive refreshes within the current in-memory application instance but are not yet persisted to Supabase.
+## Final Sermon Draft
 
-## Next Work
+The final manuscript and delivery preparation stage now provides:
 
-1. Replace the in-memory Study repository with the project's persistent storage implementation.
-2. Add observation editing and deletion.
-3. Add observation-question attribution to observations.
-4. Build interpretation on top of completed observation data.
+- persistent final manuscript field
+- persistent delivery notes field
+- `/preaching/final` workspace
+- overview readiness and navigation into the final draft
+
+## Remaining verification
+
+GitHub Actions has not produced CI status for the current final-drafting branch. The repository still requires local `pnpm install`, then `pnpm typecheck`, `pnpm test`, and `pnpm build`. The new final-drafting migration must also be applied to the connected Supabase project before the final-drafting persistence is used in production.
