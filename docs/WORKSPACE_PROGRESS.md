@@ -6,7 +6,9 @@ The `/workspace` route renders the integrated Study Workspace with the Bible pas
 
 The Study remains the source of truth for passage-linked observations, interpretations, evidence, and applications.
 
-When Sermon Exposition links back to an interpretation, the Workspace now resolves the interpretation anchor to the visible Refine Interpretation / Evidence editor so the preacher can add missing evidence without manually searching the page.
+When Sermon Exposition links back to an interpretation, the Workspace resolves the interpretation anchor to the visible Refine Interpretation / Evidence editor so the preacher can add missing evidence without manually searching the page.
+
+Evidence creation and persistence are verified end-to-end against Supabase, including correct interpretation ID matching and rebuilt workspace packages.
 
 ## Sermon Preparation
 
@@ -32,6 +34,7 @@ The `/preaching/final` workspace provides:
 - estimated preaching duration at 130 words per minute
 - deterministic structured-draft assembly from the completed framework and outline
 - persistent Supabase storage
+- Print / Save PDF support using the browser print dialog
 
 The structured-draft builder is a starting point only. It preserves the distinction between source study material and the preacher's final authored manuscript.
 
@@ -46,13 +49,14 @@ The delivery view provides:
 - manuscript word count
 - estimated preaching duration at 130 words per minute
 - separate Delivery Notes view
+- Print / Save PDF support
 - direct return to Final Draft
 
 ## Current Branches
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes the final drafting, delivery, and Workspace evidence-navigation improvements.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, and Workspace evidence-navigation improvements.
 
 ## Verification
 
@@ -70,7 +74,6 @@ Supabase security advisors currently report one pre-existing Auth warning: leake
 
 ## Next Work
 
-1. Perform authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft → Delivery Mode, including the missing-evidence navigation path.
-2. Add export/print support for the final manuscript and delivery view.
-3. Add sermon scheduling and preaching history after the delivery workflow is stable.
-4. Harden Supabase Auth by enabling leaked-password protection.
+1. Perform authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft → Delivery Mode, including the print/PDF paths.
+2. Add sermon scheduling and preaching history after the delivery workflow is stable.
+3. Harden Supabase Auth by enabling leaked-password protection.
