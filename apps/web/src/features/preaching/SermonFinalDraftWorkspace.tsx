@@ -79,8 +79,9 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
 
     return (
         <AppShell title="Final Sermon Draft">
-            <div style={{ display: "grid", gap: 20 }}>
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+            <style>{`@media print { .bsmp-print-hide { display: none !important; } .bsmp-print-page { max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; break-inside: avoid; } .bsmp-print-manuscript { white-space: pre-wrap; line-height: 1.6 !important; font-size: 14pt !important; } }`}</style>
+            <div className="bsmp-print-page" style={{ display: "grid", gap: 20 }}>
+                <section className="bsmp-print-section" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>Final Manuscript & Delivery Preparation</div>
                     <h2 style={{ margin: "4px 0 8px" }}>{sermon.title.value}</h2>
                     <p style={{ margin: "4px 0" }}><strong>Study:</strong> {study.title.value}</p>
@@ -89,8 +90,8 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                     {sermon.purpose && <p style={{ margin: "4px 0" }}><strong>Purpose:</strong> {sermon.purpose.value}</p>}
                 </section>
 
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
+                <section className="bsmp-print-section" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                    <div className="bsmp-print-hide" style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
                         <div>
                             <h2 style={{ marginBottom: 6 }}>Final Manuscript</h2>
                             <p style={{ color: "#6b7280", marginTop: 0 }}>Bring the completed framework and exposition together into the sermon manuscript you intend to preach. The Study remains the source of biblical observations, interpretations, evidence, and applications; this field is the preacher's final composed message.</p>
@@ -99,21 +100,24 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                             Build Draft from Outline
                         </button>
                     </div>
-                    <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: "#6b7280", marginBottom: 10 }}>
+                    <div className="bsmp-print-hide" style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: "#6b7280", marginBottom: 10 }}>
                         <span><strong>{wordCount}</strong> words</span>
                         <span>≈ <strong>{estimatedMinutes}</strong> min at 130 wpm</span>
                     </div>
-                    <textarea value={manuscript} onChange={(event) => setManuscript(event.target.value)} rows={24} placeholder="Write the final sermon manuscript..." style={{ width: "100%", boxSizing: "border-box", padding: 12, resize: "vertical" }} />
+                    <h2 className="bsmp-print-title" style={{ display: "none", marginBottom: 12 }}>Final Manuscript</h2>
+                    <textarea className="bsmp-print-hide" value={manuscript} onChange={(event) => setManuscript(event.target.value)} rows={24} placeholder="Write the final sermon manuscript..." style={{ width: "100%", boxSizing: "border-box", padding: 12, resize: "vertical" }} />
+                    <div className="bsmp-print-manuscript" style={{ display: "none", whiteSpace: "pre-wrap", fontSize: 16, lineHeight: 1.8 }}>{manuscript}</div>
                 </section>
 
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                <section className="bsmp-print-section bsmp-print-hide-not-empty" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                     <h2>Delivery Notes</h2>
                     <p style={{ color: "#6b7280", marginTop: 0 }}>Record preaching cues such as emphasis, pauses, movement, timing, vocal changes, congregational interaction, and the final appeal.</p>
                     <textarea value={deliveryNotes} onChange={(event) => setDeliveryNotes(event.target.value)} rows={12} placeholder="Write delivery notes..." style={{ width: "100%", boxSizing: "border-box", padding: 12, resize: "vertical" }} />
                 </section>
 
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                <div className="bsmp-print-hide" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <button type="button" onClick={() => void save()} disabled={saving} style={{ padding: "10px 16px", fontWeight: 600 }}>{saving ? "Saving..." : "Save Final Draft"}</button>
+                    <button type="button" onClick={() => window.print()} style={{ padding: "10px 16px", fontWeight: 600 }}>Print / Save PDF</button>
                     <button type="button" onClick={() => router.push(`/preaching/delivery?studyId=${encodeURIComponent(studyId)}`)} disabled={!manuscript.trim()} style={{ padding: "10px 16px", fontWeight: 600 }}>Open Delivery Mode</button>
                     <button type="button" onClick={() => router.push(`/preaching/overview?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>← Sermon Overview</button>
                     <button type="button" onClick={() => router.push(`/preaching/exposition?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>Review Exposition</button>
