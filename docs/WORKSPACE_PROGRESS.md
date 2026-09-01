@@ -33,11 +33,24 @@ The `/preaching/final` workspace provides:
 
 The structured-draft builder is a starting point only. It preserves the distinction between source study material and the preacher's final authored manuscript.
 
+## Sermon Delivery
+
+The `/preaching/delivery` workspace provides a focused delivery view of the saved manuscript and delivery notes. It is intentionally read-focused so the preacher can review the message without the editing controls competing for attention.
+
+The delivery view provides:
+
+- focused manuscript reading
+- Big Idea context
+- manuscript word count
+- estimated preaching duration at 130 words per minute
+- separate Delivery Notes view
+- direct return to Final Draft
+
 ## Current Branches
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes the final drafting and delivery stages.
 
 ## Verification
 
@@ -47,11 +60,14 @@ The final-drafting migration is:
 
 `supabase/migrations/20260901100000_sermon_final_drafting.sql`
 
-It must be applied to the connected Supabase project before final manuscript and delivery-note persistence can be used there.
+The migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
+
+Supabase security advisors currently report one pre-existing Auth warning: leaked-password protection is disabled. This is separate from the final-drafting schema change and should be addressed as an Auth hardening task.
 
 ## Next Work
 
 1. Run `pnpm install`, `pnpm typecheck`, `pnpm test`, and `pnpm build` locally on `feat/final-sermon-drafting`.
-2. Apply and verify the final-drafting Supabase migration.
-3. Perform authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft.
-4. Continue with sermon delivery tooling after the final drafting stage is stable.
+2. Perform authenticated browser verification across Study → Sermon Preparation → Framework → Exposition → Final Draft → Delivery Mode.
+3. Add export/print support for the final manuscript and delivery view.
+4. Add sermon scheduling and preaching history after the delivery workflow is stable.
+5. Harden Supabase Auth by enabling leaked-password protection.
