@@ -154,9 +154,11 @@ interface PassageLine {
 function parsePassageLines(passageText: string): PassageLine[] {
     return passageText.split(/\r?\n/).flatMap((line) => {
         const match = line.trim().match(/^(.+?\s+\d+:\d+(?:-\d+:?\d+|-[0-9]+)?)\s+(.*)$/);
-        return match
-            ? [{ verseReference: match[1].trim(), text: match[2].trim() }]
-            : [];
+        if (!match) return [];
+        const verseReference = match[1];
+        const text = match[2];
+        if (verseReference === undefined || text === undefined) return [];
+        return [{ verseReference: verseReference.trim(), text: text.trim() }];
     });
 }
 
@@ -258,7 +260,9 @@ function describeGeminiFailure(payload: unknown): string | null {
     if (Array.isArray(root.candidates) && root.candidates.length > 0) {
         const candidate = root.candidates[0] as { finishReason?: unknown; finishMessage?: unknown } | undefined;
         if (typeof candidate?.finishMessage === "string" && candidate.finishMessage.trim()) return candidate.finishMessage.trim();
-        if (typeof candidate?.finishReason === "string" && candidate.finishReason.trim() && candidate.finishReason !== "STOP") return `Gemini finished the mentor response with ${candidate.finishReason}.`;
+        if (typeof candidate?.finishReason === "string" && candidate.finishReason.trim() && candidate.finishReason !== "STOP") {
+            return `Gemini finished the mentor response with ${candidate.finishReason}.`;
+        }
     }
     return null;
 }
@@ -288,6 +292,7 @@ const OPENAI_MENTOR_RESPONSE_SCHEMA = {
 
 class OpenAIObservationMentorProvider implements ObservationMentorProvider {
     public constructor(private readonly apiKey: string, private readonly model: string) {}
+
     public async coach(input: ObservationMentorInput): Promise<ObservationMentorResult> {
         const response = await fetch("https://api.openai.com/v1/responses", {
             method: "POST",
@@ -312,6 +317,7 @@ class OpenAIObservationMentorProvider implements ObservationMentorProvider {
 
 class GeminiObservationMentorProvider implements ObservationMentorProvider {
     public constructor(private readonly apiKey: string, private readonly model: string) {}
+
     public async coach(input: ObservationMentorInput): Promise<ObservationMentorResult> {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.model)}:generateContent?key=${encodeURIComponent(this.apiKey)}`;
         const response = await fetch(endpoint, {
@@ -320,7 +326,13 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
             body: JSON.stringify({
                 systemInstruction: { parts: [{ text: MENTOR_INSTRUCTIONS }] },
                 contents: [{ role: "user", parts: [{ text: buildPrompt(input) }] }],
-                generationConfig: { responseMimeType: "application/json", thinkingConfig: { thinkingLevel: "minimal" }, maxOutputTokens: 1200 },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    thinkingConfig: {
+                        thinkingLevel: "minimal",
+                    },
+                    maxOutputTokens: 1200,
+                },
             }),
         });
         const payload = await response.json() as { candidates?: unknown; error?: { message?: unknown }; promptFeedback?: { blockReason?: unknown } };
@@ -328,7 +340,9 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
         const raw = extractGeminiText(payload);
         if (!raw) {
             const diagnostic = describeGeminiFailure(payload);
-            throw new Error(diagnostic ? `Gemini returned no text for the mentor response: ${diagnostic}` : "Gemini returned no text for the mentor response. Please try again.");
+            throw new Error(diagnostic
+                ? `Gemini returned no text for the mentor response: ${diagnostic}`
+                : "Gemini returned no text for the mentor response. Please try again.");
         }
         const parsed = parseMentorResult(raw, input.passageText, input);
         if (!parsed.coaching) throw new Error("The AI mentor returned no usable coaching response. Please try again.");
