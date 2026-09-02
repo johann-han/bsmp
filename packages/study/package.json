@@ -8,11 +8,12 @@
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
             "default": "./dist/index.js"
         }
     },
     "scripts": {
-        "build": "tsc -b",
+        "build": "tsc --build --force",
         "typecheck": "tsc -p tsconfig.json --noEmit",
         "lint": "eslint .",
         "test": "vitest run",
