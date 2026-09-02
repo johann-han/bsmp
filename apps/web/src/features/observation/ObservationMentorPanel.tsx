@@ -6,7 +6,9 @@ import type { ObservationViewModel } from "@bsmp/study";
 import {
     GetNextObservationQuestion,
     InMemoryObservationQuestionRepository,
+    classifyObservationEntry,
 } from "@bsmp/inductive";
+import type { ObservationEntryType } from "@bsmp/inductive";
 
 import { supabase } from "../../lib/supabase";
 
@@ -18,6 +20,7 @@ interface ObservationMentorPanelProps {
     readonly passageReference: string;
     readonly passageText: string;
     readonly observations: readonly ObservationViewModel[];
+    readonly onFocusPassage?: (focus: MentorFocus) => void;
 }
 
 interface MentorFocus {
@@ -47,7 +50,15 @@ function loadCompleted(studyId: string): string[] {
     }
 }
 
-export function ObservationMentorPanel({ studyId, passageReference, passageText, observations }: ObservationMentorPanelProps) {
+const ENTRY_TYPE_LABELS: Record<ObservationEntryType, string> = {
+    question: "Question",
+    observation: "Observation",
+    inference: "Inference",
+    interpretation: "Interpretation",
+    empty: "Empty",
+};
+
+export function ObservationMentorPanel({ studyId, passageReference, passageText, observations, onFocusPassage }: ObservationMentorPanelProps) {
     const [completed, setCompleted] = useState<string[]>([]);
     const [question, setQuestion] = useState<Awaited<ReturnType<GetNextObservationQuestion["execute"]>>>(null);
     const [open, setOpen] = useState(true);
@@ -76,6 +87,7 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
         wordText: observation.target.wordText,
         markupSymbol: observation.target.markupSymbol,
     })), [observations]);
+    const entryType = classifyObservationEntry(studentObservation);
 
     async function considerQuestion() {
         if (!question) return;
@@ -195,8 +207,15 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
 
             {open && (
                 <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
-                    <div style={{ fontSize: 12, color: "#64748b" }}>
-                        {completed.length} of 6 questions considered · {observations.length} study observations available to the mentor
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", fontSize: 12, color: "#64748b" }}>
+                        <span>{completed.length} of 6 questions considered</span>
+                        <span>·</span>
+                        <span>{observations.length} study observations available to the mentor</span>
+                        {entryType !== "empty" && (
+                            <span style={{ marginLeft: "auto", padding: "4px 8px", borderRadius: 999, background: "#e0f2fe", color: "#075985", fontWeight: 700 }}>
+                                Entry type: {ENTRY_TYPE_LABELS[entryType]}
+                            </span>
+                        )}
                     </div>
 
                     {!question ? (
@@ -275,6 +294,15 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                                                     {focus.verseReference} · “{focus.textCue}”
                                                 </div>
                                                 <div style={{ marginTop: 4, fontSize: 13, lineHeight: 1.5 }}>{focus.question}</div>
+                                                {onFocusPassage && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onFocusPassage(focus)}
+                                                        style={{ marginTop: 8 }}
+                                                    >
+                                                        View in passage
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
