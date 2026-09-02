@@ -35,7 +35,7 @@ import {
     ObservationStatement,
     ObservationTarget,
 } from "../../domain/value-objects/index.js";
-import type { ObservationWordTargetInput, StudyId } from "../../domain/value-objects/index.js";
+import type { ObservationTextTargetInput, ObservationWordTargetInput, StudyId } from "../../domain/value-objects/index.js";
 
 export interface ObservationWorkspaceData {
     observationQuestions: readonly ObservationQuestionViewModel[];
@@ -92,11 +92,12 @@ export class ObservationWorkspaceService {
         verseReference: VerseReference,
         statement: string,
         wordTarget?: ObservationWordTargetInput,
+        textTarget?: ObservationTextTargetInput,
     ): Promise<Observation> {
         if (!this.addObservationCommand || !this.studyId) {
             throw new Error("Observation persistence is not configured for this workspace.");
         }
-        return this.addObservationCommand.execute(this.studyId, verseReference, statement, wordTarget);
+        return this.addObservationCommand.execute(this.studyId, verseReference, statement, wordTarget, textTarget);
     }
 
     public async updateObservation(
@@ -104,17 +105,21 @@ export class ObservationWorkspaceService {
         verseReference: VerseReference,
         statement: string,
         wordTarget?: ObservationWordTargetInput,
+        textTarget?: ObservationTextTargetInput,
     ): Promise<void> {
         if (!this.studyRepository || !this.studyId) {
             throw new Error("Observation persistence is not configured for this workspace.");
         }
+        if (wordTarget && textTarget) throw new Error("Observation cannot have both a word target and a text target.");
 
         const study = await this.studyRepository.find(this.studyId);
         if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
 
-        const target = wordTarget
-            ? ObservationTarget.word(verseReference, wordTarget)
-            : ObservationTarget.verse(verseReference);
+        const target = textTarget
+            ? ObservationTarget.text(verseReference, textTarget)
+            : wordTarget
+                ? ObservationTarget.word(verseReference, wordTarget)
+                : ObservationTarget.verse(verseReference);
         const normalizedStatement = statement.trim();
         const currentId = ObservationId.from(observationId);
 
