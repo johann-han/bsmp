@@ -14,6 +14,12 @@ The Observation Mentor now follows the canonical observation question sequence (
 
 Interpretations now require at least one supporting observation. The Interpretation Mentor evaluates whether a student's interpretation is adequately grounded in the selected observations and can focus the student back on the relevant observation without supplying a replacement interpretation.
 
+## Biblical Theology
+
+A first Biblical Theology stage is now present. A study can record a student-authored theological synthesis with a theme and a required set of supporting interpretations. Biblical Theology entries persist in Supabase with user-scoped row-level security and can be created, edited, and deleted from `/biblical-theology?studyId=...`.
+
+The stage deliberately preserves the sequence from interpretation into theological synthesis: the synthesis is traceable to existing interpretations rather than generated as an authoritative AI conclusion. The Sermon Study Source panel now provides a direct link into the Biblical Theology workspace.
+
 ## Sermon Preparation
 
 The `/preaching` workspace creates an expository sermon preparation record from a Study and provides sermon title, Big Idea, Purpose, outline construction, editing, deletion, ordering, and links to Study source material.
@@ -93,7 +99,7 @@ Leaked-password protection remains deferred because the connected Supabase proje
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, and Study → Sermon traceability improvements.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, Study → Sermon traceability, and the first Biblical Theology stage.
 
 ## Verification
 
@@ -103,16 +109,18 @@ The final-drafting migration has been applied successfully to the connected BSMP
 
 The scheduling migration has been applied successfully to the connected Supabase project and browser persistence has been verified.
 
+The Biblical Theology migration has been applied successfully to the connected Supabase project. The new `public.biblical_theology_entries` table is RLS-protected for the signed-in user.
+
 The current verification baseline includes:
 
-- `pnpm typecheck` — successful after the latest Interpretation Mentor prop fix
-- `pnpm test` — all reported workspace test suites passed before the latest preaching-source-panel change
-- `pnpm build` — the production build had previously passed; rerun after the latest preaching traceability change
+- `pnpm typecheck` — successful after the latest Interpretation Mentor prop fix; rerun after this Biblical Theology increment
+- `pnpm test` — all reported workspace test suites passed before this Biblical Theology increment
+- `pnpm build` — the production build had previously passed; rerun after this Biblical Theology increment
 
-Supabase leaked-password protection remains a plan-level limitation rather than an application defect.
+Supabase security advisors currently continue to report the previously known leaked-password protection limitation; the new Biblical Theology table is protected by RLS. Performance advisors also report an index recommendation on the new table's `user_id` foreign key, which should be addressed in a later database-hardening pass.
 
 ## Next Work
 
-1. Strengthen authenticated end-to-end coverage of the complete Study → Sermon → Delivery workflow.
-2. Complete authenticated browser verification of the latest Study → Sermon traceability paths, including application source links from preaching views.
-3. Continue the inductive-study experience toward Biblical Theology and the broader responsible AI mentor workflow described in the product vision.
+1. Strengthen authenticated end-to-end coverage of the complete Study → Biblical Theology → Sermon → Delivery workflow.
+2. Connect Biblical Theology directly into sermon outline/exposition foundations so a preacher can trace a sermon point through theological synthesis back to interpretations and observations.
+3. Continue the inductive-study experience toward the broader responsible AI mentor workflow described in the product vision.
