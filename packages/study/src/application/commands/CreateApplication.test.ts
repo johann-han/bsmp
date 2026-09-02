@@ -10,10 +10,17 @@ describe("CreateApplication", () => {
         const study = createStudy("Romans");
         const repository = new InMemoryStudyRepository([study]);
         const createInterpretation = new CreateInterpretation(repository);
+        const observation = study.observations[0];
+
+        expect(observation).toBeDefined();
+        if (!observation) {
+            throw new Error("Test study must contain an observation.");
+        }
 
         const interpretation = await createInterpretation.execute(
             study.id,
             "God justifies the sinner by faith.",
+            [observation.id],
         );
 
         const createApplication = new CreateApplication(repository);
