@@ -36,6 +36,12 @@ export class CreateInterpretation {
 
         }
 
+        if (observationIds.length === 0) {
+            throw new Error(
+                "Select at least one supporting observation before saving an interpretation.",
+            );
+        }
+
         const knownObservationIds = new Set(
             study.observations.map((observation) => observation.id.toString()),
         );
