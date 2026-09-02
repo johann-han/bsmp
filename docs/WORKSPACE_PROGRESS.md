@@ -10,6 +10,10 @@ When Sermon Exposition links back to an interpretation, the Workspace resolves t
 
 Evidence creation and persistence are verified end-to-end against Supabase, including correct interpretation ID matching and rebuilt workspace packages.
 
+The Observation Mentor now follows the canonical observation question sequence (Who, What, Where, When, Why, How), classifies student entries, supplies focused text-review cues, and lets the student save a mentor-highlighted text target as their own observation. The AI mentor is constrained to coach observation rather than replace the student's study.
+
+Interpretations now require at least one supporting observation. The Interpretation Mentor evaluates whether a student's interpretation is adequately grounded in the selected observations and can focus the student back on the relevant observation without supplying a replacement interpretation.
+
 ## Sermon Preparation
 
 The `/preaching` workspace creates an expository sermon preparation record from a Study and provides sermon title, Big Idea, Purpose, outline construction, editing, deletion, ordering, and links to Study source material.
@@ -22,7 +26,9 @@ The framework stage provides Introduction, Context / Setting, and Conclusion.
 
 ## Sermon Exposition
 
-Each outline point can be developed through Text, Meaning / explanation, Illustration, Application, and Transition, with explicit links to the relevant Study foundations. Sermon Overview readiness directs the preacher to the next incomplete stage.
+Each outline point can be developed through Text, Meaning / explanation, Illustration, Application, and Transition, with explicit links to the relevant Study foundations. Exposition now includes explicit foundation mappings for Text observations, Meaning interpretations, Meaning evidence, and Response applications, plus readiness guidance for each outline point.
+
+The Sermon Study Source panel now exposes the source chain behind applications: application → interpretation → supporting observations and evidence, with links back into the Study Workspace. This makes the Study → Interpretation → Evidence → Application chain inspectable from the preaching workflow.
 
 ## Final Sermon Drafting
 
@@ -87,7 +93,7 @@ Leaked-password protection remains deferred because the connected Supabase proje
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, and Workspace evidence-navigation improvements.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, and Study → Sermon traceability improvements.
 
 ## Verification
 
@@ -97,18 +103,16 @@ The final-drafting migration has been applied successfully to the connected BSMP
 
 The scheduling migration has been applied successfully to the connected Supabase project and browser persistence has been verified.
 
-The current production build passes, including the `/preaching/history` route and the static `/_not-found` route.
-
 The current verification baseline includes:
 
-- `pnpm typecheck` — successful after the scheduling/authentication fixes
-- `pnpm test` — all reported workspace test suites passed
-- `pnpm build` — production build successful across the web and docs apps
+- `pnpm typecheck` — successful after the latest Interpretation Mentor prop fix
+- `pnpm test` — all reported workspace test suites passed before the latest preaching-source-panel change
+- `pnpm build` — the production build had previously passed; rerun after the latest preaching traceability change
 
 Supabase leaked-password protection remains a plan-level limitation rather than an application defect.
 
 ## Next Work
 
 1. Strengthen authenticated end-to-end coverage of the complete Study → Sermon → Delivery workflow.
-2. Improve the Bible Reader → Study Workspace handoff so focused Scripture becomes an explicit study starting point.
-3. Continue the inductive-study experience toward the responsible AI mentor workflow described in the product vision.
+2. Complete authenticated browser verification of the latest Study → Sermon traceability paths, including application source links from preaching views.
+3. Continue the inductive-study experience toward Biblical Theology and the broader responsible AI mentor workflow described in the product vision.
