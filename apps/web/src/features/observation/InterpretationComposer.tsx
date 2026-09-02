@@ -49,6 +49,10 @@ export function InterpretationComposer({
             setError("Enter an interpretation before saving.");
             return;
         }
+        if (selectedObservationIds.length === 0) {
+            setError("Select at least one supporting observation before saving an interpretation.");
+            return;
+        }
 
         setError(null);
         setMessage(null);
@@ -68,9 +72,7 @@ export function InterpretationComposer({
             setStatement("");
             setSelectedObservationIds([]);
             setMessage(
-                selectedObservationIds.length > 0
-                    ? `Interpretation saved with ${selectedObservationIds.length} supporting observation${selectedObservationIds.length === 1 ? "" : "s"}.`
-                    : "Interpretation saved without supporting observations.",
+                `Interpretation saved with ${selectedObservationIds.length} supporting observation${selectedObservationIds.length === 1 ? "" : "s"}.`,
             );
             await onSaved();
         } catch (saveError) {
@@ -80,6 +82,8 @@ export function InterpretationComposer({
             setSaving(false);
         }
     }
+
+    const canSave = !saving && Boolean(statement.trim()) && selectedObservationIds.length > 0;
 
     return (
         <section
@@ -128,7 +132,7 @@ export function InterpretationComposer({
 
             <textarea value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="State what you believe the passage means..." rows={5} disabled={saving} style={{ width: "100%", resize: "vertical", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 12, font: "inherit" }} />
 
-            <button type="button" onClick={saveInterpretation} disabled={saving} style={{ marginTop: 12, border: 0, borderRadius: 8, background: saving ? "#9ca3af" : "#111827", color: "#ffffff", padding: "10px 14px", fontWeight: 600 }}>
+            <button type="button" onClick={() => void saveInterpretation()} disabled={!canSave} style={{ marginTop: 12, border: 0, borderRadius: 8, background: canSave ? "#111827" : "#9ca3af", color: "#ffffff", padding: "10px 14px", fontWeight: 600, cursor: canSave ? "pointer" : "not-allowed" }}>
                 {saving ? "Saving..." : "Save Interpretation"}
             </button>
 
