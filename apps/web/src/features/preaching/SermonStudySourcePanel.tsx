@@ -31,6 +31,7 @@ export function SermonStudySourcePanel({ study }: Props) {
                 <p style={{ marginBottom: 4 }}>Observations: {study.observations.length}</p>
                 <p style={{ margin: "4px 0" }}>Interpretations: {study.interpretations.length}</p>
                 <p style={{ marginTop: 4 }}>Applications: {study.applications.length}</p>
+                <p style={{ margin: "4px 0" }}>Biblical Theology: {study.biblicalTheology.length}</p>
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 10 }}>
                     <WorkspaceLink href={workspaceHref(studyId)} study={study} style={{ fontWeight: 600 }}>Open Study Workspace</WorkspaceLink>
                     <Link href={`/biblical-theology?studyId=${encodeURIComponent(studyId)}`} prefetch style={{ ...linkStyle, fontWeight: 600 }}>Open Biblical Theology</Link>
@@ -46,6 +47,31 @@ export function SermonStudySourcePanel({ study }: Props) {
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
                 <h3 style={{ marginTop: 0 }}>Interpretations & Evidence</h3>
                 {study.interpretations.length === 0 ? <p>No interpretations recorded.</p> : study.interpretations.map((interpretation) => <article key={interpretation.id.value} style={{ marginBottom: 16 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)} style={linkStyle}><strong>{interpretation.statement.value}</strong></WorkspaceLink>{interpretation.observationIds.length > 0 && <div style={{ marginTop: 6, fontSize: 13 }}>Supported by {interpretation.observationIds.length} observation(s).</div>}{interpretation.observationIds.length > 0 && <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}><strong>Observation chain:</strong>{" "}{interpretation.observationIds.map((observationId, index) => { const observation = study.observations.find((item) => item.id.value === observationId.value); return <span key={observationId.value}>{observation ? <WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation.id.value}`)} style={{ ...linkStyle, fontSize: 12 }}>{observation.verseReference.value.toString()}</WorkspaceLink> : <span>Missing observation</span>}{index < interpretation.observationIds.length - 1 ? ", " : ""}</span>; })}</div>}{interpretation.evidence.length > 0 && <div style={{ marginTop: 8 }}><strong>Evidence</strong>{interpretation.evidence.map((evidence) => <div key={evidence.id.value} style={{ marginTop: 4 }}><WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${evidence.id.value}`)} style={linkStyle}><span>{evidence.type.value}: </span>{evidence.description.value}</WorkspaceLink></div>)}</div>}</article>)}
+            </section>
+
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
+                <h3 style={{ marginTop: 0 }}>Biblical Theology</h3>
+                {study.biblicalTheology.length === 0 ? <p>No Biblical Theology syntheses recorded yet.</p> : study.biblicalTheology.map((entry) => {
+                    const supportingInterpretations = study.interpretations.filter((interpretation) => entry.interpretationIds.some((id) => id.value === interpretation.id.value));
+                    return (
+                        <article key={entry.id.value} id={`biblical-theology-${entry.id.value}`} style={{ marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid #f1f5f9" }}>
+                            <Link href={`/biblical-theology?studyId=${encodeURIComponent(studyId)}#biblical-theology-${encodeURIComponent(entry.id.value)}`} prefetch style={{ ...linkStyle, fontWeight: 700 }}>{entry.theme}</Link>
+                            <p style={{ margin: "6px 0", whiteSpace: "pre-wrap" }}>{entry.synthesis}</p>
+                            <div style={{ fontSize: 12, color: "#6b7280" }}>Bridge from {entry.interpretationIds.length} interpretation{entry.interpretationIds.length === 1 ? "" : "s"}.</div>
+                            {supportingInterpretations.length > 0 && (
+                                <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
+                                    <strong>Interpretation chain:</strong>{" "}
+                                    {supportingInterpretations.map((interpretation, index) => (
+                                        <span key={interpretation.id.value}>
+                                            <WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)} style={{ ...linkStyle, fontSize: 12 }}>{interpretation.statement.value}</WorkspaceLink>
+                                            {index < supportingInterpretations.length - 1 ? "; " : ""}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </article>
+                    );
+                })}
             </section>
 
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
