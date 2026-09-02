@@ -147,41 +147,47 @@ function extractGeminiText(payload: unknown): string {
     return parts.map((part) => part && typeof part === "object" && typeof (part as { text?: unknown }).text === "string" ? (part as { text: string }).text : "").join("").trim();
 }
 
-function createRequestSignal(): AbortSignal {
+interface ProviderResponse {
+    readonly response: Response;
+    readonly payload: unknown;
+}
+
+async function fetchProviderJson(url: string, init: RequestInit): Promise<ProviderResponse> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    controller.signal.addEventListener("abort", () => clearTimeout(timeout), { once: true });
-    return controller.signal;
+
+    try {
+        const response = await fetch(url, { ...init, signal: controller.signal });
+        const payload = await response.json();
+        return { response, payload };
+    } catch (reason) {
+        if (reason instanceof DOMException && reason.name === "AbortError") {
+            throw new Error("The interpretation mentor timed out after 30 seconds. Please try again.");
+        }
+        throw reason;
+    } finally {
+        clearTimeout(timeout);
+    }
 }
 
 class OpenAIInterpretationMentorProvider implements InterpretationMentorProvider {
     public constructor(private readonly apiKey: string, private readonly model: string) {}
 
     public async assess(input: InterpretationMentorInput): Promise<InterpretationMentorResult> {
-        const signal = createRequestSignal();
-        let response: Response;
-        try {
-            response = await fetch("https://api.openai.com/v1/responses", {
-                method: "POST",
-                headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: this.model,
-                    instructions: INSTRUCTIONS,
-                    input: [{ role: "user", content: [{ type: "input_text", text: buildPrompt(input) }] }],
-                    text: { format: { type: "json_schema", name: "interpretation_mentor_response", strict: true, schema: OPENAI_RESPONSE_SCHEMA } },
-                    max_output_tokens: 700,
-                }),
-                signal,
-            });
-        } catch (reason) {
-            if (reason instanceof DOMException && reason.name === "AbortError") {
-                throw new Error("The interpretation mentor timed out after 30 seconds. Please try again.");
-            }
-            throw reason;
-        }
-        const payload = await response.json() as { output_text?: unknown; error?: { message?: unknown } };
-        if (!response.ok) throw new Error(typeof payload.error?.message === "string" ? payload.error.message : "The OpenAI interpretation mentor request failed.");
-        const raw = extractOpenAIText(payload);
+        const { response, payload } = await fetchProviderJson("https://api.openai.com/v1/responses", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: this.model,
+                instructions: INSTRUCTIONS,
+                input: [{ role: "user", content: [{ type: "input_text", text: buildPrompt(input) }] }],
+                text: { format: { type: "json_schema", name: "interpretation_mentor_response", strict: true, schema: OPENAI_RESPONSE_SCHEMA } },
+                max_output_tokens: 700,
+            }),
+        });
+        const body = payload as { output_text?: unknown; error?: { message?: unknown } };
+        if (!response.ok) throw new Error(typeof body.error?.message === "string" ? body.error.message : "The OpenAI interpretation mentor request failed.");
+        const raw = extractOpenAIText(body);
         if (!raw) throw new Error("The OpenAI interpretation mentor returned no text.");
         return { ...parseResult(raw, input), model: this.model, provider: "openai" };
     }
@@ -191,33 +197,26 @@ class GeminiInterpretationMentorProvider implements InterpretationMentorProvider
     public constructor(private readonly apiKey: string, private readonly model: string) {}
 
     public async assess(input: InterpretationMentorInput): Promise<InterpretationMentorResult> {
-        const signal = createRequestSignal();
-        let response: Response;
-        try {
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.model)}:generateContent?key=${encodeURIComponent(this.apiKey)}`;
-            response = await fetch(endpoint, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    systemInstruction: { parts: [{ text: INSTRUCTIONS }] },
-                    contents: [{ role: "user", parts: [{ text: buildPrompt(input) }] }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        thinkingConfig: { thinkingLevel: "minimal" },
-                        maxOutputTokens: 700,
-                    },
-                }),
-                signal,
-            });
-        } catch (reason) {
-            if (reason instanceof DOMException && reason.name === "AbortError") {
-                throw new Error("The interpretation mentor timed out after 30 seconds. Please try again.");
-            }
-            throw reason;
-        }
-        const payload = await response.json() as { candidates?: unknown; error?: { message?: unknown } };
-        if (!response.ok) throw new Error(typeof payload.error?.message === "string" ? payload.error.message : "The Gemini interpretation mentor request failed.");
-        const raw = extractGeminiText(payload);
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.model)}:generateContent`;
+        const { response, payload } = await fetchProviderJson(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": this.apiKey,
+            },
+            body: JSON.stringify({
+                systemInstruction: { parts: [{ text: INSTRUCTIONS }] },
+                contents: [{ role: "user", parts: [{ text: buildPrompt(input) }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    thinkingConfig: { thinkingLevel: "minimal" },
+                    maxOutputTokens: 700,
+                },
+            }),
+        });
+        const body = payload as { candidates?: unknown; error?: { message?: unknown } };
+        if (!response.ok) throw new Error(typeof body.error?.message === "string" ? body.error.message : "The Gemini interpretation mentor request failed.");
+        const raw = extractGeminiText(body);
         if (!raw) throw new Error("The Gemini interpretation mentor returned no text.");
         return { ...parseResult(raw, input), model: this.model, provider: "gemini" };
     }
