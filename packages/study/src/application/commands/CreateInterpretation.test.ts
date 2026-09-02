@@ -5,17 +5,20 @@ import { CreateInterpretation } from "./CreateInterpretation.js";
 import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
 
 import {
+    createObservation,
     createStudy,
 } from "../../test/index.js";
 
 describe("CreateInterpretation", () => {
 
-    it("adds an interpretation to a study", async () => {
+    it("adds an interpretation to a study with supporting observations", async () => {
 
         const study =
             createStudy(
                 "Romans",
             );
+        const observation = createObservation("The text mentions believers.");
+        study.addObservation(observation);
 
         const repository =
             new InMemoryStudyRepository([
@@ -30,6 +33,7 @@ describe("CreateInterpretation", () => {
         await command.execute(
             study.id,
             "Paul teaches justification by faith.",
+            [observation.id],
         );
 
         const loaded =
@@ -63,6 +67,20 @@ describe("CreateInterpretation", () => {
             "Paul teaches justification by faith.",
         );
 
+        expect(
+            loaded.interpretations[0]!.observationIds.map((id) => id.value),
+        ).toEqual([observation.id.value]);
+
+    });
+
+    it("requires at least one supporting observation", async () => {
+        const study = createStudy("Romans");
+        const repository = new InMemoryStudyRepository([study]);
+        const command = new CreateInterpretation(repository);
+
+        await expect(
+            command.execute(study.id, "Paul teaches justification by faith."),
+        ).rejects.toThrow("Select at least one supporting observation");
     });
 
 });
