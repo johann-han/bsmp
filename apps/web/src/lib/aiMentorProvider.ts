@@ -149,7 +149,42 @@ function extractGeminiText(payload: unknown): string {
         .trim();
 }
 
-const MENTOR_RESPONSE_SCHEMA = {
+const OPENAI_MENTOR_RESPONSE_SCHEMA = {
+    type: "object",
+    properties: {
+        coaching: {
+            type: "string",
+            description: "Concise observation coaching for the student's current observation.",
+        },
+        focuses: {
+            type: "array",
+            maxItems: 3,
+            items: {
+                type: "object",
+                properties: {
+                    verseReference: {
+                        type: "string",
+                        description: "A verse reference that appears in the supplied passage.",
+                    },
+                    textCue: {
+                        type: "string",
+                        description: "A short exact or near-exact observable word or phrase from that verse.",
+                    },
+                    question: {
+                        type: "string",
+                        description: "A question that directs the student to inspect the text without interpreting it.",
+                    },
+                },
+                required: ["verseReference", "textCue", "question"],
+                additionalProperties: false,
+            },
+        },
+    },
+    required: ["coaching", "focuses"],
+    additionalProperties: false,
+} as const;
+
+const GEMINI_MENTOR_RESPONSE_SCHEMA = {
     type: "object",
     properties: {
         coaching: {
@@ -180,7 +215,6 @@ const MENTOR_RESPONSE_SCHEMA = {
         },
     },
     required: ["coaching", "focuses"],
-    additionalProperties: false,
 } as const;
 
 class OpenAIObservationMentorProvider implements ObservationMentorProvider {
@@ -211,7 +245,7 @@ class OpenAIObservationMentorProvider implements ObservationMentorProvider {
                         name: "observation_mentor_response",
                         description: "Structured BSMP observation coaching and text-focus prompts.",
                         strict: true,
-                        schema: MENTOR_RESPONSE_SCHEMA,
+                        schema: OPENAI_MENTOR_RESPONSE_SCHEMA,
                     },
                 },
                 max_output_tokens: 700,
@@ -259,7 +293,7 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
                 ],
                 generationConfig: {
                     responseMimeType: "application/json",
-                    responseSchema: MENTOR_RESPONSE_SCHEMA,
+                    responseSchema: GEMINI_MENTOR_RESPONSE_SCHEMA,
                     maxOutputTokens: 700,
                 },
             }),
