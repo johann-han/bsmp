@@ -3,20 +3,17 @@ import { describe, expect, it } from "vitest";
 import { CreateEvidence } from "./CreateEvidence.js";
 import { CreateInterpretation } from "./CreateInterpretation.js";
 import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
-import { createStudy } from "../../test/index.js";
+import { createObservation, createStudy } from "../../test/index.js";
 
 describe("CreateEvidence", () => {
     it("adds evidence to an interpretation using its raw ID value", async () => {
         const study = createStudy("Romans");
+        const observation = createObservation("The passage supports the interpretation with a direct observation.");
+        study.addObservation(observation);
+
         const repository = new InMemoryStudyRepository([study]);
         const createInterpretation = new CreateInterpretation(repository);
         const createEvidence = new CreateEvidence(repository);
-        const observation = study.observations[0];
-
-        expect(observation).toBeDefined();
-        if (!observation) {
-            throw new Error("Test study must contain an observation.");
-        }
 
         const interpretation = await createInterpretation.execute(
             study.id,
