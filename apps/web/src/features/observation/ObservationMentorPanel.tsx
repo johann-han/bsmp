@@ -36,53 +36,12 @@ function storageKey(studyId: string): string {
     return `bsmp:observation-mentor:${studyId}`;
 }
 
-function coachingStorageKey(studyId: string): string {
-    return `${storageKey(studyId)}:coaching`;
-}
-
-function focusStorageKey(studyId: string): string {
-    return `${storageKey(studyId)}:focuses`;
-}
-
 function loadCompleted(studyId: string): string[] {
     try {
         const raw = window.localStorage.getItem(storageKey(studyId));
         if (!raw) return [];
         const parsed = JSON.parse(raw) as unknown;
         return Array.isArray(parsed) && parsed.every((item) => typeof item === "string") ? parsed : [];
-    } catch {
-        return [];
-    }
-}
-
-function loadCoaching(studyId: string): string {
-    try {
-        return window.localStorage.getItem(coachingStorageKey(studyId)) ?? "";
-    } catch {
-        return "";
-    }
-}
-
-function loadFocuses(studyId: string): MentorFocus[] {
-    try {
-        const raw = window.localStorage.getItem(focusStorageKey(studyId));
-        if (!raw) return [];
-        const parsed = JSON.parse(raw) as unknown;
-        if (!Array.isArray(parsed)) return [];
-        return parsed.flatMap((item) => {
-            if (!item || typeof item !== "object") return [];
-            const candidate = item as Record<string, unknown>;
-            if (
-                typeof candidate.verseReference !== "string" ||
-                typeof candidate.textCue !== "string" ||
-                typeof candidate.question !== "string"
-            ) return [];
-            return [{
-                verseReference: candidate.verseReference,
-                textCue: candidate.textCue,
-                question: candidate.question,
-            }];
-        }).slice(0, 3);
     } catch {
         return [];
     }
@@ -101,8 +60,12 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
     useEffect(() => {
         const stored = loadCompleted(studyId);
         setCompleted(stored);
-        setCoaching(loadCoaching(studyId));
-        setFocuses(loadFocuses(studyId));
+        // Mentor coaching is intentionally session-only. A browser refresh starts a fresh coaching session,
+        // while the considered-question progress remains persisted for the study.
+        setCoaching("");
+        setFocuses([]);
+        setStudentObservation("");
+        setError(null);
         void nextQuestionQuery.execute(stored).then(setQuestion);
     }, [studyId]);
 
@@ -123,8 +86,6 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
         setCompleted(nextCompleted);
         setCoaching("");
         setFocuses([]);
-        window.localStorage.removeItem(coachingStorageKey(studyId));
-        window.localStorage.removeItem(focusStorageKey(studyId));
         setQuestion(await nextQuestionQuery.execute(nextCompleted));
         setStudentObservation("");
         setError(null);
@@ -188,8 +149,6 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
 
             setCoaching(nextCoaching);
             setFocuses(nextFocuses);
-            window.localStorage.setItem(coachingStorageKey(studyId), nextCoaching);
-            window.localStorage.setItem(focusStorageKey(studyId), JSON.stringify(nextFocuses));
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to reach the AI mentor.");
         } finally {
@@ -199,8 +158,6 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
 
     function resetMentor() {
         window.localStorage.removeItem(storageKey(studyId));
-        window.localStorage.removeItem(coachingStorageKey(studyId));
-        window.localStorage.removeItem(focusStorageKey(studyId));
         setCompleted([]);
         setStudentObservation("");
         setCoaching("");
