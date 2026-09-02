@@ -161,15 +161,12 @@ export function StudyPassage({
             const cueIndex = normalizedVerseText.indexOf(cue.toLowerCase());
             if (cueIndex < 0) return;
 
-            const wordIndex = tokenize(targetVerse.text.slice(0, cueIndex)).length;
             const wordText = targetVerse.text.slice(cueIndex, cueIndex + cue.length);
 
             window.dispatchEvent(new CustomEvent("bsmp:mentor-focus-ready", {
                 detail: {
                     verseReference: targetVerse.reference,
                     textCue: wordText,
-                    wordIndex,
-                    wordText,
                     translation,
                 },
             }));
