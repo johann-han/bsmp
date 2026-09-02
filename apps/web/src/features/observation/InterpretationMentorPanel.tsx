@@ -7,7 +7,7 @@ import type { ObservationViewModel } from "@bsmp/study";
 interface InterpretationMentorPanelProps {
     readonly interpretation: string;
     readonly observations: readonly ObservationViewModel[];
-    readonly onObservationSelect?: (observation: ObservationViewModel) => void;
+    readonly onObservationSelect?: ((observation: ObservationViewModel) => void) | undefined;
 }
 
 type Assessment = "supported" | "mixed" | "unsupported" | "too_vague";
