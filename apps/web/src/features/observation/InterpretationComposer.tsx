@@ -123,10 +123,22 @@ export function InterpretationComposer({
                                 style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: 8, background: selected ? "#eff6ff" : "#ffffff" }}
                             >
                                 <input type="checkbox" checked={selected} onChange={() => toggleObservation(observation.id)} disabled={saving} />
-                                <span>
-                                    <strong>{observationTargetLabel(observation)}</strong>
-                                    <span style={{ display: "block", marginTop: 2, color: "#4b5563" }}>{observation.statement}</span>
-                                </span>
+                                <button
+                                    type="button"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        onObservationSelect?.(observation);
+                                    }}
+                                    disabled={!onObservationSelect || saving}
+                                    style={{ border: 0, padding: 0, background: "transparent", color: "inherit", cursor: onObservationSelect && !saving ? "pointer" : "default", textAlign: "left", flex: 1 }}
+                                >
+                                    <span>
+                                        <strong>{observationTargetLabel(observation)}</strong>
+                                        <span style={{ display: "block", marginTop: 2, color: "#4b5563" }}>{observation.statement}</span>
+                                        {onObservationSelect && <span style={{ display: "block", marginTop: 4, fontSize: 11, color: "#6b7280" }}>Click to recheck this observation in the study.</span>}
+                                    </span>
+                                </button>
                             </label>
                         );
                     })}
@@ -140,7 +152,7 @@ export function InterpretationComposer({
             <InterpretationMentorPanel
                 interpretation={statement}
                 observations={selectedObservations}
-                onObservationSelect={onObservationSelect}
+                {...(onObservationSelect ? { onObservationSelect } : {})}
             />
 
             <button type="button" onClick={() => void saveInterpretation()} disabled={!canSave} style={{ marginTop: 12, border: 0, borderRadius: 8, background: canSave ? "#111827" : "#9ca3af", color: "#ffffff", padding: "10px 14px", fontWeight: 600, cursor: canSave ? "pointer" : "not-allowed" }}>
