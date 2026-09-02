@@ -28,6 +28,10 @@ export interface ObservationMentorResult {
     readonly provider: "openai" | "gemini";
 }
 
+export interface ObservationMentorProvider {
+    coach(input: ObservationMentorInput): Promise<ObservationMentorResult>;
+}
+
 const MENTOR_INSTRUCTIONS = [
     "You are the BSMP inductive Bible-study mentor.",
     "Your job is to coach the student in observation, not to do the Bible study for them.",
@@ -96,6 +100,7 @@ function parseMentorResult(raw: string, passageText: string): { coaching: string
 
     const candidate = payload as { coaching?: unknown; focuses?: unknown };
     const coaching = typeof candidate.coaching === "string" ? candidate.coaching.trim() : "";
+    const normalizedPassage = passageText.toLowerCase();
     const focuses = Array.isArray(candidate.focuses)
         ? candidate.focuses.flatMap((focus) => {
             if (!focus || typeof focus !== "object") return [];
@@ -110,8 +115,6 @@ function parseMentorResult(raw: string, passageText: string): { coaching: string
             const textCue = item.textCue.trim();
             const question = item.question.trim();
             if (!verseReference || !textCue || !question) return [];
-
-            const normalizedPassage = passageText.toLowerCase();
             if (!normalizedPassage.includes(verseReference.toLowerCase())) return [];
 
             return [{ verseReference, textCue, question }];
