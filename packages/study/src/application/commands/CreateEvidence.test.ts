@@ -11,10 +11,17 @@ describe("CreateEvidence", () => {
         const repository = new InMemoryStudyRepository([study]);
         const createInterpretation = new CreateInterpretation(repository);
         const createEvidence = new CreateEvidence(repository);
+        const observation = study.observations[0];
+
+        expect(observation).toBeDefined();
+        if (!observation) {
+            throw new Error("Test study must contain an observation.");
+        }
 
         const interpretation = await createInterpretation.execute(
             study.id,
             "Paul teaches justification by faith.",
+            [observation.id],
         );
 
         await createEvidence.execute(
