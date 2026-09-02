@@ -152,11 +152,10 @@ export function StudyPassage({
             return verseReference === targetReference || verseReference.endsWith(targetReference);
         });
         if (!targetVerse) return;
-        onSelectVerse?.(targetVerse);
         window.setTimeout(() => {
             document.getElementById(`study-verse-${targetVerse.number}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 0);
-    }, [mentorFocus, verses, onSelectVerse]);
+    }, [mentorFocus, verses]);
 
     async function saveWordMarkups(next: readonly StudyWordMarkup[]) {
         setWordMarkups(next);
