@@ -361,6 +361,7 @@ export function ObservationWorkspace() {
                 workspace={workspace}
                 observations={data.observations}
                 onSaved={refreshWorkspace}
+                onObservationSelect={focusObservation}
                 onOptimisticCreate={addOptimisticInterpretation}
                 onRollbackCreate={rollbackOptimisticInterpretation}
             />
@@ -381,14 +382,7 @@ export function ObservationWorkspace() {
                 onOptimisticCreate={addOptimisticApplication}
                 onRollbackCreate={rollbackOptimisticApplication}
             />
-            <ApplicationHistory
-                applications={data.applications}
-                interpretations={data.interpretations}
-                workspace={workspace}
-                onUpdated={updateApplication}
-                onDeleted={removeApplication}
-                onInterpretationSelect={focusInterpretation}
-            />
+            <ApplicationHistory applications={data.applications} interpretations={data.interpretations} onInterpretationSelect={focusInterpretation} />
         </div>
     );
 }
