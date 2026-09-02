@@ -36,6 +36,8 @@ Each outline point can be developed through Text, Meaning / explanation, Illustr
 
 Biblical Theology choices are persisted on the sermon outline point. The UI prioritizes syntheses connected to the point's selected Meaning interpretations, while still allowing other student-authored syntheses to be selected. The theological synthesis remains a supporting layer; the underlying interpretation is still explicitly traceable.
 
+Editing an outline point without changing its Biblical Theology foundation now preserves the existing theology links rather than clearing them.
+
 The Sermon Study Source panel exposes the source chain behind applications: application → interpretation → supporting observations and evidence, with links back into the Study Workspace. It also exposes Biblical Theology syntheses and their supporting interpretation chain.
 
 ## Final Sermon Drafting
@@ -115,7 +117,9 @@ The Biblical Theology migration has been applied successfully to the connected S
 
 The Sermon Biblical Theology support migration has also been applied successfully to the connected Supabase project. `public.sermon_outline_points` now persists `supporting_biblical_theology_ids` with an empty-array default for existing rows.
 
-The previous CI attempt failed before dependency installation because `pnpm/action-setup` received pnpm 9 from both the workflow and `package.json`. The workflow conflict has been removed; a fresh CI run is still required to validate typecheck, tests, and production build for the current branch.
+The missing `@bsmp/inductive` workspace importer has now been synchronized into `pnpm-lock.yaml` so `pnpm install --frozen-lockfile` matches `apps/web/package.json` again.
+
+The earlier CI attempts failed during dependency installation because the lockfile was missing the newly declared `@bsmp/inductive` workspace dependency in the `apps/web` importer. The temporary lockfile-repair workflow regenerated and committed the lockfile successfully. A fresh full CI run is now required to validate typecheck, tests, and production build against the corrected lockfile.
 
 The current verification baseline therefore remains:
 
