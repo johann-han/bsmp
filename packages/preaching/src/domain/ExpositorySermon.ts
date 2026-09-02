@@ -56,12 +56,14 @@ export interface SermonOutlinePoint {
     readonly supportingInterpretationIds: readonly string[];
     readonly supportingEvidenceIds: readonly string[];
     readonly supportingApplicationIds: readonly string[];
+    readonly supportingBiblicalTheologyIds: readonly string[];
 }
 export interface SermonOutlineSupport {
     readonly supportingObservationIds?: readonly string[];
     readonly supportingInterpretationIds?: readonly string[];
     readonly supportingEvidenceIds?: readonly string[];
     readonly supportingApplicationIds?: readonly string[];
+    readonly supportingBiblicalTheologyIds?: readonly string[];
 }
 export interface SermonOutlineExposition {
     readonly text?: string;
@@ -110,12 +112,13 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
             supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])],
             supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])],
             supportingApplicationIds: [...(support.supportingApplicationIds ?? [])],
+            supportingBiblicalTheologyIds: [...(support.supportingBiblicalTheologyIds ?? [])],
         };
         const normalizedExposition = {
             text: exposition.text?.trim() ?? "", explanation: exposition.explanation?.trim() ?? "", illustration: exposition.illustration?.trim() ?? "", application: exposition.application?.trim() ?? "", transition: exposition.transition?.trim() ?? "",
             textObservationIds: [...(exposition.textObservationIds ?? [])], meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? [])], meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? [])], responseApplicationIds: [...(exposition.responseApplicationIds ?? [])],
         };
-        const duplicate = this._outline.some((point) => point.heading === normalizedHeading && point.truth === normalizedTruth && JSON.stringify(point.supportingObservationIds) === JSON.stringify(normalizedSupport.supportingObservationIds) && JSON.stringify(point.supportingInterpretationIds) === JSON.stringify(normalizedSupport.supportingInterpretationIds) && JSON.stringify(point.supportingEvidenceIds) === JSON.stringify(normalizedSupport.supportingEvidenceIds) && JSON.stringify(point.supportingApplicationIds) === JSON.stringify(normalizedSupport.supportingApplicationIds));
+        const duplicate = this._outline.some((point) => point.heading === normalizedHeading && point.truth === normalizedTruth && JSON.stringify(point.supportingObservationIds) === JSON.stringify(normalizedSupport.supportingObservationIds) && JSON.stringify(point.supportingInterpretationIds) === JSON.stringify(normalizedSupport.supportingInterpretationIds) && JSON.stringify(point.supportingEvidenceIds) === JSON.stringify(normalizedSupport.supportingEvidenceIds) && JSON.stringify(point.supportingApplicationIds) === JSON.stringify(normalizedSupport.supportingApplicationIds) && JSON.stringify(point.supportingBiblicalTheologyIds) === JSON.stringify(normalizedSupport.supportingBiblicalTheologyIds));
         if (duplicate) throw new Error("This outline point is already part of the sermon.");
         const point = { id, heading: normalizedHeading, truth: normalizedTruth, ...normalizedExposition, ...normalizedSupport } satisfies SermonOutlinePoint;
         this._outline.push(point); return point;
@@ -124,7 +127,7 @@ export class ExpositorySermon extends Entity<ExpositorySermonId> {
         const index = this._outline.findIndex((point) => point.id === id); if (index < 0) throw new Error("Outline point was not found.");
         const normalizedHeading = heading.trim(); const normalizedTruth = truth.trim(); if (!normalizedHeading || !normalizedTruth) throw new Error("An outline point requires both a heading and truth statement.");
         const current = this._outline[index]; if (!current) throw new Error("Outline point was not found.");
-        const updated = { id, heading: normalizedHeading, truth: normalizedTruth, text: exposition.text?.trim() ?? current.text, explanation: exposition.explanation?.trim() ?? current.explanation, illustration: exposition.illustration?.trim() ?? current.illustration, application: exposition.application?.trim() ?? current.application, transition: exposition.transition?.trim() ?? current.transition, textObservationIds: [...(exposition.textObservationIds ?? current.textObservationIds)], meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? current.meaningInterpretationIds)], meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? current.meaningEvidenceIds)], responseApplicationIds: [...(exposition.responseApplicationIds ?? current.responseApplicationIds)], supportingObservationIds: [...(support.supportingObservationIds ?? [])], supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])], supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])], supportingApplicationIds: [...(support.supportingApplicationIds ?? [])] } satisfies SermonOutlinePoint;
+        const updated = { id, heading: normalizedHeading, truth: normalizedTruth, text: exposition.text?.trim() ?? current.text, explanation: exposition.explanation?.trim() ?? current.explanation, illustration: exposition.illustration?.trim() ?? current.illustration, application: exposition.application?.trim() ?? current.application, transition: exposition.transition?.trim() ?? current.transition, textObservationIds: [...(exposition.textObservationIds ?? current.textObservationIds)], meaningInterpretationIds: [...(exposition.meaningInterpretationIds ?? current.meaningInterpretationIds)], meaningEvidenceIds: [...(exposition.meaningEvidenceIds ?? current.meaningEvidenceIds)], responseApplicationIds: [...(exposition.responseApplicationIds ?? current.responseApplicationIds)], supportingObservationIds: [...(support.supportingObservationIds ?? [])], supportingInterpretationIds: [...(support.supportingInterpretationIds ?? [])], supportingEvidenceIds: [...(support.supportingEvidenceIds ?? [])], supportingApplicationIds: [...(support.supportingApplicationIds ?? [])], supportingBiblicalTheologyIds: [...(support.supportingBiblicalTheologyIds ?? [])] } satisfies SermonOutlinePoint;
         this._outline[index] = updated; return updated;
     }
     public defineOutlinePointExposition(id: string, exposition: SermonOutlineExposition): SermonOutlinePoint {
