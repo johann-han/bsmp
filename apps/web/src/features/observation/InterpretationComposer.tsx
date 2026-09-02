@@ -136,8 +136,6 @@ export function InterpretationComposer({
             <textarea value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="State what you believe the passage means..." rows={5} disabled={saving} style={{ width: "100%", resize: "vertical", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 12, font: "inherit" }} />
 
             <InterpretationMentorPanel
-                passageReference={observations[0]?.verseReference ?? ""}
-                passageText={observations.map((observation) => `${observation.verseReference} ${observation.statement}`).join("\n")}
                 interpretation={statement}
                 observations={selectedObservations}
             />
