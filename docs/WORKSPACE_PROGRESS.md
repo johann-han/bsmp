@@ -52,7 +52,9 @@ The `/preaching/final` workspace provides:
 - persistent Supabase storage
 - Print / Save PDF support using the browser print dialog
 
-The structured-draft builder is a starting point only. It preserves the distinction between source study material and the preacher's final authored manuscript.
+The final draft workspace now also provides a Source Traceability section for every sermon outline point. From there, the preacher can navigate directly back to its recorded observations, interpretations, evidence, applications, and Biblical Theology syntheses, as well as open the Study Workspace, Biblical Theology workspace, or Sermon Exposition. Study Workspace links preserve a return path to the final draft.
+
+The structured-draft builder is a starting point only. It preserves the distinction between source study material and the preacher's final authored manuscript. Source Traceability is navigation/provenance tooling and is excluded from the printed manuscript output.
 
 ## Sermon Delivery
 
@@ -119,18 +121,16 @@ The Sermon Biblical Theology support migration has also been applied successfull
 
 The missing `@bsmp/inductive` workspace importer has now been synchronized into `pnpm-lock.yaml` so `pnpm install --frozen-lockfile` matches `apps/web/package.json` again.
 
-The earlier CI attempts failed during dependency installation because the lockfile was missing the newly declared `@bsmp/inductive` workspace dependency in the `apps/web` importer. The temporary lockfile-repair workflow regenerated and committed the lockfile successfully. A fresh full CI run is now required to validate typecheck, tests, and production build against the corrected lockfile.
+The earlier CI attempts failed during dependency installation because the lockfile was missing the newly declared `@bsmp/inductive` workspace dependency in the `apps/web` importer. The temporary lockfile-repair workflow regenerated and committed the lockfile successfully.
 
-The current verification baseline therefore remains:
+A fresh full CI run for commit `491fdcf76fc0050b22f2ebd9bf579e94e53d23b0` completed successfully: typecheck, test, and production build all passed. The regression test covering preservation of Biblical Theology support during normal outline edits also passed.
 
-- `pnpm typecheck` — previously successful after the Interpretation Mentor prop fix; rerun after the latest sermon/Biblical Theology changes
-- `pnpm test` — previously passing; rerun after the latest sermon/Biblical Theology changes
-- `pnpm build` — previously passing; rerun after the latest sermon/Biblical Theology changes
+The later final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df60ba26f496c76b11daf9f`. This change has been reviewed at the repository commit level; a new CI run for this commit should be treated as the verification checkpoint for the traceability UI itself. Browser verification was not performed for that specific change in this environment.
 
 Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology and sermon-support tables are protected by RLS. Performance advisors also reported an index recommendation on the new Biblical Theology table's `user_id` foreign key, which should be addressed in a later database-hardening pass.
 
 ## Next Work
 
-1. Run fresh typecheck, test, build, and authenticated browser verification against the complete Study → Biblical Theology → Sermon → Delivery workflow.
-2. Strengthen direct navigation from final sermon content back through Biblical Theology, interpretations, evidence, observations, and passage text.
+1. Run a fresh CI cycle for the final-draft Source Traceability change and perform authenticated browser verification of the complete Study → Biblical Theology → Sermon → Delivery workflow.
+2. Strengthen the final manuscript itself with finer-grained source anchors so authored manuscript sections can be traced back to the relevant sermon points and Study foundations without relying only on the separate Source Traceability panel.
 3. Continue the inductive-study experience toward the broader responsible AI mentor workflow described in the product vision.
