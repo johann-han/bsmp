@@ -7,6 +7,7 @@ import type { ObservationViewModel } from "@bsmp/study";
 interface InterpretationMentorPanelProps {
     readonly interpretation: string;
     readonly observations: readonly ObservationViewModel[];
+    readonly onObservationSelect?: (observation: ObservationViewModel) => void;
 }
 
 type Assessment = "supported" | "mixed" | "unsupported" | "too_vague";
@@ -31,6 +32,7 @@ function targetLabel(observation: ObservationViewModel): string {
 export function InterpretationMentorPanel({
     interpretation,
     observations,
+    onObservationSelect,
 }: InterpretationMentorPanelProps) {
     const [assessment, setAssessment] = useState<Assessment | null>(null);
     const [coaching, setCoaching] = useState<string | null>(null);
@@ -99,7 +101,9 @@ export function InterpretationMentorPanel({
                     const item = focus as { observationId?: unknown; question?: unknown };
                     if (typeof item.observationId !== "string" || typeof item.question !== "string") return [];
                     if (!observations.some((observation) => observation.id === item.observationId)) return [];
-                    return [{ observationId: item.observationId, question: item.question.trim() }];
+                    const question = item.question.trim();
+                    if (!question) return [];
+                    return [{ observationId: item.observationId, question }];
                 })
                 : [];
 
@@ -142,11 +146,20 @@ export function InterpretationMentorPanel({
                     <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
                         {focuses.map((focus) => {
                             const observation = observations.find((item) => item.id === focus.observationId);
+                            if (!observation) return null;
+                            const selectable = Boolean(onObservationSelect);
                             return (
-                                <div key={`${focus.observationId}-${focus.question}`} style={{ padding: 10, background: "#ffffff", borderRadius: 8, border: "1px solid #bfdbfe" }}>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: "#1d4ed8" }}>{observation ? targetLabel(observation) : "Selected observation"}</div>
+                                <button
+                                    key={`${focus.observationId}-${focus.question}`}
+                                    type="button"
+                                    onClick={() => onObservationSelect?.(observation)}
+                                    disabled={!selectable}
+                                    style={{ display: "block", width: "100%", textAlign: "left", padding: 10, background: "#ffffff", borderRadius: 8, border: "1px solid #bfdbfe", cursor: selectable ? "pointer" : "default" }}
+                                >
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: "#1d4ed8" }}>{targetLabel(observation)}</div>
                                     <div style={{ marginTop: 3 }}>{focus.question}</div>
-                                </div>
+                                    {selectable && <div style={{ marginTop: 5, fontSize: 11, color: "#6b7280" }}>Click to recheck this observation in the study.</div>}
+                                </button>
                             );
                         })}
                     </div>
