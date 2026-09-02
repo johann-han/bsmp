@@ -5,8 +5,6 @@ import { useState } from "react";
 import type { ObservationViewModel } from "@bsmp/study";
 
 interface InterpretationMentorPanelProps {
-    readonly passageReference: string;
-    readonly passageText: string;
     readonly interpretation: string;
     readonly observations: readonly ObservationViewModel[];
 }
@@ -31,8 +29,6 @@ function targetLabel(observation: ObservationViewModel): string {
 }
 
 export function InterpretationMentorPanel({
-    passageReference,
-    passageText,
     interpretation,
     observations,
 }: InterpretationMentorPanelProps) {
@@ -60,7 +56,8 @@ export function InterpretationMentorPanel({
         setFocuses([]);
 
         try {
-            const session = await import("../../lib/supabase").then(({ supabase }) => supabase.auth.getSession());
+            const { supabase } = await import("../../lib/supabase");
+            const session = await supabase.auth.getSession();
             const accessToken = session.data.session?.access_token;
             if (!accessToken) throw new Error("A signed-in Supabase session is required.");
 
@@ -71,8 +68,6 @@ export function InterpretationMentorPanel({
                     Authorization: `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({
-                    passageReference,
-                    passageText,
                     interpretation: trimmed,
                     observations: observations.map((observation) => ({
                         id: observation.id,
@@ -104,7 +99,7 @@ export function InterpretationMentorPanel({
                     const item = focus as { observationId?: unknown; question?: unknown };
                     if (typeof item.observationId !== "string" || typeof item.question !== "string") return [];
                     if (!observations.some((observation) => observation.id === item.observationId)) return [];
-                    return [{ observationId: item.observationId, question: item.question }];
+                    return [{ observationId: item.observationId, question: item.question.trim() }];
                 })
                 : [];
 
