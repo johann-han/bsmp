@@ -8,8 +8,6 @@ import {
 } from "../../../../src/lib/interpretationMentorProvider";
 
 interface MentorRequest {
-    readonly passageReference?: unknown;
-    readonly passageText?: unknown;
     readonly interpretation?: unknown;
     readonly observations?: unknown;
 }
@@ -63,8 +61,6 @@ export async function POST(request: Request) {
 
         const provider = createInterpretationMentorProvider();
         const result = await provider.assess({
-            passageReference: requiredText(body.passageReference, "Passage reference"),
-            passageText: requiredText(body.passageText, "Passage text"),
             interpretation: requiredText(body.interpretation, "Interpretation"),
             observations: parseObservations(body.observations),
         });
@@ -72,7 +68,7 @@ export async function POST(request: Request) {
         return NextResponse.json(result);
     } catch (reason: unknown) {
         const message = reason instanceof Error ? reason.message : "Unable to run the interpretation mentor.";
-        const status = /session|signed-in|Supabase|supporting observation/i.test(message)
+        const status = /session|signed-in|Supabase/i.test(message)
             ? 401
             : /not configured|Unsupported AI_PROVIDER/i.test(message)
                 ? 503
