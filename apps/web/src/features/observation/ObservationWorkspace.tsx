@@ -269,6 +269,7 @@ export function ObservationWorkspace() {
                 studyId={studyId}
                 passageReference={passage.reference}
                 passageText={mentorPassageText}
+                observations={data.observations}
             />
 
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 12 }}>
