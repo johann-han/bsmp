@@ -14,7 +14,7 @@ export interface ObservationWordTargetInput {
     readonly translation: string;
     readonly wordIndex: number;
     readonly wordText: string;
-    readonly markupSymbol: string;
+    readonly markupSymbol: string | null;
 }
 
 export class ObservationTarget extends ValueObject<ObservationTargetProps> {
@@ -38,14 +38,13 @@ export class ObservationTarget extends ValueObject<ObservationTargetProps> {
     ): ObservationTarget {
         const translation = input.translation.trim();
         const wordText = input.wordText.trim();
-        const markupSymbol = input.markupSymbol.trim();
+        const markupSymbol = input.markupSymbol?.trim() || null;
 
         if (!translation) throw new ValidationError("Observation target translation cannot be empty.");
         if (!Number.isInteger(input.wordIndex) || input.wordIndex < 0) {
             throw new ValidationError("Observation target word index must be a non-negative integer.");
         }
         if (!wordText) throw new ValidationError("Observation target word text cannot be empty.");
-        if (!markupSymbol) throw new ValidationError("Observation target markup symbol cannot be empty.");
 
         return new ObservationTarget({
             verseReference,
