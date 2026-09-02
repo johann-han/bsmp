@@ -12,6 +12,16 @@ export interface InterpretationComposerProps {
     readonly onRollbackCreate?: (id: string) => void;
 }
 
+function observationTargetLabel(observation: ObservationViewModel): string {
+    if (observation.target.wordIndex !== null && observation.target.wordText) {
+        return `${observation.verseReference} · word: “${observation.target.wordText}”`;
+    }
+    if (observation.target.wordText) {
+        return `${observation.verseReference} · text: “${observation.target.wordText}”`;
+    }
+    return observation.verseReference;
+}
+
 export function InterpretationComposer({
     workspace,
     observations,
@@ -57,7 +67,11 @@ export function InterpretationComposer({
             await workspace.addInterpretation(trimmed, selectedObservationIds);
             setStatement("");
             setSelectedObservationIds([]);
-            setMessage("Interpretation saved.");
+            setMessage(
+                selectedObservationIds.length > 0
+                    ? `Interpretation saved with ${selectedObservationIds.length} supporting observation${selectedObservationIds.length === 1 ? "" : "s"}.`
+                    : "Interpretation saved without supporting observations.",
+            );
             await onSaved();
         } catch (saveError) {
             onRollbackCreate?.(optimisticId);
@@ -87,14 +101,26 @@ export function InterpretationComposer({
             {observations.length > 0 ? (
                 <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
                     <p style={{ margin: 0, fontSize: 13, color: "#4b5563" }}>
-                        Support this interpretation with observations:
+                        Select the observations that provide the textual basis for this interpretation.
                     </p>
-                    {observations.map((observation) => (
-                        <label key={observation.id} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                            <input type="checkbox" checked={selectedObservationIds.includes(observation.id)} onChange={() => toggleObservation(observation.id)} disabled={saving} />
-                            <span><strong>{observation.verseReference}</strong>{" "}{observation.statement}</span>
-                        </label>
-                    ))}
+                    <p style={{ margin: 0, fontSize: 12, color: "#6b7280" }}>
+                        {selectedObservationIds.length} supporting observation{selectedObservationIds.length === 1 ? "" : "s"} selected.
+                    </p>
+                    {observations.map((observation) => {
+                        const selected = selectedObservationIds.includes(observation.id);
+                        return (
+                            <label
+                                key={observation.id}
+                                style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: 8, background: selected ? "#eff6ff" : "#ffffff" }}
+                            >
+                                <input type="checkbox" checked={selected} onChange={() => toggleObservation(observation.id)} disabled={saving} />
+                                <span>
+                                    <strong>{observationTargetLabel(observation)}</strong>
+                                    <span style={{ display: "block", marginTop: 2, color: "#4b5563" }}>{observation.statement}</span>
+                                </span>
+                            </label>
+                        );
+                    })}
                 </div>
             ) : (
                 <p style={{ color: "#6b7280" }}>Record observations first so they can support this interpretation.</p>
