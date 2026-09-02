@@ -156,6 +156,30 @@ function extractGeminiText(payload: unknown): string {
     return parts.map((part) => part && typeof part === "object" && typeof (part as { text?: unknown }).text === "string" ? (part as { text: string }).text : "").join("").trim();
 }
 
+function describeGeminiFailure(payload: unknown): string | null {
+    if (!payload || typeof payload !== "object") return null;
+    const root = payload as {
+        error?: { message?: unknown };
+        promptFeedback?: { blockReason?: unknown };
+        candidates?: unknown;
+    };
+
+    if (typeof root.error?.message === "string" && root.error.message.trim()) return root.error.message.trim();
+    if (typeof root.promptFeedback?.blockReason === "string" && root.promptFeedback.blockReason.trim()) {
+        return `Gemini blocked the mentor response: ${root.promptFeedback.blockReason.trim()}.`;
+    }
+
+    if (Array.isArray(root.candidates) && root.candidates.length > 0) {
+        const candidate = root.candidates[0] as { finishReason?: unknown; finishMessage?: unknown } | undefined;
+        if (typeof candidate?.finishMessage === "string" && candidate.finishMessage.trim()) return candidate.finishMessage.trim();
+        if (typeof candidate?.finishReason === "string" && candidate.finishReason.trim() && candidate.finishReason !== "STOP") {
+            return `Gemini finished the mentor response with ${candidate.finishReason}.`;
+        }
+    }
+
+    return null;
+}
+
 const OPENAI_MENTOR_RESPONSE_SCHEMA = {
     type: "object",
     properties: {
@@ -199,7 +223,7 @@ class OpenAIObservationMentorProvider implements ObservationMentorProvider {
         const raw = extractOpenAIText(payload);
         if (!raw) throw new Error("The OpenAI mentor returned no coaching response.");
         const parsed = parseMentorResult(raw, input.passageText);
-        if (!parsed.coaching) throw new Error("The AI mentor returned no coaching response. Please try again.");
+        if (!parsed.coaching) throw new Error("The AI mentor returned no usable coaching response. Please try again.");
         return { ...parsed, model: this.model, provider: "openai" };
     }
 }
@@ -217,16 +241,24 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
                 contents: [{ role: "user", parts: [{ text: buildPrompt(input) }] }],
                 generationConfig: {
                     responseMimeType: "application/json",
-                    maxOutputTokens: 700,
+                    thinkingConfig: {
+                        thinkingLevel: "minimal",
+                    },
+                    maxOutputTokens: 1200,
                 },
             }),
         });
-        const payload = await response.json() as { candidates?: unknown; error?: { message?: unknown } };
+        const payload = await response.json() as { candidates?: unknown; error?: { message?: unknown }; promptFeedback?: { blockReason?: unknown } };
         if (!response.ok) throw new Error(typeof payload.error?.message === "string" ? payload.error.message : "The Gemini mentor request failed.");
         const raw = extractGeminiText(payload);
-        if (!raw) throw new Error("The Gemini mentor returned no coaching response.");
+        if (!raw) {
+            const diagnostic = describeGeminiFailure(payload);
+            throw new Error(diagnostic
+                ? `Gemini returned no text for the mentor response: ${diagnostic}`
+                : "Gemini returned no text for the mentor response. Please try again.");
+        }
         const parsed = parseMentorResult(raw, input.passageText);
-        if (!parsed.coaching) throw new Error("The AI mentor returned no coaching response. Please try again.");
+        if (!parsed.coaching) throw new Error("The AI mentor returned no usable coaching response. Please try again.");
         return { ...parsed, model: this.model, provider: "gemini" };
     }
 }
