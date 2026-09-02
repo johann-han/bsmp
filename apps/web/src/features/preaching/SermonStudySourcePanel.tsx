@@ -113,6 +113,26 @@ export function SermonStudySourcePanel({ study }: Props) {
                                     Supported by {interpretation.observationIds.length} observation(s).
                                 </div>
                             )}
+                            {interpretation.observationIds.length > 0 && (
+                                <div style={{ marginTop: 6, fontSize: 12, color: "#6b7280" }}>
+                                    <strong>Observation chain:</strong>{" "}
+                                    {interpretation.observationIds.map((observationId, index) => {
+                                        const observation = study.observations.find((item) => item.id.value === observationId.value);
+                                        return (
+                                            <span key={observationId.value}>
+                                                {observation ? (
+                                                    <WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation.id.value}`)} style={{ ...linkStyle, fontSize: 12 }}>
+                                                        {observation.verseReference.value.toString()}
+                                                    </WorkspaceLink>
+                                                ) : (
+                                                    <span>Missing observation</span>
+                                                )}
+                                                {index < interpretation.observationIds.length - 1 ? ", " : ""}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            )}
                             {interpretation.evidence.length > 0 && (
                                 <div style={{ marginTop: 8 }}>
                                     <strong>Evidence</strong>
@@ -135,16 +155,66 @@ export function SermonStudySourcePanel({ study }: Props) {
                 {study.applications.length === 0 ? (
                     <p>No applications recorded.</p>
                 ) : (
-                    study.applications.map((application) => (
-                        <article key={application.id.value} style={{ marginBottom: 14 }}>
-                            <WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application.id.value}`)} style={linkStyle}>
-                                <div><strong>Principle:</strong> {application.principle.value}</div>
-                            </WorkspaceLink>
-                            <div><strong>Personal:</strong> {application.personal.value}</div>
-                            <div><strong>Ministry:</strong> {application.ministry.value}</div>
-                            <div><strong>Action:</strong> {application.action.value}</div>
-                        </article>
-                    ))
+                    study.applications.map((application) => {
+                        const interpretation = study.interpretations.find((item) => item.id.value === application.interpretationId.value);
+                        return (
+                            <article key={application.id.value} style={{ marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid #f1f5f9" }}>
+                                <WorkspaceLink study={study} href={workspaceHref(studyId, `application-${application.id.value}`)} style={linkStyle}>
+                                    <div><strong>Principle:</strong> {application.principle.value}</div>
+                                </WorkspaceLink>
+                                <div><strong>Personal:</strong> {application.personal.value}</div>
+                                <div><strong>Ministry:</strong> {application.ministry.value}</div>
+                                <div><strong>Action:</strong> {application.action.value}</div>
+                                <div style={{ marginTop: 8, paddingLeft: 10, borderLeft: "3px solid #86efac" }}>
+                                    <strong>Study foundation</strong>
+                                    {interpretation ? (
+                                        <>
+                                            <div style={{ marginTop: 4 }}>
+                                                <WorkspaceLink study={study} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)} style={linkStyle}>
+                                                    Interpretation: {interpretation.statement.value}
+                                                </WorkspaceLink>
+                                            </div>
+                                            {interpretation.observationIds.length > 0 && (
+                                                <div style={{ marginTop: 4, fontSize: 12, color: "#6b7280" }}>
+                                                    Observations: {interpretation.observationIds.map((observationId, index) => {
+                                                        const observation = study.observations.find((item) => item.id.value === observationId.value);
+                                                        return (
+                                                            <span key={observationId.value}>
+                                                                {observation ? (
+                                                                    <WorkspaceLink study={study} href={workspaceHref(studyId, `observation-${observation.id.value}`)} style={{ ...linkStyle, fontSize: 12 }}>
+                                                                        {observation.verseReference.value.toString()}
+                                                                    </WorkspaceLink>
+                                                                ) : (
+                                                                    <span>Missing observation</span>
+                                                                )}
+                                                                {index < interpretation.observationIds.length - 1 ? ", " : ""}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                            {interpretation.evidence.length > 0 && (
+                                                <div style={{ marginTop: 4, fontSize: 12, color: "#6b7280" }}>
+                                                    Evidence: {interpretation.evidence.map((evidence, index) => (
+                                                        <span key={evidence.id.value}>
+                                                            <WorkspaceLink study={study} href={workspaceHref(studyId, `evidence-${evidence.id.value}`)} style={{ ...linkStyle, fontSize: 12 }}>
+                                                                {evidence.type.value}
+                                                            </WorkspaceLink>
+                                                            {index < interpretation.evidence.length - 1 ? ", " : ""}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div style={{ marginTop: 4, color: "#b91c1c", fontSize: 13 }}>
+                                            The source interpretation is unavailable. Re-open the Study Workspace to repair this application link.
+                                        </div>
+                                    )}
+                                </div>
+                            </article>
+                        );
+                    })
                 )}
             </section>
         </aside>
