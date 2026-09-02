@@ -4,7 +4,7 @@
 
 The `/workspace` route renders the integrated Study Workspace with the Bible passage, verse selection, observations, interpretations, evidence, applications, history, and persistence through the Study repository.
 
-The Study remains the source of truth for passage-linked observations, interpretations, evidence, and applications.
+The Study remains the source of truth for passage-linked observations, interpretations, evidence, applications, and Biblical Theology.
 
 When Sermon Exposition links back to an interpretation, the Workspace resolves the interpretation anchor to the visible Refine Interpretation / Evidence editor so the preacher can add missing evidence without manually searching the page.
 
@@ -18,7 +18,7 @@ Interpretations now require at least one supporting observation. The Interpretat
 
 A first Biblical Theology stage is now present. A study can record a student-authored theological synthesis with a theme and a required set of supporting interpretations. Biblical Theology entries persist in Supabase with user-scoped row-level security and can be created, edited, and deleted from `/biblical-theology?studyId=...`.
 
-The stage deliberately preserves the sequence from interpretation into theological synthesis: the synthesis is traceable to existing interpretations rather than generated as an authoritative AI conclusion. The Sermon Study Source panel now provides a direct link into the Biblical Theology workspace.
+The stage deliberately preserves the sequence from interpretation into theological synthesis: the synthesis is traceable to existing interpretations rather than generated as an authoritative AI conclusion. Sermon Preparation now surfaces the number of Biblical Theology syntheses available, and each sermon outline point displays the Biblical Theology themes related to its selected Meaning interpretations. The Sermon Study Source panel also exposes the Biblical Theology chain and links back to the theological synthesis workspace.
 
 ## Sermon Preparation
 
@@ -32,9 +32,9 @@ The framework stage provides Introduction, Context / Setting, and Conclusion.
 
 ## Sermon Exposition
 
-Each outline point can be developed through Text, Meaning / explanation, Illustration, Application, and Transition, with explicit links to the relevant Study foundations. Exposition now includes explicit foundation mappings for Text observations, Meaning interpretations, Meaning evidence, and Response applications, plus readiness guidance for each outline point.
+Each outline point can be developed through Text, Meaning / explanation, Illustration, Application, and Transition, with explicit links to the relevant Study foundations. Exposition includes explicit foundation mappings for Text observations, Meaning interpretations, Meaning evidence, and Response applications, plus readiness guidance for each outline point.
 
-The Sermon Study Source panel now exposes the source chain behind applications: application → interpretation → supporting observations and evidence, with links back into the Study Workspace. This makes the Study → Interpretation → Evidence → Application chain inspectable from the preaching workflow.
+The Sermon Study Source panel exposes the source chain behind applications: application → interpretation → supporting observations and evidence, with links back into the Study Workspace. It also exposes Biblical Theology syntheses and their supporting interpretation chain.
 
 ## Final Sermon Drafting
 
@@ -113,14 +113,14 @@ The Biblical Theology migration has been applied successfully to the connected S
 
 The current verification baseline includes:
 
-- `pnpm typecheck` — successful after the latest Interpretation Mentor prop fix; rerun after this Biblical Theology increment
-- `pnpm test` — all reported workspace test suites passed before this Biblical Theology increment
-- `pnpm build` — the production build had previously passed; rerun after this Biblical Theology increment
+- `pnpm typecheck` — successful after the latest Interpretation Mentor prop fix; rerun after the latest Biblical Theology/Sermon traceability changes
+- `pnpm test` — all reported workspace test suites passed before the latest Biblical Theology/Sermon traceability changes
+- `pnpm build` — the production build had previously passed; rerun after the latest Biblical Theology/Sermon traceability changes
 
 Supabase security advisors currently continue to report the previously known leaked-password protection limitation; the new Biblical Theology table is protected by RLS. Performance advisors also report an index recommendation on the new table's `user_id` foreign key, which should be addressed in a later database-hardening pass.
 
 ## Next Work
 
 1. Strengthen authenticated end-to-end coverage of the complete Study → Biblical Theology → Sermon → Delivery workflow.
-2. Connect Biblical Theology directly into sermon outline/exposition foundations so a preacher can trace a sermon point through theological synthesis back to interpretations and observations.
+2. Add direct Biblical Theology selection inside Sermon Exposition when a preacher develops a point, while preserving the current derived traceability through Meaning interpretations.
 3. Continue the inductive-study experience toward the broader responsible AI mentor workflow described in the product vision.
