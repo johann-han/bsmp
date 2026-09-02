@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import type { InterpretationViewModel, ObservationWorkspaceService, ObservationViewModel } from "@bsmp/study";
 
+import { InterpretationMentorPanel } from "./InterpretationMentorPanel";
+
 export interface InterpretationComposerProps {
     readonly workspace: ObservationWorkspaceService;
     readonly observations: readonly ObservationViewModel[];
@@ -84,6 +86,7 @@ export function InterpretationComposer({
     }
 
     const canSave = !saving && Boolean(statement.trim()) && selectedObservationIds.length > 0;
+    const selectedObservations = observations.filter((observation) => selectedObservationIds.includes(observation.id));
 
     return (
         <section
@@ -131,6 +134,13 @@ export function InterpretationComposer({
             )}
 
             <textarea value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="State what you believe the passage means..." rows={5} disabled={saving} style={{ width: "100%", resize: "vertical", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 12, font: "inherit" }} />
+
+            <InterpretationMentorPanel
+                passageReference={observations[0]?.verseReference ?? ""}
+                passageText={observations.map((observation) => `${observation.verseReference} ${observation.statement}`).join("\n")}
+                interpretation={statement}
+                observations={selectedObservations}
+            />
 
             <button type="button" onClick={() => void saveInterpretation()} disabled={!canSave} style={{ marginTop: 12, border: 0, borderRadius: 8, background: canSave ? "#111827" : "#9ca3af", color: "#ffffff", padding: "10px 14px", fontWeight: 600, cursor: canSave ? "pointer" : "not-allowed" }}>
                 {saving ? "Saving..." : "Save Interpretation"}
