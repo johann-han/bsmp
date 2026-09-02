@@ -41,7 +41,7 @@ const MENTOR_INSTRUCTIONS = [
     "Avoid generic praise. Identify one concrete weakness, missing detail, repeated pattern, or opportunity to look again.",
     "Direct attention to visible words, phrases, people, actions, relationships, repetition, contrast, location, time, or sequence.",
     "Keep coaching to 2 to 4 sentences and end by inviting the student to revise or deepen the observation.",
-    "Return only JSON with this shape: {\"coaching\":\"string\",\"focuses\":[{\"verseReference\":\"string\",\"textCue\":\"string\",\"question\":\"string\"}]}.",
+    "Return one JSON object containing coaching and focuses. Do not add Markdown fences or any text outside the object.",
     "The focuses array may contain zero to three items. Each focus must use a verse reference that appears in the supplied passage and a short observable text cue from that verse.",
 ].join("\n");
 
@@ -65,16 +65,34 @@ function buildPrompt(input: ObservationMentorInput): string {
     ].join("\n");
 }
 
-function extractJsonObject(text: string): string {
-    const trimmed = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
-    const start = trimmed.indexOf("{");
-    const end = trimmed.lastIndexOf("}");
-    return start >= 0 && end > start ? trimmed.slice(start, end + 1) : trimmed;
+function stripCodeFence(text: string): string {
+    return text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
 }
 
 function parseJsonRecord(text: string): Record<string, unknown> | null {
+    const stripped = stripCodeFence(text);
+
     try {
-        const parsed = JSON.parse(extractJsonObject(text)) as unknown;
+        const parsed = JSON.parse(stripped) as unknown;
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            return parsed as Record<string, unknown>;
+        }
+        if (typeof parsed === "string") {
+            const nested = JSON.parse(stripCodeFence(parsed)) as unknown;
+            return nested && typeof nested === "object" && !Array.isArray(nested)
+                ? nested as Record<string, unknown>
+                : null;
+        }
+    } catch {
+        // Fall through to object extraction below.
+    }
+
+    const start = stripped.indexOf("{");
+    const end = stripped.lastIndexOf("}");
+    if (start < 0 || end <= start) return null;
+
+    try {
+        const parsed = JSON.parse(stripped.slice(start, end + 1)) as unknown;
         return parsed && typeof parsed === "object" && !Array.isArray(parsed)
             ? parsed as Record<string, unknown>
             : null;
@@ -83,42 +101,30 @@ function parseJsonRecord(text: string): Record<string, unknown> | null {
     }
 }
 
-function extractCoachingFromJsonString(text: string): { coaching: string; focuses: unknown } | null {
-    const parsed = parseJsonRecord(text);
-    if (!parsed) return null;
-    return {
-        coaching: typeof parsed.coaching === "string" ? parsed.coaching.trim() : "",
-        focuses: parsed.focuses,
-    };
+function extractCoachingFallback(text: string): string {
+    const match = text.match(/"coaching"\s*:\s*"((?:\\.|[^"\\])*)"/s);
+    if (!match?.[1]) return "";
+
+    try {
+        const decoded = JSON.parse(`"${match[1]}"`) as unknown;
+        return typeof decoded === "string" ? decoded.trim() : "";
+    } catch {
+        return match[1]
+            .replace(/\\n/g, "\n")
+            .replace(/\\"/g, '"')
+            .replace(/\\\\/g, "\\")
+            .trim();
+    }
 }
 
 function parseMentorResult(raw: string, passageText: string): { coaching: string; focuses: ObservationMentorFocus[] } {
-    let payload = parseJsonRecord(raw);
+    const payload = parseJsonRecord(raw);
+    const coaching = typeof payload?.coaching === "string"
+        ? payload.coaching.trim()
+        : extractCoachingFallback(raw);
 
-    // Some providers/models may wrap the structured object as a JSON string.
-    // Unwrap that form so the UI never receives raw JSON as visible coaching text.
-    if (payload && typeof payload.coaching === "string") {
-        let nested = extractCoachingFromJsonString(payload.coaching);
-        for (let depth = 0; nested && depth < 2 && nested.coaching !== payload.coaching; depth += 1) {
-            const next = extractCoachingFromJsonString(nested.coaching);
-            if (!next) break;
-            payload = { coaching: next.coaching, focuses: next.focuses ?? payload.focuses };
-            nested = next;
-        }
-    }
-
-    if (!payload) {
-        const recovered = extractCoachingFromJsonString(raw);
-        if (recovered) payload = recovered.focuses === undefined
-            ? { coaching: recovered.coaching }
-            : { coaching: recovered.coaching, focuses: recovered.focuses };
-    }
-
-    if (!payload) return { coaching: "", focuses: [] };
-
-    const coaching = typeof payload.coaching === "string" ? payload.coaching.trim() : "";
     const normalizedPassage = passageText.toLowerCase();
-    const focuses = Array.isArray(payload.focuses)
+    const focuses = Array.isArray(payload?.focuses)
         ? payload.focuses.flatMap((focus) => {
             if (!focus || typeof focus !== "object") return [];
             const item = focus as { verseReference?: unknown; textCue?: unknown; question?: unknown };
@@ -211,25 +217,6 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
                 contents: [{ role: "user", parts: [{ text: buildPrompt(input) }] }],
                 generationConfig: {
                     responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "object",
-                        properties: {
-                            coaching: { type: "string" },
-                            focuses: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        verseReference: { type: "string" },
-                                        textCue: { type: "string" },
-                                        question: { type: "string" },
-                                    },
-                                    required: ["verseReference", "textCue", "question"],
-                                },
-                            },
-                        },
-                        required: ["coaching", "focuses"],
-                    },
                     maxOutputTokens: 700,
                 },
             }),
