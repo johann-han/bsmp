@@ -11,6 +11,8 @@ export interface ObservationMentorFocus {
     readonly question: string;
 }
 
+export type ObservationEntryType = "question" | "observation" | "inference" | "interpretation" | "empty";
+
 export interface ObservationMentorInput {
     readonly passageReference: string;
     readonly passageText: string;
@@ -43,6 +45,11 @@ const MENTOR_INSTRUCTIONS = [
     "Keep coaching to 2 to 4 sentences and end by inviting the student to revise or deepen the observation.",
     "Return one JSON object containing coaching and focuses. Do not add Markdown fences or any text outside the object.",
     "The focuses array may contain zero to three items. Each focus must use a verse reference that appears in the supplied passage and a short observable text cue from that verse.",
+    "When the student entry is a question, explain briefly that it is a question rather than a recorded observation, then guide the student to answer it from the visible text.",
+    "When the student entry is an observation, affirm only the text-grounded part and ask for a more precise textual detail when useful.",
+    "When the student entry is an inference, identify the observable statement underneath it and ask the student to record that observable statement before inferring.",
+    "When the student entry is an interpretation, do not validate the interpretation as the observation; redirect to the words or relationships in the passage that led to it and ask what can actually be seen in the text.",
+    "Do not label an entry as interpretation merely because it is grammatically complete. Use the supplied classification hint as guidance, not as an infallible verdict.",
 ].join("\n");
 
 function buildPrompt(input: ObservationMentorInput): string {
@@ -58,11 +65,32 @@ function buildPrompt(input: ObservationMentorInput): string {
         `\nPassage text:\n${input.passageText}`,
         `\nCanonical observation question: ${input.question}`,
         `\nQuestion purpose: ${input.purpose}`,
+        `\nStudent entry classification hint: ${classifyObservationEntry(input.studentObservation)}`,
         `\nExisting study observations:\n${existing}`,
         `\nPrevious mentor coaching:\n${input.previousMentorCoaching?.trim() || "None."}`,
-        `\nStudent's current observation:\n${input.studentObservation}`,
+        `\nStudent's current entry:\n${input.studentObservation}`,
         "\nReturn the structured mentor response only.",
     ].join("\n");
+}
+
+function classifyObservationEntry(value: string): ObservationEntryType {
+    const text = value.trim();
+    if (!text) return "empty";
+
+    const normalized = text.toLowerCase();
+    if (text.endsWith("?") || /^(who|what|where|when|why|how|which|whose|whom|to whom|for whom)\b/i.test(normalized)) {
+        return "question";
+    }
+
+    if (/\b(therefore|thus|so this means|this means|which means|hence|consequently|must be|is why)\b/i.test(normalized)) {
+        return "interpretation";
+    }
+
+    if (/\b(it shows|this shows|this suggests|this implies|apparently|likely|probably|perhaps|seems to|appears to|we can conclude|i think)\b/i.test(normalized)) {
+        return "inference";
+    }
+
+    return "observation";
 }
 
 function stripCodeFence(text: string): string {
@@ -102,16 +130,16 @@ function parseJsonRecord(text: string): Record<string, unknown> | null {
 }
 
 function extractCoachingFallback(text: string): string {
-    const match = text.match(/"coaching"\s*:\s*"((?:\\.|[^"\\])*)"/s);
+    const match = text.match(/\"coaching\"\s*:\s*\"((?:\\.|[^\"\\])*)\"/s);
     if (!match?.[1]) return "";
 
     try {
-        const decoded = JSON.parse(`"${match[1]}"`) as unknown;
+        const decoded = JSON.parse(`\"${match[1]}\"`) as unknown;
         return typeof decoded === "string" ? decoded.trim() : "";
     } catch {
         return match[1]
             .replace(/\\n/g, "\n")
-            .replace(/\\"/g, '"')
+            .replace(/\\\"/g, '\"')
             .replace(/\\\\/g, "\\")
             .trim();
     }
@@ -275,5 +303,5 @@ export function createObservationMentorProvider(): ObservationMentorProvider {
         if (!apiKey) throw new Error("Gemini mentor is not configured. Set GEMINI_API_KEY on the web server.");
         return new GeminiObservationMentorProvider(apiKey, process.env.GEMINI_MODEL ?? "gemini-3.6-flash");
     }
-    throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use "gemini" or "openai".`);
+    throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use \"gemini\" or \"openai\".`);
 }
