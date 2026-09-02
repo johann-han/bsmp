@@ -50,6 +50,7 @@ const MENTOR_INSTRUCTIONS = [
     "When the student entry is an inference, identify the observable statement underneath it and ask the student to record that observable statement before inferring.",
     "When the student entry is an interpretation, do not validate the interpretation as the observation; redirect to the words or relationships in the passage that led to it and ask what can actually be seen in the text.",
     "Do not label an entry as interpretation merely because it is grammatically complete. Use the supplied classification hint as guidance, not as an infallible verdict.",
+    "When your coaching tells the student to look again at a specific part of the passage, include at least one focus using an exact verse reference and exact observable text cue from the supplied passage.",
 ].join("\n");
 
 function buildPrompt(input: ObservationMentorInput): string {
@@ -145,13 +146,77 @@ function extractCoachingFallback(text: string): string {
     }
 }
 
-function parseMentorResult(raw: string, passageText: string): { coaching: string; focuses: ObservationMentorFocus[] } {
+interface PassageLine {
+    readonly verseReference: string;
+    readonly text: string;
+}
+
+function parsePassageLines(passageText: string): PassageLine[] {
+    return passageText.split(/\r?\n/).flatMap((line) => {
+        const match = line.trim().match(/^(.+?\s+\d+:\d+(?:-\d+:?\d+|-[0-9]+)?)\s+(.*)$/);
+        return match
+            ? [{ verseReference: match[1].trim(), text: match[2].trim() }]
+            : [];
+    });
+}
+
+function fallbackCandidates(question: string): readonly { cue: string; question: string }[] {
+    const normalized = question.toLowerCase();
+    if (normalized === "who?" || normalized.includes("who")) {
+        return [
+            { cue: "he that teacheth", question: "Who is explicitly identified by the phrase “he that teacheth”?" },
+            { cue: "he that exhorteth", question: "Who is explicitly identified by the phrase “he that exhorteth”?" },
+            { cue: "the ruler", question: "Who is explicitly identified by the phrase “the ruler”?" },
+            { cue: "he that showeth mercy", question: "Who is explicitly identified by the phrase “he that showeth mercy”?" },
+            { cue: "he that giveth", question: "Who is explicitly identified by the phrase “he that giveth”?" },
+        ];
+    }
+    if (normalized === "what?" || normalized.includes("what")) {
+        return [
+            { cue: "gifts differing", question: "What does the text explicitly say is differing?" },
+            { cue: "one body in Christ", question: "What does the text explicitly say about the many who are one body in Christ?" },
+            { cue: "not have the same office", question: "What does the text explicitly say is not the same?" },
+            { cue: "Let love be without hypocrisy", question: "What statement does the text explicitly make about love?" },
+        ];
+    }
+    if (normalized === "why?" || normalized.includes("why")) {
+        return [
+            { cue: "according as God hath dealt", question: "What reason or basis does the text explicitly connect with this statement?" },
+            { cue: "according to the proportion of our faith", question: "What does the text explicitly use to describe the proportion for prophecy?" },
+            { cue: "according to the grace that was given to us", question: "What does the text explicitly connect the differing gifts with?" },
+        ];
+    }
+    if (normalized === "how?" || normalized.includes("how")) {
+        return [
+            { cue: "with liberality", question: "How does the text explicitly say giving is to be done?" },
+            { cue: "with diligence", question: "How does the text explicitly say ruling is to be done?" },
+            { cue: "with cheerfulness", question: "How does the text explicitly say showing mercy is to be done?" },
+        ];
+    }
+    return [];
+}
+
+function buildFallbackFocuses(input: ObservationMentorInput): ObservationMentorFocus[] {
+    const lines = parsePassageLines(input.passageText);
+    const normalizedStudent = input.studentObservation.toLowerCase();
+    const existingCues = input.existingObservations.map((item) => item.statement.toLowerCase()).join("\n");
+    const candidates = fallbackCandidates(input.question);
+
+    return candidates.flatMap((candidate) => {
+        if (normalizedStudent.includes(candidate.cue.toLowerCase()) || existingCues.includes(candidate.cue.toLowerCase())) return [];
+        const line = lines.find((item) => item.text.toLowerCase().includes(candidate.cue.toLowerCase()));
+        if (!line) return [];
+        return [{ verseReference: line.verseReference, textCue: candidate.cue, question: candidate.question }];
+    }).slice(0, 2);
+}
+
+function parseMentorResult(raw: string, passageText: string, input?: ObservationMentorInput): { coaching: string; focuses: ObservationMentorFocus[] } {
     const payload = parseJsonRecord(raw);
     const coaching = typeof payload?.coaching === "string"
         ? payload.coaching.trim()
         : extractCoachingFallback(raw);
 
-    const normalizedPassage = passageText.toLowerCase();
+    const lines = parsePassageLines(passageText);
     const focuses = Array.isArray(payload?.focuses)
         ? payload.focuses.flatMap((focus) => {
             if (!focus || typeof focus !== "object") return [];
@@ -161,12 +226,13 @@ function parseMentorResult(raw: string, passageText: string): { coaching: string
             const textCue = item.textCue.trim();
             const question = item.question.trim();
             if (!verseReference || !textCue || !question) return [];
-            if (!normalizedPassage.includes(verseReference.toLowerCase())) return [];
-            return [{ verseReference, textCue, question }];
+            const line = lines.find((candidate) => candidate.verseReference.toLowerCase() === verseReference.toLowerCase());
+            if (!line || !line.text.toLowerCase().includes(textCue.toLowerCase())) return [];
+            return [{ verseReference: line.verseReference, textCue, question }];
         }).slice(0, 3)
         : [];
 
-    return { coaching, focuses };
+    return { coaching, focuses: focuses.length > 0 || !input ? focuses : buildFallbackFocuses(input) };
 }
 
 function extractOpenAIText(payload: unknown): string {
@@ -186,25 +252,14 @@ function extractGeminiText(payload: unknown): string {
 
 function describeGeminiFailure(payload: unknown): string | null {
     if (!payload || typeof payload !== "object") return null;
-    const root = payload as {
-        error?: { message?: unknown };
-        promptFeedback?: { blockReason?: unknown };
-        candidates?: unknown;
-    };
-
+    const root = payload as { error?: { message?: unknown }; promptFeedback?: { blockReason?: unknown }; candidates?: unknown };
     if (typeof root.error?.message === "string" && root.error.message.trim()) return root.error.message.trim();
-    if (typeof root.promptFeedback?.blockReason === "string" && root.promptFeedback.blockReason.trim()) {
-        return `Gemini blocked the mentor response: ${root.promptFeedback.blockReason.trim()}.`;
-    }
-
+    if (typeof root.promptFeedback?.blockReason === "string" && root.promptFeedback.blockReason.trim()) return `Gemini blocked the mentor response: ${root.promptFeedback.blockReason.trim()}.`;
     if (Array.isArray(root.candidates) && root.candidates.length > 0) {
         const candidate = root.candidates[0] as { finishReason?: unknown; finishMessage?: unknown } | undefined;
         if (typeof candidate?.finishMessage === "string" && candidate.finishMessage.trim()) return candidate.finishMessage.trim();
-        if (typeof candidate?.finishReason === "string" && candidate.finishReason.trim() && candidate.finishReason !== "STOP") {
-            return `Gemini finished the mentor response with ${candidate.finishReason}.`;
-        }
+        if (typeof candidate?.finishReason === "string" && candidate.finishReason.trim() && candidate.finishReason !== "STOP") return `Gemini finished the mentor response with ${candidate.finishReason}.`;
     }
-
     return null;
 }
 
@@ -233,7 +288,6 @@ const OPENAI_MENTOR_RESPONSE_SCHEMA = {
 
 class OpenAIObservationMentorProvider implements ObservationMentorProvider {
     public constructor(private readonly apiKey: string, private readonly model: string) {}
-
     public async coach(input: ObservationMentorInput): Promise<ObservationMentorResult> {
         const response = await fetch("https://api.openai.com/v1/responses", {
             method: "POST",
@@ -250,7 +304,7 @@ class OpenAIObservationMentorProvider implements ObservationMentorProvider {
         if (!response.ok) throw new Error(typeof payload.error?.message === "string" ? payload.error.message : "The OpenAI mentor request failed.");
         const raw = extractOpenAIText(payload);
         if (!raw) throw new Error("The OpenAI mentor returned no coaching response.");
-        const parsed = parseMentorResult(raw, input.passageText);
+        const parsed = parseMentorResult(raw, input.passageText, input);
         if (!parsed.coaching) throw new Error("The AI mentor returned no usable coaching response. Please try again.");
         return { ...parsed, model: this.model, provider: "openai" };
     }
@@ -258,7 +312,6 @@ class OpenAIObservationMentorProvider implements ObservationMentorProvider {
 
 class GeminiObservationMentorProvider implements ObservationMentorProvider {
     public constructor(private readonly apiKey: string, private readonly model: string) {}
-
     public async coach(input: ObservationMentorInput): Promise<ObservationMentorResult> {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.model)}:generateContent?key=${encodeURIComponent(this.apiKey)}`;
         const response = await fetch(endpoint, {
@@ -267,13 +320,7 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
             body: JSON.stringify({
                 systemInstruction: { parts: [{ text: MENTOR_INSTRUCTIONS }] },
                 contents: [{ role: "user", parts: [{ text: buildPrompt(input) }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    thinkingConfig: {
-                        thinkingLevel: "minimal",
-                    },
-                    maxOutputTokens: 1200,
-                },
+                generationConfig: { responseMimeType: "application/json", thinkingConfig: { thinkingLevel: "minimal" }, maxOutputTokens: 1200 },
             }),
         });
         const payload = await response.json() as { candidates?: unknown; error?: { message?: unknown }; promptFeedback?: { blockReason?: unknown } };
@@ -281,11 +328,9 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
         const raw = extractGeminiText(payload);
         if (!raw) {
             const diagnostic = describeGeminiFailure(payload);
-            throw new Error(diagnostic
-                ? `Gemini returned no text for the mentor response: ${diagnostic}`
-                : "Gemini returned no text for the mentor response. Please try again.");
+            throw new Error(diagnostic ? `Gemini returned no text for the mentor response: ${diagnostic}` : "Gemini returned no text for the mentor response. Please try again.");
         }
-        const parsed = parseMentorResult(raw, input.passageText);
+        const parsed = parseMentorResult(raw, input.passageText, input);
         if (!parsed.coaching) throw new Error("The AI mentor returned no usable coaching response. Please try again.");
         return { ...parsed, model: this.model, provider: "gemini" };
     }
