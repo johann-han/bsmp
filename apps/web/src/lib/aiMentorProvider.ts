@@ -5,6 +5,12 @@ export interface ObservationMentorContextItem {
     readonly markupSymbol?: string | null;
 }
 
+export interface ObservationMentorFocus {
+    readonly verseReference: string;
+    readonly textCue: string;
+    readonly question: string;
+}
+
 export interface ObservationMentorInput {
     readonly passageReference: string;
     readonly passageText: string;
@@ -17,12 +23,9 @@ export interface ObservationMentorInput {
 
 export interface ObservationMentorResult {
     readonly coaching: string;
+    readonly focuses: readonly ObservationMentorFocus[];
     readonly model: string;
     readonly provider: "openai" | "gemini";
-}
-
-export interface ObservationMentorProvider {
-    coach(input: ObservationMentorInput): Promise<ObservationMentorResult>;
 }
 
 const MENTOR_INSTRUCTIONS = [
@@ -34,12 +37,17 @@ const MENTOR_INSTRUCTIONS = [
     "Do not provide an interpretation, theological conclusion, sermon point, application, or cross-reference as an answer.",
     "Do not invent details that are not visible in the supplied passage.",
     "Do not turn an observation into an interpretation merely because it sounds plausible.",
-    "Briefly affirm what is genuinely text-grounded when appropriate.",
+    "Briefly affirm what is genuinely text-grounded when appropriate, but do not give generic praise as the main coaching response.",
     "Identify one concrete weakness, unsupported inference, missing detail, repeated pattern, or opportunity to look again when present.",
     "Use the existing observations to avoid repeating what the student has already noticed and to point toward overlooked observable details.",
+    "Always make the coaching concrete by directing attention to a visible word, phrase, person, action, relationship, repetition, contrast, location, time reference, or sequence in the supplied passage.",
+    "A focus must use a verse reference that appears in the supplied passage text. Never invent a verse reference.",
     "Ask at most three focused coaching questions that help the student inspect the text for observable details.",
     "Keep the tone encouraging, clear, and teacher-like rather than authoritative.",
     "End with a concise invitation for the student to revise or deepen the observation.",
+    "Return ONLY valid JSON with this exact shape: {\"coaching\":\"string\",\"focuses\":[{\"verseReference\":\"string\",\"textCue\":\"string\",\"question\":\"string\"}]}.",
+    "Do not use Markdown fences, headings, bullet markers, unexplained numeric fragments, or any text outside that JSON object.",
+    "The focuses array must contain zero to three items. Each textCue must be a short exact or near-exact observable word or phrase from the supplied passage. Each question must be about observation, not interpretation.",
 ].join("\n");
 
 function buildPrompt(input: ObservationMentorInput): string {
@@ -62,7 +70,64 @@ function buildPrompt(input: ObservationMentorInput): string {
             ? `\nPrevious mentor coaching:\n${input.previousMentorCoaching.trim()}`
             : "\nPrevious mentor coaching:\nNone.",
         `\nStudent's current observation:\n${input.studentObservation}`,
+        "\nReturn the required JSON object only.",
     ].join("\n");
+}
+
+function extractJsonObject(text: string): string {
+    const trimmed = text.trim();
+    const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+    if (fenced?.[1]) return fenced[1].trim();
+
+    const start = trimmed.indexOf("{");
+    const end = trimmed.lastIndexOf("}");
+    return start >= 0 && end > start ? trimmed.slice(start, end + 1) : trimmed;
+}
+
+function parseMentorResult(raw: string, passageText: string): { coaching: string; focuses: ObservationMentorFocus[] } {
+    let payload: unknown;
+    try {
+        payload = JSON.parse(extractJsonObject(raw)) as unknown;
+    } catch {
+        return { coaching: raw.trim(), focuses: [] };
+    }
+
+    if (!payload || typeof payload !== "object") return { coaching: raw.trim(), focuses: [] };
+
+    const candidate = payload as { coaching?: unknown; focuses?: unknown };
+    const coaching = typeof candidate.coaching === "string" ? candidate.coaching.trim() : "";
+    const focuses = Array.isArray(candidate.focuses)
+        ? candidate.focuses.flatMap((focus) => {
+            if (!focus || typeof focus !== "object") return [];
+            const item = focus as { verseReference?: unknown; textCue?: unknown; question?: unknown };
+            if (
+                typeof item.verseReference !== "string" ||
+                typeof item.textCue !== "string" ||
+                typeof item.question !== "string"
+            ) return [];
+
+            const verseReference = item.verseReference.trim();
+            const textCue = item.textCue.trim();
+            const question = item.question.trim();
+            if (!verseReference || !textCue || !question) return [];
+
+            const normalizedPassage = passageText.toLowerCase();
+            if (!normalizedPassage.includes(verseReference.toLowerCase())) return [];
+
+            return [{ verseReference, textCue, question }];
+        })
+        : [];
+
+    return {
+        coaching: coaching || raw.trim(),
+        focuses: focuses.slice(0, 3),
+    };
+}
+
+function extractOpenAIText(payload: unknown): string {
+    if (!payload || typeof payload !== "object") return "";
+    const outputText = (payload as { output_text?: unknown }).output_text;
+    return typeof outputText === "string" ? outputText.trim() : "";
 }
 
 function extractGeminiText(payload: unknown): string {
@@ -115,10 +180,13 @@ class OpenAIObservationMentorProvider implements ObservationMentorProvider {
             throw new Error(message);
         }
 
-        const coaching = typeof payload.output_text === "string" ? payload.output_text.trim() : "";
-        if (!coaching) throw new Error("The OpenAI mentor returned no coaching response.");
+        const raw = extractOpenAIText(payload);
+        if (!raw) throw new Error("The OpenAI mentor returned no coaching response.");
 
-        return { coaching, model: this.model, provider: "openai" };
+        const parsed = parseMentorResult(raw, input.passageText);
+        if (!parsed.coaching) throw new Error("The OpenAI mentor returned no coaching response.");
+
+        return { ...parsed, model: this.model, provider: "openai" };
     }
 }
 
@@ -157,10 +225,13 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
             throw new Error(message);
         }
 
-        const coaching = extractGeminiText(payload);
-        if (!coaching) throw new Error("The Gemini mentor returned no coaching response.");
+        const raw = extractGeminiText(payload);
+        if (!raw) throw new Error("The Gemini mentor returned no coaching response.");
 
-        return { coaching, model: this.model, provider: "gemini" };
+        const parsed = parseMentorResult(raw, input.passageText);
+        if (!parsed.coaching) throw new Error("The Gemini mentor returned no coaching response.");
+
+        return { ...parsed, model: this.model, provider: "gemini" };
     }
 }
 
