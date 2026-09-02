@@ -154,6 +154,12 @@ export function StudyPassage({
         if (!targetVerse) return;
         window.setTimeout(() => {
             document.getElementById(`study-verse-${targetVerse.number}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            window.dispatchEvent(new CustomEvent("bsmp:mentor-focus-ready", {
+                detail: {
+                    verseReference: targetVerse.reference,
+                    textCue: mentorFocus.textCue,
+                },
+            }));
         }, 0);
     }, [mentorFocus, verses]);
 
