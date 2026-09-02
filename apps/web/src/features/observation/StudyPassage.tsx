@@ -152,16 +152,29 @@ export function StudyPassage({
             return verseReference === targetReference || verseReference.endsWith(targetReference);
         });
         if (!targetVerse) return;
+
         window.setTimeout(() => {
             document.getElementById(`study-verse-${targetVerse.number}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            const cue = mentorFocus.textCue.trim();
+            const normalizedVerseText = targetVerse.text.toLowerCase();
+            const cueIndex = normalizedVerseText.indexOf(cue.toLowerCase());
+            if (cueIndex < 0) return;
+
+            const wordIndex = tokenize(targetVerse.text.slice(0, cueIndex)).length;
+            const wordText = targetVerse.text.slice(cueIndex, cueIndex + cue.length);
+
             window.dispatchEvent(new CustomEvent("bsmp:mentor-focus-ready", {
                 detail: {
                     verseReference: targetVerse.reference,
-                    textCue: mentorFocus.textCue,
+                    textCue: wordText,
+                    wordIndex,
+                    wordText,
+                    translation,
                 },
             }));
         }, 0);
-    }, [mentorFocus, verses]);
+    }, [mentorFocus, verses, translation]);
 
     async function saveWordMarkups(next: readonly StudyWordMarkup[]) {
         setWordMarkups(next);
