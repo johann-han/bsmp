@@ -20,8 +20,15 @@ interface ObservationMentorPanelProps {
     readonly observations: readonly ObservationViewModel[];
 }
 
+interface MentorFocus {
+    readonly verseReference: string;
+    readonly textCue: string;
+    readonly question: string;
+}
+
 interface MentorResponse {
     readonly coaching?: unknown;
+    readonly focuses?: unknown;
     readonly error?: unknown;
 }
 
@@ -31,6 +38,10 @@ function storageKey(studyId: string): string {
 
 function coachingStorageKey(studyId: string): string {
     return `${storageKey(studyId)}:coaching`;
+}
+
+function focusStorageKey(studyId: string): string {
+    return `${storageKey(studyId)}:focuses`;
 }
 
 function loadCompleted(studyId: string): string[] {
@@ -52,12 +63,38 @@ function loadCoaching(studyId: string): string {
     }
 }
 
+function loadFocuses(studyId: string): MentorFocus[] {
+    try {
+        const raw = window.localStorage.getItem(focusStorageKey(studyId));
+        if (!raw) return [];
+        const parsed = JSON.parse(raw) as unknown;
+        if (!Array.isArray(parsed)) return [];
+        return parsed.flatMap((item) => {
+            if (!item || typeof item !== "object") return [];
+            const candidate = item as Record<string, unknown>;
+            if (
+                typeof candidate.verseReference !== "string" ||
+                typeof candidate.textCue !== "string" ||
+                typeof candidate.question !== "string"
+            ) return [];
+            return [{
+                verseReference: candidate.verseReference,
+                textCue: candidate.textCue,
+                question: candidate.question,
+            }];
+        }).slice(0, 3);
+    } catch {
+        return [];
+    }
+}
+
 export function ObservationMentorPanel({ studyId, passageReference, passageText, observations }: ObservationMentorPanelProps) {
     const [completed, setCompleted] = useState<string[]>([]);
     const [question, setQuestion] = useState<Awaited<ReturnType<GetNextObservationQuestion["execute"]>>>(null);
     const [open, setOpen] = useState(true);
     const [studentObservation, setStudentObservation] = useState("");
     const [coaching, setCoaching] = useState("");
+    const [focuses, setFocuses] = useState<MentorFocus[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -65,6 +102,7 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
         const stored = loadCompleted(studyId);
         setCompleted(stored);
         setCoaching(loadCoaching(studyId));
+        setFocuses(loadFocuses(studyId));
         void nextQuestionQuery.execute(stored).then(setQuestion);
     }, [studyId]);
 
@@ -84,7 +122,9 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
         window.localStorage.setItem(storageKey(studyId), JSON.stringify(nextCompleted));
         setCompleted(nextCompleted);
         setCoaching("");
+        setFocuses([]);
         window.localStorage.removeItem(coachingStorageKey(studyId));
+        window.localStorage.removeItem(focusStorageKey(studyId));
         setQuestion(await nextQuestionQuery.execute(nextCompleted));
         setStudentObservation("");
         setError(null);
@@ -129,8 +169,27 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
             const nextCoaching = typeof payload.coaching === "string" ? payload.coaching.trim() : "";
             if (!nextCoaching) throw new Error("The AI mentor returned no coaching response.");
 
+            const nextFocuses = Array.isArray(payload.focuses)
+                ? payload.focuses.flatMap((item) => {
+                    if (!item || typeof item !== "object") return [];
+                    const candidate = item as Record<string, unknown>;
+                    if (
+                        typeof candidate.verseReference !== "string" ||
+                        typeof candidate.textCue !== "string" ||
+                        typeof candidate.question !== "string"
+                    ) return [];
+                    return [{
+                        verseReference: candidate.verseReference,
+                        textCue: candidate.textCue,
+                        question: candidate.question,
+                    }];
+                }).slice(0, 3)
+                : [];
+
             setCoaching(nextCoaching);
+            setFocuses(nextFocuses);
             window.localStorage.setItem(coachingStorageKey(studyId), nextCoaching);
+            window.localStorage.setItem(focusStorageKey(studyId), JSON.stringify(nextFocuses));
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to reach the AI mentor.");
         } finally {
@@ -141,9 +200,11 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
     function resetMentor() {
         window.localStorage.removeItem(storageKey(studyId));
         window.localStorage.removeItem(coachingStorageKey(studyId));
+        window.localStorage.removeItem(focusStorageKey(studyId));
         setCompleted([]);
         setStudentObservation("");
         setCoaching("");
+        setFocuses([]);
         setError(null);
         void nextQuestionQuery.execute([]).then(setQuestion);
     }
@@ -244,6 +305,25 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                                 <div style={{ padding: 12, borderRadius: 8, background: "#ffffff", border: "1px solid #bfdbfe" }}>
                                     <strong style={{ fontSize: 13 }}>Mentor coaching</strong>
                                     <p style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.6 }}>{coaching}</p>
+                                </div>
+                            )}
+
+                            {focuses.length > 0 && (
+                                <div style={{ padding: 12, borderRadius: 8, background: "#ffffff", border: "1px solid #dbeafe" }}>
+                                    <strong style={{ fontSize: 13 }}>Look again at the text</strong>
+                                    <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
+                                        {focuses.map((focus, index) => (
+                                            <div key={`${focus.verseReference}-${index}`} style={{ padding: 10, borderRadius: 8, background: "#f8fbff" }}>
+                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#1d4ed8" }}>
+                                                    {focus.verseReference} · “{focus.textCue}”
+                                                </div>
+                                                <div style={{ marginTop: 4, fontSize: 13, lineHeight: 1.5 }}>{focus.question}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p style={{ margin: "8px 0 0", fontSize: 12, color: "#64748b" }}>
+                                        These are observation prompts, not conclusions. Verify each one in the passage yourself.
+                                    </p>
                                 </div>
                             )}
                         </div>
