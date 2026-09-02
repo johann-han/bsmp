@@ -16,3 +16,5 @@ export * from "./InterpretationStatement.js";
 
 export * from "./ApplicationId.js";
 export * from "./ApplicationText.js";
+
+export * from "./BiblicalTheologyId.js";
