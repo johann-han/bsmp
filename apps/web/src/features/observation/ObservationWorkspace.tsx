@@ -108,11 +108,7 @@ export function ObservationWorkspace() {
                 created.passageService.load(),
             ]);
 
-            return {
-                ...created,
-                data: workspaceData,
-                passage: developmentPassage,
-            };
+            return { ...created, data: workspaceData, passage: developmentPassage };
         });
 
         void bootstrapPromise
@@ -192,10 +188,7 @@ export function ObservationWorkspace() {
     }, []);
 
     const handleMentorFocus = useCallback((focus: MentorFocus) => {
-        const nextFocus: StudyPassageMentorFocus = {
-            verseReference: focus.verseReference,
-            textCue: focus.textCue,
-        };
+        const nextFocus: StudyPassageMentorFocus = { verseReference: focus.verseReference, textCue: focus.textCue };
         setMentorFocus(nextFocus);
 
         if (passage) {
@@ -221,16 +214,10 @@ export function ObservationWorkspace() {
     }
 
     function updateInterpretation(next: ObservationWorkspaceData["interpretations"][number]) {
-        setData((current) => current ? {
-            ...current,
-            interpretations: current.interpretations.map((item) => item.id === next.id ? next : item),
-        } : current);
+        setData((current) => current ? { ...current, interpretations: current.interpretations.map((item) => item.id === next.id ? next : item) } : current);
     }
 
-    function addOptimisticEvidence(
-        interpretationId: string,
-        evidence: ObservationWorkspaceData["interpretations"][number]["evidence"][number],
-    ) {
+    function addOptimisticEvidence(interpretationId: string, evidence: ObservationWorkspaceData["interpretations"][number]["evidence"][number]) {
         setData((current) => current ? {
             ...current,
             interpretations: current.interpretations.map((item) => item.id === interpretationId ? { ...item, evidence: [...item.evidence, evidence] } : item),
@@ -253,10 +240,7 @@ export function ObservationWorkspace() {
     }
 
     function updateApplication(application: ObservationWorkspaceData["applications"][number]) {
-        setData((current) => current ? {
-            ...current,
-            applications: current.applications.map((item) => item.id === application.id ? application : item),
-        } : current);
+        setData((current) => current ? { ...current, applications: current.applications.map((item) => item.id === application.id ? application : item) } : current);
     }
 
     function removeApplication(applicationId: string) {
@@ -280,13 +264,16 @@ export function ObservationWorkspace() {
         scrollToElement(`interpretation-${interpretationId}`);
     }
 
+    function focusEvidence(interpretationId: string, evidenceId: string) {
+        scrollToElement(`evidence-${evidenceId}`);
+        window.setTimeout(() => scrollToElement(`interpretation-${interpretationId}`), 0);
+    }
+
     useEffect(() => {
         if (!data || !passage || !studyId) return;
         const hash = window.location.hash.replace(/^#/, "");
         if (!hash) return;
-        window.setTimeout(() => {
-            document.getElementById(decodeURIComponent(hash))?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 0);
+        window.setTimeout(() => document.getElementById(decodeURIComponent(hash))?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
     }, [data, passage, studyId]);
 
     if (error) return <p>{error}</p>;
@@ -296,9 +283,7 @@ export function ObservationWorkspace() {
     const selectedVerseReference = selectedVerse
         ? passage.verses.find((verse) => verse.number === selectedVerse.number)?.reference ?? null
         : null;
-    const returnLabel = returnTo?.includes("/preaching/exposition")
-        ? "← Back to Sermon Exposition"
-        : "← Back to Sermon Study Source";
+    const returnLabel = returnTo?.includes("/preaching/exposition") ? "← Back to Sermon Exposition" : "← Back to Sermon Study Source";
     const mentorPassageText = passage.verses.map((verse) => `${verse.reference} ${verse.text}`).join("\n");
 
     return (
@@ -361,7 +346,6 @@ export function ObservationWorkspace() {
                 workspace={workspace}
                 observations={data.observations}
                 onSaved={refreshWorkspace}
-                onObservationSelect={focusObservation}
                 onOptimisticCreate={addOptimisticInterpretation}
                 onRollbackCreate={rollbackOptimisticInterpretation}
             />
@@ -382,7 +366,17 @@ export function ObservationWorkspace() {
                 onOptimisticCreate={addOptimisticApplication}
                 onRollbackCreate={rollbackOptimisticApplication}
             />
-            <ApplicationHistory applications={data.applications} interpretations={data.interpretations} onInterpretationSelect={focusInterpretation} />
+            <ApplicationHistory
+                applications={data.applications}
+                interpretations={data.interpretations}
+                observations={data.observations}
+                workspace={workspace}
+                onInterpretationSelect={focusInterpretation}
+                onObservationSelect={focusObservation}
+                onEvidenceSelect={focusEvidence}
+                onUpdated={updateApplication}
+                onDeleted={removeApplication}
+            />
         </div>
     );
 }
