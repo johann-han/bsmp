@@ -8,8 +8,6 @@ export interface InterpretationMentorObservation {
 }
 
 export interface InterpretationMentorInput {
-    readonly passageReference: string;
-    readonly passageText: string;
     readonly interpretation: string;
     readonly observations: readonly InterpretationMentorObservation[];
 }
@@ -35,7 +33,7 @@ const INSTRUCTIONS = [
     "You are the BSMP interpretation mentor.",
     "The student has already completed observation. Your job is to test whether the student's interpretation is adequately grounded in the observations they selected.",
     "Do not supply a replacement interpretation. Do not preach, apply the text, or add theology not contained in the supplied material.",
-    "Use only the supplied passage and the supplied observations.",
+    "Use only the supplied observations. Do not invent textual evidence.",
     "Treat observations as the student's recorded textual evidence, not as infallible conclusions.",
     "Classify the interpretation as supported, mixed, unsupported, or too_vague.",
     "Supported means the interpretation is reasonably grounded in the selected observations without a major unsupported leap.",
@@ -57,15 +55,13 @@ function buildPrompt(input: InterpretationMentorInput): string {
     ].join(" | ")).join("\n");
 
     return [
-        `Passage: ${input.passageReference}`,
-        `\nPassage text:\n${input.passageText}`,
-        `\nSelected supporting observations:\n${observations}`,
+        `Selected supporting observations:\n${observations}`,
         `\nStudent interpretation:\n${input.interpretation}`,
         "\nAssess the interpretation only against the selected observations.",
     ].join("\n");
 }
 
-const RESPONSE_SCHEMA = {
+const OPENAI_RESPONSE_SCHEMA = {
     type: "object",
     properties: {
         assessment: { type: "string", enum: ["supported", "mixed", "unsupported", "too_vague"] },
@@ -160,7 +156,7 @@ class OpenAIInterpretationMentorProvider implements InterpretationMentorProvider
                 model: this.model,
                 instructions: INSTRUCTIONS,
                 input: [{ role: "user", content: [{ type: "input_text", text: buildPrompt(input) }] }],
-                text: { format: { type: "json_schema", name: "interpretation_mentor_response", strict: true, schema: RESPONSE_SCHEMA } },
+                text: { format: { type: "json_schema", name: "interpretation_mentor_response", strict: true, schema: OPENAI_RESPONSE_SCHEMA } },
                 max_output_tokens: 700,
             }),
         });
