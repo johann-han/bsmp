@@ -73,7 +73,7 @@ function buildPrompt(input: ObservationMentorInput): string {
     ].join("\n");
 }
 
-function classifyObservationEntry(value: string): ObservationEntryType {
+export function classifyObservationEntry(value: string): ObservationEntryType {
     const text = value.trim();
     if (!text) return "empty";
 
