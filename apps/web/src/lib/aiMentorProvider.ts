@@ -72,24 +72,54 @@ function extractJsonObject(text: string): string {
     return start >= 0 && end > start ? trimmed.slice(start, end + 1) : trimmed;
 }
 
-function parseMentorResult(raw: string, passageText: string): { coaching: string; focuses: ObservationMentorFocus[] } {
-    let payload: unknown;
+function parseJsonRecord(text: string): Record<string, unknown> | null {
     try {
-        payload = JSON.parse(extractJsonObject(raw)) as unknown;
+        const parsed = JSON.parse(extractJsonObject(text)) as unknown;
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+            ? parsed as Record<string, unknown>
+            : null;
     } catch {
-        const match = raw.match(/\"coaching\"\s*:\s*\"([\s\S]*?)\"(?:\s*,|\s*})/);
-        if (match?.[1]) {
-            return { coaching: match[1].replace(/\\n/g, "\n").replace(/\\\"/g, "\"").trim(), focuses: [] };
+        return null;
+    }
+}
+
+function extractCoachingFromJsonString(text: string): { coaching: string; focuses: unknown } | null {
+    const parsed = parseJsonRecord(text);
+    if (!parsed) return null;
+    return {
+        coaching: typeof parsed.coaching === "string" ? parsed.coaching.trim() : "",
+        focuses: parsed.focuses,
+    };
+}
+
+function parseMentorResult(raw: string, passageText: string): { coaching: string; focuses: ObservationMentorFocus[] } {
+    let payload = parseJsonRecord(raw);
+
+    // Some providers/models may wrap the structured object as a JSON string.
+    // Unwrap that form so the UI never receives raw JSON as visible coaching text.
+    if (payload && typeof payload.coaching === "string") {
+        let nested = extractCoachingFromJsonString(payload.coaching);
+        for (let depth = 0; nested && depth < 2 && nested.coaching !== payload.coaching; depth += 1) {
+            const next = extractCoachingFromJsonString(nested.coaching);
+            if (!next) break;
+            payload = { coaching: next.coaching, focuses: next.focuses ?? payload.focuses };
+            nested = next;
         }
-        return { coaching: raw.trim(), focuses: [] };
     }
 
-    if (!payload || typeof payload !== "object") return { coaching: "", focuses: [] };
-    const candidate = payload as { coaching?: unknown; focuses?: unknown };
-    const coaching = typeof candidate.coaching === "string" ? candidate.coaching.trim() : "";
+    if (!payload) {
+        const recovered = extractCoachingFromJsonString(raw);
+        if (recovered) payload = recovered.focuses === undefined
+            ? { coaching: recovered.coaching }
+            : { coaching: recovered.coaching, focuses: recovered.focuses };
+    }
+
+    if (!payload) return { coaching: "", focuses: [] };
+
+    const coaching = typeof payload.coaching === "string" ? payload.coaching.trim() : "";
     const normalizedPassage = passageText.toLowerCase();
-    const focuses = Array.isArray(candidate.focuses)
-        ? candidate.focuses.flatMap((focus) => {
+    const focuses = Array.isArray(payload.focuses)
+        ? payload.focuses.flatMap((focus) => {
             if (!focus || typeof focus !== "object") return [];
             const item = focus as { verseReference?: unknown; textCue?: unknown; question?: unknown };
             if (typeof item.verseReference !== "string" || typeof item.textCue !== "string" || typeof item.question !== "string") return [];
@@ -101,6 +131,7 @@ function parseMentorResult(raw: string, passageText: string): { coaching: string
             return [{ verseReference, textCue, question }];
         }).slice(0, 3)
         : [];
+
     return { coaching, focuses };
 }
 
