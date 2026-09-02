@@ -49,8 +49,8 @@ const MENTOR_INSTRUCTIONS = [
     "Ask at most three focused coaching questions that help the student inspect the text for observable details.",
     "Keep the tone encouraging, clear, and teacher-like rather than authoritative.",
     "End with a concise invitation for the student to revise or deepen the observation.",
-    "Return ONLY valid JSON with this exact shape: {\"coaching\":\"string\",\"focuses\":[{\"verseReference\":\"string\",\"textCue\":\"string\",\"question\":\"string\"}]}.",
-    "Do not use Markdown fences, headings, bullet markers, unexplained numeric fragments, or any text outside that JSON object.",
+    "Keep coaching concise: normally 2 to 4 sentences.",
+    "Return data matching the required structured-output schema. Do not add Markdown fences or any text outside the schema.",
     "The focuses array must contain zero to three items. Each textCue must be a short exact or near-exact observable word or phrase from the supplied passage. Each question must be about observation, not interpretation.",
 ].join("\n");
 
@@ -74,7 +74,7 @@ function buildPrompt(input: ObservationMentorInput): string {
             ? `\nPrevious mentor coaching:\n${input.previousMentorCoaching.trim()}`
             : "\nPrevious mentor coaching:\nNone.",
         `\nStudent's current observation:\n${input.studentObservation}`,
-        "\nReturn the required JSON object only.",
+        "\nReturn the structured mentor response only.",
     ].join("\n");
 }
 
@@ -93,10 +93,10 @@ function parseMentorResult(raw: string, passageText: string): { coaching: string
     try {
         payload = JSON.parse(extractJsonObject(raw)) as unknown;
     } catch {
-        return { coaching: raw.trim(), focuses: [] };
+        return { coaching: "", focuses: [] };
     }
 
-    if (!payload || typeof payload !== "object") return { coaching: raw.trim(), focuses: [] };
+    if (!payload || typeof payload !== "object") return { coaching: "", focuses: [] };
 
     const candidate = payload as { coaching?: unknown; focuses?: unknown };
     const coaching = typeof candidate.coaching === "string" ? candidate.coaching.trim() : "";
@@ -122,7 +122,7 @@ function parseMentorResult(raw: string, passageText: string): { coaching: string
         : [];
 
     return {
-        coaching: coaching || raw.trim(),
+        coaching,
         focuses: focuses.slice(0, 3),
     };
 }
@@ -149,6 +149,40 @@ function extractGeminiText(payload: unknown): string {
         .trim();
 }
 
+const MENTOR_RESPONSE_SCHEMA = {
+    type: "object",
+    properties: {
+        coaching: {
+            type: "string",
+            description: "Concise observation coaching for the student's current observation.",
+        },
+        focuses: {
+            type: "array",
+            maxItems: 3,
+            items: {
+                type: "object",
+                properties: {
+                    verseReference: {
+                        type: "string",
+                        description: "A verse reference that appears in the supplied passage.",
+                    },
+                    textCue: {
+                        type: "string",
+                        description: "A short exact or near-exact observable word or phrase from that verse.",
+                    },
+                    question: {
+                        type: "string",
+                        description: "A question that directs the student to inspect the text without interpreting it.",
+                    },
+                },
+                required: ["verseReference", "textCue", "question"],
+            },
+        },
+    },
+    required: ["coaching", "focuses"],
+    additionalProperties: false,
+} as const;
+
 class OpenAIObservationMentorProvider implements ObservationMentorProvider {
     public constructor(
         private readonly apiKey: string,
@@ -171,7 +205,16 @@ class OpenAIObservationMentorProvider implements ObservationMentorProvider {
                         content: [{ type: "input_text", text: buildPrompt(input) }],
                     },
                 ],
-                max_output_tokens: 500,
+                text: {
+                    format: {
+                        type: "json_schema",
+                        name: "observation_mentor_response",
+                        description: "Structured BSMP observation coaching and text-focus prompts.",
+                        strict: true,
+                        schema: MENTOR_RESPONSE_SCHEMA,
+                    },
+                },
+                max_output_tokens: 700,
             }),
         });
 
@@ -187,7 +230,7 @@ class OpenAIObservationMentorProvider implements ObservationMentorProvider {
         if (!raw) throw new Error("The OpenAI mentor returned no coaching response.");
 
         const parsed = parseMentorResult(raw, input.passageText);
-        if (!parsed.coaching) throw new Error("The OpenAI mentor returned no coaching response.");
+        if (!parsed.coaching) throw new Error("The AI mentor returned an invalid structured response. Please try again.");
 
         return { ...parsed, model: this.model, provider: "openai" };
     }
@@ -215,7 +258,9 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
                     },
                 ],
                 generationConfig: {
-                    maxOutputTokens: 500,
+                    responseMimeType: "application/json",
+                    responseSchema: MENTOR_RESPONSE_SCHEMA,
+                    maxOutputTokens: 700,
                 },
             }),
         });
@@ -232,7 +277,7 @@ class GeminiObservationMentorProvider implements ObservationMentorProvider {
         if (!raw) throw new Error("The Gemini mentor returned no coaching response.");
 
         const parsed = parseMentorResult(raw, input.passageText);
-        if (!parsed.coaching) throw new Error("The Gemini mentor returned no coaching response.");
+        if (!parsed.coaching) throw new Error("The AI mentor returned an invalid structured response. Please try again.");
 
         return { ...parsed, model: this.model, provider: "gemini" };
     }
@@ -253,5 +298,5 @@ export function createObservationMentorProvider(): ObservationMentorProvider {
         return new GeminiObservationMentorProvider(apiKey, process.env.GEMINI_MODEL ?? "gemini-3.6-flash");
     }
 
-    throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use "gemini" or "openai".`);
+    throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use \"gemini\" or \"openai\".`);
 }
