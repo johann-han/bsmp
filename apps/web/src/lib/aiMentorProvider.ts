@@ -1,9 +1,18 @@
+export interface ObservationMentorContextItem {
+    readonly verseReference: string;
+    readonly statement: string;
+    readonly wordText?: string | null;
+    readonly markupSymbol?: string | null;
+}
+
 export interface ObservationMentorInput {
     readonly passageReference: string;
     readonly passageText: string;
     readonly question: string;
     readonly purpose: string;
     readonly studentObservation: string;
+    readonly existingObservations: readonly ObservationMentorContextItem[];
+    readonly previousMentorCoaching?: string | null;
 }
 
 export interface ObservationMentorResult {
@@ -20,23 +29,39 @@ const MENTOR_INSTRUCTIONS = [
     "You are the BSMP inductive Bible-study mentor.",
     "Your job is to coach the student in observation, not to do the Bible study for them.",
     "Observation must come before interpretation.",
-    "Use only the supplied passage and the student's observation as the immediate evidence base.",
+    "Use only the supplied passage, existing observations, and the student's observation as the immediate evidence base.",
+    "Treat existing observations as the student's own study record, not as authoritative conclusions.",
     "Do not provide an interpretation, theological conclusion, sermon point, application, or cross-reference as an answer.",
     "Do not invent details that are not visible in the supplied passage.",
+    "Do not turn an observation into an interpretation merely because it sounds plausible.",
     "Briefly affirm what is genuinely text-grounded when appropriate.",
-    "Identify one concrete weakness, unsupported inference, missing detail, or opportunity to look again when present.",
+    "Identify one concrete weakness, unsupported inference, missing detail, repeated pattern, or opportunity to look again when present.",
+    "Use the existing observations to avoid repeating what the student has already noticed and to point toward overlooked observable details.",
     "Ask at most three focused coaching questions that help the student inspect the text for observable details.",
     "Keep the tone encouraging, clear, and teacher-like rather than authoritative.",
     "End with a concise invitation for the student to revise or deepen the observation.",
 ].join("\n");
 
 function buildPrompt(input: ObservationMentorInput): string {
+    const existingObservations = input.existingObservations.length === 0
+        ? "None yet."
+        : input.existingObservations.map((observation, index) => {
+            const target = observation.wordText
+                ? ` [word target: ${observation.wordText}${observation.markupSymbol ? ` ${observation.markupSymbol}` : ""}]`
+                : "";
+            return `${index + 1}. ${observation.verseReference}${target}: ${observation.statement}`;
+        }).join("\n");
+
     return [
         `Passage: ${input.passageReference}`,
         `\nPassage text:\n${input.passageText}`,
         `\nCanonical observation question: ${input.question}`,
         `\nQuestion purpose: ${input.purpose}`,
-        `\nStudent observation:\n${input.studentObservation}`,
+        `\nExisting study observations:\n${existingObservations}`,
+        input.previousMentorCoaching?.trim()
+            ? `\nPrevious mentor coaching:\n${input.previousMentorCoaching.trim()}`
+            : "\nPrevious mentor coaching:\nNone.",
+        `\nStudent's current observation:\n${input.studentObservation}`,
     ].join("\n");
 }
 
