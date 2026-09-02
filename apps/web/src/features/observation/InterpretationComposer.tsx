@@ -10,6 +10,7 @@ export interface InterpretationComposerProps {
     readonly workspace: ObservationWorkspaceService;
     readonly observations: readonly ObservationViewModel[];
     readonly onSaved: () => Promise<void> | void;
+    readonly onObservationSelect?: (observation: ObservationViewModel) => void;
     readonly onOptimisticCreate?: (interpretation: InterpretationViewModel) => void;
     readonly onRollbackCreate?: (id: string) => void;
 }
@@ -28,6 +29,7 @@ export function InterpretationComposer({
     workspace,
     observations,
     onSaved,
+    onObservationSelect,
     onOptimisticCreate,
     onRollbackCreate,
 }: InterpretationComposerProps) {
@@ -138,6 +140,7 @@ export function InterpretationComposer({
             <InterpretationMentorPanel
                 interpretation={statement}
                 observations={selectedObservations}
+                onObservationSelect={onObservationSelect}
             />
 
             <button type="button" onClick={() => void saveInterpretation()} disabled={!canSave} style={{ marginTop: 12, border: 0, borderRadius: 8, background: canSave ? "#111827" : "#9ca3af", color: "#ffffff", padding: "10px 14px", fontWeight: 600, cursor: canSave ? "pointer" : "not-allowed" }}>
