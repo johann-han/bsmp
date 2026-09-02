@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "../../../../src/lib/database.types";
 import { createObservationMentorProvider } from "../../../../src/lib/aiMentorProvider";
+import type { ObservationMentorContextItem } from "../../../../src/lib/aiMentorProvider";
 
 interface MentorRequest {
     readonly passageReference?: unknown;
@@ -10,6 +11,8 @@ interface MentorRequest {
     readonly question?: unknown;
     readonly purpose?: unknown;
     readonly studentObservation?: unknown;
+    readonly existingObservations?: unknown;
+    readonly previousMentorCoaching?: unknown;
 }
 
 function requireBearerToken(request: Request): string {
@@ -47,6 +50,27 @@ function requiredText(value: unknown, field: string): string {
     return value.trim();
 }
 
+function parseObservationContext(value: unknown): ObservationMentorContextItem[] {
+    if (value === undefined) return [];
+    if (!Array.isArray(value)) throw new Error("Existing observations must be an array.");
+
+    return value.map((item, index) => {
+        if (!item || typeof item !== "object") throw new Error(`Existing observation ${index + 1} is invalid.`);
+        const candidate = item as Record<string, unknown>;
+        const verseReference = requiredText(candidate.verseReference, `Existing observation ${index + 1} verse reference`);
+        const statement = requiredText(candidate.statement, `Existing observation ${index + 1} statement`);
+        const wordText = candidate.wordText === null || candidate.wordText === undefined ? null : requiredText(candidate.wordText, `Existing observation ${index + 1} word target`);
+        const markupSymbol = candidate.markupSymbol === null || candidate.markupSymbol === undefined ? null : requiredText(candidate.markupSymbol, `Existing observation ${index + 1} markup symbol`);
+        return { verseReference, statement, wordText, markupSymbol };
+    });
+}
+
+function parseOptionalText(value: unknown): string | null {
+    if (value === undefined || value === null) return null;
+    if (typeof value !== "string") throw new Error("Previous mentor coaching must be text.");
+    return value.trim() || null;
+}
+
 export async function POST(request: Request) {
     try {
         const accessToken = requireBearerToken(request);
@@ -58,6 +82,8 @@ export async function POST(request: Request) {
         const question = requiredText(body.question, "Observation question");
         const purpose = requiredText(body.purpose, "Question purpose");
         const studentObservation = requiredText(body.studentObservation, "Student observation");
+        const existingObservations = parseObservationContext(body.existingObservations);
+        const previousMentorCoaching = parseOptionalText(body.previousMentorCoaching);
 
         const provider = createObservationMentorProvider();
         const result = await provider.coach({
@@ -66,6 +92,8 @@ export async function POST(request: Request) {
             question,
             purpose,
             studentObservation,
+            existingObservations,
+            previousMentorCoaching,
         });
 
         return NextResponse.json(result);
