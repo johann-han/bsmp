@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { VerseReference } from "@bsmp/bible";
 import type { ObservationWordTargetInput, ObservationWorkspaceService } from "@bsmp/study";
@@ -24,6 +24,11 @@ const MARKUP_LABELS: Record<string, string> = {
     "→": "Action / Result",
 };
 
+interface MentorFocusReadyDetail {
+    readonly verseReference: string;
+    readonly textCue: string;
+}
+
 export function ObservationComposer({
     workspace,
     selectedVerse,
@@ -34,8 +39,28 @@ export function ObservationComposer({
     onSaved,
 }: ObservationComposerProps) {
     const [statement, setStatement] = useState("");
+    const [mentorCue, setMentorCue] = useState<MentorFocusReadyDetail | null>(null);
     const [savedMessage, setSavedMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        function handleMentorFocus(event: Event) {
+            const detail = (event as CustomEvent<MentorFocusReadyDetail>).detail;
+            if (!detail || typeof detail.verseReference !== "string" || typeof detail.textCue !== "string") return;
+            setMentorCue(detail);
+            window.requestAnimationFrame(() => {
+                document.getElementById("observation-composer")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+        }
+
+        window.addEventListener("bsmp:mentor-focus-ready", handleMentorFocus);
+        return () => window.removeEventListener("bsmp:mentor-focus-ready", handleMentorFocus);
+    }, []);
+
+    useEffect(() => {
+        if (!selectedVerse || !mentorCue) return;
+        if (selectedVerse.reference.trim().toLowerCase() !== mentorCue.verseReference.trim().toLowerCase()) return;
+    }, [selectedVerse, mentorCue]);
 
     async function saveObservation() {
         if (!selectedVerse) {
@@ -69,10 +94,13 @@ export function ObservationComposer({
 
             await onSaved();
             setStatement("");
+            setMentorCue(null);
             setSavedMessage(
                 targetWord && targetMarkup
                     ? `Observation saved for ${targetWord} in verse ${selectedVerse.number}.`
-                    : `Observation saved to verse ${selectedVerse.number}.`,
+                    : mentorCue
+                        ? `Observation saved for the mentor focus in verse ${selectedVerse.number}.`
+                        : `Observation saved to verse ${selectedVerse.number}.`,
             );
         } catch (saveError) {
             setError(
@@ -89,6 +117,7 @@ export function ObservationComposer({
 
     return (
         <section
+            id="observation-composer"
             style={{
                 marginTop: 20,
                 border: "1px solid #e5e7eb",
@@ -116,6 +145,23 @@ export function ObservationComposer({
                     : "Select a verse"}
             </h2>
 
+            {mentorCue && selectedVerse && selectedVerse.reference.trim().toLowerCase() === mentorCue.verseReference.trim().toLowerCase() && (
+                <div
+                    style={{
+                        marginBottom: 12,
+                        padding: "10px 12px",
+                        border: "1px solid #bfdbfe",
+                        borderRadius: 8,
+                        background: "#eff6ff",
+                        color: "#1e3a8a",
+                        fontSize: 13,
+                    }}
+                >
+                    <strong>Mentor text cue:</strong> “{mentorCue.textCue}”
+                    <span style={{ marginLeft: 6 }}>Record your own observation from this cue; the mentor has not written the observation for you.</span>
+                </div>
+            )}
+
             {targetWord && targetMarkup && targetLabel && (
                 <div
                     style={{
@@ -135,7 +181,7 @@ export function ObservationComposer({
             <textarea
                 value={statement}
                 onChange={(event) => setStatement(event.target.value)}
-                placeholder="Record what you observe in the text..."
+                placeholder={mentorCue ? `Record what you observe about “${mentorCue.textCue}” in the text...` : "Record what you observe in the text..."}
                 rows={5}
                 style={{
                     width: "100%",
