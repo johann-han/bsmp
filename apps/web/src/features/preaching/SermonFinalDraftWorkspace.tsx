@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ExpositorySermon } from "@bsmp/preaching";
@@ -11,6 +12,13 @@ import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
 
 interface Props { studyId: string; }
+
+function workspaceHref(studyId: string, target: string): string {
+    const params = new URLSearchParams({ studyId, returnTo: `/preaching/final?studyId=${encodeURIComponent(studyId)}` });
+    return `/workspace?${params.toString()}#${encodeURIComponent(target)}`;
+}
+
+const linkStyle = { color: "#1d4ed8", textDecoration: "none" } as const;
 
 export function SermonFinalDraftWorkspace({ studyId }: Props) {
     const router = useRouter();
@@ -88,6 +96,36 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                     <p style={{ margin: "4px 0" }}><strong>Passage:</strong> {sermon.passage.toString()}</p>
                     {sermon.bigIdea && <p style={{ margin: "12px 0 4px" }}><strong>Big Idea:</strong> {sermon.bigIdea.value}</p>}
                     {sermon.purpose && <p style={{ margin: "4px 0" }}><strong>Purpose:</strong> {sermon.purpose.value}</p>}
+                    <div className="bsmp-print-hide" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 12 }}>
+                        <Link href={`/workspace?studyId=${encodeURIComponent(studyId)}&returnTo=${encodeURIComponent(`/preaching/final?studyId=${studyId}`)}`} style={{ ...linkStyle, fontWeight: 600 }}>Open Study Workspace</Link>
+                        <Link href={`/biblical-theology?studyId=${encodeURIComponent(studyId)}`} style={{ ...linkStyle, fontWeight: 600 }}>Open Biblical Theology</Link>
+                        <Link href={`/preaching/exposition?studyId=${encodeURIComponent(studyId)}`} style={{ ...linkStyle, fontWeight: 600 }}>Review Exposition</Link>
+                    </div>
+                </section>
+
+                <section className="bsmp-print-section bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                    <h2 style={{ marginTop: 0 }}>Source Traceability</h2>
+                    <p style={{ color: "#6b7280", marginTop: 0 }}>The final manuscript is preacher-authored. Use these links to move directly back to the Study foundations behind each sermon point.</p>
+                    {sermon.outline.length === 0 ? <p>No sermon outline points have been prepared yet.</p> : sermon.outline.map((point, index) => {
+                        const observationLinks = point.supportingObservationIds.length > 0 ? point.supportingObservationIds.map((id) => study.observations.find((observation) => observation.id.value === id)).filter((observation): observation is NonNullable<typeof observation> => Boolean(observation)) : [];
+                        const interpretationLinks = point.supportingInterpretationIds.length > 0 ? point.supportingInterpretationIds.map((id) => study.interpretations.find((interpretation) => interpretation.id.value === id)).filter((interpretation): interpretation is NonNullable<typeof interpretation> => Boolean(interpretation)) : [];
+                        const evidenceLinks = point.supportingEvidenceIds.length > 0 ? point.supportingEvidenceIds.map((id) => study.interpretations.flatMap((interpretation) => interpretation.evidence).find((evidence) => evidence.id.value === id)).filter((evidence): evidence is NonNullable<typeof evidence> => Boolean(evidence)) : [];
+                        const applicationLinks = point.supportingApplicationIds.length > 0 ? point.supportingApplicationIds.map((id) => study.applications.find((application) => application.id.value === id)).filter((application): application is NonNullable<typeof application> => Boolean(application)) : [];
+                        const theologyIds = point.supportingBiblicalTheologyIds;
+                        return (
+                            <article key={point.id} style={{ marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid #f1f5f9" }}>
+                                <strong>{index + 1}. {point.heading}</strong>
+                                <div style={{ marginTop: 6, display: "flex", gap: 8, flexWrap: "wrap", fontSize: 13 }}>
+                                    {observationLinks.length > 0 && observationLinks.map((observation) => <Link key={`obs-${observation.id.value}`} href={workspaceHref(studyId, `observation-${observation.id.value}`)} style={linkStyle}>Observation {observation.verseReference.value.toString()}</Link>)}
+                                    {interpretationLinks.length > 0 && interpretationLinks.map((interpretation) => <Link key={`int-${interpretation.id.value}`} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)} style={linkStyle}>Interpretation</Link>)}
+                                    {evidenceLinks.length > 0 && evidenceLinks.map((evidence) => <Link key={`evidence-${evidence.id.value}`} href={workspaceHref(studyId, `evidence-${evidence.id.value}`)} style={linkStyle}>Evidence</Link>)}
+                                    {applicationLinks.length > 0 && applicationLinks.map((application) => <Link key={`application-${application.id.value}`} href={workspaceHref(studyId, `application-${application.id.value}`)} style={linkStyle}>Application</Link>)}
+                                    {theologyIds.map((theologyId) => <Link key={`bt-${theologyId}`} href={`/biblical-theology?studyId=${encodeURIComponent(studyId)}#biblical-theology-${encodeURIComponent(theologyId)}`} style={linkStyle}>Biblical Theology</Link>)}
+                                    {observationLinks.length === 0 && interpretationLinks.length === 0 && evidenceLinks.length === 0 && applicationLinks.length === 0 && theologyIds.length === 0 && <span style={{ color: "#6b7280" }}>No explicit Study foundation links recorded for this point.</span>}
+                                </div>
+                            </article>
+                        );
+                    })}
                 </section>
 
                 <section className="bsmp-print-section" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
