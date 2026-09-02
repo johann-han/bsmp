@@ -27,6 +27,9 @@ const MARKUP_LABELS: Record<string, string> = {
 interface MentorFocusReadyDetail {
     readonly verseReference: string;
     readonly textCue: string;
+    readonly wordIndex: number;
+    readonly wordText: string;
+    readonly translation: string;
 }
 
 export function ObservationComposer({
@@ -46,8 +49,10 @@ export function ObservationComposer({
     useEffect(() => {
         function handleMentorFocus(event: Event) {
             const detail = (event as CustomEvent<MentorFocusReadyDetail>).detail;
-            if (!detail || typeof detail.verseReference !== "string" || typeof detail.textCue !== "string") return;
+            if (!detail || typeof detail.verseReference !== "string" || typeof detail.textCue !== "string" || typeof detail.wordIndex !== "number" || typeof detail.wordText !== "string" || typeof detail.translation !== "string") return;
             setMentorCue(detail);
+            setError(null);
+            setSavedMessage(null);
             window.requestAnimationFrame(() => {
                 document.getElementById("observation-composer")?.scrollIntoView({ behavior: "smooth", block: "center" });
             });
@@ -56,11 +61,6 @@ export function ObservationComposer({
         window.addEventListener("bsmp:mentor-focus-ready", handleMentorFocus);
         return () => window.removeEventListener("bsmp:mentor-focus-ready", handleMentorFocus);
     }, []);
-
-    useEffect(() => {
-        if (!selectedVerse || !mentorCue) return;
-        if (selectedVerse.reference.trim().toLowerCase() !== mentorCue.verseReference.trim().toLowerCase()) return;
-    }, [selectedVerse, mentorCue]);
 
     async function saveObservation() {
         if (!selectedVerse) {
@@ -84,7 +84,14 @@ export function ObservationComposer({
                     wordText: targetWord,
                     markupSymbol: targetMarkup.symbol,
                 }
-                : undefined;
+                : mentorCue && mentorCue.verseReference.trim().toLowerCase() === selectedVerse.reference.trim().toLowerCase()
+                    ? {
+                        translation: mentorCue.translation,
+                        wordIndex: mentorCue.wordIndex,
+                        wordText: mentorCue.wordText,
+                        markupSymbol: null,
+                    }
+                    : undefined;
 
             await workspace.addObservation(
                 getVerseReference(selectedVerse.number),
@@ -93,13 +100,14 @@ export function ObservationComposer({
             );
 
             await onSaved();
+            const savedMentorCue = mentorCue;
             setStatement("");
             setMentorCue(null);
             setSavedMessage(
                 targetWord && targetMarkup
                     ? `Observation saved for ${targetWord} in verse ${selectedVerse.number}.`
-                    : mentorCue
-                        ? `Observation saved for the mentor focus in verse ${selectedVerse.number}.`
+                    : savedMentorCue
+                        ? `Observation saved for “${savedMentorCue.wordText}” in verse ${selectedVerse.number}.`
                         : `Observation saved to verse ${selectedVerse.number}.`,
             );
         } catch (saveError) {
@@ -114,6 +122,8 @@ export function ObservationComposer({
     const targetLabel = targetMarkup
         ? MARKUP_LABELS[targetMarkup.symbol] ?? targetMarkup.symbol
         : null;
+
+    const mentorCueActive = mentorCue && selectedVerse && mentorCue.verseReference.trim().toLowerCase() === selectedVerse.reference.trim().toLowerCase();
 
     return (
         <section
@@ -145,7 +155,7 @@ export function ObservationComposer({
                     : "Select a verse"}
             </h2>
 
-            {mentorCue && selectedVerse && selectedVerse.reference.trim().toLowerCase() === mentorCue.verseReference.trim().toLowerCase() && (
+            {mentorCueActive && (
                 <div
                     style={{
                         marginBottom: 12,
@@ -157,8 +167,8 @@ export function ObservationComposer({
                         fontSize: 13,
                     }}
                 >
-                    <strong>Mentor text cue:</strong> “{mentorCue.textCue}”
-                    <span style={{ marginLeft: 6 }}>Record your own observation from this cue; the mentor has not written the observation for you.</span>
+                    <strong>Mentor text target:</strong> “{mentorCue.wordText}”
+                    <span style={{ marginLeft: 6 }}>Write your own observation from this exact text. BSMP will save the verse and text target; the mentor does not write the observation for you.</span>
                 </div>
             )}
 
@@ -181,7 +191,7 @@ export function ObservationComposer({
             <textarea
                 value={statement}
                 onChange={(event) => setStatement(event.target.value)}
-                placeholder={mentorCue ? `Record what you observe about “${mentorCue.textCue}” in the text...` : "Record what you observe in the text..."}
+                placeholder={mentorCueActive ? `Record what you observe about “${mentorCue.wordText}” in the text...` : "Record what you observe in the text..."}
                 rows={5}
                 style={{
                     width: "100%",
