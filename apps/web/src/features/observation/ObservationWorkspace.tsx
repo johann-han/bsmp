@@ -10,7 +10,6 @@ import type {
 } from "@bsmp/study";
 
 import { ObservationPanel } from "@repo/ui";
-import type { ObservationEntryType } from "@bsmp/inductive";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
 import { ApplicationComposer } from "./ApplicationComposer";
