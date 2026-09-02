@@ -43,6 +43,27 @@ describe("ExpositorySermon", () => {
         expect(point.meaningEvidenceIds).toEqual(["evidence-1"]);
     });
 
+    it("preserves Biblical Theology support when a normal outline edit omits it", () => {
+        const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-bt"), StudyId.from("study-bt"), SermonTitle.from("Test"), john15());
+        const point = sermon.addOutlinePoint(
+            "Remain in Christ",
+            "Fruitfulness depends on abiding.",
+            { supportingBiblicalTheologyIds: ["bt-1", "bt-2"] },
+            "point-bt",
+            { supportingBiblicalTheologyIds: ["bt-1", "bt-2"] },
+        );
+
+        const updated = sermon.updateOutlinePoint(
+            point.id,
+            "Remain in Christ",
+            "Fruitfulness depends on abiding faithfully.",
+            {},
+            { explanation: "Updated explanation without restating Biblical Theology support." },
+        );
+
+        expect(updated.supportingBiblicalTheologyIds).toEqual(["bt-1", "bt-2"]);
+    });
+
     it("stores the final manuscript and delivery notes", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-4"), StudyId.from("study-4"), SermonTitle.from("Final Draft"), john15());
         sermon.defineManuscript(SermonManuscript.from("Full sermon manuscript."));
