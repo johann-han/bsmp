@@ -15,6 +15,16 @@ export function InterpretationHistory({
         observations.map((observation) => [observation.id, observation]),
     );
 
+    function observationLabel(observation: ObservationViewModel): string {
+        if (observation.target.wordIndex !== null && observation.target.wordText) {
+            return `${observation.verseReference} · word: “${observation.target.wordText}”`;
+        }
+        if (observation.target.wordText) {
+            return `${observation.verseReference} · text: “${observation.target.wordText}”`;
+        }
+        return observation.verseReference;
+    }
+
     return (
         <section style={{ marginTop: 20 }}>
             <h2 style={{ marginBottom: 12, fontSize: 20 }}>Interpretation History</h2>
@@ -33,24 +43,30 @@ export function InterpretationHistory({
                             {interpretation.observationIds.length > 0 ? (
                                 <div style={{ fontSize: 13, color: "#4b5563" }}>
                                     <strong>Supported by:</strong>
-                                    <ul>
+                                    <ul style={{ marginBottom: 0 }}>
                                         {interpretation.observationIds.map((id) => {
                                             const observation = observationMap.get(id);
                                             return (
-                                                <li key={id}>
+                                                <li key={id} style={{ marginTop: 6 }}>
                                                     {observation ? (
                                                         <button
                                                             type="button"
                                                             onClick={() => onObservationSelect?.(observation)}
                                                             style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", textAlign: "left" }}
                                                         >
-                                                            {observation.verseReference} — {observation.statement}
+                                                            <strong>{observationLabel(observation)}</strong>
+                                                            <span style={{ display: "block", color: "#4b5563", marginTop: 2 }}>
+                                                                {observation.statement}
+                                                            </span>
                                                         </button>
                                                     ) : id}
                                                 </li>
                                             );
                                         })}
                                     </ul>
+                                    <p style={{ margin: "8px 0 0", fontSize: 12, color: "#6b7280" }}>
+                                        Supporting observations are the student's textual basis for this interpretation.
+                                    </p>
                                 </div>
                             ) : (
                                 <p style={{ marginBottom: 0, fontSize: 13, color: "#6b7280" }}>
