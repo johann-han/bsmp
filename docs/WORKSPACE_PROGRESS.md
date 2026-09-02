@@ -18,13 +18,13 @@ Interpretations now require at least one supporting observation. The Interpretat
 
 A first Biblical Theology stage is now present. A study can record a student-authored theological synthesis with a theme and a required set of supporting interpretations. Biblical Theology entries persist in Supabase with user-scoped row-level security and can be created, edited, and deleted from `/biblical-theology?studyId=...`.
 
-The stage deliberately preserves the sequence from interpretation into theological synthesis: the synthesis is traceable to existing interpretations rather than generated as an authoritative AI conclusion. Sermon Preparation now surfaces the number of Biblical Theology syntheses available, and each sermon outline point displays the Biblical Theology themes related to its selected Meaning interpretations. The Sermon Study Source panel also exposes the Biblical Theology chain and links back to the theological synthesis workspace.
+The stage deliberately preserves the sequence from interpretation into theological synthesis: the synthesis is traceable to existing interpretations rather than generated as an authoritative AI conclusion. Sermon Preparation surfaces the number of Biblical Theology syntheses available, and each sermon outline point displays Biblical Theology themes related to its selected Meaning interpretations. The Sermon Study Source panel exposes the Biblical Theology chain and links back to the theological synthesis workspace.
 
 ## Sermon Preparation
 
 The `/preaching` workspace creates an expository sermon preparation record from a Study and provides sermon title, Big Idea, Purpose, outline construction, editing, deletion, ordering, and links to Study source material.
 
-Each outline point can be supported by Study observations, interpretations, evidence, and applications.
+Each outline point can be supported by Study observations, interpretations, evidence, applications, and now directly selected Biblical Theology syntheses.
 
 ## Sermon Framework
 
@@ -32,7 +32,9 @@ The framework stage provides Introduction, Context / Setting, and Conclusion.
 
 ## Sermon Exposition
 
-Each outline point can be developed through Text, Meaning / explanation, Illustration, Application, and Transition, with explicit links to the relevant Study foundations. Exposition includes explicit foundation mappings for Text observations, Meaning interpretations, Meaning evidence, and Response applications, plus readiness guidance for each outline point.
+Each outline point can be developed through Text, Meaning / explanation, Illustration, Application, and Transition, with explicit links to the relevant Study foundations. Exposition includes explicit foundation mappings for Text observations, Meaning interpretations, Meaning evidence, Response applications, and optional Biblical Theology syntheses, plus readiness guidance for each outline point.
+
+Biblical Theology choices are persisted on the sermon outline point. The UI prioritizes syntheses connected to the point's selected Meaning interpretations, while still allowing other student-authored syntheses to be selected. The theological synthesis remains a supporting layer; the underlying interpretation is still explicitly traceable.
 
 The Sermon Study Source panel exposes the source chain behind applications: application → interpretation → supporting observations and evidence, with links back into the Study Workspace. It also exposes Biblical Theology syntheses and their supporting interpretation chain.
 
@@ -103,7 +105,7 @@ Leaked-password protection remains deferred because the connected Supabase proje
 
 ## Verification
 
-Repository CI is defined in `.github/workflows/ci.yml` for feature branches and pull requests.
+Repository CI is defined in `.github/workflows/ci.yml` for feature branches and pull requests. The workflow now relies on the repository `packageManager` field for the pnpm version instead of declaring a conflicting second version in the action configuration.
 
 The final-drafting migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
 
@@ -111,16 +113,20 @@ The scheduling migration has been applied successfully to the connected Supabase
 
 The Biblical Theology migration has been applied successfully to the connected Supabase project. The new `public.biblical_theology_entries` table is RLS-protected for the signed-in user.
 
-The current verification baseline includes:
+The Sermon Biblical Theology support migration has also been applied successfully to the connected Supabase project. `public.sermon_outline_points` now persists `supporting_biblical_theology_ids` with an empty-array default for existing rows.
 
-- `pnpm typecheck` — successful after the latest Interpretation Mentor prop fix; rerun after the latest Biblical Theology/Sermon traceability changes
-- `pnpm test` — all reported workspace test suites passed before the latest Biblical Theology/Sermon traceability changes
-- `pnpm build` — the production build had previously passed; rerun after the latest Biblical Theology/Sermon traceability changes
+The previous CI attempt failed before dependency installation because `pnpm/action-setup` received pnpm 9 from both the workflow and `package.json`. The workflow conflict has been removed; a fresh CI run is still required to validate typecheck, tests, and production build for the current branch.
 
-Supabase security advisors currently continue to report the previously known leaked-password protection limitation; the new Biblical Theology table is protected by RLS. Performance advisors also report an index recommendation on the new table's `user_id` foreign key, which should be addressed in a later database-hardening pass.
+The current verification baseline therefore remains:
+
+- `pnpm typecheck` — previously successful after the Interpretation Mentor prop fix; rerun after the latest sermon/Biblical Theology changes
+- `pnpm test` — previously passing; rerun after the latest sermon/Biblical Theology changes
+- `pnpm build` — previously passing; rerun after the latest sermon/Biblical Theology changes
+
+Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology and sermon-support tables are protected by RLS. Performance advisors also reported an index recommendation on the new Biblical Theology table's `user_id` foreign key, which should be addressed in a later database-hardening pass.
 
 ## Next Work
 
-1. Strengthen authenticated end-to-end coverage of the complete Study → Biblical Theology → Sermon → Delivery workflow.
-2. Add direct Biblical Theology selection inside Sermon Exposition when a preacher develops a point, while preserving the current derived traceability through Meaning interpretations.
+1. Run fresh typecheck, test, build, and authenticated browser verification against the complete Study → Biblical Theology → Sermon → Delivery workflow.
+2. Strengthen direct navigation from final sermon content back through Biblical Theology, interpretations, evidence, observations, and passage text.
 3. Continue the inductive-study experience toward the broader responsible AI mentor workflow described in the product vision.
