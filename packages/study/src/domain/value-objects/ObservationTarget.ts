@@ -17,6 +17,11 @@ export interface ObservationWordTargetInput {
     readonly markupSymbol: string | null;
 }
 
+export interface ObservationTextTargetInput {
+    readonly translation: string;
+    readonly textCue: string;
+}
+
 export class ObservationTarget extends ValueObject<ObservationTargetProps> {
     private constructor(props: ObservationTargetProps) {
         super(props);
@@ -55,6 +60,25 @@ export class ObservationTarget extends ValueObject<ObservationTargetProps> {
         });
     }
 
+    public static text(
+        verseReference: VerseReference,
+        input: ObservationTextTargetInput,
+    ): ObservationTarget {
+        const translation = input.translation.trim();
+        const textCue = input.textCue.trim();
+
+        if (!translation) throw new ValidationError("Observation target translation cannot be empty.");
+        if (!textCue) throw new ValidationError("Observation target text cue cannot be empty.");
+
+        return new ObservationTarget({
+            verseReference,
+            translation,
+            wordIndex: null,
+            wordText: textCue,
+            markupSymbol: null,
+        });
+    }
+
     public get verseReference(): VerseReference {
         return this.get("verseReference");
     }
@@ -79,8 +103,12 @@ export class ObservationTarget extends ValueObject<ObservationTargetProps> {
         return this.wordIndex !== null;
     }
 
+    public get isTextTarget(): boolean {
+        return this.wordIndex === null && this.wordText !== null;
+    }
+
     public override toString(): string {
-        if (!this.isWordTarget) return this.verseReference.toString();
+        if (!this.wordText) return this.verseReference.toString();
         return `${this.verseReference.toString()} · ${this.wordText}`;
     }
 }
