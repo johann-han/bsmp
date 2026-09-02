@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import type { ObservationViewModel } from "@bsmp/study";
 import {
     GetNextObservationQuestion,
     InMemoryObservationQuestionRepository,
@@ -16,6 +17,7 @@ interface ObservationMentorPanelProps {
     readonly studyId: string;
     readonly passageReference: string;
     readonly passageText: string;
+    readonly observations: readonly ObservationViewModel[];
 }
 
 interface MentorResponse {
@@ -50,7 +52,7 @@ function loadCoaching(studyId: string): string {
     }
 }
 
-export function ObservationMentorPanel({ studyId, passageReference, passageText }: ObservationMentorPanelProps) {
+export function ObservationMentorPanel({ studyId, passageReference, passageText, observations }: ObservationMentorPanelProps) {
     const [completed, setCompleted] = useState<string[]>([]);
     const [question, setQuestion] = useState<Awaited<ReturnType<GetNextObservationQuestion["execute"]>>>(null);
     const [open, setOpen] = useState(true);
@@ -67,6 +69,12 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText 
     }, [studyId]);
 
     const passageTextForMentor = useMemo(() => passageText.trim(), [passageText]);
+    const observationContext = useMemo(() => observations.map((observation) => ({
+        verseReference: observation.verseReference,
+        statement: observation.statement,
+        wordText: observation.target.wordText,
+        markupSymbol: observation.target.markupSymbol,
+    })), [observations]);
 
     async function considerQuestion() {
         if (!question) return;
@@ -108,6 +116,8 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText 
                     question: question.question.value,
                     purpose: question.purpose.value,
                     studentObservation: studentObservation.trim(),
+                    existingObservations: observationContext,
+                    previousMentorCoaching: coaching || null,
                 }),
             });
 
@@ -157,7 +167,7 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText 
                     </p>
                     <h2 style={{ margin: "4px 0 6px", fontSize: 20 }}>Observation before interpretation</h2>
                     <p style={{ margin: 0, color: "#475569", fontSize: 13 }}>
-                        The mentor asks a question, you make the observation, and the AI helps you inspect your answer without doing the interpretation for you.
+                        The mentor sees the passage, your current observation, and your existing study observations. It helps you inspect the text without taking over the study.
                     </p>
                 </div>
                 <button type="button" onClick={() => setOpen((value) => !value)}>
@@ -167,7 +177,9 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText 
 
             {open && (
                 <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
-                    <div style={{ fontSize: 12, color: "#64748b" }}>{completed.length} of 6 questions considered</div>
+                    <div style={{ fontSize: 12, color: "#64748b" }}>
+                        {completed.length} of 6 questions considered · {observations.length} study observations available to the mentor
+                    </div>
 
                     {!question ? (
                         <div style={{ display: "grid", gap: 8 }}>
@@ -190,6 +202,23 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText 
                                 <strong style={{ fontSize: 13 }}>Passage</strong>
                                 <p style={{ margin: "6px 0 0", whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.55 }}>{passageText}</p>
                             </div>
+
+                            {observations.length > 0 && (
+                                <details>
+                                    <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Existing study observations ({observations.length})</summary>
+                                    <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
+                                        {observations.map((observation) => (
+                                            <div key={observation.id} style={{ padding: 10, border: "1px solid #e5e7eb", borderRadius: 8, background: "#fff" }}>
+                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>
+                                                    {observation.verseReference}
+                                                    {observation.target.wordText ? ` · ${observation.target.wordText}` : ""}
+                                                </div>
+                                                <div style={{ marginTop: 4, fontSize: 13, lineHeight: 1.5 }}>{observation.statement}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </details>
+                            )}
 
                             <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 600 }}>
                                 Your observation
