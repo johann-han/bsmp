@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ApplicationViewModel, InterpretationViewModel, ObservationWorkspaceService } from "@bsmp/study";
+import { ApplicationMentorPanel } from "./ApplicationMentorPanel";
 
 export interface ApplicationComposerProps {
     readonly workspace: ObservationWorkspaceService;
@@ -21,6 +22,8 @@ export function ApplicationComposer({ workspace, interpretations, onSaved, onOpt
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
 
+    const selectedInterpretation = interpretations.find((interpretation) => interpretation.id === interpretationId);
+
     async function save() {
         const principleValue = principle.trim();
         const personalValue = personal.trim();
@@ -35,15 +38,7 @@ export function ApplicationComposer({ workspace, interpretations, onSaved, onOpt
         setMessage(null);
         setSaving(true);
         const optimisticId = crypto.randomUUID();
-        onOptimisticCreate?.({
-            id: optimisticId,
-            interpretationId,
-            principle: principleValue,
-            personal: personalValue,
-            ministry: ministryValue,
-            action: actionValue,
-            createdAt: new Date().toISOString(),
-        });
+        onOptimisticCreate?.({ id: optimisticId, interpretationId, principle: principleValue, personal: personalValue, ministry: ministryValue, action: actionValue, createdAt: new Date().toISOString() });
         try {
             await workspace.addApplication(interpretationId, principleValue, personalValue, ministryValue, actionValue);
             setPrinciple(""); setPersonal(""); setMinistry(""); setAction("");
@@ -76,6 +71,9 @@ export function ApplicationComposer({ workspace, interpretations, onSaved, onOpt
                     <Field label="Personal Application" value={personal} onChange={setPersonal} placeholder="How should this change me?" disabled={saving} />
                     <Field label="Ministry Application" value={ministry} onChange={setMinistry} placeholder="How should this shape my ministry toward others?" disabled={saving} />
                     <Field label="Action" value={action} onChange={setAction} placeholder="What concrete step will I take?" disabled={saving} />
+                    {selectedInterpretation && (
+                        <ApplicationMentorPanel interpretation={selectedInterpretation.statement} principle={principle} personal={personal} ministry={ministry} action={action} />
+                    )}
                     <button type="button" onClick={save} disabled={saving} style={{ marginTop: 4, border: 0, borderRadius: 8, background: saving ? "#9ca3af" : "#111827", color: "#fff", padding: "10px 14px", fontWeight: 600 }}>
                         {saving ? "Saving..." : "Save Application"}
                     </button>
