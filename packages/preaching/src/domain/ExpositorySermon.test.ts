@@ -64,6 +64,25 @@ describe("ExpositorySermon", () => {
         expect(updated.supportingBiblicalTheologyIds).toEqual(["bt-1", "bt-2"]);
     });
 
+    it("stores traceable manuscript sections and removes sections with deleted outline points", () => {
+        const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-sections"), StudyId.from("study-sections"), SermonTitle.from("Sections"), john15());
+        const point = sermon.addOutlinePoint("Remain", "Abide in Christ", {}, "point-sections");
+        sermon.defineManuscriptSections([
+            { id: "intro", title: "Introduction", content: "A faithful introduction." },
+            { id: "point-section", title: "Remain", content: "This section explains the main point.", outlinePointId: point.id },
+            { id: "blank", title: " ", content: "ignored" },
+        ]);
+        expect(sermon.manuscriptSections).toEqual([
+            { id: "intro", title: "Introduction", content: "A faithful introduction." },
+            { id: "point-section", title: "Remain", content: "This section explains the main point.", outlinePointId: point.id },
+        ]);
+
+        sermon.removeOutlinePoint(point.id);
+        expect(sermon.manuscriptSections).toEqual([
+            { id: "intro", title: "Introduction", content: "A faithful introduction." },
+        ]);
+    });
+
     it("stores the final manuscript and delivery notes", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-4"), StudyId.from("study-4"), SermonTitle.from("Final Draft"), john15());
         sermon.defineManuscript(SermonManuscript.from("Full sermon manuscript."));
