@@ -23,7 +23,7 @@ export function SermonTeachingTraceability({ studyId, variant = "final" }: { stu
                 const sermonRepository = new SupabaseExpositorySermonRepository();
                 const nextSermon = await sermonRepository.findByStudyId(studyId);
                 if (!active) return;
-                setSermon(nextSermon);
+                setSermon(nextSermon ?? null);
                 if (!nextSermon?.teachingPlanId) return;
                 const plans = await findTeachingPlans(studyId);
                 if (!active) return;
