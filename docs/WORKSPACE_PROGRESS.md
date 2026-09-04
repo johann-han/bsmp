@@ -38,6 +38,8 @@ The Global Navigation now exposes Biblical Theology and Teaching as first-class 
 
 The `/preaching` workspace creates an expository sermon preparation record from a Study and provides sermon title, Big Idea, Purpose, outline construction, editing, deletion, ordering, and links to Study source material.
 
+A completed Teaching Plan can now be explicitly linked to the sermon. The link is persisted on `expository_sermons.teaching_plan_id`, displayed in a dedicated Teaching Foundation bridge on Sermon Preparation, and only completed Teaching Plans may be attached. This establishes a direct Study → Biblical Theology → Teaching → Sermon relationship without copying the student's teaching content into the sermon record.
+
 Each outline point can be supported by Study observations, interpretations, evidence, applications, and now directly selected Biblical Theology syntheses.
 
 ## Sermon Framework
@@ -123,7 +125,7 @@ Leaked-password protection remains deferred because the connected Supabase proje
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, Study → Sermon traceability, the first Biblical Theology stage, and the first Teaching stage.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, Study → Sermon traceability, the first Biblical Theology stage, and the first Teaching stage with Teaching → Sermon inheritance.
 
 ## Verification
 
@@ -155,12 +157,16 @@ The Application Mentor integration is committed on `feat/final-sermon-drafting`.
 
 The Teaching migration has been applied successfully to the connected BSMP Supabase project. `public.teaching_plans` now exists with user/study indexes, row-level security, and an `updated_at` trigger.
 
-The Teaching workspace, persistence layer, protected Teaching Mentor API, and Teaching Mentor provider tests are committed on `feat/final-sermon-drafting`. Repository CI verification is pending for this newest feature set.
+The Teaching workspace, persistence layer, protected Teaching Mentor API, and Teaching Mentor provider tests are committed on `feat/final-sermon-drafting` and the corrected Teaching Mentor API passed CI through typecheck, tests, and production build.
 
-Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology, sermon-support, and Teaching tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
+The Teaching → Sermon migration `20260904143000_link_teaching_plan_to_sermon.sql` has been applied successfully to the connected Supabase project. `public.expository_sermons.teaching_plan_id` is nullable, foreign-keyed to `public.teaching_plans(id)` with `ON DELETE SET NULL`, and indexed.
+
+The Teaching → Sermon bridge, domain linkage, persistence updates, and regression test are committed on `feat/final-sermon-drafting`. A completed Teaching Plan is required before the bridge will save it onto a sermon.
+
+Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology, sermon-support, Teaching, and Teaching → Sermon tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
 
 ## Next Work
 
-1. Verify the new Teaching workspace and Teaching Mentor in an authenticated browser, including persistence and refresh.
+1. Complete authenticated browser verification of Teaching, Teaching Mentor, Teaching → Sermon inheritance, and refresh persistence.
 2. Complete authenticated browser verification of the traceable manuscript section editor and the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough.
-3. Extend Teaching traceability into Sermon Preparation so a sermon can explicitly inherit and display the teaching plan foundations without duplicating student-authored content.
+3. Extend final-draft Source Traceability to show the linked Teaching Plan so the full preparation chain remains visible at delivery time.
