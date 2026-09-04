@@ -83,6 +83,25 @@ describe("ExpositorySermon", () => {
         ]);
     });
 
+    it("keeps manuscript section links attached to outline point ids when points are reordered", () => {
+        const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-reorder"), StudyId.from("study-reorder"), SermonTitle.from("Reorder"), john15());
+        const first = sermon.addOutlinePoint("First", "Truth one", {}, "point-first");
+        const second = sermon.addOutlinePoint("Second", "Truth two", {}, "point-second");
+
+        sermon.defineManuscriptSections([
+            { id: "first-section", title: "First", content: "First manuscript content.", outlinePointId: first.id },
+            { id: "second-section", title: "Second", content: "Second manuscript content.", outlinePointId: second.id },
+        ]);
+
+        sermon.moveOutlinePoint(second.id, "up");
+
+        expect(sermon.outline.map((point) => point.id)).toEqual([second.id, first.id]);
+        expect(sermon.manuscriptSections).toEqual([
+            { id: "first-section", title: "First", content: "First manuscript content.", outlinePointId: first.id },
+            { id: "second-section", title: "Second", content: "Second manuscript content.", outlinePointId: second.id },
+        ]);
+    });
+
     it("stores the final manuscript and delivery notes", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-4"), StudyId.from("study-4"), SermonTitle.from("Final Draft"), john15());
         sermon.defineManuscript(SermonManuscript.from("Full sermon manuscript."));
