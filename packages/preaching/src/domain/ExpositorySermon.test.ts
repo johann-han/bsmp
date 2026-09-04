@@ -21,6 +21,15 @@ describe("ExpositorySermon", () => {
         expect(sermon.outline).toHaveLength(1);
     });
 
+    it("stores and clears the linked Teaching Plan", () => {
+        const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-teaching"), StudyId.from("study-teaching"), SermonTitle.from("Teaching"), john15());
+        expect(sermon.teachingPlanId).toBeUndefined();
+        sermon.defineTeachingPlan(" teaching-plan-1 ");
+        expect(sermon.teachingPlanId).toBe("teaching-plan-1");
+        sermon.defineTeachingPlan(undefined);
+        expect(sermon.teachingPlanId).toBeUndefined();
+    });
+
     it("manages outline ordering and prevents exact duplicates", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-2"), StudyId.from("study-2"), SermonTitle.from("Test"), john15());
         const first = sermon.addOutlinePoint("First", "Truth one");
@@ -45,61 +54,28 @@ describe("ExpositorySermon", () => {
 
     it("preserves Biblical Theology support when a normal outline edit omits it", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-bt"), StudyId.from("study-bt"), SermonTitle.from("Test"), john15());
-        const point = sermon.addOutlinePoint(
-            "Remain in Christ",
-            "Fruitfulness depends on abiding.",
-            { supportingBiblicalTheologyIds: ["bt-1", "bt-2"] },
-            "point-bt",
-            { supportingBiblicalTheologyIds: ["bt-1", "bt-2"] },
-        );
-
-        const updated = sermon.updateOutlinePoint(
-            point.id,
-            "Remain in Christ",
-            "Fruitfulness depends on abiding faithfully.",
-            {},
-            { explanation: "Updated explanation without restating Biblical Theology support." },
-        );
-
+        const point = sermon.addOutlinePoint("Remain in Christ", "Fruitfulness depends on abiding.", { supportingBiblicalTheologyIds: ["bt-1", "bt-2"] }, "point-bt", { supportingBiblicalTheologyIds: ["bt-1", "bt-2"] });
+        const updated = sermon.updateOutlinePoint(point.id, "Remain in Christ", "Fruitfulness depends on abiding faithfully.", {}, { explanation: "Updated explanation without restating Biblical Theology support." });
         expect(updated.supportingBiblicalTheologyIds).toEqual(["bt-1", "bt-2"]);
     });
 
     it("stores traceable manuscript sections and removes sections with deleted outline points", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-sections"), StudyId.from("study-sections"), SermonTitle.from("Sections"), john15());
         const point = sermon.addOutlinePoint("Remain", "Abide in Christ", {}, "point-sections");
-        sermon.defineManuscriptSections([
-            { id: "intro", title: "Introduction", content: "A faithful introduction." },
-            { id: "point-section", title: "Remain", content: "This section explains the main point.", outlinePointId: point.id },
-            { id: "blank", title: " ", content: "ignored" },
-        ]);
-        expect(sermon.manuscriptSections).toEqual([
-            { id: "intro", title: "Introduction", content: "A faithful introduction." },
-            { id: "point-section", title: "Remain", content: "This section explains the main point.", outlinePointId: point.id },
-        ]);
-
+        sermon.defineManuscriptSections([{ id: "intro", title: "Introduction", content: "A faithful introduction." }, { id: "point-section", title: "Remain", content: "This section explains the main point.", outlinePointId: point.id }, { id: "blank", title: " ", content: "ignored" }]);
+        expect(sermon.manuscriptSections).toEqual([{ id: "intro", title: "Introduction", content: "A faithful introduction." }, { id: "point-section", title: "Remain", content: "This section explains the main point.", outlinePointId: point.id }]);
         sermon.removeOutlinePoint(point.id);
-        expect(sermon.manuscriptSections).toEqual([
-            { id: "intro", title: "Introduction", content: "A faithful introduction." },
-        ]);
+        expect(sermon.manuscriptSections).toEqual([{ id: "intro", title: "Introduction", content: "A faithful introduction." }]);
     });
 
     it("keeps manuscript section links attached to outline point ids when points are reordered", () => {
         const sermon = ExpositorySermon.create(ExpositorySermonId.create("sermon-reorder"), StudyId.from("study-reorder"), SermonTitle.from("Reorder"), john15());
         const first = sermon.addOutlinePoint("First", "Truth one", {}, "point-first");
         const second = sermon.addOutlinePoint("Second", "Truth two", {}, "point-second");
-
-        sermon.defineManuscriptSections([
-            { id: "first-section", title: "First", content: "First manuscript content.", outlinePointId: first.id },
-            { id: "second-section", title: "Second", content: "Second manuscript content.", outlinePointId: second.id },
-        ]);
-
+        sermon.defineManuscriptSections([{ id: "first-section", title: "First", content: "First manuscript content.", outlinePointId: first.id }, { id: "second-section", title: "Second", content: "Second manuscript content.", outlinePointId: second.id }]);
         sermon.moveOutlinePoint(second.id, "up");
-
         expect(sermon.outline.map((point) => point.id)).toEqual([second.id, first.id]);
-        expect(sermon.manuscriptSections).toEqual([
-            { id: "first-section", title: "First", content: "First manuscript content.", outlinePointId: first.id },
-            { id: "second-section", title: "Second", content: "Second manuscript content.", outlinePointId: second.id },
-        ]);
+        expect(sermon.manuscriptSections).toEqual([{ id: "first-section", title: "First", content: "First manuscript content.", outlinePointId: first.id }, { id: "second-section", title: "Second", content: "Second manuscript content.", outlinePointId: second.id }]);
     });
 
     it("stores the final manuscript and delivery notes", () => {
