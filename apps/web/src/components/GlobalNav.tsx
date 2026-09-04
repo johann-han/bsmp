@@ -10,10 +10,12 @@ const items = [
     ["Bible", "/bible"],
     ["Studies", "/studies"],
     ["Workspace", "/workspace"],
-    ["Settings", "/settings"],
+    ["Biblical Theology", "/biblical-theology"],
+    ["Teaching", "/teaching"],
     ["Sermon Preparation", "/preaching"],
     ["Sermon Overview", "/preaching/overview"],
     ["Preaching History", "/preaching/history"],
+    ["Settings", "/settings"],
 ] as const;
 
 export function GlobalNav() {
