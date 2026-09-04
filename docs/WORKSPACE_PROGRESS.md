@@ -14,6 +14,8 @@ The Observation Mentor now follows the canonical observation question sequence (
 
 Interpretations now require at least one supporting observation. The Interpretation Mentor evaluates whether a student's interpretation is adequately grounded in the selected observations and can focus the student back to the relevant observation without supplying a replacement interpretation.
 
+Applications now have a responsible Application Mentor. It evaluates whether the student's principle, personal response, ministry response, and action follow from the selected interpretation, identifies the specific field that needs attention, and coaches the student without writing the application or adding new theology or preaching claims. The mentor API is protected by the signed-in Supabase session and the provider has automated tests for configuration, structured responses, focus limiting, and transient provider fallback.
+
 ## Biblical Theology
 
 A first Biblical Theology stage is now present. A study can record a student-authored theological synthesis with a theme and a required set of supporting interpretations. Biblical Theology entries persist in Supabase with user-scoped row-level security and can be created, edited, and deleted from `/biblical-theology?studyId=...`.
@@ -136,6 +138,8 @@ The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df6
 The Biblical Theology index migration is committed as `2b0e825839ba574739ac5fdc096d50d452fbc02e` and has passed repository CI.
 
 The section-aware manuscript work is committed on `feat/final-sermon-drafting`. Repository CI is green. Authenticated browser verification remains pending for the new final-draft section editor and the complete Study → Biblical Theology → Sermon → Delivery walkthrough.
+
+The Application Mentor integration is committed on `feat/final-sermon-drafting`. CI run `33878617356` completed successfully through dependency installation, typecheck, tests, and production build, including the new provider tests.
 
 Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology and sermon-support tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
 
