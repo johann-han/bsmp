@@ -134,6 +134,8 @@ Leaked-password protection remains deferred because the connected Supabase proje
 
 Repository CI is defined in `.github/workflows/ci.yml` for feature branches and pull requests. The workflow now relies on the repository `packageManager` field for the pnpm version instead of declaring a conflicting second version in the action configuration.
 
+The latest CI run for the Teaching traceability fix, run `33885564111`, completed successfully through dependency installation, typecheck, tests, and production build.
+
 The final-drafting migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
 
 The scheduling migration has been applied successfully to the connected Supabase project and browser persistence has been verified.
@@ -147,8 +149,6 @@ The Biblical Theology `user_id` foreign-key index recommendation has now been ad
 The sermon manuscript sections migration has now been applied to the connected Supabase project. `public.expository_sermons` persists `manuscript_sections` as JSONB with an empty-array default for existing sermons.
 
 The missing `@bsmp/inductive` workspace importer has now been synchronized into `pnpm-lock.yaml` so `pnpm install --frozen-lockfile` matches `apps/web/package.json` again.
-
-The latest CI run for the manuscript-section work has completed successfully through typecheck, tests, and production build. This verifies the current repository state for the section-aware drafting implementation.
 
 The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df60ba26f496c76b11daf9f`. Its UI provides per-outline-point navigation back to recorded Study foundations. Browser verification was not performed for that specific change in this environment.
 
@@ -168,7 +168,9 @@ The Teaching → Sermon bridge, domain linkage, persistence updates, and regress
 
 The final-draft and delivery Teaching Foundation traceability surface is committed on `feat/final-sermon-drafting`. It reads the persisted linked Teaching Plan from the study and exposes a read-only source summary with navigation back to Teaching and Sermon Preparation. Authenticated browser verification has not yet been performed for this latest UI change.
 
-Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology, sermon-support, Teaching, and Teaching → Sermon tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
+A Supabase security-advisor warning for the Teaching `updated_at` trigger's mutable `search_path` was identified and remediated. The connected database function now has `search_path = public`. The separate leaked-password protection warning remains because that Auth feature is unavailable on the connected project plan.
+
+Supabase confirms the current application tables are RLS-enabled, including `studies`, `expository_sermons`, `sermon_outline_points`, `biblical_theology_entries`, and `teaching_plans`; the Teaching → Sermon foreign key is present from `expository_sermons.teaching_plan_id` to `teaching_plans.id`. 
 
 ## Next Work
 
