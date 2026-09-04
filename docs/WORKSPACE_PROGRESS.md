@@ -56,6 +56,8 @@ The final draft workspace also provides a Source Traceability section for every 
 
 The manuscript now supports an optional section-aware drafting mode. Traceable manuscript sections are persisted separately from the legacy manuscript text, each section can be tied directly to a sermon outline point, and the editor exposes the same Study foundation links beside the corresponding authored section. The final manuscript text is still preacher-authored and remains the printable/deliverable document.
 
+The section model is now protected at the domain level: moving outline points preserves their stable IDs and therefore their manuscript-section links, while deleting an outline point removes only the manuscript sections explicitly tied to that point and preserves unrelated sections.
+
 The structured-draft builder is a starting point only. Traceable sections are generated from the completed sermon preparation and exposition so the preacher can revise each section rather than treating generated structure as the final message.
 
 ## Sermon Delivery
@@ -123,22 +125,22 @@ The Sermon Biblical Theology support migration has also been applied successfull
 
 The Biblical Theology `user_id` foreign-key index recommendation has now been addressed. The connected Supabase project contains `idx_biblical_theology_entries_user_id`, and migration `20260902185121_add_biblical_theology_user_id_index` is recorded as applied.
 
-The sermon manuscript sections migration has now been applied to the connected Supabase project. `public.expository_sermons` persists `manuscript_sections` as JSONB with an empty-array default for existing sermons.
+The sermon manuscript sections migration is now committed as `20260904120000_sermon_manuscript_sections.sql` and has been applied successfully to the connected Supabase project. `public.expository_sermons.manuscript_sections` is JSONB with an empty-array default for existing sermons.
 
 The missing `@bsmp/inductive` workspace importer has now been synchronized into `pnpm-lock.yaml` so `pnpm install --frozen-lockfile` matches `apps/web/package.json` again.
 
-Fresh full CI runs for the feature branch have completed successfully through typecheck, tests, and production build for the earlier final-draft Source Traceability and database-hardening changes. The current manuscript-section implementation has a new CI run in progress; its result is the verification checkpoint for the latest section-aware drafting changes.
+A fresh full CI run has completed successfully for the manuscript-section regression changes through typecheck, tests, and production build. The manuscript-section test suite now explicitly verifies outline-point provenance and authored-section composition.
 
 The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df60ba26f496c76b11daf9f`. Its UI provides per-outline-point navigation back to recorded Study foundations. Browser verification was not performed for that specific change in this environment.
 
 The Biblical Theology index migration is committed as `2b0e825839ba574739ac5fdc096d50d452fbc02e` and has passed repository CI.
 
-The section-aware manuscript work is committed across the latest preaching/domain/repository changes, with the current CI run still executing. Browser verification remains pending for the new final-draft section editor.
+The latest section-aware manuscript changes are now covered by domain and application-level regression tests. Authenticated browser verification of the final-draft editor remains the next manual checkpoint.
 
 Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology and sermon-support tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
 
 ## Next Work
 
-1. Complete CI and authenticated browser verification of the new traceable manuscript section editor and the full Study → Biblical Theology → Sermon → Delivery workflow.
-2. Preserve section-level provenance when the preacher edits, reorders, or restructures the manuscript, including finer anchors for introduction, conclusion, and cross-section material.
+1. Complete authenticated browser verification of the final traceable manuscript editor and the full Study → Biblical Theology → Sermon → Delivery workflow.
+2. Preserve section-level provenance when the preacher restructures the manuscript, including finer anchors for introduction, conclusion, and cross-section material.
 3. Continue the inductive-study experience toward the broader responsible AI mentor workflow described in the product vision.
