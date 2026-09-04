@@ -70,6 +70,8 @@ The `/preaching/final` workspace provides:
 
 The final draft workspace also provides a Source Traceability section for every sermon outline point. From there, the preacher can navigate directly back to its recorded observations, interpretations, evidence, applications, and Biblical Theology syntheses, as well as open the Study Workspace, Biblical Theology workspace, or Sermon Exposition. Study Workspace links preserve a return path to the final draft.
 
+The final draft and delivery pages now also surface the linked Teaching Plan as a read-only Teaching Foundation. The traceability view shows the plan title, central truth, teaching aim, and counts of supporting interpretations and Biblical Theology entries, with direct navigation back to the Teaching workspace and Sermon Preparation. This keeps the Study → Biblical Theology → Teaching → Sermon → Delivery relationship visible without copying Teaching content into the sermon manuscript.
+
 The manuscript now supports an optional section-aware drafting mode. Traceable manuscript sections are persisted separately from the legacy manuscript text, each section can be tied directly to a sermon outline point, and the editor exposes the same Study foundation links beside the corresponding authored section. The final manuscript text is still preacher-authored and remains the printable/deliverable document.
 
 The structured-draft builder is a starting point only. Traceable sections are generated from the completed sermon preparation and exposition so the preacher can revise each section rather than treating generated structure as the final message.
@@ -88,6 +90,7 @@ The delivery view provides:
 - estimated preaching duration at 130 words per minute
 - Print / Save PDF support
 - direct return to Final Draft
+- linked Teaching Foundation traceability
 
 ## Sermon Scheduling & Preaching History
 
@@ -163,10 +166,12 @@ The Teaching → Sermon migration `20260904143000_link_teaching_plan_to_sermon.s
 
 The Teaching → Sermon bridge, domain linkage, persistence updates, and regression test are committed on `feat/final-sermon-drafting`. A completed Teaching Plan is required before the bridge will save it onto a sermon.
 
+The final-draft and delivery Teaching Foundation traceability surface is committed on `feat/final-sermon-drafting`. It reads the persisted linked Teaching Plan from the study and exposes a read-only source summary with navigation back to Teaching and Sermon Preparation. Authenticated browser verification has not yet been performed for this latest UI change.
+
 Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology, sermon-support, Teaching, and Teaching → Sermon tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
 
 ## Next Work
 
 1. Complete authenticated browser verification of Teaching, Teaching Mentor, Teaching → Sermon inheritance, and refresh persistence.
 2. Complete authenticated browser verification of the traceable manuscript section editor and the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough.
-3. Extend final-draft Source Traceability to show the linked Teaching Plan so the full preparation chain remains visible at delivery time.
+3. Continue production-hardening review of permissions, source traceability, and delivery/read-only presentation as the workflow expands.
