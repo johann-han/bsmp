@@ -22,6 +22,18 @@ A first Biblical Theology stage is now present. A study can record a student-aut
 
 The stage deliberately preserves the sequence from interpretation into theological synthesis: the synthesis is traceable to existing interpretations rather than generated as an authoritative AI conclusion. Sermon Preparation surfaces the number of Biblical Theology syntheses available, and each sermon outline point displays Biblical Theology themes related to its selected Meaning interpretations. The Sermon Study Source panel exposes the Biblical Theology chain and links back to the theological synthesis workspace.
 
+The Biblical Theology workspace now links directly to the Teaching stage after a synthesis has been recorded.
+
+## Teaching
+
+The new `/teaching?studyId=...` workspace provides a distinct student-authored Teaching stage between Biblical Theology and Sermon Preparation. A teaching plan records audience, central truth, teaching aim, explanation, key teaching points, discussion questions, response prompt, and explicit supporting interpretation/Biblical Theology IDs.
+
+Teaching plans persist in the connected Supabase project through `public.teaching_plans`, which is user-scoped with row-level security and indexed by user and study. The table also maintains `updated_at` through a database trigger.
+
+The Teaching Mentor evaluates whether the student's teaching plan faithfully communicates the selected interpretation and Biblical Theology without replacing the lesson or introducing new theology. It can classify the plan as grounded, mixed, unclear, or overstated and focuses the student on specific fields for review. The mentor route requires a valid signed-in Supabase session and its provider has automated tests covering configuration, structured response parsing, focus limiting, and transient Gemini fallback.
+
+The Global Navigation now exposes Biblical Theology and Teaching as first-class stages, and `/teaching` is included in the authenticated route set.
+
 ## Sermon Preparation
 
 The `/preaching` workspace creates an expository sermon preparation record from a Study and provides sermon title, Big Idea, Purpose, outline construction, editing, deletion, ordering, and links to Study source material.
@@ -30,7 +42,7 @@ Each outline point can be supported by Study observations, interpretations, evid
 
 ## Sermon Framework
 
-The framework stage provides Introduction, Context / Setting, and Conclusion.
+The framework stage provides Introduction, Context / Setting, and Conclusion. These three framework sections can now be addressed directly by traceability anchors from the final-drafting workflow.
 
 ## Sermon Exposition
 
@@ -111,7 +123,7 @@ Leaked-password protection remains deferred because the connected Supabase proje
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, Study → Sermon traceability, and the first Biblical Theology stage.
+- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, Study → Sermon traceability, the first Biblical Theology stage, and the first Teaching stage.
 
 ## Verification
 
@@ -141,10 +153,14 @@ The section-aware manuscript work is committed on `feat/final-sermon-drafting`. 
 
 The Application Mentor integration is committed on `feat/final-sermon-drafting`. CI run `33878617356` completed successfully through dependency installation, typecheck, tests, and production build, including the new provider tests.
 
-Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology and sermon-support tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
+The Teaching migration has been applied successfully to the connected BSMP Supabase project. `public.teaching_plans` now exists with user/study indexes, row-level security, and an `updated_at` trigger.
+
+The Teaching workspace, persistence layer, protected Teaching Mentor API, and Teaching Mentor provider tests are committed on `feat/final-sermon-drafting`. Repository CI verification is pending for this newest feature set.
+
+Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology, sermon-support, and Teaching tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
 
 ## Next Work
 
-1. Complete authenticated browser verification of the traceable manuscript section editor and the full Study → Biblical Theology → Sermon → Delivery workflow.
-2. Preserve section-level provenance when the preacher restructures the manuscript, including finer anchors for introduction, conclusion, and cross-section material.
-3. Continue the inductive-study experience toward the broader responsible AI mentor workflow described in the product vision.
+1. Verify the new Teaching workspace and Teaching Mentor in an authenticated browser, including persistence and refresh.
+2. Complete authenticated browser verification of the traceable manuscript section editor and the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough.
+3. Extend Teaching traceability into Sermon Preparation so a sermon can explicitly inherit and display the teaching plan foundations without duplicating student-authored content.
