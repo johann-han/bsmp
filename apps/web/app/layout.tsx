@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { AuthGate } from "../src/components/AuthGate";
 import { GlobalNav } from "../src/components/GlobalNav";
+import { WebMcpTools } from "../src/components/WebMcpTools";
 import { WorkspaceBackButton } from "../src/components/WorkspaceBackButton";
 import "./globals.css";
 
@@ -27,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <WebMcpTools />
         <GlobalNav />
         <AuthGate>
           <WorkspaceBackButton />
