@@ -39,9 +39,18 @@ function requiredText(value: unknown, field: string): string {
 
 function requiredTextArray(value: unknown, field: string): string[] {
     if (!Array.isArray(value)) throw new Error(`${field} is required.`);
-    const items = value.filter((item): item is string => typeof item === "string" && item.trim()).map((item) => item.trim());
+    const items = value
+        .filter((item): item is string => typeof item === "string" && Boolean(item.trim()))
+        .map((item) => item.trim());
     if (items.length === 0) throw new Error(`${field} must contain at least one item.`);
     return items;
+}
+
+function optionalTextArray(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    return value
+        .filter((item): item is string => typeof item === "string" && Boolean(item.trim()))
+        .map((item) => item.trim());
 }
 
 export async function POST(request: Request) {
@@ -56,7 +65,7 @@ export async function POST(request: Request) {
             teachingAim: requiredText(body.teachingAim, "Teaching aim"),
             keyPoints: requiredTextArray(body.keyPoints, "Key points"),
             explanation: requiredText(body.explanation, "Explanation"),
-            discussionQuestions: Array.isArray(body.discussionQuestions) ? body.discussionQuestions.filter((item): item is string => typeof item === "string" && item.trim()).map((item) => item.trim()) : [],
+            discussionQuestions: optionalTextArray(body.discussionQuestions),
             responsePrompt: requiredText(body.responsePrompt, "Response prompt"),
         });
         return NextResponse.json(result);
