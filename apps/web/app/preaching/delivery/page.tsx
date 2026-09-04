@@ -1,4 +1,5 @@
 import { SermonDeliveryWorkspace } from "../../../src/features/preaching/SermonDeliveryWorkspace";
+import { SermonTeachingTraceability } from "../../../src/features/preaching/SermonTeachingTraceability";
 
 interface Props {
     searchParams: Promise<{ studyId?: string }>;
@@ -6,5 +7,11 @@ interface Props {
 
 export default async function SermonDeliveryPage({ searchParams }: Props) {
     const params = await searchParams;
-    return <SermonDeliveryWorkspace studyId={params.studyId ?? ""} />;
+    const studyId = params.studyId ?? "";
+    return (
+        <>
+            <SermonTeachingTraceability studyId={studyId} variant="delivery" />
+            <SermonDeliveryWorkspace studyId={studyId} />
+        </>
+    );
 }
