@@ -22,9 +22,9 @@ export interface Database {
             sermon_outline_points: { Row: { id: string; sermon_id: string; user_id: string; heading: string; truth: string; position: number; supporting_observation_ids: string[]; supporting_interpretation_ids: string[]; supporting_evidence_ids: string[]; supporting_application_ids: string[]; supporting_biblical_theology_ids: string[]; created_at: string; }; Insert: { id: string; sermon_id: string; user_id: string; heading: string; truth: string; position: number; supporting_observation_ids?: string[]; supporting_interpretation_ids?: string[]; supporting_evidence_ids?: string[]; supporting_application_ids?: string[]; supporting_biblical_theology_ids?: string[]; created_at?: string; }; Update: Partial<Database["public"]["Tables"]["sermon_outline_points"]["Insert"]>; Relationships: []; };
             sermon_occurrences: { Row: { id: string; sermon_id: string; user_id: string; scheduled_at: string; status: "scheduled" | "completed" | "cancelled"; venue: string; service_name: string; notes: string; preached_at: string | null; created_at: string; }; Insert: { id: string; sermon_id: string; user_id: string; scheduled_at: string; status?: "scheduled" | "completed" | "cancelled"; venue?: string; service_name?: string; notes?: string; preached_at?: string | null; created_at?: string; }; Update: Partial<Database["public"]["Tables"]["sermon_occurrences"]["Insert"]>; Relationships: []; };
         };
-        Views: {};
-        Functions: {};
-        Enums: {};
-        CompositeTypes: {};
+        Views: Record<string, never>;
+        Functions: Record<string, never>;
+        Enums: Record<string, never>;
+        CompositeTypes: Record<string, never>;
     };
 }
