@@ -24,6 +24,11 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
     public async findAll(): Promise<readonly ExpositorySermon[]> { const { data, error } = await supabase.from("expository_sermons").select("*").order("created_at", { ascending: false }); if (error) throw error; return Promise.all((data ?? []).map((row) => this.hydrate(row))); }
     public async save(sermon: ExpositorySermon): Promise<void> {
         const { data: userData, error: userError } = await supabase.auth.getUser(); if (userError) throw userError; if (!userData.user) throw new Error("A signed-in Supabase user is required for sermon persistence.");
+        if (sermon.teachingPlanId) {
+            const { data: teachingPlan, error: teachingPlanError } = await supabase.from("teaching_plans").select("id, study_id").eq("id", sermon.teachingPlanId).eq("study_id", sermon.studyId.value).maybeSingle();
+            if (teachingPlanError) throw teachingPlanError;
+            if (!teachingPlan) throw new Error("The linked Teaching Plan must belong to the same Study as the sermon.");
+        }
         const row = { id: sermon.id.value, study_id: sermon.studyId.value, user_id: userData.user.id, title: sermon.title.value, big_idea: sermon.bigIdea?.value ?? null, purpose: sermon.purpose?.value ?? null, introduction: sermon.introduction?.value ?? null, context: sermon.context?.value ?? null, conclusion: sermon.conclusion?.value ?? null, manuscript: sermon.manuscript?.value ?? null, delivery_notes: sermon.deliveryNotes?.value ?? null, teaching_plan_id: sermon.teachingPlanId ?? null, manuscript_sections: sermon.manuscriptSections, created_at: sermon.createdAt.toISOString() };
         const { error } = await supabase.from("expository_sermons").upsert(row as unknown as never); if (error) throw error;
         const { error: deleteError } = await supabase.from("sermon_outline_points").delete().eq("sermon_id", sermon.id.value); if (deleteError) throw deleteError;
