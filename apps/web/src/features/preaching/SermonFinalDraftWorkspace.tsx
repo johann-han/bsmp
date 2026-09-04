@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ExpositorySermon } from "@bsmp/preaching";
-import { buildSermonManuscript, SermonDeliveryNotes as SermonDeliveryNotesValue, SermonManuscript as SermonManuscriptValue } from "@bsmp/preaching";
+import type { ExpositorySermon, SermonManuscriptSection } from "@bsmp/preaching";
+import { buildSermonManuscriptSections, composeSermonManuscript, SermonDeliveryNotes as SermonDeliveryNotesValue, SermonManuscript as SermonManuscriptValue } from "@bsmp/preaching";
 import { StudyId } from "@bsmp/study";
 import type { StudySession } from "@bsmp/study";
 import { AppShell } from "@repo/ui";
@@ -25,6 +25,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
     const [study, setStudy] = useState<StudySession | null>(null);
     const [sermon, setSermon] = useState<ExpositorySermon | null>(null);
     const [manuscript, setManuscript] = useState("");
+    const [manuscriptSections, setManuscriptSections] = useState<SermonManuscriptSection[]>([]);
     const [deliveryNotes, setDeliveryNotes] = useState("");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -48,6 +49,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                 setStudy(nextStudy);
                 setSermon(nextSermon);
                 setManuscript(nextSermon.manuscript?.value ?? "");
+                setManuscriptSections([...nextSermon.manuscriptSections]);
                 setDeliveryNotes(nextSermon.deliveryNotes?.value ?? "");
             } catch (reason: unknown) {
                 if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load the final sermon draft.");
@@ -60,13 +62,23 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
     const wordCount = useMemo(() => manuscript.trim() ? manuscript.trim().split(/\s+/).length : 0, [manuscript]);
     const estimatedMinutes = Math.max(0, Math.round((wordCount / 130) * 10) / 10);
     const hasOutlineMaterial = Boolean(sermon?.outline.some((point) => point.text || point.explanation || point.illustration || point.application));
+    const hasTraceableSections = manuscriptSections.length > 0;
 
-    function insertStructuredDraft() {
+    function buildTraceableSections() {
         if (!sermon) return;
-        if (manuscript.trim() && !window.confirm("Replace the current manuscript with a structured draft from the sermon preparation?")) return;
-        setManuscript(buildSermonManuscript(sermon));
-        setMessage("Structured draft inserted. Revise it into your final preaching manuscript.");
+        if (manuscript.trim() && !window.confirm("Replace the current manuscript with traceable sections generated from the sermon preparation?")) return;
+        const sections = buildSermonManuscriptSections(sermon);
+        setManuscriptSections(sections);
+        setManuscript(composeSermonManuscript(sermon, sections));
+        setMessage("Traceable manuscript sections created. Revise each section into your final wording.");
         setError(null);
+    }
+
+    function updateSection(id: string, content: string) {
+        if (!sermon) return;
+        const next = manuscriptSections.map((section) => section.id === id ? { ...section, content } : section);
+        setManuscriptSections(next);
+        setManuscript(composeSermonManuscript(sermon, next));
     }
 
     async function save() {
@@ -74,6 +86,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
         setSaving(true); setMessage(null); setError(null);
         try {
             sermon.defineManuscript(SermonManuscriptValue.from(manuscript));
+            sermon.defineManuscriptSections(manuscriptSections);
             sermon.defineDeliveryNotes(SermonDeliveryNotesValue.from(deliveryNotes));
             await new SupabaseExpositorySermonRepository().save(sermon);
             setMessage("Final sermon draft saved.");
@@ -87,7 +100,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
 
     return (
         <AppShell title="Final Sermon Draft">
-            <style>{`@media print { .bsmp-print-hide { display: none !important; } .bsmp-print-page { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; break-inside: auto; } .bsmp-print-manuscript, .bsmp-print-notes { display: block !important; white-space: pre-wrap; line-height: 1.6 !important; font-size: 14pt !important; } .bsmp-print-meta { font-size: 10pt !important; color: #444 !important; } }`}</style>
+            <style>{`@media print { .bsmp-print-hide { display: none !important; } .bsmp-print-page { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; } .bsmp-print-manuscript, .bsmp-print-notes { display: block !important; white-space: pre-wrap; line-height: 1.6 !important; font-size: 14pt !important; } .bsmp-print-meta { font-size: 10pt !important; color: #444 !important; } }`}</style>
             <div className="bsmp-print-page" style={{ display: "grid", gap: 20 }}>
                 <section className="bsmp-print-section" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>Final Manuscript & Delivery Preparation</div>
@@ -107,21 +120,20 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                     <h2 style={{ marginTop: 0 }}>Source Traceability</h2>
                     <p style={{ color: "#6b7280", marginTop: 0 }}>The final manuscript is preacher-authored. Use these links to move directly back to the Study foundations behind each sermon point.</p>
                     {sermon.outline.length === 0 ? <p>No sermon outline points have been prepared yet.</p> : sermon.outline.map((point, index) => {
-                        const observationLinks = point.supportingObservationIds.length > 0 ? point.supportingObservationIds.map((id) => study.observations.find((observation) => observation.id.value === id)).filter((observation): observation is NonNullable<typeof observation> => Boolean(observation)) : [];
-                        const interpretationLinks = point.supportingInterpretationIds.length > 0 ? point.supportingInterpretationIds.map((id) => study.interpretations.find((interpretation) => interpretation.id.value === id)).filter((interpretation): interpretation is NonNullable<typeof interpretation> => Boolean(interpretation)) : [];
-                        const evidenceLinks = point.supportingEvidenceIds.length > 0 ? point.supportingEvidenceIds.map((id) => study.interpretations.flatMap((interpretation) => interpretation.evidence).find((evidence) => evidence.id.value === id)).filter((evidence): evidence is NonNullable<typeof evidence> => Boolean(evidence)) : [];
-                        const applicationLinks = point.supportingApplicationIds.length > 0 ? point.supportingApplicationIds.map((id) => study.applications.find((application) => application.id.value === id)).filter((application): application is NonNullable<typeof application> => Boolean(application)) : [];
-                        const theologyIds = point.supportingBiblicalTheologyIds;
+                        const observationLinks = point.supportingObservationIds.map((id) => study.observations.find((observation) => observation.id.value === id)).filter((observation): observation is NonNullable<typeof observation> => Boolean(observation));
+                        const interpretationLinks = point.supportingInterpretationIds.map((id) => study.interpretations.find((interpretation) => interpretation.id.value === id)).filter((interpretation): interpretation is NonNullable<typeof interpretation> => Boolean(interpretation));
+                        const evidenceLinks = point.supportingEvidenceIds.map((id) => study.interpretations.flatMap((interpretation) => interpretation.evidence).find((evidence) => evidence.id.value === id)).filter((evidence): evidence is NonNullable<typeof evidence> => Boolean(evidence));
+                        const applicationLinks = point.supportingApplicationIds.map((id) => study.applications.find((application) => application.id.value === id)).filter((application): application is NonNullable<typeof application> => Boolean(application));
                         return (
                             <article key={point.id} style={{ marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid #f1f5f9" }}>
                                 <strong>{index + 1}. {point.heading}</strong>
                                 <div style={{ marginTop: 6, display: "flex", gap: 8, flexWrap: "wrap", fontSize: 13 }}>
-                                    {observationLinks.length > 0 && observationLinks.map((observation) => <Link key={`obs-${observation.id.value}`} href={workspaceHref(studyId, `observation-${observation.id.value}`)} style={linkStyle}>Observation {observation.verseReference.value.toString()}</Link>)}
-                                    {interpretationLinks.length > 0 && interpretationLinks.map((interpretation) => <Link key={`int-${interpretation.id.value}`} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)} style={linkStyle}>Interpretation</Link>)}
-                                    {evidenceLinks.length > 0 && evidenceLinks.map((evidence) => <Link key={`evidence-${evidence.id.value}`} href={workspaceHref(studyId, `evidence-${evidence.id.value}`)} style={linkStyle}>Evidence</Link>)}
-                                    {applicationLinks.length > 0 && applicationLinks.map((application) => <Link key={`application-${application.id.value}`} href={workspaceHref(studyId, `application-${application.id.value}`)} style={linkStyle}>Application</Link>)}
-                                    {theologyIds.map((theologyId) => <Link key={`bt-${theologyId}`} href={`/biblical-theology?studyId=${encodeURIComponent(studyId)}#biblical-theology-${encodeURIComponent(theologyId)}`} style={linkStyle}>Biblical Theology</Link>)}
-                                    {observationLinks.length === 0 && interpretationLinks.length === 0 && evidenceLinks.length === 0 && applicationLinks.length === 0 && theologyIds.length === 0 && <span style={{ color: "#6b7280" }}>No explicit Study foundation links recorded for this point.</span>}
+                                    {observationLinks.map((observation) => <Link key={`obs-${observation.id.value}`} href={workspaceHref(studyId, `observation-${observation.id.value}`)} style={linkStyle}>Observation {observation.verseReference.value.toString()}</Link>)}
+                                    {interpretationLinks.map((interpretation) => <Link key={`int-${interpretation.id.value}`} href={workspaceHref(studyId, `interpretation-${interpretation.id.value}`)} style={linkStyle}>Interpretation</Link>)}
+                                    {evidenceLinks.map((evidence) => <Link key={`evidence-${evidence.id.value}`} href={workspaceHref(studyId, `evidence-${evidence.id.value}`)} style={linkStyle}>Evidence</Link>)}
+                                    {applicationLinks.map((application) => <Link key={`application-${application.id.value}`} href={workspaceHref(studyId, `application-${application.id.value}`)} style={linkStyle}>Application</Link>)}
+                                    {point.supportingBiblicalTheologyIds.map((theologyId) => <Link key={`bt-${theologyId}`} href={`/biblical-theology?studyId=${encodeURIComponent(studyId)}#biblical-theology-${encodeURIComponent(theologyId)}`} style={linkStyle}>Biblical Theology</Link>)}
+                                    {observationLinks.length === 0 && interpretationLinks.length === 0 && evidenceLinks.length === 0 && applicationLinks.length === 0 && point.supportingBiblicalTheologyIds.length === 0 && <span style={{ color: "#6b7280" }}>No explicit Study foundation links recorded for this point.</span>}
                                 </div>
                             </article>
                         );
@@ -132,18 +144,52 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                     <div className="bsmp-print-hide" style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
                         <div>
                             <h2 style={{ marginBottom: 6 }}>Final Manuscript</h2>
-                            <p style={{ color: "#6b7280", marginTop: 0 }}>Bring the completed framework and exposition together into the sermon manuscript you intend to preach. The Study remains the source of biblical observations, interpretations, evidence, and applications; this field is the preacher's final composed message.</p>
+                            <p style={{ color: "#6b7280", marginTop: 0 }}>The final message remains preacher-authored. Traceable sections let you revise point-by-point while preserving the connection to the sermon outline.</p>
                         </div>
-                        <button type="button" onClick={insertStructuredDraft} disabled={!hasOutlineMaterial} style={{ padding: "10px 14px", fontWeight: 600 }}>
-                            Build Draft from Outline
+                        <button type="button" onClick={buildTraceableSections} disabled={!hasOutlineMaterial} style={{ padding: "10px 14px", fontWeight: 600 }}>
+                            {hasTraceableSections ? "Rebuild Traceable Sections" : "Build Traceable Sections"}
                         </button>
                     </div>
                     <div className="bsmp-print-hide" style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: "#6b7280", marginBottom: 10 }}>
                         <span><strong>{wordCount}</strong> words</span>
                         <span>≈ <strong>{estimatedMinutes}</strong> min at 130 wpm</span>
+                        {hasTraceableSections && <span><strong>{manuscriptSections.length}</strong> traceable sections</span>}
                     </div>
-                    <h2 style={{ display: "none" }} className="bsmp-print-hide">Final Manuscript</h2>
-                    <textarea className="bsmp-print-hide" value={manuscript} onChange={(event) => setManuscript(event.target.value)} rows={24} placeholder="Write the final sermon manuscript..." style={{ width: "100%", boxSizing: "border-box", padding: 12, resize: "vertical" }} />
+
+                    {hasTraceableSections ? (
+                        <div className="bsmp-print-hide" style={{ display: "grid", gap: 14 }}>
+                            {manuscriptSections.map((section) => {
+                                const outlinePoint = section.outlinePointId ? sermon.outline.find((point) => point.id === section.outlinePointId) : undefined;
+                                return (
+                                    <article key={section.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                                            <strong>{section.title}</strong>
+                                            {outlinePoint && <Link href={`/preaching/exposition?studyId=${encodeURIComponent(studyId)}&pointId=${encodeURIComponent(outlinePoint.id)}`} style={linkStyle}>Review sermon point</Link>}
+                                        </div>
+                                        {outlinePoint && <div style={{ color: "#6b7280", fontSize: 12, marginTop: 4 }}>Traceable to the supporting Study foundations recorded for this sermon point.</div>}
+                                        <textarea value={section.content} onChange={(event) => updateSection(section.id, event.target.value)} rows={Math.max(5, Math.min(14, section.content.split("\n").length + 2))} style={{ width: "100%", boxSizing: "border-box", padding: 12, resize: "vertical", marginTop: 10 }} />
+                                        {outlinePoint && (
+                                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8, fontSize: 12 }}>
+                                                {outlinePoint.supportingObservationIds.map((id) => <Link key={`section-obs-${id}`} href={workspaceHref(studyId, `observation-${id}`)} style={linkStyle}>Observation</Link>)}
+                                                {outlinePoint.supportingInterpretationIds.map((id) => <Link key={`section-int-${id}`} href={workspaceHref(studyId, `interpretation-${id}`)} style={linkStyle}>Interpretation</Link>)}
+                                                {outlinePoint.supportingEvidenceIds.map((id) => <Link key={`section-evidence-${id}`} href={workspaceHref(studyId, `evidence-${id}`)} style={linkStyle}>Evidence</Link>)}
+                                                {outlinePoint.supportingApplicationIds.map((id) => <Link key={`section-application-${id}`} href={workspaceHref(studyId, `application-${id}`)} style={linkStyle}>Application</Link>)}
+                                                {outlinePoint.supportingBiblicalTheologyIds.map((id) => <Link key={`section-bt-${id}`} href={`/biblical-theology?studyId=${encodeURIComponent(studyId)}#biblical-theology-${encodeURIComponent(id)}`} style={linkStyle}>Biblical Theology</Link>)}
+                                            </div>
+                                        )}
+                                    </article>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="bsmp-print-hide" style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
+                                <p style={{ color: "#6b7280", margin: 0 }}>For an existing freeform manuscript, the section model begins only when you choose to build traceable sections. Your current manuscript is preserved until then.</p>
+                            </div>
+                            <textarea className="bsmp-print-hide" value={manuscript} onChange={(event) => setManuscript(event.target.value)} rows={24} placeholder="Write the final sermon manuscript..." style={{ width: "100%", boxSizing: "border-box", padding: 12, resize: "vertical", marginTop: 12 }} />
+                        </>
+                    )}
+
                     <div className="bsmp-print-manuscript" style={{ display: "none", whiteSpace: "pre-wrap", fontSize: 16, lineHeight: 1.8 }}>{manuscript}</div>
                     <div className="bsmp-print-meta" style={{ display: "none", marginTop: 14 }}>{wordCount} words · approximately {estimatedMinutes} minutes at 130 words per minute</div>
                 </section>
