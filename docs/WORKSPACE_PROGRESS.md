@@ -119,18 +119,20 @@ The Biblical Theology migration has been applied successfully to the connected S
 
 The Sermon Biblical Theology support migration has also been applied successfully to the connected Supabase project. `public.sermon_outline_points` now persists `supporting_biblical_theology_ids` with an empty-array default for existing rows.
 
+The Biblical Theology `user_id` foreign-key index recommendation has now been addressed. The connected Supabase project contains `idx_biblical_theology_entries_user_id`, and migration `20260902185121_add_biblical_theology_user_id_index` is recorded as applied.
+
 The missing `@bsmp/inductive` workspace importer has now been synchronized into `pnpm-lock.yaml` so `pnpm install --frozen-lockfile` matches `apps/web/package.json` again.
 
 The earlier CI attempts failed during dependency installation because the lockfile was missing the newly declared `@bsmp/inductive` workspace dependency in the `apps/web` importer. The temporary lockfile-repair workflow regenerated and committed the lockfile successfully.
 
-A fresh full CI run for commit `491fdcf76fc0050b22f2ebd9bf579e94e53d23b0` completed successfully: typecheck, test, and production build all passed. The regression test covering preservation of Biblical Theology support during normal outline edits also passed.
+Fresh full CI runs for the current feature branch have completed successfully through typecheck, tests, and production build, including the final-draft Source Traceability change and the Biblical Theology index migration commit.
 
-The later final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df60ba26f496c76b11daf9f`. This change has been reviewed at the repository commit level; a new CI run for this commit should be treated as the verification checkpoint for the traceability UI itself. Browser verification was not performed for that specific change in this environment.
+The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df60ba26f496c76b11daf9f`. Its UI provides per-outline-point navigation back to recorded Study foundations; repository CI subsequently passed on the branch. Browser verification was not performed for that specific change in this environment.
 
-Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology and sermon-support tables are protected by RLS. Performance advisors also reported an index recommendation on the new Biblical Theology table's `user_id` foreign key, which should be addressed in a later database-hardening pass.
+Supabase security advisors previously reported the known leaked-password protection limitation; the Biblical Theology and sermon-support tables are protected by RLS. Remaining database-hardening recommendations should be handled as they become relevant to production scale.
 
 ## Next Work
 
-1. Run a fresh CI cycle for the final-draft Source Traceability change and perform authenticated browser verification of the complete Study → Biblical Theology → Sermon → Delivery workflow.
+1. Perform authenticated browser verification of the complete Study → Biblical Theology → Sermon → Delivery workflow, including the new final-draft traceability navigation.
 2. Strengthen the final manuscript itself with finer-grained source anchors so authored manuscript sections can be traced back to the relevant sermon points and Study foundations without relying only on the separate Source Traceability panel.
 3. Continue the inductive-study experience toward the broader responsible AI mentor workflow described in the product vision.
