@@ -168,9 +168,9 @@ The Teaching → Sermon bridge, domain linkage, persistence updates, and regress
 
 The final-draft and delivery Teaching Foundation traceability surface is committed on `feat/final-sermon-drafting`. It reads the persisted linked Teaching Plan from the study and exposes a read-only source summary with navigation back to Teaching and Sermon Preparation. Authenticated browser verification has not yet been performed for this latest UI change.
 
-A Supabase security-advisor warning for the Teaching `updated_at` trigger's mutable `search_path` was identified and remediated. The connected database function now has `search_path = public`. The separate leaked-password protection warning remains because that Auth feature is unavailable on the connected project plan.
+A Supabase security-advisor warning for the Teaching `updated_at` trigger's mutable `search_path` was identified and remediated. The connected database function now has `search_path = public`. The remediation is recorded in migration `20260904150000_harden_teaching_plans_trigger_search_path.sql`.
 
-Supabase confirms the current application tables are RLS-enabled, including `studies`, `expository_sermons`, `sermon_outline_points`, `biblical_theology_entries`, and `teaching_plans`; the Teaching → Sermon foreign key is present from `expository_sermons.teaching_plan_id` to `teaching_plans.id`. 
+Supabase confirms the current application tables are RLS-enabled, including `studies`, `expository_sermons`, `sermon_outline_points`, `biblical_theology_entries`, and `teaching_plans`; the Teaching → Sermon foreign key is present from `expository_sermons.teaching_plan_id` to `teaching_plans.id`. The only remaining security-advisor warning is the unavailable leaked-password protection feature.
 
 ## Next Work
 
