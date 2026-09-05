@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ExpositorySermon } from "@bsmp/preaching";
 import { ExpositorySermonId, SermonOccurrence, SermonOccurrenceId } from "@bsmp/preaching";
@@ -36,7 +36,7 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
     const [message, setMessage] = useState<string | null>(null);
     const [resolvedStudyId, setResolvedStudyId] = useState(studyId);
 
-    async function load() {
+    const load = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -60,9 +60,9 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
         } finally {
             setLoading(false);
         }
-    }
+    }, [studyId]);
 
-    useEffect(() => { void load(); }, [studyId]);
+    useEffect(() => { void load(); }, [load]);
 
     const upcoming = useMemo(() => occurrences.filter((item) => item.status === "scheduled" && item.scheduledAt.getTime() >= Date.now()), [occurrences]);
     const completed = useMemo(() => occurrences.filter((item) => item.status === "completed"), [occurrences]);
