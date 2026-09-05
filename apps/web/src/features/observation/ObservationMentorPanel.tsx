@@ -4,16 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { ObservationViewModel } from "@bsmp/study";
 import {
-    GetNextObservationQuestion,
     InMemoryObservationQuestionRepository,
     classifyObservationEntry,
 } from "@bsmp/inductive";
 import type { ObservationEntryType } from "@bsmp/inductive";
+import type { ObservationQuestion } from "@bsmp/inductive";
 
 import { supabase } from "../../lib/supabase";
 
 const questionRepository = new InMemoryObservationQuestionRepository();
-const nextQuestionQuery = new GetNextObservationQuestion(questionRepository);
 
 interface ObservationMentorPanelProps {
     readonly studyId: string;
@@ -33,6 +32,12 @@ interface MentorResponse {
     readonly coaching?: unknown;
     readonly focuses?: unknown;
     readonly error?: unknown;
+}
+
+interface QuestionResponseState {
+    observation: string;
+    coaching: string;
+    focuses: MentorFocus[];
 }
 
 function storageKey(studyId: string): string {
@@ -59,8 +64,10 @@ const ENTRY_TYPE_LABELS: Record<ObservationEntryType, string> = {
 };
 
 export function ObservationMentorPanel({ studyId, passageReference, passageText, observations, onFocusPassage }: ObservationMentorPanelProps) {
+    const [questions, setQuestions] = useState<readonly ObservationQuestion[]>([]);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [completed, setCompleted] = useState<string[]>([]);
-    const [question, setQuestion] = useState<Awaited<ReturnType<GetNextObservationQuestion["execute"]>>>(null);
+    const [responses, setResponses] = useState<Record<string, QuestionResponseState>>({});
     const [open, setOpen] = useState(true);
     const [studentObservation, setStudentObservation] = useState("");
     const [coaching, setCoaching] = useState("");
@@ -69,16 +76,37 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const stored = loadCompleted(studyId);
-        setCompleted(stored);
-        // Mentor coaching is intentionally session-only. A browser refresh starts a fresh coaching session,
-        // while the considered-question progress remains persisted for the study.
-        setCoaching("");
-        setFocuses([]);
-        setStudentObservation("");
-        setError(null);
-        void nextQuestionQuery.execute(stored).then(setQuestion);
+        let active = true;
+
+        async function initialize() {
+            const [allQuestions, storedCompleted] = await Promise.all([
+                questionRepository.findAll(),
+                Promise.resolve(loadCompleted(studyId)),
+            ]);
+            if (!active) return;
+
+            const initialResponses: Record<string, QuestionResponseState> = {};
+            setQuestions(allQuestions);
+            setCompleted(storedCompleted);
+            setResponses(initialResponses);
+            setCurrentQuestionIndex(0);
+            setOpen(true);
+            setStudentObservation("");
+            setCoaching("");
+            setFocuses([]);
+            setError(null);
+        }
+
+        void initialize();
+        return () => {
+            active = false;
+        };
     }, [studyId]);
+
+    const currentQuestion = questions[currentQuestionIndex] ?? null;
+    const currentQuestionId = currentQuestion?.id.toString() ?? "";
+    const isFirstQuestion = currentQuestionIndex === 0;
+    const isLastQuestion = questions.length === 0 || currentQuestionIndex === questions.length - 1;
 
     const passageTextForMentor = useMemo(() => passageText.trim(), [passageText]);
     const observationContext = useMemo(() => observations.map((observation) => ({
@@ -89,22 +117,72 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
     })), [observations]);
     const entryType = classifyObservationEntry(studentObservation);
 
-    async function considerQuestion() {
-        if (!question) return;
+    function persistCurrentResponse(next: Partial<QuestionResponseState>) {
+        if (!currentQuestionId) return;
+        setResponses((current) => ({
+            ...current,
+            [currentQuestionId]: {
+                observation: current[currentQuestionId]?.observation ?? "",
+                coaching: current[currentQuestionId]?.coaching ?? "",
+                focuses: current[currentQuestionId]?.focuses ?? [],
+                ...next,
+            },
+        }));
+    }
 
-        const id = question.id.toString();
+    function navigateToQuestion(index: number) {
+        if (index < 0 || index >= questions.length) return;
+        const target = questions[index];
+        const saved = responses[target.id.toString()] ?? { observation: "", coaching: "", focuses: [] };
+        setCurrentQuestionIndex(index);
+        setStudentObservation(saved.observation);
+        setCoaching(saved.coaching);
+        setFocuses(saved.focuses);
+        setError(null);
+    }
+
+    function goToPreviousQuestion() {
+        navigateToQuestion(currentQuestionIndex - 1);
+    }
+
+    function goToNextQuestion() {
+        navigateToQuestion(currentQuestionIndex + 1);
+    }
+
+    function findNextUnconsideredIndex(fromIndex: number): number | null {
+        for (let index = fromIndex; index < questions.length; index += 1) {
+            if (!completed.includes(questions[index].id.toString())) return index;
+        }
+        return null;
+    }
+
+    function considerQuestion() {
+        if (!currentQuestion) return;
+
+        const id = currentQuestion.id.toString();
         const nextCompleted = completed.includes(id) ? completed : [...completed, id];
         window.localStorage.setItem(storageKey(studyId), JSON.stringify(nextCompleted));
         setCompleted(nextCompleted);
+
+        const nextIndex = findNextUnconsideredIndex(currentQuestionIndex + 1);
+        if (nextIndex !== null) {
+            navigateToQuestion(nextIndex);
+            return;
+        }
+
+        const earlierIndex = findNextUnconsideredIndex(0);
+        if (earlierIndex !== null) {
+            navigateToQuestion(earlierIndex);
+            return;
+        }
+
         setCoaching("");
         setFocuses([]);
-        setQuestion(await nextQuestionQuery.execute(nextCompleted));
-        setStudentObservation("");
         setError(null);
     }
 
     async function coachObservation() {
-        if (!question || !studentObservation.trim()) {
+        if (!currentQuestion || !studentObservation.trim()) {
             setError("Write your observation before asking the mentor to coach you.");
             return;
         }
@@ -126,8 +204,8 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                 body: JSON.stringify({
                     passageReference,
                     passageText: passageTextForMentor,
-                    question: question.question.value,
-                    purpose: question.purpose.value,
+                    question: currentQuestion.question.value,
+                    purpose: currentQuestion.purpose.value,
                     studentObservation: studentObservation.trim(),
                     existingObservations: observationContext,
                     previousMentorCoaching: coaching || null,
@@ -161,6 +239,7 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
 
             setCoaching(nextCoaching);
             setFocuses(nextFocuses);
+            persistCurrentResponse({ coaching: nextCoaching, focuses: nextFocuses });
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to reach the AI mentor.");
         } finally {
@@ -171,11 +250,12 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
     function resetMentor() {
         window.localStorage.removeItem(storageKey(studyId));
         setCompleted([]);
+        setResponses({});
+        setCurrentQuestionIndex(0);
         setStudentObservation("");
         setCoaching("");
         setFocuses([]);
         setError(null);
-        void nextQuestionQuery.execute([]).then(setQuestion);
     }
 
     return (
@@ -208,7 +288,9 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
             {open && (
                 <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", fontSize: 12, color: "#64748b" }}>
-                        <span>{completed.length} of 6 questions considered</span>
+                        <span>{completed.length} of {questions.length || 6} questions considered</span>
+                        <span>·</span>
+                        <span>{questions.length > 0 ? `Question ${currentQuestionIndex + 1} of ${questions.length}` : "Loading questions…"}</span>
                         <span>·</span>
                         <span>{observations.length} study observations available to the mentor</span>
                         {entryType !== "empty" && (
@@ -218,21 +300,25 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                         )}
                     </div>
 
-                    {!question ? (
+                    {!currentQuestion ? (
                         <div style={{ display: "grid", gap: 8 }}>
-                            <strong>Observation question cycle complete.</strong>
-                            <span style={{ fontSize: 13, color: "#475569" }}>
-                                Review your observations before moving into interpretation.
-                            </span>
-                            <button type="button" onClick={resetMentor} style={{ width: "fit-content" }}>
-                                Start over
-                            </button>
+                            <strong>Observation questions are loading.</strong>
                         </div>
                     ) : (
                         <div style={{ display: "grid", gap: 10 }}>
-                            <div>
-                                <strong style={{ fontSize: 18 }}>{question.question.value}</strong>
-                                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#475569" }}>{question.purpose.value}</p>
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                                <div>
+                                    <strong style={{ fontSize: 18 }}>{currentQuestion.question.value}</strong>
+                                    <p style={{ margin: "6px 0 0", fontSize: 13, color: "#475569" }}>{currentQuestion.purpose.value}</p>
+                                </div>
+                                <div style={{ display: "flex", gap: 8 }}>
+                                    <button type="button" onClick={goToPreviousQuestion} disabled={isFirstQuestion}>
+                                        ← Previous
+                                    </button>
+                                    <button type="button" onClick={goToNextQuestion} disabled={isLastQuestion}>
+                                        Next →
+                                    </button>
+                                </div>
                             </div>
 
                             <div style={{ padding: 12, borderRadius: 8, background: "#ffffff", border: "1px solid #e2e8f0" }}>
@@ -261,7 +347,11 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                                 Your observation
                                 <textarea
                                     value={studentObservation}
-                                    onChange={(event) => setStudentObservation(event.target.value)}
+                                    onChange={(event) => {
+                                        const nextValue = event.target.value;
+                                        setStudentObservation(nextValue);
+                                        persistCurrentResponse({ observation: nextValue });
+                                    }}
                                     placeholder="Record only what you can observe in the text..."
                                     rows={4}
                                     style={{ width: "100%", boxSizing: "border-box", resize: "vertical", border: "1px solid #cbd5e1", borderRadius: 8, padding: 10, font: "inherit", fontWeight: 400 }}
@@ -272,7 +362,7 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                                 <button type="button" onClick={() => void coachObservation()} disabled={loading || !studentObservation.trim()}>
                                     {loading ? "Mentor is reviewing..." : "Ask the mentor to coach me"}
                                 </button>
-                                <button type="button" onClick={() => void considerQuestion()}>
+                                <button type="button" onClick={considerQuestion}>
                                     I have considered this question
                                 </button>
                             </div>
@@ -311,6 +401,27 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                                     </p>
                                 </div>
                             )}
+
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", paddingTop: 4 }}>
+                                <div style={{ display: "flex", gap: 8 }}>
+                                    <button type="button" onClick={goToPreviousQuestion} disabled={isFirstQuestion}>
+                                        ← Previous question
+                                    </button>
+                                    <button type="button" onClick={goToNextQuestion} disabled={isLastQuestion}>
+                                        Next question →
+                                    </button>
+                                </div>
+                                <button type="button" onClick={resetMentor} style={{ width: "fit-content" }}>
+                                    Reset question progress
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {completed.length === questions.length && questions.length > 0 && (
+                        <div style={{ padding: 12, borderRadius: 8, background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#065f46" }}>
+                            <strong>All six observation questions have been considered.</strong>
+                            <span style={{ marginLeft: 6 }}>You can still move backward and forward to review them.</span>
                         </div>
                     )}
 
