@@ -37,7 +37,7 @@ export function SermonPreparationStudyReadinessGuard({ studyId }: Props) {
                         if (active) {
                             router.replace(`/workspace?studyId=${encodeURIComponent(studyId)}`);
                         }
-                    }, 3000);
+                    }, 12000);
                 }
             } catch {
                 // Leave the Sermon Preparation page available if the readiness check cannot be completed.
@@ -72,7 +72,7 @@ export function SermonPreparationStudyReadinessGuard({ studyId }: Props) {
                 Observation, one Interpretation, and one Application in the Study Workspace.
             </p>
             <p style={{ marginBottom: 0, color: "#92400e" }}>
-                Returning to the Study Workspace in a few seconds…
+                Returning to the Study Workspace in 12 seconds…
             </p>
         </section>
     );
