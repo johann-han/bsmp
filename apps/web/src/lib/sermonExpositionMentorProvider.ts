@@ -138,7 +138,7 @@ export function createSermonExpositionMentorProvider(): SermonExpositionMentorPr
   const provider = (process.env.AI_PROVIDER ?? "gemini").trim().toLowerCase();
   if (provider === "openai") return new OpenAIProvider(process.env.OPENAI_API_KEY ?? (() => { throw new Error("OpenAI mentor is not configured. Set OPENAI_API_KEY on the web server."); })(), process.env.OPENAI_SERMON_EXPOSITION_MODEL ?? process.env.OPENAI_MODEL ?? "gpt-5.6-luna");
   if (provider === "gemini") return new GeminiProvider(process.env.GEMINI_API_KEY ?? (() => { throw new Error("Gemini mentor is not configured. Set GEMINI_API_KEY on the web server."); })(), process.env.GEMINI_SERMON_EXPOSITION_MODEL ?? process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite");
-  throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use \"gemini\" or \"openai\".`);
+  throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use "gemini" or "openai".`);
 }
 
 class OpenAIProvider implements SermonExpositionMentorProvider {
