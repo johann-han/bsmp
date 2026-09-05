@@ -1,3 +1,4 @@
+import { SermonExpositionMentorPanel } from "../../../src/features/preaching/SermonExpositionMentorPanel";
 import { SermonExpositionWorkspace } from "../../../src/features/preaching/SermonExpositionWorkspace";
 
 interface SermonExpositionPageProps {
@@ -6,5 +7,6 @@ interface SermonExpositionPageProps {
 
 export default async function SermonExpositionPage({ searchParams }: SermonExpositionPageProps) {
     const params = await searchParams;
-    return <SermonExpositionWorkspace studyId={params.studyId ?? ""} />;
+    const studyId = params.studyId ?? "";
+    return <><SermonExpositionWorkspace studyId={studyId} /><SermonExpositionMentorPanel studyId={studyId} /></>;
 }
