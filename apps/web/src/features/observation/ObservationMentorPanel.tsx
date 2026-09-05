@@ -3,10 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import type { ObservationViewModel } from "@bsmp/study";
-import {
-    InMemoryObservationQuestionRepository,
-    classifyObservationEntry,
-} from "@bsmp/inductive";
+import { InMemoryObservationQuestionRepository, classifyObservationEntry } from "@bsmp/inductive";
 import type { ObservationEntryType } from "@bsmp/inductive";
 import type { ObservationQuestion } from "@bsmp/inductive";
 
@@ -85,10 +82,9 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
             ]);
             if (!active) return;
 
-            const initialResponses: Record<string, QuestionResponseState> = {};
             setQuestions(allQuestions);
             setCompleted(storedCompleted);
-            setResponses(initialResponses);
+            setResponses({});
             setCurrentQuestionIndex(0);
             setOpen(true);
             setStudentObservation("");
@@ -133,6 +129,7 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
     function navigateToQuestion(index: number) {
         if (index < 0 || index >= questions.length) return;
         const target = questions[index];
+        if (!target) return;
         const saved = responses[target.id.toString()] ?? { observation: "", coaching: "", focuses: [] };
         setCurrentQuestionIndex(index);
         setStudentObservation(saved.observation);
@@ -151,7 +148,8 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
 
     function findNextUnconsideredIndex(fromIndex: number): number | null {
         for (let index = fromIndex; index < questions.length; index += 1) {
-            if (!completed.includes(questions[index].id.toString())) return index;
+            const question = questions[index];
+            if (question && !completed.includes(question.id.toString())) return index;
         }
         return null;
     }
@@ -259,30 +257,14 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
     }
 
     return (
-        <section
-            className="bsmp-print-hide"
-            style={{
-                marginBottom: 16,
-                border: "1px solid #dbeafe",
-                borderRadius: 12,
-                background: "#f8fbff",
-                padding: 16,
-            }}
-            aria-label="Observation Mentor"
-        >
+        <section className="bsmp-print-hide" style={{ marginBottom: 16, border: "1px solid #dbeafe", borderRadius: 12, background: "#f8fbff", padding: 16 }} aria-label="Observation Mentor">
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
                 <div>
-                    <p style={{ margin: 0, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b" }}>
-                        Inductive Mentor
-                    </p>
+                    <p style={{ margin: 0, fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b" }}>Inductive Mentor</p>
                     <h2 style={{ margin: "4px 0 6px", fontSize: 20 }}>Observation before interpretation</h2>
-                    <p style={{ margin: 0, color: "#475569", fontSize: 13 }}>
-                        The mentor sees the passage, your current observation, and your existing study observations. It helps you inspect the text without taking over the study.
-                    </p>
+                    <p style={{ margin: 0, color: "#475569", fontSize: 13 }}>The mentor sees the passage, your current observation, and your existing study observations. It helps you inspect the text without taking over the study.</p>
                 </div>
-                <button type="button" onClick={() => setOpen((value) => !value)}>
-                    {open ? "Hide" : "Show"}
-                </button>
+                <button type="button" onClick={() => setOpen((value) => !value)}>{open ? "Hide" : "Show"}</button>
             </div>
 
             {open && (
@@ -293,17 +275,11 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                         <span>{questions.length > 0 ? `Question ${currentQuestionIndex + 1} of ${questions.length}` : "Loading questions…"}</span>
                         <span>·</span>
                         <span>{observations.length} study observations available to the mentor</span>
-                        {entryType !== "empty" && (
-                            <span style={{ marginLeft: "auto", padding: "4px 8px", borderRadius: 999, background: "#e0f2fe", color: "#075985", fontWeight: 700 }}>
-                                Entry type: {ENTRY_TYPE_LABELS[entryType]}
-                            </span>
-                        )}
+                        {entryType !== "empty" && <span style={{ marginLeft: "auto", padding: "4px 8px", borderRadius: 999, background: "#e0f2fe", color: "#075985", fontWeight: 700 }}>Entry type: {ENTRY_TYPE_LABELS[entryType]}</span>}
                     </div>
 
                     {!currentQuestion ? (
-                        <div style={{ display: "grid", gap: 8 }}>
-                            <strong>Observation questions are loading.</strong>
-                        </div>
+                        <div style={{ display: "grid", gap: 8 }}><strong>Observation questions are loading.</strong></div>
                     ) : (
                         <div style={{ display: "grid", gap: 10 }}>
                             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
@@ -312,12 +288,8 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                                     <p style={{ margin: "6px 0 0", fontSize: 13, color: "#475569" }}>{currentQuestion.purpose.value}</p>
                                 </div>
                                 <div style={{ display: "flex", gap: 8 }}>
-                                    <button type="button" onClick={goToPreviousQuestion} disabled={isFirstQuestion}>
-                                        ← Previous
-                                    </button>
-                                    <button type="button" onClick={goToNextQuestion} disabled={isLastQuestion}>
-                                        Next →
-                                    </button>
+                                    <button type="button" onClick={goToPreviousQuestion} disabled={isFirstQuestion}>← Previous</button>
+                                    <button type="button" onClick={goToNextQuestion} disabled={isLastQuestion}>Next →</button>
                                 </div>
                             </div>
 
@@ -332,10 +304,7 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
                                     <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
                                         {observations.map((observation) => (
                                             <div key={observation.id} style={{ padding: 10, border: "1px solid #e5e7eb", borderRadius: 8, background: "#fff" }}>
-                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>
-                                                    {observation.verseReference}
-                                                    {observation.target.wordText ? ` · ${observation.target.wordText}` : ""}
-                                                </div>
+                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>{observation.verseReference}{observation.target.wordText ? ` · ${observation.target.wordText}` : ""}</div>
                                                 <div style={{ marginTop: 4, fontSize: 13, lineHeight: 1.5 }}>{observation.statement}</div>
                                             </div>
                                         ))}
@@ -345,86 +314,34 @@ export function ObservationMentorPanel({ studyId, passageReference, passageText,
 
                             <label style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 600 }}>
                                 Your observation
-                                <textarea
-                                    value={studentObservation}
-                                    onChange={(event) => {
-                                        const nextValue = event.target.value;
-                                        setStudentObservation(nextValue);
-                                        persistCurrentResponse({ observation: nextValue });
-                                    }}
-                                    placeholder="Record only what you can observe in the text..."
-                                    rows={4}
-                                    style={{ width: "100%", boxSizing: "border-box", resize: "vertical", border: "1px solid #cbd5e1", borderRadius: 8, padding: 10, font: "inherit", fontWeight: 400 }}
-                                />
+                                <textarea value={studentObservation} onChange={(event) => { const nextValue = event.target.value; setStudentObservation(nextValue); persistCurrentResponse({ observation: nextValue }); }} placeholder="Record only what you can observe in the text..." rows={4} style={{ width: "100%", boxSizing: "border-box", resize: "vertical", border: "1px solid #cbd5e1", borderRadius: 8, padding: 10, font: "inherit", fontWeight: 400 }} />
                             </label>
 
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                                <button type="button" onClick={() => void coachObservation()} disabled={loading || !studentObservation.trim()}>
-                                    {loading ? "Mentor is reviewing..." : "Ask the mentor to coach me"}
-                                </button>
-                                <button type="button" onClick={considerQuestion}>
-                                    I have considered this question
-                                </button>
+                                <button type="button" onClick={() => void coachObservation()} disabled={loading || !studentObservation.trim()}>{loading ? "Mentor is reviewing..." : "Ask the mentor to coach me"}</button>
+                                <button type="button" onClick={considerQuestion}>I have considered this question</button>
                             </div>
 
-                            {coaching && (
-                                <div style={{ padding: 12, borderRadius: 8, background: "#ffffff", border: "1px solid #bfdbfe" }}>
-                                    <strong style={{ fontSize: 13 }}>Mentor coaching</strong>
-                                    <p style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.6 }}>{coaching}</p>
-                                </div>
-                            )}
+                            {coaching && <div style={{ padding: 12, borderRadius: 8, background: "#ffffff", border: "1px solid #bfdbfe" }}><strong style={{ fontSize: 13 }}>Mentor coaching</strong><p style={{ margin: "8px 0 0", whiteSpace: "pre-wrap", fontSize: 13, lineHeight: 1.6 }}>{coaching}</p></div>}
 
                             {focuses.length > 0 && (
                                 <div style={{ padding: 12, borderRadius: 8, background: "#ffffff", border: "1px solid #dbeafe" }}>
                                     <strong style={{ fontSize: 13 }}>Look again at the text</strong>
                                     <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
-                                        {focuses.map((focus, index) => (
-                                            <div key={`${focus.verseReference}-${index}`} style={{ padding: 10, borderRadius: 8, background: "#f8fbff" }}>
-                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#1d4ed8" }}>
-                                                    {focus.verseReference} · “{focus.textCue}”
-                                                </div>
-                                                <div style={{ marginTop: 4, fontSize: 13, lineHeight: 1.5 }}>{focus.question}</div>
-                                                {onFocusPassage && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => onFocusPassage(focus)}
-                                                        style={{ marginTop: 8 }}
-                                                    >
-                                                        View in passage
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
+                                        {focuses.map((focus, index) => <div key={`${focus.verseReference}-${index}`} style={{ padding: 10, borderRadius: 8, background: "#f8fbff" }}><div style={{ fontSize: 12, fontWeight: 700, color: "#1d4ed8" }}>{focus.verseReference} · “{focus.textCue}”</div><div style={{ marginTop: 4, fontSize: 13, lineHeight: 1.5 }}>{focus.question}</div>{onFocusPassage && <button type="button" onClick={() => onFocusPassage(focus)} style={{ marginTop: 8 }}>View in passage</button>}</div>)}
                                     </div>
-                                    <p style={{ margin: "8px 0 0", fontSize: 12, color: "#64748b" }}>
-                                        These are observation prompts, not conclusions. Verify each one in the passage yourself.
-                                    </p>
+                                    <p style={{ margin: "8px 0 0", fontSize: 12, color: "#64748b" }}>These are observation prompts, not conclusions. Verify each one in the passage yourself.</p>
                                 </div>
                             )}
 
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", paddingTop: 4 }}>
-                                <div style={{ display: "flex", gap: 8 }}>
-                                    <button type="button" onClick={goToPreviousQuestion} disabled={isFirstQuestion}>
-                                        ← Previous question
-                                    </button>
-                                    <button type="button" onClick={goToNextQuestion} disabled={isLastQuestion}>
-                                        Next question →
-                                    </button>
-                                </div>
-                                <button type="button" onClick={resetMentor} style={{ width: "fit-content" }}>
-                                    Reset question progress
-                                </button>
+                                <div style={{ display: "flex", gap: 8 }}><button type="button" onClick={goToPreviousQuestion} disabled={isFirstQuestion}>← Previous question</button><button type="button" onClick={goToNextQuestion} disabled={isLastQuestion}>Next question →</button></div>
+                                <button type="button" onClick={resetMentor} style={{ width: "fit-content" }}>Reset question progress</button>
                             </div>
                         </div>
                     )}
 
-                    {completed.length === questions.length && questions.length > 0 && (
-                        <div style={{ padding: 12, borderRadius: 8, background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#065f46" }}>
-                            <strong>All six observation questions have been considered.</strong>
-                            <span style={{ marginLeft: 6 }}>You can still move backward and forward to review them.</span>
-                        </div>
-                    )}
-
+                    {completed.length === questions.length && questions.length > 0 && <div style={{ padding: 12, borderRadius: 8, background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#065f46" }}><strong>All six observation questions have been considered.</strong><span style={{ marginLeft: 6 }}>You can still move backward and forward to review them.</span></div>}
                     {error && <p style={{ margin: 0, color: "#b91c1c", fontSize: 13 }}>{error}</p>}
                 </div>
             )}
