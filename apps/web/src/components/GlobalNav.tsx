@@ -19,9 +19,24 @@ const items = [
     ["Settings", "/settings"],
 ] as const;
 
+const studyScopedPaths = new Set([
+    "/workspace",
+    "/biblical-theology",
+    "/teaching",
+    "/preaching",
+    "/preaching/overview",
+    "/preaching/history",
+]);
+
+function withStudyId(path: string, studyId: string) {
+    if (!studyId || !studyScopedPaths.has(path)) return path;
+    return `${path}?${new URLSearchParams({ studyId }).toString()}`;
+}
+
 export function GlobalNav() {
     const [user, setUser] = useState<User | null>(null);
     const [signingOut, setSigningOut] = useState(false);
+    const [studyId, setStudyId] = useState("");
 
     useEffect(() => {
         let mounted = true;
@@ -33,6 +48,10 @@ export function GlobalNav() {
         const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
             if (mounted) setUser(session?.user ?? null);
         });
+
+        const params = new URLSearchParams(window.location.search);
+        const currentStudyId = params.get("studyId")?.trim() ?? "";
+        if (mounted) setStudyId(currentStudyId);
 
         return () => {
             mounted = false;
@@ -53,7 +72,7 @@ export function GlobalNav() {
             <nav aria-label="Primary navigation" style={{ display: "flex", alignItems: "center", gap: 18, minHeight: 52, padding: "0 20px", overflowX: "auto", whiteSpace: "nowrap" }}>
                 <Link href="/" style={{ fontWeight: 800, color: "#0f172a", textDecoration: "none", marginRight: 6 }}>BSMP</Link>
                 {items.map(([label, href]) => (
-                    <Link key={href} href={href} style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
+                    <Link key={href} href={withStudyId(href, studyId)} style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
                         {label}
                     </Link>
                 ))}
