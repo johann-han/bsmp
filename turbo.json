@@ -1,6 +1,25 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "AI_PROVIDER",
+    "OPENAI_API_KEY",
+    "OPENAI_MODEL",
+    "OPENAI_APPLICATION_MODEL",
+    "OPENAI_BIBLICAL_THEOLOGY_MODEL",
+    "OPENAI_TEACHING_MODEL",
+    "OPENAI_FINAL_SERMON_DRAFT_MODEL",
+    "OPENAI_SERMON_DELIVERY_MODEL",
+    "OPENAI_SERMON_EXPOSITION_MODEL",
+    "GEMINI_API_KEY",
+    "GEMINI_MODEL",
+    "GEMINI_APPLICATION_MODEL",
+    "GEMINI_BIBLICAL_THEOLOGY_MODEL",
+    "GEMINI_TEACHING_MODEL",
+    "GEMINI_FINAL_SERMON_DRAFT_MODEL",
+    "GEMINI_SERMON_DELIVERY_MODEL",
+    "GEMINI_SERMON_EXPOSITION_MODEL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
