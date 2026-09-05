@@ -360,21 +360,7 @@ export function WebMcpTools() {
         name: "get_bsmp_browser_context",
         title: "Get BSMP workflow context",
         description:
-          "Return the current BSMP URL and supported study-to-sermon workspace routes. This is read-only; use get_bsmp_workflow_state for authenticated, metadata-only workflow diagnostics.",
-        inputSchema: { type: "object", properties: {} },
-        annotations: { readOnlyHint: true },
-        execute: () => ({
-          origin: window.location.origin,
-          pathname: window.location.pathname,
-          search: window.location.search,
-          workspaces: WORKSPACES,
-        }),
-      },
-      {
-        name: "get_bsmp_workflow_state",
-        title: "Get BSMP workflow state",
-        description:
-          "Inspect the authenticated BSMP Study and sermon workflow using existing Supabase RLS. Returns only structural metadata: identifiers, counts, readiness flags, traceability checks, and discrepancy codes; never returns user-authored study or sermon text.",
+          "Return the current BSMP browser context and, when a Study is active or a studyId is supplied, an authenticated metadata-only workflow diagnostic. It returns identifiers, counts, readiness flags, traceability checks, and discrepancy codes; it never returns user-authored study or sermon text.",
         inputSchema: {
           type: "object",
           properties: {
