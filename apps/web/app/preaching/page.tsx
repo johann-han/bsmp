@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SermonPreparationWorkspace } from "../../src/features/preaching/SermonPreparationWorkspace";
+import { SermonPreparationStudyReadinessGuard } from "../../src/features/preaching/SermonPreparationStudyReadinessGuard";
 import { SermonTeachingFoundationSection } from "../../src/features/preaching/SermonTeachingFoundationSection";
 
 interface PreachingPageProps {
@@ -11,6 +12,7 @@ export default async function PreachingPage({ searchParams }: PreachingPageProps
     const studyId = params.studyId ?? "";
 
     return <>
+        <SermonPreparationStudyReadinessGuard studyId={studyId} />
         <SermonTeachingFoundationSection />
         <SermonPreparationWorkspace />
         {studyId && <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 24px" }}>
