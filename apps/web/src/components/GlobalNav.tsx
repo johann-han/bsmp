@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
@@ -50,11 +51,11 @@ export function GlobalNav() {
     return (
         <header className="bsmp-print-hide" style={{ position: "sticky", top: 0, zIndex: 1000, borderBottom: "1px solid #e5e7eb", background: "rgba(255,255,255,0.96)", backdropFilter: "blur(10px)", boxShadow: "0 1px 8px rgba(15,23,42,0.06)" }}>
             <nav aria-label="Primary navigation" style={{ display: "flex", alignItems: "center", gap: 18, minHeight: 52, padding: "0 20px", overflowX: "auto", whiteSpace: "nowrap" }}>
-                <a href="/" style={{ fontWeight: 800, color: "#0f172a", textDecoration: "none", marginRight: 6 }}>BSMP</a>
+                <Link href="/" style={{ fontWeight: 800, color: "#0f172a", textDecoration: "none", marginRight: 6 }}>BSMP</Link>
                 {items.map(([label, href]) => (
-                    <a key={href} href={href} style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
+                    <Link key={href} href={href} style={{ color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>
                         {label}
-                    </a>
+                    </Link>
                 ))}
                 <span aria-hidden="true" style={{ flex: 1 }} />
                 {user ? (
@@ -65,9 +66,9 @@ export function GlobalNav() {
                         </button>
                     </>
                 ) : (
-                    <a href="/login" style={{ border: "1px solid #d1d5db", borderRadius: 7, padding: "7px 11px", color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 700 }}>
+                    <Link href="/login" style={{ border: "1px solid #d1d5db", borderRadius: 7, padding: "7px 11px", color: "#334155", textDecoration: "none", fontSize: 14, fontWeight: 700 }}>
                         Sign in
-                    </a>
+                    </Link>
                 )}
             </nav>
         </header>
