@@ -6,6 +6,7 @@ import type { Database } from "../../lib/database.types";
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { supabase } from "../../lib/supabase";
 import { StudyId } from "@bsmp/study";
+import { BiblicalTheologyMentorPanel } from "./BiblicalTheologyMentorPanel";
 
 interface Props { studyId: string; }
 type Interpretation = Database["public"]["Tables"]["study_interpretations"]["Row"];
@@ -108,6 +109,7 @@ export function BiblicalTheologyWorkspace({ studyId }: Props) {
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><button type="button" onClick={() => void save()} disabled={saving}>{saving ? "Saving..." : editingId ? "Update Synthesis" : "Save Synthesis"}</button>{editingId && <button type="button" disabled={saving} onClick={resetForm}>Cancel</button>}{message && <span style={{ color: "#166534" }}>{message}</span>}{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
             </div>
         </section>
+        <BiblicalTheologyMentorPanel studyId={studyId} />
         <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
             <h2 style={{ marginTop: 0 }}>Saved Biblical Theology</h2>
             {entries.length === 0 ? <p style={{ color: "#6b7280" }}>No Biblical Theology syntheses recorded yet.</p> : <div style={{ display: "grid", gap: 12 }}>{entries.map((entry) => <article key={entry.id} id={`biblical-theology-${entry.id}`} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, scrollMarginTop: 80 }}><strong>{entry.theme}</strong><p style={{ whiteSpace: "pre-wrap" }}>{entry.synthesis}</p><div style={{ fontSize: 13, color: "#6b7280" }}>Traceable to {entry.interpretation_ids.length} interpretation{entry.interpretation_ids.length === 1 ? "" : "s"}.</div><div style={{ marginTop: 10, display: "flex", gap: 8 }}><button type="button" onClick={() => edit(entry)}>Edit</button><button type="button" onClick={() => void remove(entry.id)}>Delete</button></div></article>)}</div>}
