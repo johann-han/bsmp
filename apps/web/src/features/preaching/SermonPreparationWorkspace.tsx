@@ -75,7 +75,13 @@ export function SermonPreparationWorkspace() {
         setSelectedStudyId(studyId);
         setMessage(null);
         setError(null);
-        resetOutlineEditor();
+        setEditingOutlinePointId(null);
+        setHeading("");
+        setTruth("");
+        setSupportingObservationIds([]);
+        setSupportingInterpretationIds([]);
+        setSupportingEvidenceIds([]);
+        setSupportingApplicationIds([]);
 
         if (typeof window !== "undefined") {
             if (studyId) window.localStorage.setItem("bsmp:last-study-id", studyId);
