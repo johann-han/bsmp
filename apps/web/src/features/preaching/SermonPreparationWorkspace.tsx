@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { StudySession } from "@bsmp/study";
 import { StudyId } from "@bsmp/study";
@@ -36,6 +36,9 @@ const studySupportLinkStyle = {
     textDecoration: "none",
 };
 
+const studyRepository = new SupabaseStudyRepository();
+const sermonRepository = new SupabaseExpositorySermonRepository();
+
 export function SermonPreparationWorkspace() {
     const router = useRouter();
     const [studies, setStudies] = useState<readonly StudySession[]>([]);
@@ -54,9 +57,6 @@ export function SermonPreparationWorkspace() {
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const studyRepository = new SupabaseStudyRepository();
-    const sermonRepository = new SupabaseExpositorySermonRepository();
-
     function resetOutlineSupport() {
         setSupportingObservationIds([]);
         setSupportingInterpretationIds([]);
@@ -71,11 +71,17 @@ export function SermonPreparationWorkspace() {
         resetOutlineSupport();
     }
 
-    async function loadStudy(studyId: string, availableStudies: readonly StudySession[]) {
+    const loadStudy = useCallback(async (studyId: string, availableStudies: readonly StudySession[]) => {
         setSelectedStudyId(studyId);
         setMessage(null);
         setError(null);
-        resetOutlineEditor();
+        setEditingOutlinePointId(null);
+        setHeading("");
+        setTruth("");
+        setSupportingObservationIds([]);
+        setSupportingInterpretationIds([]);
+        setSupportingEvidenceIds([]);
+        setSupportingApplicationIds([]);
 
         if (typeof window !== "undefined") {
             if (studyId) window.localStorage.setItem("bsmp:last-study-id", studyId);
@@ -107,7 +113,7 @@ export function SermonPreparationWorkspace() {
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to load sermon preparation.");
         }
-    }
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -144,7 +150,7 @@ export function SermonPreparationWorkspace() {
         return () => {
             cancelled = true;
         };
-    }, [router]);
+    }, [router, loadStudy]);
 
     function selectStudy(studyId: string) {
         void loadStudy(studyId, studies);

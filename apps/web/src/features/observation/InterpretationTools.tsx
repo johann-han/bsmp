@@ -44,14 +44,10 @@ export function InterpretationTools({
     workspace,
     onSaved,
     onChanged,
-    onEvidenceChanged,
-    onEvidenceRollback,
 }: InterpretationToolsProps) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [statement, setStatement] = useState("");
     const [selectedObservationIds, setSelectedObservationIds] = useState<string[]>([]);
-    const [evidenceType, setEvidenceType] = useState<EvidenceType>("Scripture");
-    const [evidenceDescription, setEvidenceDescription] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -93,39 +89,12 @@ export function InterpretationTools({
 
         try {
             await workspace.updateInterpretation(selected.id, next.statement, next.observationIds);
-            void onSaved();
+            await onSaved();
         } catch (reason) {
             onChanged?.(previous);
             setEditingId(selected.id);
+            setMessage(null);
             setError(reason instanceof Error ? reason.message : "Unable to update interpretation.");
-        }
-    }
-
-    async function addEvidence(interpretationId: string) {
-        if (!evidenceDescription.trim()) {
-            setError("Enter an evidence description before saving.");
-            return;
-        }
-
-        const description = evidenceDescription.trim();
-        const optimisticEvidence: InterpretationViewModel["evidence"][number] = {
-            id: crypto.randomUUID(),
-            type: evidenceType,
-            description,
-            createdAt: new Date().toISOString(),
-        };
-
-        onEvidenceChanged?.(interpretationId, optimisticEvidence);
-        setEvidenceDescription("");
-        setMessage("Evidence added.");
-        setError(null);
-
-        try {
-            await workspace.addEvidence(interpretationId, evidenceType, description);
-            void onSaved();
-        } catch (reason) {
-            onEvidenceRollback?.(interpretationId, optimisticEvidence.id);
-            setError(reason instanceof Error ? reason.message : "Unable to save evidence.");
         }
     }
 
@@ -136,33 +105,40 @@ export function InterpretationTools({
             </p>
 
             {interpretations.map((interpretation) => (
-                <article key={interpretation.id} id={`interpretation-tools-${interpretation.id}`} style={{ marginTop: 12, borderTop: "1px solid #f3f4f6", paddingTop: 12, scrollMarginTop: 24 }}>
+                <article
+                    key={interpretation.id}
+                    id={`interpretation-tools-${interpretation.id}`}
+                    style={{ marginTop: 12, borderTop: "1px solid #f3f4f6", paddingTop: 12, scrollMarginTop: 24 }}
+                >
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                         <strong>{interpretation.statement}</strong>
                         <button type="button" onClick={() => startEdit(interpretation)}>Edit</button>
                     </div>
 
                     {interpretation.evidence.length > 0 && (
-                        <ul style={{ display: "grid", gap: 8, paddingLeft: 20, fontSize: 13, color: "#4b5563" }}>
-                            {interpretation.evidence.map((evidence) => (
-                                <EvidenceItem
-                                    key={evidence.id}
-                                    interpretationId={interpretation.id}
-                                    evidence={evidence}
-                                    workspace={workspace}
-                                    onSaved={onSaved}
-                                />
-                            ))}
-                        </ul>
+                        <div style={{ marginTop: 12 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>
+                                Saved Evidence
+                            </div>
+                            <ul style={{ display: "grid", gap: 8, paddingLeft: 20, margin: 0, fontSize: 13, color: "#4b5563" }}>
+                                {interpretation.evidence.map((evidence) => (
+                                    <EvidenceItem
+                                        key={evidence.id}
+                                        interpretationId={interpretation.id}
+                                        evidence={evidence}
+                                        workspace={workspace}
+                                        onSaved={onSaved}
+                                    />
+                                ))}
+                            </ul>
+                        </div>
                     )}
 
-                    <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
-                        <select value={evidenceType} onChange={(event) => setEvidenceType(event.target.value as EvidenceType)}>
-                            {TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-                        </select>
-                        <textarea value={evidenceDescription} onChange={(event) => setEvidenceDescription(event.target.value)} placeholder="Add evidence supporting this interpretation..." rows={3} style={{ width: "100%", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 10, font: "inherit" }} />
-                        <button type="button" onClick={() => addEvidence(interpretation.id)}>Add Evidence</button>
-                    </div>
+                    <EvidenceComposer
+                        interpretationId={interpretation.id}
+                        workspace={workspace}
+                        onSaved={onSaved}
+                    />
                 </article>
             ))}
 
@@ -179,7 +155,7 @@ export function InterpretationTools({
                         ))}
                     </div>
                     <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                        <button type="button" onClick={saveChanges}>Save Changes</button>
+                        <button type="button" onClick={() => void saveChanges()}>Save Changes</button>
                         <button type="button" onClick={() => setEditingId(null)}>Cancel</button>
                     </div>
                 </div>
@@ -188,6 +164,59 @@ export function InterpretationTools({
             {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
             {message && <p style={{ color: "#166534" }}>{message}</p>}
         </section>
+    );
+}
+
+function EvidenceComposer({
+    interpretationId,
+    workspace,
+    onSaved,
+}: {
+    readonly interpretationId: string;
+    readonly workspace: ObservationWorkspaceService;
+    readonly onSaved: () => Promise<void> | void;
+}) {
+    const [evidenceType, setEvidenceType] = useState<EvidenceType>("Scripture");
+    const [evidenceDescription, setEvidenceDescription] = useState("");
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [message, setMessage] = useState<string | null>(null);
+
+    async function addEvidence() {
+        const description = evidenceDescription.trim();
+        if (!description || busy) return;
+
+        setBusy(true);
+        setError(null);
+        setMessage(null);
+
+        try {
+            await workspace.addEvidence(interpretationId, evidenceType, description);
+            setEvidenceDescription("");
+            await onSaved();
+            setMessage("Evidence saved.");
+        } catch (reason) {
+            setError(reason instanceof Error ? reason.message : "Unable to save evidence.");
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return (
+        <div style={{ display: "grid", gap: 8, marginTop: 14, padding: 12, border: "1px dashed #d1d5db", borderRadius: 10, background: "#fafafa" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Add Evidence
+            </div>
+            <select value={evidenceType} onChange={(event) => setEvidenceType(event.target.value as EvidenceType)} disabled={busy}>
+                {TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+            </select>
+            <textarea value={evidenceDescription} onChange={(event) => setEvidenceDescription(event.target.value)} placeholder="Add evidence supporting this interpretation..." rows={3} disabled={busy} style={{ width: "100%", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 10, font: "inherit" }} />
+            <button type="button" onClick={() => void addEvidence()} disabled={busy || !evidenceDescription.trim()}>
+                {busy ? "Saving Evidence..." : "Add Evidence"}
+            </button>
+            {error && <p style={{ margin: 0, color: "#b91c1c", fontSize: 13 }}>{error}</p>}
+            {message && <p style={{ margin: 0, color: "#166534", fontSize: 13 }}>{message}</p>}
+        </div>
     );
 }
 

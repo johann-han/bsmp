@@ -19,6 +19,8 @@ const repository = new SupabaseStudyRepository();
 export default function StudiesPage() {
     const [studies, setStudies] = useState<StudySummary[]>([]);
     const [open, setOpen] = useState(false);
+    const [initialPassage, setInitialPassage] = useState("");
+    const [initialTitle, setInitialTitle] = useState("");
     const [error, setError] = useState<string | null>(null);
 
     async function loadStudies() {
@@ -39,6 +41,18 @@ export default function StudiesPage() {
         });
     }, []);
 
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const passage = params.get("passage")?.trim() ?? "";
+        const shouldOpen = params.get("newStudy") === "1" && passage.length > 0;
+        if (!shouldOpen) return;
+
+        setInitialPassage(passage);
+        setInitialTitle(`${passage} Study`);
+        setOpen(true);
+        window.history.replaceState(null, "", "/studies");
+    }, []);
+
     async function createStudy(title: string, passage: string) {
         setError(null);
 
@@ -53,6 +67,12 @@ export default function StudiesPage() {
         }
     }
 
+    function openBlankStudyDialog() {
+        setInitialTitle("");
+        setInitialPassage("");
+        setOpen(true);
+    }
+
     return (
         <AppShell title="Study Library">
             <div className="mb-6 flex items-center justify-between">
@@ -61,7 +81,7 @@ export default function StudiesPage() {
                     className="w-96 rounded-lg border px-4 py-2"
                 />
 
-                <NewStudyButton onClick={() => setOpen(true)} />
+                <NewStudyButton onClick={openBlankStudyDialog} />
             </div>
 
             {error ? <p role="alert" className="mb-4">{error}</p> : null}
@@ -71,6 +91,8 @@ export default function StudiesPage() {
             <NewStudyDialog
                 open={open}
                 onClose={() => setOpen(false)}
+                initialTitle={initialTitle}
+                initialPassage={initialPassage}
                 onCreate={(title, passage) => void createStudy(title, passage)}
             />
         </AppShell>

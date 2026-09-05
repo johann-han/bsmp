@@ -7,6 +7,7 @@ import {
     ObservationId,
     ObservationStatement,
     ObservationTarget,
+    ObservationTextTargetInput,
     ObservationVerseReference,
     ObservationWordTargetInput,
     StudyId,
@@ -22,16 +23,22 @@ export class AddObservation {
         verseReference: VerseReference,
         statement: string,
         wordTarget?: ObservationWordTargetInput,
+        textTarget?: ObservationTextTargetInput,
     ): Promise<Observation> {
         const study = await this.repository.find(studyId);
 
         if (!study) {
             throw new Error(`Study not found: ${studyId.toString()}`);
         }
+        if (wordTarget && textTarget) {
+            throw new Error("Observation cannot have both a word target and a text target.");
+        }
 
-        const target = wordTarget
-            ? ObservationTarget.word(verseReference, wordTarget)
-            : ObservationTarget.verse(verseReference);
+        const target = textTarget
+            ? ObservationTarget.text(verseReference, textTarget)
+            : wordTarget
+                ? ObservationTarget.word(verseReference, wordTarget)
+                : ObservationTarget.verse(verseReference);
         const normalizedStatement = statement.trim();
 
         const duplicate = study.observations.find((existing) =>
@@ -75,17 +82,21 @@ export class UpdateObservation {
         verseReference: VerseReference,
         statement: string,
         wordTarget?: ObservationWordTargetInput,
+        textTarget?: ObservationTextTargetInput,
     ): Promise<Observation> {
         const study = await this.repository.find(studyId);
         if (!study) throw new Error(`Study not found: ${studyId.toString()}`);
+        if (wordTarget && textTarget) throw new Error("Observation cannot have both a word target and a text target.");
 
         const id = ObservationId.from(observationId);
         const observation = study.observations.find((item) => item.id.value === id.value);
         if (!observation) throw new Error(`Observation not found: ${observationId}`);
 
-        const target = wordTarget
-            ? ObservationTarget.word(verseReference, wordTarget)
-            : ObservationTarget.verse(verseReference);
+        const target = textTarget
+            ? ObservationTarget.text(verseReference, textTarget)
+            : wordTarget
+                ? ObservationTarget.word(verseReference, wordTarget)
+                : ObservationTarget.verse(verseReference);
         const normalizedStatement = statement.trim();
 
         const duplicate = study.observations.find((existing) =>

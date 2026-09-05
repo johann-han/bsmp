@@ -2,26 +2,33 @@
 
 import { useState } from "react";
 
-import type { ApplicationViewModel, InterpretationViewModel, ObservationWorkspaceService } from "@bsmp/study";
+import type { ApplicationViewModel, InterpretationViewModel, ObservationViewModel, ObservationWorkspaceService } from "@bsmp/study";
 
 export interface ApplicationHistoryProps {
     readonly applications: readonly ApplicationViewModel[];
     readonly interpretations: readonly InterpretationViewModel[];
+    readonly observations?: readonly ObservationViewModel[];
     readonly workspace: ObservationWorkspaceService;
     readonly onUpdated?: (application: ApplicationViewModel) => void;
     readonly onDeleted?: (applicationId: string) => void;
     readonly onInterpretationSelect?: (interpretationId: string) => void;
+    readonly onObservationSelect?: (observation: ObservationViewModel) => void;
+    readonly onEvidenceSelect?: (interpretationId: string, evidenceId: string) => void;
 }
 
 export function ApplicationHistory({
     applications,
     interpretations,
+    observations = [],
     workspace,
     onUpdated,
     onDeleted,
     onInterpretationSelect,
+    onObservationSelect,
+    onEvidenceSelect,
 }: ApplicationHistoryProps) {
-    const interpretationMap = new Map(interpretations.map((item) => [item.id, item.statement]));
+    const interpretationMap = new Map(interpretations.map((item) => [item.id, item]));
+    const observationMap = new Map(observations.map((item) => [item.id, item]));
     const [editingId, setEditingId] = useState<string | null>(null);
     const [drafts, setDrafts] = useState<Record<string, Omit<ApplicationViewModel, "id" | "createdAt">>>({});
     const [error, setError] = useState<string | null>(null);
@@ -102,6 +109,16 @@ export function ApplicationHistory({
         }
     }
 
+    function observationLabel(observation: ObservationViewModel): string {
+        if (observation.target.wordIndex !== null && observation.target.wordText) {
+            return `${observation.verseReference} · word: “${observation.target.wordText}”`;
+        }
+        if (observation.target.wordText) {
+            return `${observation.verseReference} · text: “${observation.target.wordText}”`;
+        }
+        return observation.verseReference;
+    }
+
     return (
         <section style={{ marginTop: 20 }}>
             <h2 style={{ marginBottom: 12, fontSize: 20 }}>Application History</h2>
@@ -111,6 +128,7 @@ export function ApplicationHistory({
             ) : (
                 <div style={{ display: "grid", gap: 12 }}>
                     {applications.map((application) => {
+                        const interpretation = interpretationMap.get(application.interpretationId);
                         const draft = drafts[application.id];
                         const editing = editingId === application.id;
                         const busy = busyId === application.id;
@@ -119,12 +137,7 @@ export function ApplicationHistory({
                             <article
                                 key={application.id}
                                 id={`application-${application.id}`}
-                                style={{
-                                    border: "1px solid #e5e7eb",
-                                    borderRadius: 12,
-                                    background: "#fff",
-                                    padding: 16,
-                                }}
+                                style={{ border: "1px solid #e5e7eb", borderRadius: 12, background: "#fff", padding: 16 }}
                             >
                                 <p style={{ marginTop: 0, fontSize: 13, color: "#6b7280" }}>
                                     <strong>From interpretation:</strong>{" "}
@@ -133,9 +146,57 @@ export function ApplicationHistory({
                                         onClick={() => onInterpretationSelect?.(application.interpretationId)}
                                         style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", textAlign: "left" }}
                                     >
-                                        {interpretationMap.get(application.interpretationId) ?? application.interpretationId}
+                                        {interpretation?.statement ?? application.interpretationId}
                                     </button>
                                 </p>
+
+                                {interpretation && (
+                                    <div style={{ display: "grid", gap: 10, marginBottom: 14, padding: 12, background: "#f8fafc", borderRadius: 10, border: "1px solid #e2e8f0" }}>
+                                        {interpretation.observationIds.length > 0 && (
+                                            <div>
+                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                                                    Textual basis
+                                                </div>
+                                                <div style={{ display: "grid", gap: 6, marginTop: 6 }}>
+                                                    {interpretation.observationIds.map((observationId) => {
+                                                        const observation = observationMap.get(observationId);
+                                                        return observation ? (
+                                                            <button
+                                                                key={observationId}
+                                                                type="button"
+                                                                onClick={() => onObservationSelect?.(observation)}
+                                                                style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", textAlign: "left", fontSize: 13 }}
+                                                            >
+                                                                <strong>{observationLabel(observation)}</strong>
+                                                                <span style={{ display: "block", marginTop: 2, color: "#475569" }}>{observation.statement}</span>
+                                                            </button>
+                                                        ) : null;
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {interpretation.evidence.length > 0 && (
+                                            <div>
+                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                                                    Interpretation evidence
+                                                </div>
+                                                <div style={{ display: "grid", gap: 6, marginTop: 6 }}>
+                                                    {interpretation.evidence.map((evidence) => (
+                                                        <button
+                                                            key={evidence.id}
+                                                            type="button"
+                                                            onClick={() => onEvidenceSelect?.(interpretation.id, evidence.id)}
+                                                            style={{ border: 0, padding: 0, background: "transparent", color: "#1d4ed8", cursor: "pointer", textAlign: "left", fontSize: 13 }}
+                                                        >
+                                                            <strong>{evidence.type}</strong>: {evidence.description}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {editing && draft ? (
                                     <div style={{ display: "grid", gap: 10 }}>
@@ -163,9 +224,7 @@ export function ApplicationHistory({
                                         </div>
 
                                         <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-                                            <button type="button" disabled={busy} onClick={() => startEdit(application)}>
-                                                Edit
-                                            </button>
+                                            <button type="button" disabled={busy} onClick={() => startEdit(application)}>Edit</button>
                                             <button type="button" disabled={busy} onClick={() => void deleteApplication(application)}>
                                                 {busy ? "Saving..." : "Delete"}
                                             </button>

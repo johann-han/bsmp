@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type {
     ObservationWorkspaceData,
@@ -12,7 +12,6 @@ import type {
 import { ObservationPanel } from "@repo/ui";
 
 import { createSupabaseObservationWorkspace } from "../../lib/createSupabaseObservationWorkspace";
-import { takePreparedStudyWorkspace } from "../../lib/studyWorkspaceNavigationCache";
 import { ApplicationComposer } from "./ApplicationComposer";
 import { ApplicationHistory } from "./ApplicationHistory";
 import { InterpretationComposer } from "./InterpretationComposer";
@@ -20,7 +19,8 @@ import { InterpretationHistory } from "./InterpretationHistory";
 import { InterpretationTools } from "./InterpretationTools";
 import { ObservationComposer } from "./ObservationComposer";
 import { ObservationHistory } from "./ObservationHistory";
-import { StudyPassage, type StudyWordMarkup, type StudyVerse } from "./StudyPassage";
+import { ObservationMentorPanel } from "./ObservationMentorPanel";
+import { StudyPassage, type StudyPassageMentorFocus, type StudyWordMarkup, type StudyVerse } from "./StudyPassage";
 
 interface RealBiblePassageResponse {
     readonly reference: string;
@@ -39,6 +39,12 @@ const TRANSLATIONS = [
 ] as const;
 
 type TranslationId = (typeof TRANSLATIONS)[number]["id"];
+
+interface MentorFocus {
+    readonly verseReference: string;
+    readonly textCue: string;
+    readonly question: string;
+}
 
 function buildBibleApiReference(passage: StudyPassageService["passageReference"]): string {
     const start = passage.start;
@@ -67,6 +73,10 @@ async function loadRealBiblePassage(
     return { reference: payload.reference, translation: payload.translation, verses: payload.verses };
 }
 
+function normalizeReference(value: string): string {
+    return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 export function ObservationWorkspace() {
     const observationComposerRef = useRef<HTMLElement | null>(null);
     const [workspace, setWorkspace] = useState<ObservationWorkspaceService | null>(null);
@@ -83,6 +93,7 @@ export function ObservationWorkspace() {
     const [passageError, setPassageError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [returnTo, setReturnTo] = useState<string | null>(null);
+    const [mentorFocus, setMentorFocus] = useState<StudyPassageMentorFocus | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -91,22 +102,14 @@ export function ObservationWorkspace() {
         const requestedReturnTo = params.get("returnTo");
         if (requestedReturnTo) setReturnTo(requestedReturnTo);
 
-        const prepared = requestedStudyId ? takePreparedStudyWorkspace(requestedStudyId) : undefined;
+        const bootstrapPromise = createSupabaseObservationWorkspace(requestedStudyId).then(async (created) => {
+            const [workspaceData, developmentPassage] = await Promise.all([
+                created.workspace.load(),
+                created.passageService.load(),
+            ]);
 
-        const bootstrapPromise = prepared
-            ? Promise.resolve(prepared)
-            : createSupabaseObservationWorkspace(requestedStudyId).then(async (created) => {
-                const [workspaceData, developmentPassage] = await Promise.all([
-                    created.workspace.load(),
-                    created.passageService.load(),
-                ]);
-
-                return {
-                    ...created,
-                    data: workspaceData,
-                    passage: developmentPassage,
-                };
-            });
+            return { ...created, data: workspaceData, passage: developmentPassage };
+        });
 
         void bootstrapPromise
             .then(({ workspace: nextWorkspace, passageService: nextPassageService, study, data: workspaceData, passage: developmentPassage }) => {
@@ -146,6 +149,7 @@ export function ObservationWorkspace() {
         setTranslation(nextTranslation);
         setPassageLoading(true);
         setPassageError(null);
+        setMentorFocus(null);
 
         try {
             const nextPassage = await loadRealBiblePassage(passageService, nextTranslation);
@@ -162,11 +166,44 @@ export function ObservationWorkspace() {
     }
 
     function targetObservationFromMarkup(verse: StudyVerse, markup: StudyWordMarkup, word: string) {
+        setMentorFocus(null);
         setSelectedVerses([verse]);
         setTargetWord(word);
         setTargetMarkup(markup);
         window.requestAnimationFrame(() => observationComposerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
     }
+
+    const handlePassageSelect = useCallback((verse: StudyVerse) => {
+        setSelectedVerses([verse]);
+        setTargetWord(null);
+        setTargetMarkup(null);
+        setMentorFocus(null);
+    }, []);
+
+    const handlePassageSelectRange = useCallback((verses: readonly StudyVerse[]) => {
+        setSelectedVerses(verses);
+        setTargetWord(null);
+        setTargetMarkup(null);
+        setMentorFocus(null);
+    }, []);
+
+    const handleMentorFocus = useCallback((focus: MentorFocus) => {
+        const nextFocus: StudyPassageMentorFocus = { verseReference: focus.verseReference, textCue: focus.textCue };
+        setMentorFocus(nextFocus);
+
+        if (passage) {
+            const targetReference = normalizeReference(focus.verseReference);
+            const verse = passage.verses.find((item) => {
+                const reference = normalizeReference(item.reference);
+                return reference === targetReference || reference.endsWith(targetReference);
+            });
+            if (verse) {
+                setSelectedVerses([verse]);
+                setTargetWord(null);
+                setTargetMarkup(null);
+            }
+        }
+    }, [passage]);
 
     function addOptimisticInterpretation(interpretation: ObservationWorkspaceData["interpretations"][number]) {
         setData((current) => current ? { ...current, interpretations: [...current.interpretations, interpretation] } : current);
@@ -177,16 +214,10 @@ export function ObservationWorkspace() {
     }
 
     function updateInterpretation(next: ObservationWorkspaceData["interpretations"][number]) {
-        setData((current) => current ? {
-            ...current,
-            interpretations: current.interpretations.map((item) => item.id === next.id ? next : item),
-        } : current);
+        setData((current) => current ? { ...current, interpretations: current.interpretations.map((item) => item.id === next.id ? next : item) } : current);
     }
 
-    function addOptimisticEvidence(
-        interpretationId: string,
-        evidence: ObservationWorkspaceData["interpretations"][number]["evidence"][number],
-    ) {
+    function addOptimisticEvidence(interpretationId: string, evidence: ObservationWorkspaceData["interpretations"][number]["evidence"][number]) {
         setData((current) => current ? {
             ...current,
             interpretations: current.interpretations.map((item) => item.id === interpretationId ? { ...item, evidence: [...item.evidence, evidence] } : item),
@@ -209,10 +240,7 @@ export function ObservationWorkspace() {
     }
 
     function updateApplication(application: ObservationWorkspaceData["applications"][number]) {
-        setData((current) => current ? {
-            ...current,
-            applications: current.applications.map((item) => item.id === application.id ? application : item),
-        } : current);
+        setData((current) => current ? { ...current, applications: current.applications.map((item) => item.id === application.id ? application : item) } : current);
     }
 
     function removeApplication(applicationId: string) {
@@ -236,13 +264,16 @@ export function ObservationWorkspace() {
         scrollToElement(`interpretation-${interpretationId}`);
     }
 
+    function focusEvidence(interpretationId: string, evidenceId: string) {
+        scrollToElement(`evidence-${evidenceId}`);
+        window.setTimeout(() => scrollToElement(`interpretation-${interpretationId}`), 0);
+    }
+
     useEffect(() => {
         if (!data || !passage || !studyId) return;
         const hash = window.location.hash.replace(/^#/, "");
         if (!hash) return;
-        window.setTimeout(() => {
-            document.getElementById(decodeURIComponent(hash))?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 0);
+        window.setTimeout(() => document.getElementById(decodeURIComponent(hash))?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
     }, [data, passage, studyId]);
 
     if (error) return <p>{error}</p>;
@@ -252,43 +283,28 @@ export function ObservationWorkspace() {
     const selectedVerseReference = selectedVerse
         ? passage.verses.find((verse) => verse.number === selectedVerse.number)?.reference ?? null
         : null;
-    const returnLabel = returnTo?.includes("/preaching/exposition")
-        ? "← Back to Sermon Exposition"
-        : "← Back to Sermon Study Source";
+    const returnLabel = returnTo?.includes("/preaching/exposition") ? "← Back to Sermon Exposition" : "← Back to Sermon Study Source";
+    const mentorPassageText = passage.verses.map((verse) => `${verse.reference} ${verse.text}`).join("\n");
 
     return (
         <div>
             {returnTo && (
-                <div
-                    style={{
-                        position: "fixed",
-                        left: 20,
-                        bottom: 20,
-                        zIndex: 1000,
-                        maxWidth: "calc(100vw - 40px)",
-                    }}
-                >
-                    <button
-                        type="button"
-                        onClick={() => window.location.assign(returnTo)}
-                        style={{
-                            border: "1px solid #d1d5db",
-                            borderRadius: 999,
-                            padding: "10px 16px",
-                            background: "rgba(255,255,255,0.97)",
-                            backdropFilter: "blur(10px)",
-                            color: "#1d4ed8",
-                            cursor: "pointer",
-                            fontWeight: 700,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.14)",
-                        }}
-                    >
+                <div style={{ position: "fixed", left: 20, bottom: 20, zIndex: 1000, maxWidth: "calc(100vw - 40px)" }}>
+                    <button type="button" onClick={() => window.location.assign(returnTo)} style={{ border: "1px solid #d1d5db", borderRadius: 999, padding: "10px 16px", background: "rgba(255,255,255,0.97)", backdropFilter: "blur(10px)", color: "#1d4ed8", cursor: "pointer", fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.14)" }}>
                         {returnLabel}
                     </button>
                 </div>
             )}
 
             {studyTitle && <p style={{ margin: "0 0 16px", fontWeight: 600 }}>Study: {studyTitle}</p>}
+
+            <ObservationMentorPanel
+                studyId={studyId}
+                passageReference={passage.reference}
+                passageText={mentorPassageText}
+                observations={data.observations}
+                onFocusPassage={handleMentorFocus}
+            />
 
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <label htmlFor="study-translation" style={{ fontSize: 13, color: "#6b7280" }}>Translation</label>
@@ -306,16 +322,9 @@ export function ObservationWorkspace() {
                     translation={translation}
                     verses={passage.verses}
                     selectedVerses={selectedVerses.map((verse) => verse.number)}
-                    onSelectVerse={(verse) => {
-                        setSelectedVerses([verse]);
-                        setTargetWord(null);
-                        setTargetMarkup(null);
-                    }}
-                    onSelectVerseRange={(verses) => {
-                        setSelectedVerses(verses);
-                        setTargetWord(null);
-                        setTargetMarkup(null);
-                    }}
+                    mentorFocus={mentorFocus}
+                    onSelectVerse={handlePassageSelect}
+                    onSelectVerseRange={handlePassageSelectRange}
                     onMarkedWordSelect={targetObservationFromMarkup}
                 />
                 <ObservationPanel data={data} />
@@ -360,10 +369,13 @@ export function ObservationWorkspace() {
             <ApplicationHistory
                 applications={data.applications}
                 interpretations={data.interpretations}
+                observations={data.observations}
                 workspace={workspace}
+                onInterpretationSelect={focusInterpretation}
+                onObservationSelect={focusObservation}
+                onEvidenceSelect={focusEvidence}
                 onUpdated={updateApplication}
                 onDeleted={removeApplication}
-                onInterpretationSelect={focusInterpretation}
             />
         </div>
     );

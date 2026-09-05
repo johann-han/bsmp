@@ -169,7 +169,12 @@ export class SupabaseStudyRepository implements StudyRepository {
                     wordText: observationRow.target_word_text ?? "",
                     markupSymbol: observationRow.target_markup_symbol ?? "",
                 })
-                : ObservationTarget.verse(observationReference);
+                : observationRow.target_word_text !== null && observationRow.target_translation
+                    ? ObservationTarget.text(observationReference, {
+                        translation: observationRow.target_translation,
+                        textCue: observationRow.target_word_text,
+                    })
+                    : ObservationTarget.verse(observationReference);
 
             study.addObservation(Observation.create(
                 ObservationId.from(observationRow.id),
