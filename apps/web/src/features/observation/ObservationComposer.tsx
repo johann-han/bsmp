@@ -144,7 +144,7 @@ export function ObservationComposer({
 
             {mentorCueActive && (
                 <div style={{ marginBottom: 12, padding: "10px 12px", border: "1px solid #bfdbfe", borderRadius: 8, background: "#eff6ff", color: "#1e3a8a", fontSize: 13 }}>
-                    <strong>Mentor text target:</strong> “{mentorCue.textCue}"
+                    <strong>Mentor text target:</strong> “{mentorCue.textCue}”
                     <span style={{ marginLeft: 6 }}>Write your own observation from this exact text. BSMP will save the verse and text target; the mentor does not write the observation for you.</span>
                 </div>
             )}
