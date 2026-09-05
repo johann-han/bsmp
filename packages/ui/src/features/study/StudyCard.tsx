@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { Badge, Card } from "../..";
 
 interface StudyCardProps {
@@ -16,7 +14,7 @@ export function StudyCard({
     status,
 }: StudyCardProps) {
     return (
-        <Link href={`/workspace?studyId=${encodeURIComponent(id)}`} className="block no-underline">
+        <a href={`/workspace?studyId=${encodeURIComponent(id)}`} className="block no-underline">
             <Card>
                 <div className="flex justify-between">
                     <div>
@@ -26,6 +24,6 @@ export function StudyCard({
                     <Badge>{status}</Badge>
                 </div>
             </Card>
-        </Link>
+        </a>
     );
 }
