@@ -38,15 +38,6 @@ function requiredText(value: unknown, field: string): string {
     return value.trim();
 }
 
-function requiredTextArray(value: unknown, field: string): string[] {
-    if (!Array.isArray(value)) throw new Error(`${field} is required.`);
-    const items = value
-        .filter((item): item is string => typeof item === "string" && Boolean(item.trim()))
-        .map((item) => item.trim());
-    if (items.length === 0) throw new Error(`${field} must contain at least one item.`);
-    return items;
-}
-
 function optionalIdArray(value: unknown): string[] {
     if (!Array.isArray(value)) return [];
     return value.filter((item): item is string => typeof item === "string" && Boolean(item.trim())).map((item) => item.trim());
