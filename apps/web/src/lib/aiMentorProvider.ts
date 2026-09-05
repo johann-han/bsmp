@@ -131,16 +131,16 @@ function parseJsonRecord(text: string): Record<string, unknown> | null {
 }
 
 function extractCoachingFallback(text: string): string {
-    const match = text.match(/\"coaching\"\s*:\s*\"((?:\\.|[^\"\\])*)\"/s);
+    const match = text.match(/"coaching"\s*:\s*"((?:\\.|[^"\\])*)"/s);
     if (!match?.[1]) return "";
 
     try {
-        const decoded = JSON.parse(`\"${match[1]}\"`) as unknown;
+        const decoded = JSON.parse(`"${match[1]}"`) as unknown;
         return typeof decoded === "string" ? decoded.trim() : "";
     } catch {
         return match[1]
             .replace(/\\n/g, "\n")
-            .replace(/\\\"/g, '\"')
+            .replace(/\\"/g, '"')
             .replace(/\\\\/g, "\\")
             .trim();
     }
@@ -362,5 +362,5 @@ export function createObservationMentorProvider(): ObservationMentorProvider {
         if (!apiKey) throw new Error("Gemini mentor is not configured. Set GEMINI_API_KEY on the web server.");
         return new GeminiObservationMentorProvider(apiKey, process.env.GEMINI_MODEL ?? "gemini-3.6-flash");
     }
-    throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use \"gemini\" or \"openai\".`);
+    throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use "gemini" or "openai".`);
 }
