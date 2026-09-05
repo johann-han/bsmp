@@ -31,7 +31,7 @@ export function SermonPreparationStudyReadinessGuard({ studyId }: Props) {
                 const hasInterpretation = study.interpretations.length > 0;
                 const hasApplication = study.applications.length > 0;
 
-                if (!hasObservation && !hasInterpretation && !hasApplication) {
+                if (!hasObservation || !hasInterpretation || !hasApplication) {
                     setRedirecting(true);
                     timeoutId = setTimeout(() => {
                         if (active) {
