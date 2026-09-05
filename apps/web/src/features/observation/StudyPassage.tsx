@@ -53,7 +53,7 @@ function tokenize(text: string): string[] {
 }
 
 function asMarkupTable() {
-    return supabase.from("study_markups" as never) as any;
+    return supabase.from("study_markups");
 }
 
 function normalizeReference(value: string): string {
@@ -127,7 +127,7 @@ export function StudyPassage({
             }
 
             setMarkupError(null);
-            setWordMarkups((data ?? []).map((row: { verse_number: number; word_index: number; symbol: string }) => ({
+            setWordMarkups((data ?? []).map((row) => ({
                 verseNumber: row.verse_number,
                 wordIndex: row.word_index,
                 symbol: row.symbol,
