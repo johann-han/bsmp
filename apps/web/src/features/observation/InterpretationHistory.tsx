@@ -65,7 +65,7 @@ export function InterpretationHistory({
                                         })}
                                     </ul>
                                     <p style={{ margin: "8px 0 0", fontSize: 12, color: "#6b7280" }}>
-                                        Supporting observations are the student's textual basis for this interpretation.
+                                        Supporting observations are the student&apos;s textual basis for this interpretation.
                                     </p>
                                 </div>
                             ) : (
