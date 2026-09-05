@@ -34,7 +34,7 @@ export function FinalSermonDraftMentorPanel({ studyId }: { studyId: string }) {
     setRunning(true); setResult(null); setError(null);
     try {
       const session = await supabase.auth.getSession(); const token = session.data.session?.access_token; if (!token) throw new Error("A signed-in Supabase session is required for the final sermon draft mentor.");
-      const response = await fetch("/api/ai/final-sermon-draft-mentor", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ studyId, manuscript: sermon.manuscript.value }) });
+      const response = await fetch("/api/ai/final-sermon-draft-mentor", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ studyId }) });
       const payload = await response.json() as Result & { error?: string }; if (!response.ok) throw new Error(payload.error ?? "The final sermon draft mentor could not respond."); setResult(payload);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to run the final sermon draft mentor."); }
     finally { setRunning(false); }
@@ -51,7 +51,7 @@ export function FinalSermonDraftMentorPanel({ studyId }: { studyId: string }) {
       <button type="button" onClick={review} disabled={running || !sermon.manuscript?.value?.trim()} style={{ padding: "10px 14px", fontWeight: 600 }}>{running ? "Reviewing..." : "Review Saved Manuscript"}</button>
     </div>
     <div style={{ marginTop: 12, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: "#6b7280" }}><span><strong>{wordCount}</strong> words saved</span><span>{sermon.outline.length} prepared outline point{sermon.outline.length === 1 ? "" : "s"}</span><span>{sermon.bigIdea ? "Big Idea defined" : "Big Idea missing"}</span><span>{sermon.purpose ? "Purpose defined" : "Purpose missing"}</span></div>
-    {sermon.manuscript?.value?.trim() && !result && <p style={{ marginTop: 14, fontSize: 13, color: "#6b7280" }}>The review uses the last manuscript saved to this Study. Save recent edits in the Final Sermon Draft workspace, then review again.</p>}
+    {sermon.manuscript?.value?.trim() && !result && <p style={{ marginTop: 14, fontSize: 13, color: "#6b7280" }}>The review reads the manuscript saved to this Study at the time you start the review. Save recent edits in the Final Sermon Draft workspace, then review again.</p>}
     {error && <p style={{ color: "#b91c1c", marginTop: 14 }}>{error}</p>}
     {result && <div style={{ marginTop: 16, padding: 16, borderRadius: 10, background: "#f8fafc", border: "1px solid #e5e7eb" }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><strong>Assessment: {labels[result.assessment]}</strong>{result.focuses.map((focus) => <span key={focus} style={{ padding: "3px 8px", borderRadius: 999, background: "#e5e7eb", fontSize: 12 }}>{focusLabels[focus] ?? focus}</span>)}</div><p style={{ margin: "12px 0" }}>{result.coaching}</p><div style={{ fontSize: 12, color: "#6b7280" }}>Provider: {result.provider} · Model: {result.model}</div><button type="button" onClick={reload} style={{ marginTop: 12, padding: "8px 12px" }}>Reload Saved Manuscript</button></div>}
   </section>;
