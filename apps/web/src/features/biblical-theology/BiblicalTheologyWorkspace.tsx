@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Database } from "../../lib/database.types";
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { supabase } from "../../lib/supabase";
@@ -27,7 +27,7 @@ export function BiblicalTheologyWorkspace({ studyId }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
 
-    async function load() {
+    const load = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -46,9 +46,9 @@ export function BiblicalTheologyWorkspace({ studyId }: Props) {
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Unable to load Biblical Theology.");
         } finally { setLoading(false); }
-    }
+    }, [studyId]);
 
-    useEffect(() => { void load(); }, [studyId]);
+    useEffect(() => { void load(); }, [load]);
 
     function resetForm() { setEditingId(null); setTheme(""); setSynthesis(""); setSelected([]); setMessage(null); }
     function toggleInterpretation(id: string) { setSelected((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]); }
