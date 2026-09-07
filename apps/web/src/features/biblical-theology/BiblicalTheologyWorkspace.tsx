@@ -92,27 +92,27 @@ export function BiblicalTheologyWorkspace({ studyId }: Props) {
 
     if (loading) return <p>Loading Biblical Theology...</p>;
 
-    return <div style={{ display: "grid", gap: 18 }}>
-        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
-            <div style={{ fontSize: 13, color: "#6b7280" }}>Study → Biblical Theology → Teaching</div>
+    return <div className="bsmp-bt-workspace" style={{ display: "grid", gap: 18 }}>
+        <section className="bsmp-bt-overview" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+            <div className="bsmp-bt-breadcrumb" style={{ fontSize: 13, color: "#6b7280" }}>Study → Biblical Theology → Teaching</div>
             <h1 style={{ margin: "4px 0 8px" }}>Biblical Theology</h1>
             <p style={{ margin: 4 }}><strong>Study:</strong> {title}</p><p style={{ margin: 4 }}><strong>Passage:</strong> {passage}</p>
             <p style={{ margin: "12px 0 0", color: "#6b7280" }}>Synthesize the biblical truth emerging from your interpretations. Every synthesis must remain traceable to at least one study interpretation.</p>
             <div style={{ marginTop: 12 }}><Link href={`/teaching?studyId=${encodeURIComponent(studyId)}`} style={linkStyle}>Prepare a Teaching Plan →</Link></div>
         </section>
-        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+        <section className="bsmp-bt-form" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
             <h2 style={{ marginTop: 0 }}>{editingId ? "Edit synthesis" : "Add synthesis"}</h2>
             <div style={{ display: "grid", gap: 12 }}>
                 <label style={{ display: "grid", gap: 6 }}><strong>Theme</strong><input value={theme} onChange={(event) => setTheme(event.target.value)} placeholder="e.g. The believer's response to God's mercy" style={{ padding: 10 }} /></label>
-                <label style={{ display: "grid", gap: 6 }}><strong>Biblical synthesis</strong><textarea value={synthesis} onChange={(event) => setSynthesis(event.target.value)} rows={6} placeholder="What broader biblical truth emerges from the selected interpretations?" style={{ width: "100%", padding: 10, resize: "vertical" }} /></label>
-                <div><strong>Supporting interpretations</strong><p style={{ margin: "4px 0 8px", color: "#6b7280", fontSize: 13 }}>Select the interpretations that establish this synthesis.</p>{interpretations.length === 0 ? <p style={{ color: "#6b7280" }}>No interpretations are available yet. Complete the Interpretation stage first.</p> : <div style={{ display: "grid", gap: 8 }}>{interpretations.map((interpretation) => <label key={interpretation.id} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}><input type="checkbox" checked={selected.includes(interpretation.id)} onChange={() => toggleInterpretation(interpretation.id)} /><span>{interpretation.statement}</span></label>)}</div>}</div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><button type="button" onClick={() => void save()} disabled={saving}>{saving ? "Saving..." : editingId ? "Update Synthesis" : "Save Synthesis"}</button>{editingId && <button type="button" disabled={saving} onClick={resetForm}>Cancel</button>}{message && <span style={{ color: "#166534" }}>{message}</span>}{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
+                <label style={{ display: "grid", gap: 6 }}><strong>Biblical synthesis</strong><textarea value={synthesis} onChange={(event) => setSynthesis(event.target.value)} rows={6} placeholder="What broader biblical truth emerges from the selected interpretations?" style={{ width: "100%", padding: 10, resize: "vertical", boxSizing: "border-box" }} /></label>
+                <div className="bsmp-bt-supporting"><strong>Supporting interpretations</strong><p style={{ margin: "4px 0 8px", color: "#6b7280", fontSize: 13 }}>Select the interpretations that establish this synthesis.</p>{interpretations.length === 0 ? <p style={{ color: "#6b7280" }}>No interpretations are available yet. Complete the Interpretation stage first.</p> : <div style={{ display: "grid", gap: 8 }}>{interpretations.map((interpretation) => <label key={interpretation.id} style={{ display: "flex", gap: 8, alignItems: "flex-start", minWidth: 0 }}><input type="checkbox" checked={selected.includes(interpretation.id)} onChange={() => toggleInterpretation(interpretation.id)} /><span>{interpretation.statement}</span></label>)}</div>}</div>
+                <div className="bsmp-bt-form-actions" style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><button type="button" onClick={() => void save()} disabled={saving}>{saving ? "Saving..." : editingId ? "Update Synthesis" : "Save Synthesis"}</button>{editingId && <button type="button" disabled={saving} onClick={resetForm}>Cancel</button>}{message && <span style={{ color: "#166534" }}>{message}</span>}{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
             </div>
         </section>
         <BiblicalTheologyMentorPanel studyId={studyId} />
-        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+        <section className="bsmp-bt-saved" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
             <h2 style={{ marginTop: 0 }}>Saved Biblical Theology</h2>
-            {entries.length === 0 ? <p style={{ color: "#6b7280" }}>No Biblical Theology syntheses recorded yet.</p> : <div style={{ display: "grid", gap: 12 }}>{entries.map((entry) => <article key={entry.id} id={`biblical-theology-${entry.id}`} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, scrollMarginTop: 80 }}><strong>{entry.theme}</strong><p style={{ whiteSpace: "pre-wrap" }}>{entry.synthesis}</p><div style={{ fontSize: 13, color: "#6b7280" }}>Traceable to {entry.interpretation_ids.length} interpretation{entry.interpretation_ids.length === 1 ? "" : "s"}.</div><div style={{ marginTop: 10, display: "flex", gap: 8 }}><button type="button" onClick={() => edit(entry)}>Edit</button><button type="button" onClick={() => void remove(entry.id)}>Delete</button></div></article>)}</div>}
+            {entries.length === 0 ? <p style={{ color: "#6b7280" }}>No Biblical Theology syntheses recorded yet.</p> : <div style={{ display: "grid", gap: 12 }}>{entries.map((entry) => <article key={entry.id} id={`biblical-theology-${entry.id}`} className="bsmp-bt-saved-entry" style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, scrollMarginTop: 80, minWidth: 0 }}><strong>{entry.theme}</strong><p style={{ whiteSpace: "pre-wrap" }}>{entry.synthesis}</p><div style={{ fontSize: 13, color: "#6b7280" }}>Traceable to {entry.interpretation_ids.length} interpretation{entry.interpretation_ids.length === 1 ? "" : "s"}.</div><div className="bsmp-bt-entry-actions" style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}><button type="button" onClick={() => edit(entry)}>Edit</button><button type="button" onClick={() => void remove(entry.id)}>Delete</button></div></article>)}</div>}
         </section>
     </div>;
 }
