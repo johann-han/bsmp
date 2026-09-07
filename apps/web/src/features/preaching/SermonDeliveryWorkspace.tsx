@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ExpositorySermon, SermonManuscriptSection } from "@bsmp/preaching";
 import { StudyId } from "@bsmp/study";
@@ -76,6 +76,33 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
     const estimatedMinutes = Math.max(0, Math.round((wordCount / 130) * 10) / 10);
     const readingConfig = readingSizeConfig[readingSize];
 
+    const persistRecoveryState = useCallback((patch: { focus?: "manuscript" | "notes"; readingSize?: ReadingSize }) => {
+        try {
+            const key = `bsmp.delivery.recovery.v1:${studyId}`;
+            const raw = window.localStorage.getItem(key);
+            const existing = raw ? JSON.parse(raw) as Record<string, unknown> : {};
+            window.localStorage.setItem(key, JSON.stringify({
+                ...existing,
+                sectionIndex: typeof existing.sectionIndex === "number" ? existing.sectionIndex : 0,
+                focus: patch.focus ?? (existing.focus === "notes" ? "notes" : "manuscript"),
+                readingSize: patch.readingSize ?? (existing.readingSize === "compact" || existing.readingSize === "large" ? existing.readingSize : "comfortable"),
+                focusModeRequested: existing.focusModeRequested === true,
+            }));
+        } catch {
+            // Recovery is a convenience; presentation controls must work without local storage.
+        }
+    }, [studyId]);
+
+    const changeFocus = useCallback((nextFocus: "manuscript" | "notes") => {
+        setFocus(nextFocus);
+        persistRecoveryState({ focus: nextFocus });
+    }, [persistRecoveryState]);
+
+    const changeReadingSize = useCallback((nextSize: ReadingSize) => {
+        setReadingSize(nextSize);
+        persistRecoveryState({ readingSize: nextSize });
+    }, [persistRecoveryState]);
+
     useEffect(() => {
         function handleFullscreenChange() {
             const active = document.fullscreenElement === deliveryRootRef.current;
@@ -86,10 +113,10 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
             const target = event.target as HTMLElement | null;
             if (target?.isContentEditable || target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.tagName === "SELECT") return;
             const key = event.key.toLowerCase();
-            if (key === "m") setFocus("manuscript");
-            if (key === "n") setFocus("notes");
-            if (key === "-") setReadingSize((current) => current === "large" ? "comfortable" : "compact");
-            if (key === "=") setReadingSize((current) => current === "compact" ? "comfortable" : "large");
+            if (key === "m") changeFocus("manuscript");
+            if (key === "n") changeFocus("notes");
+            if (key === "-") changeReadingSize(readingSize === "large" ? "comfortable" : "compact");
+            if (key === "=") changeReadingSize(readingSize === "compact" ? "comfortable" : "large");
         }
         document.addEventListener("fullscreenchange", handleFullscreenChange);
         window.addEventListener("keydown", handleKeyDown);
@@ -97,7 +124,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
             document.removeEventListener("fullscreenchange", handleFullscreenChange);
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [changeFocus, changeReadingSize, readingSize]);
 
     async function toggleDistractionFree() {
         setError(null);
@@ -120,7 +147,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
 
     return (
         <AppShell title="Sermon Delivery">
-            <style>{`html { scroll-behavior: smooth; } .bsmp-delivery-root { min-height: 100vh; background: inherit; } .bsmp-delivery-root:fullscreen { overflow-y: auto; background: #f8fafc; padding: 0 24px 48px; box-sizing: border-box; } .bsmp-delivery-root:fullscreen .bsmp-delivery-print-page { max-width: 1180px; } .bsmp-delivery-root:fullscreen .bsmp-delivery-header { border-radius: 0 0 12px 12px; } .bsmp-delivery-root:fullscreen .bsmp-delivery-trace-links { display: none !important; } .bsmp-delivery-print-page { max-width: 1100px; margin: 0 auto; padding: 16px 0 48px; } .bsmp-delivery-header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.98); border-bottom: 1px solid #e5e7eb; padding: 12px 0 0; backdrop-filter: blur(6px); } .bsmp-delivery-header-inner { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; } .bsmp-delivery-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .bsmp-delivery-size-controls { display: flex; gap: 6px; align-items: center; padding-left: 8px; border-left: 1px solid #e5e7eb; } .bsmp-delivery-size-label { font-size: 12px; color: #6b7280; } .bsmp-delivery-size-button { min-width: 34px; padding: 6px 8px; } .bsmp-delivery-section-nav { width: 100%; margin: 12px 0 0; padding: 10px 14px 12px; border-top: 1px solid #e5e7eb; background: rgba(248,250,252,0.98); box-sizing: border-box; } .bsmp-delivery-section-nav-heading { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; } .bsmp-delivery-section-nav-title { font-weight: 700; } .bsmp-delivery-section-nav-help { color: #6b7280; font-size: 12px; line-height: 1.45; } .bsmp-delivery-section-nav-links { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; scrollbar-width: thin; } .bsmp-delivery-section-nav-link { display: inline-flex; gap: 6px; align-items: flex-start; flex: 0 0 auto; padding: 7px 9px; border: 1px solid #dbe3ee; border-radius: 8px; color: #1d4ed8; text-decoration: none; background: #fff; font-size: 12px; font-weight: 600; } .bsmp-delivery-manuscript { max-width: 820px; margin: 32px auto 0; color: #1f2937; } .bsmp-delivery-big-idea { margin: 0 0 42px; padding: 18px 20px; border-left: 4px solid #9ca3af; border-radius: 0 10px 10px 0; background: #f3f4f6; font-weight: 700; } .bsmp-delivery-print-section { margin-bottom: 52px; scroll-margin-top: 170px; } .bsmp-delivery-section-heading { letter-spacing: -0.01em; font-weight: 700; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb; } .bsmp-delivery-section-content { margin-top: 20px; } .bsmp-delivery-content-paragraph { margin: 0 0 1.15em; } .bsmp-delivery-content-block { margin: 0 0 1.25em; } .bsmp-delivery-content-block-label { display: block; margin-bottom: 0.35em; font-family: Arial, sans-serif; font-size: 0.62em; line-height: 1.2; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7280; } .bsmp-delivery-content-block-body { display: block; } .bsmp-delivery-trace-links { margin-top: 16px; font-family: Arial, sans-serif; font-size: 12px; color: #6b7280; display: flex; gap: 8px; flex-wrap: wrap; } .bsmp-delivery-trace-links a { padding: 3px 7px; border: 1px solid #e5e7eb; border-radius: 999px; background: #fff; } .bsmp-delivery-notes { max-width: 820px; margin: 32px auto 0; } .bsmp-delivery-notes-content { border: 1px solid #e5e7eb; border-radius: 12px; padding: 22px; background: #fff; } .bsmp-delivery-notes-content p { margin: 0 0 1em; } @media (max-width: 700px) { .bsmp-delivery-print-page { padding-top: 0; } .bsmp-delivery-header { padding-top: 8px; } .bsmp-delivery-toolbar { width: 100%; } .bsmp-delivery-size-controls { margin-left: auto; } .bsmp-delivery-section-nav { margin-top: 8px; padding: 8px 10px; } .bsmp-delivery-section-nav-links { margin-top: 0; gap: 6px; } .bsmp-delivery-section-nav-link { padding: 6px 8px; font-size: 11px; } .bsmp-delivery-manuscript, .bsmp-delivery-notes { margin-top: 22px; padding: 0 12px; } .bsmp-delivery-big-idea { margin-bottom: 30px; padding: 16px; } .bsmp-delivery-print-section { margin-bottom: 42px; } .bsmp-delivery-root:fullscreen { padding: 0 10px 24px; } } @media print { .bsmp-delivery-print-hide { display: none !important; } .bsmp-delivery-print-page { max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-delivery-print-main { max-width: none !important; margin: 0 !important; font-size: 14pt !important; line-height: 1.6 !important; } .bsmp-delivery-manuscript { max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-delivery-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 0 24px !important; break-inside: avoid; } .bsmp-delivery-print-notes { max-width: none !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; } .bsmp-delivery-trace-links { display: none !important; } }`}</style>
+            <style>{`html { scroll-behavior: smooth; } .bsmp-delivery-root { min-height: 100vh; background: inherit; } .bsmp-delivery-root:fullscreen { overflow-y: auto; background: #f8fafc; padding: 0 24px 48px; box-sizing: border-box; } .bsmp-delivery-root:fullscreen .bsmp-delivery-print-page { max-width: 1180px; } .bsmp-delivery-root:fullscreen .bsmp-delivery-header { border-radius: 0 0 12px 12px; } .bsmp-delivery-root:fullscreen .bsmp-delivery-trace-links { display: none !important; } .bsmp-delivery-print-page { max-width: 1100px; margin: 0 auto; padding: 16px 0 48px; } .bsmp-delivery-header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.98); border-bottom: 1px solid #e5e7eb; padding: 12px 0 0; backdrop-filter: blur(6px); } .bsmp-delivery-header-inner { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; } .bsmp-delivery-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .bsmp-delivery-size-controls { display: flex; gap: 6px; align-items: center; padding-left: 8px; border-left: 1px solid #e5e7eb; } .bsmp-delivery-size-label { font-size: 12px; color: #6b7280; } .bsmp-delivery-size-button { min-width: 34px; padding: 6px 8px; } .bsmp-delivery-section-nav { width: 100%; margin: 12px 0 0; padding: 10px 14px 12px; border-top: 1px solid #e5e7eb; background: rgba(248,250,252,0.98); box-sizing: border-box; } .bsmp-delivery-section-nav-heading { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; } .bsmp-delivery-section-nav-title { font-weight: 700; } .bsmp-delivery-section-nav-help { color: #6b7280; font-size: 12px; line-height: 1.45; } .bsmp-delivery-section-nav-links { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; scrollbar-width: thin; } .bsmp-delivery-section-nav-link { display: inline-flex; gap: 6px; align-items: flex-start; flex: 0 0 auto; padding: 7px 9px; border: 1px solid #dbe3ee; border-radius: 8px; color: #1d4ed8; text-decoration: none; background: #fff; font-size: 12px; font-weight: 600; } .bsmp-delivery-manuscript { max-width: 820px; margin: 32px auto 0; color: #1f2937; } .bsmp-delivery-big-idea { margin: 0 0 42px; padding: 18px 20px; border-left: 4px solid #9ca3af; border-radius: 0 10px 10px 0; background: #f3f4f6; font-weight: 700; } .bsmp-delivery-print-section { margin-bottom: 52px; scroll-margin-top: 170px; } .bsmp-delivery-section-heading { letter-spacing: -0.01em; font-weight: 700; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb; } .bsmp-delivery-section-content { margin-top: 20px; } .bsmp-delivery-content-paragraph { margin: 0 0 1.15em; } .bsmp-delivery-content-block { margin: 0 0 1.25em; } .bsmp-delivery-content-block-label { display: block; margin-bottom: 0.35em; font-family: Arial, sans-serif; font-size: 0.62em; line-height: 1.2; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7280; } .bsmp-delivery-content-block-body { display: block; } .bsmp-delivery-trace-links { margin-top: 16px; font-family: Arial, sans-serif; font-size: 12px; color: #6b7280; display: flex; gap: 8px; flex-wrap: wrap; } .bsmp-delivery-trace-links a { padding: 3px 7px; border: 1px solid #e5e7eb; border-radius: 999px; background: #fff; } .bsmp-delivery-notes { max-width: 820px; margin: 32px auto 0; } .bsmp-delivery-notes-content { border: 1px solid #e5e7eb; border-radius: 12px; padding: 22px; background: #fff; } .bsmp-delivery-notes-content p { margin: 0 0 1em; } @media (max-width: 700px) { .bsmp-delivery-print-page { padding-top: 0; } .bsmp-delivery-header { padding-top: 8px; } .bsmp-delivery-toolbar { width: 100%; } .bsmp-delivery-size-controls { margin-left: auto; } .bsmp-delivery-section-nav { margin-top: 8px; padding: 8px 10px; } .bsmp-delivery-section-nav-links { margin-top: 0; gap: 6px; } .bsmp-delivery-section-nav-link { padding: 6px 8px; font-size: 11px; } .bsmp-delivery-manuscript, .bsmp-delivery-notes { margin-top: 22px; padding: 0 12px; } .bsmp-delivery-big-idea { margin-bottom: 30px; padding: 16px; } .bsmp-delivery-print-section { margin-bottom: 42px; } .bsmp-delivery-root:fullscreen { padding: 0 10px 24px; } } @media print { .bsmp-delivery-print-hide { display: none !important; } .bsmp-delivery-print-page { max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-delivery-print-main { max-width: none !important; margin: 0 !important; font-size: 14pt !important; line-height: 1.6 !important; } .bsmp-delivery-manuscript { max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-delivery-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 0 24px !important; break-inside: avoid; } .bsmp-delivery-print-notes { max-width: none !important; margin: 0 !important; border: 0 !important; padding: 0 !important; } .bsmp-delivery-trace-links { display: none !important; } }`}</style>
             <div ref={deliveryRootRef} className="bsmp-delivery-root">
                 <div className="bsmp-delivery-print-page">
                     <header className="bsmp-delivery-header bsmp-delivery-print-hide">
@@ -131,13 +158,13 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                                 <div style={{ color: "#6b7280", fontSize: 13 }}>{sermon.passage.toString()} · {wordCount} words · ≈ {estimatedMinutes} min</div>
                             </div>
                             <div className="bsmp-delivery-toolbar">
-                                <button type="button" onClick={() => setFocus("manuscript")} disabled={focus === "manuscript"} title="Focus manuscript (M)">Manuscript</button>
-                                <button type="button" onClick={() => setFocus("notes")} disabled={focus === "notes"} title="Focus delivery notes (N)">Delivery Notes</button>
+                                <button type="button" onClick={() => changeFocus("manuscript")} disabled={focus === "manuscript"} title="Focus manuscript (M)">Manuscript</button>
+                                <button type="button" onClick={() => changeFocus("notes")} disabled={focus === "notes"} title="Focus delivery notes (N)">Delivery Notes</button>
                                 <div className="bsmp-delivery-size-controls" aria-label="Manuscript text size controls">
                                     <span className="bsmp-delivery-size-label">Text size</span>
-                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => setReadingSize((current) => current === "large" ? "comfortable" : "compact")} disabled={readingSize === "compact"} title="Decrease manuscript text size (minus key)" aria-label="Decrease manuscript text size">A−</button>
-                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => setReadingSize("comfortable")} disabled={readingSize === "comfortable"} title="Reset manuscript text size" aria-label="Reset manuscript text size">A</button>
-                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => setReadingSize((current) => current === "compact" ? "comfortable" : "large")} disabled={readingSize === "large"} title="Increase manuscript text size (equals key)" aria-label="Increase manuscript text size">A+</button>
+                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize(readingSize === "large" ? "comfortable" : "compact")} disabled={readingSize === "compact"} title="Decrease manuscript text size (minus key)" aria-label="Decrease manuscript text size">A−</button>
+                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("comfortable")} disabled={readingSize === "comfortable"} title="Reset manuscript text size" aria-label="Reset manuscript text size">A</button>
+                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize(readingSize === "compact" ? "comfortable" : "large")} disabled={readingSize === "large"} title="Increase manuscript text size (equals key)" aria-label="Increase manuscript text size">A+</button>
                                 </div>
                                 <button type="button" onClick={() => window.print()}>Print / Save PDF</button>
                                 <button type="button" onClick={() => void toggleDistractionFree()} title={distractionFree ? "Exit distraction-free mode" : "Enter distraction-free mode"}>{distractionFree ? "Exit Focus" : "Focus Mode"}</button>
