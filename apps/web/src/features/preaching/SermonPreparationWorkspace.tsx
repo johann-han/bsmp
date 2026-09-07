@@ -36,6 +36,19 @@ const studySupportLinkStyle = {
     textDecoration: "none",
 };
 
+function formatPersistenceError(reason: unknown): string {
+    if (reason instanceof Error) return reason.message;
+    if (typeof reason === "string") return reason;
+    if (reason && typeof reason === "object") {
+        const value = reason as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown };
+        const parts = [value.message, value.details, value.hint, value.code]
+            .filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+        if (parts.length > 0) return parts.join(" — ");
+        try { return JSON.stringify(reason); } catch { return "An unknown persistence error occurred."; }
+    }
+    return String(reason);
+}
+
 const studyRepository = new SupabaseStudyRepository();
 const sermonRepository = new SupabaseExpositorySermonRepository();
 
@@ -78,10 +91,7 @@ export function SermonPreparationWorkspace() {
         setEditingOutlinePointId(null);
         setHeading("");
         setTruth("");
-        setSupportingObservationIds([]);
-        setSupportingInterpretationIds([]);
-        setSupportingEvidenceIds([]);
-        setSupportingApplicationIds([]);
+        resetOutlineSupport();
 
         if (typeof window !== "undefined") {
             if (studyId) window.localStorage.setItem("bsmp:last-study-id", studyId);
@@ -111,7 +121,7 @@ export function SermonPreparationWorkspace() {
                 setPurpose("");
             }
         } catch (reason: unknown) {
-            setError(reason instanceof Error ? reason.message : "Unable to load sermon preparation.");
+            setError(formatPersistenceError(reason));
         }
     }, []);
 
@@ -142,7 +152,7 @@ export function SermonPreparationWorkspace() {
                     setSelectedStudyId("");
                 }
             } catch (reason: unknown) {
-                if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load studies.");
+                if (!cancelled) setError(formatPersistenceError(reason) || "Unable to load studies.");
             }
         }
 
@@ -166,7 +176,7 @@ export function SermonPreparationWorkspace() {
             setSermon(created);
             setMessage("Sermon preparation created.");
         } catch (reason: unknown) {
-            setError(reason instanceof Error ? reason.message : "Unable to create sermon preparation.");
+            setError(`Unable to create sermon preparation: ${formatPersistenceError(reason)}`);
         }
     }
 
@@ -181,7 +191,7 @@ export function SermonPreparationWorkspace() {
             await sermonRepository.save(sermon);
             setMessage("Sermon preparation saved.");
         } catch (reason: unknown) {
-            setError(reason instanceof Error ? reason.message : "Unable to save sermon preparation.");
+            setError(`Unable to save sermon preparation: ${formatPersistenceError(reason)}`);
         }
     }
 
@@ -209,7 +219,7 @@ export function SermonPreparationWorkspace() {
             setMessage("Outline point saved.");
         } catch (reason: unknown) {
             try { await reloadSermon(); } catch { /* preserve original error */ }
-            const details = reason instanceof Error ? reason.message : String(reason);
+            const details = formatPersistenceError(reason);
             setError(`Unable to save outline point: ${details}`);
         }
     }
@@ -248,7 +258,7 @@ export function SermonPreparationWorkspace() {
             setMessage("Outline point updated.");
         } catch (reason: unknown) {
             try { await reloadSermon(); } catch { /* preserve original error */ }
-            const details = reason instanceof Error ? reason.message : String(reason);
+            const details = formatPersistenceError(reason);
             setError(`Unable to update outline point: ${details}`);
         }
     }
@@ -266,7 +276,7 @@ export function SermonPreparationWorkspace() {
             setMessage("Outline point deleted.");
         } catch (reason: unknown) {
             try { await reloadSermon(); } catch { /* preserve original error */ }
-            const details = reason instanceof Error ? reason.message : String(reason);
+            const details = formatPersistenceError(reason);
             setError(`Unable to delete outline point: ${details}`);
         }
     }
@@ -282,7 +292,7 @@ export function SermonPreparationWorkspace() {
             setMessage("Outline order saved.");
         } catch (reason: unknown) {
             try { await reloadSermon(); } catch { /* preserve original error */ }
-            const details = reason instanceof Error ? reason.message : String(reason);
+            const details = formatPersistenceError(reason);
             setError(`Unable to move outline point: ${details}`);
         }
     }
@@ -373,11 +383,7 @@ export function SermonPreparationWorkspace() {
                                                             {observations.map((observation, itemIndex) => (
                                                                 <span key={observation.id.value}>
                                                                     {itemIndex > 0 && " • "}
-                                                                    <a
-                                                                        href={workspaceHref(selectedStudy.id.value, `observation-${observation.id.value}`)}
-                                                                        style={studySupportLinkStyle}
-                                                                        onClick={() => cacheStudyForWorkspace(selectedStudy)}
-                                                                    >
+                                                                    <a href={workspaceHref(selectedStudy.id.value, `observation-${observation.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>
                                                                         {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}
                                                                     </a>
                                                                 </span>
@@ -390,11 +396,7 @@ export function SermonPreparationWorkspace() {
                                                             {interpretations.map((interpretation, itemIndex) => (
                                                                 <span key={interpretation.id.value}>
                                                                     {itemIndex > 0 && " • "}
-                                                                    <a
-                                                                        href={workspaceHref(selectedStudy.id.value, `interpretation-${interpretation.id.value}`)}
-                                                                        style={studySupportLinkStyle}
-                                                                        onClick={() => cacheStudyForWorkspace(selectedStudy)}
-                                                                    >
+                                                                    <a href={workspaceHref(selectedStudy.id.value, `interpretation-${interpretation.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>
                                                                         {interpretation.statement.value}
                                                                     </a>
                                                                 </span>
@@ -407,11 +409,7 @@ export function SermonPreparationWorkspace() {
                                                             {evidence.map((item, itemIndex) => (
                                                                 <span key={item.id.value}>
                                                                     {itemIndex > 0 && " • "}
-                                                                    <a
-                                                                        href={workspaceHref(selectedStudy.id.value, `evidence-${item.id.value}`)}
-                                                                        style={studySupportLinkStyle}
-                                                                        onClick={() => cacheStudyForWorkspace(selectedStudy)}
-                                                                    >
+                                                                    <a href={workspaceHref(selectedStudy.id.value, `evidence-${item.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>
                                                                         {item.type.value}: {item.description.value}
                                                                     </a>
                                                                 </span>
@@ -424,11 +422,7 @@ export function SermonPreparationWorkspace() {
                                                             {applications.map((application, itemIndex) => (
                                                                 <span key={application.id.value}>
                                                                     {itemIndex > 0 && " • "}
-                                                                    <a
-                                                                        href={workspaceHref(selectedStudy.id.value, `application-${application.id.value}`)}
-                                                                        style={studySupportLinkStyle}
-                                                                        onClick={() => cacheStudyForWorkspace(selectedStudy)}
-                                                                    >
+                                                                    <a href={workspaceHref(selectedStudy.id.value, `application-${application.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>
                                                                         {application.principle.value}
                                                                     </a>
                                                                 </span>
@@ -452,11 +446,7 @@ export function SermonPreparationWorkspace() {
                                             <div style={{ fontSize: 13, fontWeight: 600 }}>Observations</div>
                                             {selectedStudy.observations.map((observation) => (
                                                 <label key={observation.id.value} style={{ display: "block", marginTop: 6 }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={supportingObservationIds.includes(observation.id.value)}
-                                                        onChange={() => toggleValue(supportingObservationIds, observation.id.value, setSupportingObservationIds)}
-                                                    /> {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}
+                                                    <input type="checkbox" checked={supportingObservationIds.includes(observation.id.value)} onChange={() => toggleValue(supportingObservationIds, observation.id.value, setSupportingObservationIds)} /> {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}
                                                 </label>
                                             ))}
                                         </div>
@@ -467,11 +457,7 @@ export function SermonPreparationWorkspace() {
                                             <div style={{ fontSize: 13, fontWeight: 600 }}>Interpretations</div>
                                             {selectedStudy.interpretations.map((interpretation) => (
                                                 <label key={interpretation.id.value} style={{ display: "block", marginTop: 6 }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={supportingInterpretationIds.includes(interpretation.id.value)}
-                                                        onChange={() => toggleValue(supportingInterpretationIds, interpretation.id.value, setSupportingInterpretationIds)}
-                                                    /> {interpretation.statement.value}
+                                                    <input type="checkbox" checked={supportingInterpretationIds.includes(interpretation.id.value)} onChange={() => toggleValue(supportingInterpretationIds, interpretation.id.value, setSupportingInterpretationIds)} /> {interpretation.statement.value}
                                                 </label>
                                             ))}
                                         </div>
@@ -482,11 +468,7 @@ export function SermonPreparationWorkspace() {
                                             <div style={{ fontSize: 13, fontWeight: 600 }}>Evidence</div>
                                             {studyEvidence.map((evidence) => (
                                                 <label key={evidence.id.value} style={{ display: "block", marginTop: 6 }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={supportingEvidenceIds.includes(evidence.id.value)}
-                                                        onChange={() => toggleValue(supportingEvidenceIds, evidence.id.value, setSupportingEvidenceIds)}
-                                                    /> {evidence.type.value}: {evidence.description.value}
+                                                    <input type="checkbox" checked={supportingEvidenceIds.includes(evidence.id.value)} onChange={() => toggleValue(supportingEvidenceIds, evidence.id.value, setSupportingEvidenceIds)} /> {evidence.type.value}: {evidence.description.value}
                                                 </label>
                                             ))}
                                         </div>
@@ -497,11 +479,7 @@ export function SermonPreparationWorkspace() {
                                             <div style={{ fontSize: 13, fontWeight: 600 }}>Applications</div>
                                             {selectedStudy.applications.map((application) => (
                                                 <label key={application.id.value} style={{ display: "block", marginTop: 6 }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={supportingApplicationIds.includes(application.id.value)}
-                                                        onChange={() => toggleValue(supportingApplicationIds, application.id.value, setSupportingApplicationIds)}
-                                                    /> {application.principle.value}
+                                                    <input type="checkbox" checked={supportingApplicationIds.includes(application.id.value)} onChange={() => toggleValue(supportingApplicationIds, application.id.value, setSupportingApplicationIds)} /> {application.principle.value}
                                                 </label>
                                             ))}
                                         </div>
@@ -519,7 +497,7 @@ export function SermonPreparationWorkspace() {
                 )}
 
                 {message && <p style={{ color: "green" }}>{message}</p>}
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                {error && <p role="alert" style={{ color: "red" }}>{error}</p>}
             </div>
         </AppShell>
     );
