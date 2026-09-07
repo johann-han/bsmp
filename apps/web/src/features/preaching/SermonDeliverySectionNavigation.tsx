@@ -64,13 +64,44 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     );
 
     function jumpTo(index: number) {
+        if (sections.length === 0) return;
+
         const nextIndex = Math.max(0, Math.min(index, sections.length - 1));
+        const targetId = sectionId(sections[nextIndex].id);
         setActiveIndex(nextIndex);
-        document.getElementById(sectionId(sections[nextIndex].id))?.scrollIntoView({
+
+        if (window.location.hash !== `#${targetId}`) {
+            window.history.replaceState(null, "", `#${targetId}`);
+        }
+
+        document.getElementById(targetId)?.scrollIntoView({
             behavior: "smooth",
             block: "start",
         });
     }
+
+    useEffect(() => {
+        if (sections.length === 0) return;
+
+        const targetId = window.location.hash.slice(1);
+        if (!targetId) return;
+
+        const hashIndex = sections.findIndex((section) => sectionId(section.id) === targetId);
+        if (hashIndex >= 0) setActiveIndex(hashIndex);
+    }, [sections]);
+
+    useEffect(() => {
+        if (sections.length === 0) return;
+
+        function handleHashChange() {
+            const targetId = window.location.hash.slice(1);
+            const nextIndex = sections.findIndex((section) => sectionId(section.id) === targetId);
+            if (nextIndex >= 0) setActiveIndex(nextIndex);
+        }
+
+        window.addEventListener("hashchange", handleHashChange);
+        return () => window.removeEventListener("hashchange", handleHashChange);
+    }, [sections]);
 
     useEffect(() => {
         if (sections.length === 0) return;
@@ -83,7 +114,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 target?.tagName === "SELECT" ||
                 target?.isContentEditable;
 
-            if (isTextEntry || event.altKey || event.ctrlKey || event.metaKey) return;
+            if (isTextEntry || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
 
             const key = event.key.toLowerCase();
             if (key === "p") {
