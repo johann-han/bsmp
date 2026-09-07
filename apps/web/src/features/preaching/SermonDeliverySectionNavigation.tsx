@@ -82,16 +82,6 @@ function getDocumentTop(element: HTMLElement, container: HTMLElement | null): nu
     return element.getBoundingClientRect().top - containerRect.top + container.scrollTop;
 }
 
-function getRootContentTop(element: HTMLElement, root: HTMLElement, container: HTMLElement | null): number {
-    const rootRect = root.getBoundingClientRect();
-    const containerRect = container?.getBoundingClientRect();
-    const scrollTop = getScrollTop(container);
-    const elementViewportTop = element.getBoundingClientRect().top;
-    const rootViewportTop = rootRect.top;
-    const containerViewportTop = containerRect?.top ?? 0;
-    return elementViewportTop - rootViewportTop + (scrollTop - (container === root ? 0 : containerViewportTop - rootViewportTop));
-}
-
 function dispatchShortcut(key: string) { window.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true })); }
 
 function activateFocusMode() {
@@ -155,9 +145,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             setRecoveryAvailable(true);
             frame = 0;
         };
-        const scheduleUpdate = () => {
-            if (!frame) frame = window.requestAnimationFrame(updateActiveSection);
-        };
+        const scheduleUpdate = () => { if (!frame) frame = window.requestAnimationFrame(updateActiveSection); };
         updateActiveSection();
         container?.addEventListener("scroll", scheduleUpdate, { passive: true });
         window.addEventListener("scroll", scheduleUpdate, { passive: true });
@@ -256,21 +244,26 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             setMarkerPosition({ top: Math.round(top) });
             frame = 0;
         };
-        const scheduleUpdate = () => {
-            if (!frame) frame = window.requestAnimationFrame(updateMarkerPosition);
-        };
+        const scheduleUpdate = () => { if (!frame) frame = window.requestAnimationFrame(updateMarkerPosition); };
         updateMarkerPosition();
         window.addEventListener("resize", scheduleUpdate, { passive: true });
         document.addEventListener("fullscreenchange", scheduleUpdate);
         window.addEventListener("scroll", scheduleUpdate, { passive: true });
-        getScrollContainer()?.addEventListener("scroll", scheduleUpdate, { passive: true });
+        containerScrollListener(scheduleUpdate);
         return () => {
             window.removeEventListener("resize", scheduleUpdate);
             document.removeEventListener("fullscreenchange", scheduleUpdate);
             window.removeEventListener("scroll", scheduleUpdate);
-            getScrollContainer()?.removeEventListener("scroll", scheduleUpdate);
+            containerScrollCleanup(scheduleUpdate);
             if (frame) window.cancelAnimationFrame(frame);
         };
+
+        function containerScrollListener(handler: EventListener) {
+            getScrollContainer()?.addEventListener("scroll", handler, { passive: true });
+        }
+        function containerScrollCleanup(handler: EventListener) {
+            getScrollContainer()?.removeEventListener("scroll", handler);
+        }
     }, [focusModeActive, placeMarker, sections]);
 
     useEffect(() => {
