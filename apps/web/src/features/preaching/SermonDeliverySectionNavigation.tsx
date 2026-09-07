@@ -43,13 +43,15 @@ function readRecoveryState(sectionCount: number): DeliveryRecoveryState | null {
         const raw = window.localStorage.getItem(recoveryKey());
         if (!raw) return null;
         const parsed = JSON.parse(raw) as Partial<DeliveryRecoveryState>;
-        return {
+        const state: DeliveryRecoveryState = {
             sectionIndex: typeof parsed.sectionIndex === "number" ? Math.max(0, Math.min(Math.floor(parsed.sectionIndex), Math.max(0, sectionCount - 1))) : 0,
             focus: parsed.focus === "notes" ? "notes" : "manuscript",
             readingSize: parsed.readingSize === "compact" || parsed.readingSize === "large" ? parsed.readingSize : "comfortable",
             focusModeRequested: parsed.focusModeRequested === true,
-            placeMarker: parsePlaceMarker(parsed.placeMarker),
         };
+        const marker = parsePlaceMarker(parsed.placeMarker);
+        if (marker) state.placeMarker = marker;
+        return state;
     } catch { return null; }
 }
 
@@ -217,11 +219,13 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 lineBottom = Math.min(rect.bottom, rect.top + (lineIndex + 1) * lineHeight);
             }
 
+            const section = sections[domSectionIndex];
+            if (!section) return;
             const sectionRect = sectionElement.getBoundingClientRect();
             const lineBottomOffset = Math.max(0, Math.round(lineBottom - sectionRect.top));
             const marker: DeliveryPlaceMarker = {
                 mode: "line",
-                sectionId: sections[domSectionIndex].id,
+                sectionId: section.id,
                 lineBottomOffset,
                 savedAt: Date.now(),
             };
@@ -247,12 +251,14 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     function jumpTo(index: number) {
         if (sections.length === 0) return;
         const nextIndex = Math.max(0, Math.min(index, sections.length - 1));
-        const target = document.getElementById(sectionId(sections[nextIndex].id));
+        const section = sections[nextIndex];
+        if (!section) return;
+        const target = document.getElementById(sectionId(section.id));
         if (!target) return;
         setActiveIndex(nextIndex);
         writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
         setRecoveryAvailable(true);
-        const targetId = sectionId(sections[nextIndex].id);
+        const targetId = sectionId(section.id);
         if (window.location.hash !== `#${targetId}`) window.history.replaceState(null, "", `#${targetId}`);
         target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -267,13 +273,15 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         const fullscreenRoot = getFullscreenScrollContainer();
         const rootRect = fullscreenRoot?.getBoundingClientRect();
         const header = getDeliveryRoot()?.querySelector<HTMLElement>(".bsmp-delivery-header");
-        const desiredViewportTop = fullscreenRoot ? (header?.getBoundingClientRect().bottom ?? rootRect!.top + 120) + 20 - rootRect!.top : (header?.getBoundingClientRect().bottom ?? 120) + 20;
+        const desiredViewportTop = fullscreenRoot ? (header?.getBoundingClientRect().bottom ?? (rootRect?.top ?? 0) + 120) + 20 - (rootRect?.top ?? 0) : (header?.getBoundingClientRect().bottom ?? 120) + 20;
         const currentScrollTop = getScrollTop();
         const targetScrollTop = Math.max(0, currentScrollTop + lineViewportTop - desiredViewportTop);
         setActiveIndex(nextIndex);
         writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
         setRecoveryAvailable(true);
-        const targetId = sectionId(placeMarker.sectionId);
+        const section = sections[nextIndex];
+        if (!section) return;
+        const targetId = sectionId(section.id);
         if (window.location.hash !== `#${targetId}`) window.history.replaceState(null, "", `#${targetId}`);
         scrollToDocumentPosition(targetScrollTop);
     }
@@ -311,7 +319,9 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
 
     useEffect(() => {
         if (sections.length === 0) return;
-        const activeLink = document.getElementById(navigationLinkId(sections[safeActiveIndex].id));
+        const section = sections[safeActiveIndex];
+        if (!section) return;
+        const activeLink = document.getElementById(navigationLinkId(section.id));
         activeLink?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     }, [safeActiveIndex, sections]);
 
