@@ -10,11 +10,19 @@ import {
     StudyList,
 } from "@repo/ui";
 
+import { supabase } from "../../src/lib/supabase";
 import { SupabaseStudyRepository } from "../../src/lib/SupabaseStudyRepository";
 import { parseStudyPassage } from "../../src/lib/parseStudyPassage";
 import type { StudySummary } from "../../types/study";
 
 const repository = new SupabaseStudyRepository();
+
+type StudyApiRecord = {
+    id: string;
+    title: string;
+    passage: string;
+    status: string;
+};
 
 export default function StudiesPage() {
     const [studies, setStudies] = useState<StudySummary[]>([]);
@@ -29,12 +37,42 @@ export default function StudiesPage() {
         setLoading(true);
 
         try {
-            const result = await repository.findAllSummaries();
+            // The browser Supabase client owns the authenticated session.
+            // Pass its access token to the server route so the server-side
+            // repository can authenticate the database request consistently.
+            const { data, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) throw sessionError;
+
+            const accessToken = data.session?.access_token;
+            if (!accessToken) {
+                throw new Error("A signed-in Supabase session is required for study persistence.");
+            }
+
+            const response = await fetch("/api/studies", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                cache: "no-store",
+            });
+
+            const body = await response.json() as StudyApiRecord | StudyApiRecord[] | { error?: string };
+            if (!response.ok) {
+                const message = "error" in body && body.error
+                    ? body.error
+                    : "Unable to load studies.";
+                throw new Error(message);
+            }
+
+            if (!Array.isArray(body)) {
+                throw new Error("The study service returned an invalid response.");
+            }
+
             setStudies(
-                result.map((study) => ({
+                body.map((study) => ({
                     id: study.id,
                     title: study.title,
-                    passage: `${study.passage_start_book} ${study.passage_start_chapter}:${study.passage_start_verse}-${study.passage_end_chapter}:${study.passage_end_verse}`,
+                    passage: study.passage,
                     status: study.status,
                 })),
             );
