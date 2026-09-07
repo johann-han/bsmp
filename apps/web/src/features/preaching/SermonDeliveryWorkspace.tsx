@@ -20,6 +20,14 @@ const readingSizeConfig: Record<ReadingSize, { label: string; manuscript: number
     large: { label: "Large", manuscript: 26, heading: 21 },
 };
 
+function normalizeTextValue(value: unknown): string {
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object" && "value" in value) {
+        return normalizeTextValue((value as { value?: unknown }).value);
+    }
+    return "";
+}
+
 function splitParagraphs(value: string): string[] {
     return value.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
 }
@@ -69,7 +77,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
         return () => { cancelled = true; };
     }, [studyId]);
 
-    const manuscript = sermon?.manuscript?.value ?? "";
+    const manuscript = normalizeTextValue(sermon?.manuscript?.value);
     const paragraphs = useMemo(() => splitParagraphs(manuscript), [manuscript]);
     const sections = sermon?.manuscriptSections ?? [];
     const hasTraceableSections = sections.length > 0;
@@ -164,7 +172,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                                 <div className="bsmp-delivery-size-controls" aria-label="Manuscript text size controls">
                                     <span className="bsmp-delivery-size-label">Text size</span>
                                     <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize(readingSize === "large" ? "comfortable" : "compact")} disabled={readingSize === "compact"} title="Decrease text size">A−</button>
-                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => setReadingSize("comfortable")} disabled={readingSize === "comfortable"} title="Reset text size">A</button>
+                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("comfortable")} disabled={readingSize === "comfortable"} title="Reset text size">A</button>
                                     <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize(readingSize === "compact" ? "comfortable" : "large")} disabled={readingSize === "large"} title="Increase text size">A+</button>
                                 </div>
                                 <button type="button" onClick={() => window.print()}>Print / Save PDF</button>
@@ -205,7 +213,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                             <div className="bsmp-delivery-notes">
                                 <h2>Delivery Notes</h2>
                                 <div className="bsmp-delivery-notes-content" style={{ fontSize: `${readingConfig.manuscript}px`, lineHeight: 1.65 }}>
-                                    {splitParagraphs(sermon.deliveryNotes ?? "No delivery notes have been prepared.").map((paragraph, index) => <p key={`note-${index}`}>{paragraph}</p>)}
+                                    {splitParagraphs(normalizeTextValue(sermon.deliveryNotes?.value) || "No delivery notes have been prepared.").map((paragraph, index) => <p key={`note-${index}`}>{paragraph}</p>)}
                                 </div>
                             </div>
                         </main>
