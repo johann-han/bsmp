@@ -302,59 +302,160 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             : "Comfortable";
 
     return (
-        <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
-            <details className="bsmp-delivery-controls-details">
-                <summary className="bsmp-delivery-controls-summary">
-                    <span><strong>Preaching Controls</strong><span className="bsmp-delivery-controls-summary-status"> · {activeSection?.title ?? "Current section"} · {progressLabel}</span></span>
-                    <span aria-hidden="true">⌄</span>
-                </summary>
-                <div className="bsmp-delivery-controls-panel">
-                    <div className="bsmp-delivery-controls-grid">
-                        <div className="bsmp-delivery-control-card">
-                            <span className="bsmp-delivery-control-label">Current section</span>
-                            <strong>{activeSection?.title ?? "Current section"}</strong>
-                            <span>{progressLabel}</span>
-                        </div>
-                        <div className="bsmp-delivery-control-card">
-                            <span className="bsmp-delivery-control-label">Presentation</span>
-                            <div className="bsmp-delivery-control-actions">
-                                <button type="button" onClick={() => dispatchShortcut("m")} disabled={recoveryFocusLabel === "Manuscript"}>Manuscript <kbd>M</kbd></button>
-                                <button type="button" onClick={() => dispatchShortcut("n")} disabled={recoveryFocusLabel === "Notes"}>Notes <kbd>N</kbd></button>
+        <>
+            <style>{`
+                .bsmp-delivery-controls-details { margin: 0; }
+                .bsmp-delivery-controls-summary {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    cursor: pointer;
+                    padding: 10px 0;
+                    list-style: none;
+                    user-select: none;
+                }
+                .bsmp-delivery-controls-summary::-webkit-details-marker { display: none; }
+                .bsmp-delivery-controls-summary-status {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-left: 8px;
+                    color: #6b7280;
+                    font-weight: 400;
+                }
+                .bsmp-delivery-controls-panel {
+                    margin-top: 4px;
+                    padding: 14px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 10px;
+                    background: #fff;
+                }
+                .bsmp-delivery-controls-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 12px;
+                }
+                .bsmp-delivery-control-card {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    min-width: 0;
+                    padding: 12px;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 9px;
+                    background: #f8fafc;
+                    line-height: 1.45;
+                }
+                .bsmp-delivery-control-label {
+                    color: #6b7280;
+                    font-size: 12px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: .04em;
+                }
+                .bsmp-delivery-control-actions {
+                    display: flex;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+                .bsmp-delivery-control-actions button {
+                    min-height: 34px;
+                    padding: 7px 10px;
+                }
+                .bsmp-delivery-control-actions kbd {
+                    margin-left: 6px;
+                    padding: 1px 5px;
+                    border: 1px solid #d1d5db;
+                    border-bottom-width: 2px;
+                    border-radius: 4px;
+                    font-size: 10px;
+                    line-height: 1.2;
+                    background: #fff;
+                }
+                .bsmp-delivery-controls-recovery {
+                    margin-top: 12px;
+                    padding-top: 10px;
+                    border-top: 1px solid #e5e7eb;
+                    color: #6b7280;
+                    font-size: 12px;
+                    line-height: 1.5;
+                }
+                @media (max-width: 900px) {
+                    .bsmp-delivery-controls-grid {
+                        grid-template-columns: repeat(2, minmax(0, 1fr));
+                    }
+                }
+                @media (max-width: 700px) {
+                    .bsmp-delivery-controls-summary { gap: 8px; padding: 8px 0; }
+                    .bsmp-delivery-controls-summary-status {
+                        display: block;
+                        margin-left: 0;
+                        margin-top: 3px;
+                    }
+                    .bsmp-delivery-controls-panel { padding: 10px; }
+                    .bsmp-delivery-controls-grid {
+                        grid-template-columns: 1fr;
+                        gap: 10px;
+                    }
+                    .bsmp-delivery-control-card { padding: 10px; }
+                }
+            `}</style>
+            <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
+                <details className="bsmp-delivery-controls-details">
+                    <summary className="bsmp-delivery-controls-summary">
+                        <span><strong>Preaching Controls</strong><span className="bsmp-delivery-controls-summary-status"> · {activeSection?.title ?? "Current section"} · {progressLabel}</span></span>
+                        <span aria-hidden="true">⌄</span>
+                    </summary>
+                    <div className="bsmp-delivery-controls-panel">
+                        <div className="bsmp-delivery-controls-grid">
+                            <div className="bsmp-delivery-control-card">
+                                <span className="bsmp-delivery-control-label">Current section</span>
+                                <strong>{activeSection?.title ?? "Current section"}</strong>
+                                <span>{progressLabel}</span>
+                            </div>
+                            <div className="bsmp-delivery-control-card">
+                                <span className="bsmp-delivery-control-label">Presentation</span>
+                                <div className="bsmp-delivery-control-actions">
+                                    <button type="button" onClick={() => dispatchShortcut("m")} disabled={recoveryFocusLabel === "Manuscript"}>Manuscript <kbd>M</kbd></button>
+                                    <button type="button" onClick={() => dispatchShortcut("n")} disabled={recoveryFocusLabel === "Notes"}>Notes <kbd>N</kbd></button>
+                                </div>
+                            </div>
+                            <div className="bsmp-delivery-control-card">
+                                <span className="bsmp-delivery-control-label">Text size</span>
+                                <div className="bsmp-delivery-control-actions">
+                                    <button type="button" onClick={() => dispatchShortcut("-")} disabled={recoverySizeLabel === "Compact"}>A−</button>
+                                    <button type="button" onClick={() => { if (recoverySizeLabel === "large") dispatchShortcut("-"); else if (recoverySizeLabel === "compact") dispatchShortcut("="); }} disabled={recoverySizeLabel === "Comfortable"}>A</button>
+                                    <button type="button" onClick={() => dispatchShortcut("=")} disabled={recoverySizeLabel === "Large"}>A+</button>
+                                </div>
+                                <span>{recoverySizeLabel}</span>
+                            </div>
+                            <div className="bsmp-delivery-control-card">
+                                <span className="bsmp-delivery-control-label">Focus & recovery</span>
+                                <div className="bsmp-delivery-control-actions">
+                                    <button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button>
+                                </div>
+                                <span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"}</span>
                             </div>
                         </div>
-                        <div className="bsmp-delivery-control-card">
-                            <span className="bsmp-delivery-control-label">Text size</span>
-                            <div className="bsmp-delivery-control-actions">
-                                <button type="button" onClick={() => dispatchShortcut("-")} disabled={recoverySizeLabel === "Compact"}>A−</button>
-                                <button type="button" onClick={() => { if (recoverySizeLabel === "large") dispatchShortcut("-"); else if (recoverySizeLabel === "compact") dispatchShortcut("="); }} disabled={recoverySizeLabel === "Comfortable"}>A</button>
-                                <button type="button" onClick={() => dispatchShortcut("=")} disabled={recoverySizeLabel === "Large"}>A+</button>
-                            </div>
-                            <span>{recoverySizeLabel}</span>
-                        </div>
-                        <div className="bsmp-delivery-control-card">
-                            <span className="bsmp-delivery-control-label">Focus & recovery</span>
-                            <div className="bsmp-delivery-control-actions">
-                                <button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button>
-                            </div>
-                            <span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"}</span>
+                        <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">
+                            {recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}` : "Recovery not yet available"}
                         </div>
                     </div>
-                    <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">
-                        {recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}` : "Recovery not yet available"}
-                    </div>
+                </details>
+                <div className="bsmp-delivery-section-nav-links">
+                    {sections.map((section, index) => {
+                        const active = index === safeActiveIndex;
+                        return (
+                            <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex: index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}>
+                                <span>{index + 1}.</span>
+                                <span>{section.title}</span>
+                            </Link>
+                        );
+                    })}
                 </div>
-            </details>
-            <div className="bsmp-delivery-section-nav-links">
-                {sections.map((section, index) => {
-                    const active = index === safeActiveIndex;
-                    return (
-                        <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex: index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}>
-                            <span>{index + 1}.</span>
-                            <span>{section.title}</span>
-                        </Link>
-                    );
-                })}
-            </div>
-        </nav>
+            </nav>
+        </>
     );
 }
