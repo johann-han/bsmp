@@ -12,32 +12,48 @@ function sectionId(id: string): string {
     return `delivery-section-${encodeURIComponent(id)}`;
 }
 
+const DELIVERY_NAV_OFFSET = 150;
+
 export function SermonDeliverySectionNavigation({ sections }: Props) {
     const [activeIndex, setActiveIndex] = useState(0);
 
     useEffect(() => {
         if (sections.length === 0) return;
 
-        const elements = sections
-            .map((section) => document.getElementById(sectionId(section.id)))
-            .filter((element): element is HTMLElement => Boolean(element));
+        let frame = 0;
 
-        if (elements.length === 0) return;
+        const updateActiveSection = () => {
+            const viewportPosition = window.scrollY + DELIVERY_NAV_OFFSET;
+            let nextIndex = 0;
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const visible = entries
-                    .filter((entry) => entry.isIntersecting)
-                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-                if (visible.length === 0) return;
-                const index = elements.indexOf(visible[0].target as HTMLElement);
-                if (index >= 0) setActiveIndex(index);
-            },
-            { rootMargin: "-135px 0px -55% 0px", threshold: [0, 0.2, 0.6] },
-        );
+            sections.forEach((section, index) => {
+                const element = document.getElementById(sectionId(section.id));
+                if (!element) return;
 
-        elements.forEach((element) => observer.observe(element));
-        return () => observer.disconnect();
+                const documentTop = element.getBoundingClientRect().top + window.scrollY;
+                if (documentTop <= viewportPosition) {
+                    nextIndex = index;
+                }
+            });
+
+            setActiveIndex((current) => current === nextIndex ? current : nextIndex);
+            frame = 0;
+        };
+
+        const scheduleUpdate = () => {
+            if (frame) return;
+            frame = window.requestAnimationFrame(updateActiveSection);
+        };
+
+        updateActiveSection();
+        window.addEventListener("scroll", scheduleUpdate, { passive: true });
+        window.addEventListener("resize", scheduleUpdate, { passive: true });
+
+        return () => {
+            window.removeEventListener("scroll", scheduleUpdate);
+            window.removeEventListener("resize", scheduleUpdate);
+            if (frame) window.cancelAnimationFrame(frame);
+        };
     }, [sections]);
 
     const safeActiveIndex = Math.min(activeIndex, Math.max(0, sections.length - 1));
@@ -50,7 +66,10 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     function jumpTo(index: number) {
         const nextIndex = Math.max(0, Math.min(index, sections.length - 1));
         setActiveIndex(nextIndex);
-        document.getElementById(sectionId(sections[nextIndex].id))?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document.getElementById(sectionId(sections[nextIndex].id))?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
     }
 
     if (sections.length === 0) return null;
@@ -70,7 +89,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 <div
                     className="bsmp-delivery-section-nav-controls"
                     aria-label="Section navigation controls"
-                    style={{ display: "flex", gap: 10, marginLeft: "auto" }}
+                    style={{ display: "flex", gap: 14, marginLeft: "auto" }}
                 >
                     <button
                         type="button"
@@ -78,6 +97,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         disabled={safeActiveIndex === 0}
                         aria-label="Previous sermon section"
                         title="Previous section"
+                        style={{ minWidth: 92, padding: "7px 12px" }}
                     >
                         ← Previous
                     </button>
@@ -87,6 +107,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         disabled={safeActiveIndex === sections.length - 1}
                         aria-label="Next sermon section"
                         title="Next section"
+                        style={{ minWidth: 92, padding: "7px 12px" }}
                     >
                         Next →
                     </button>
