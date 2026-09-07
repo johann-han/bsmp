@@ -39,6 +39,16 @@ input[type="radio"]:disabled {
   cursor: not-allowed;
 }
 
+/* Keep the focused preaching surface flush with the viewport. */
+.bsmp-delivery-root:fullscreen {
+  padding-top: 0 !important;
+}
+
+/* Traceability is useful during preparation, but should disappear while preaching. */
+.bsmp-delivery-root:fullscreen .bsmp-delivery-trace-links {
+  display: none !important;
+}
+
 @media print {
   .bsmp-print-hide {
     display: none !important;
