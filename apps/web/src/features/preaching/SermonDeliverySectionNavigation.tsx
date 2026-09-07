@@ -32,8 +32,8 @@ function parsePlaceMarker(value: unknown, sectionCount: number): DeliveryPlaceMa
     if (typeof marker.sectionIndex !== "number" || typeof marker.offset !== "number" || typeof marker.scrollY !== "number" || typeof marker.savedAt !== "number") return undefined;
     return {
         sectionIndex: Math.max(0, Math.min(Math.floor(marker.sectionIndex), Math.max(0, sectionCount - 1))),
-        offset: marker.offset,
-        scrollY: Math.max(0, marker.scrollY),
+        offset: Number.isFinite(marker.offset) ? marker.offset : 0,
+        scrollY: Math.max(0, Number.isFinite(marker.scrollY) ? marker.scrollY : 0),
         savedAt: marker.savedAt,
     };
 }
@@ -67,19 +67,45 @@ function writeRecoveryState(patch: Partial<DeliveryRecoveryState>, sectionCount:
     }
 }
 
-function getScrollContainer(): HTMLElement | null {
-    if (document.fullscreenElement instanceof HTMLElement) return document.fullscreenElement;
-    return document.scrollingElement ?? document.documentElement;
+function getDeliveryRoot(): HTMLElement | null {
+    return document.querySelector<HTMLElement>(".bsmp-delivery-root");
 }
 
-function getScrollTop(container: HTMLElement | null): number {
-    return container ? container.scrollTop : window.scrollY;
+function getFullscreenScrollContainer(): HTMLElement | null {
+    return document.fullscreenElement instanceof HTMLElement ? document.fullscreenElement : null;
 }
 
-function getDocumentTop(element: HTMLElement, container: HTMLElement | null): number {
-    if (!container) return element.getBoundingClientRect().top + window.scrollY;
-    const containerRect = container.getBoundingClientRect();
-    return element.getBoundingClientRect().top - containerRect.top + container.scrollTop;
+function getScrollTop(): number {
+    return getFullscreenScrollContainer()?.scrollTop ?? window.scrollY;
+}
+
+function getSectionDocumentTop(element: HTMLElement): number {
+    const fullscreenRoot = getFullscreenScrollContainer();
+    if (fullscreenRoot) {
+        const rootRect = fullscreenRoot.getBoundingClientRect();
+        return element.getBoundingClientRect().top - rootRect.top + fullscreenRoot.scrollTop;
+    }
+    return element.getBoundingClientRect().top + window.scrollY;
+}
+
+function getMarkerTopWithinRoot(element: HTMLElement, root: HTMLElement): number {
+    const fullscreenRoot = getFullscreenScrollContainer();
+    const rootRect = root.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    const scrollOffset = fullscreenRoot === root ? fullscreenRoot.scrollTop : 0;
+    return elementRect.top - rootRect.top + scrollOffset;
+}
+
+function scrollToDocumentPosition(targetTop: number) {
+    const fullscreenRoot = getFullscreenScrollContainer();
+    if (fullscreenRoot) {
+        const maxScroll = Math.max(0, fullscreenRoot.scrollHeight - fullscreenRoot.clientHeight);
+        fullscreenRoot.scrollTo({ top: Math.min(Math.max(0, targetTop), maxScroll), behavior: "smooth" });
+        return;
+    }
+    const documentElement = document.documentElement;
+    const maxScroll = Math.max(0, documentElement.scrollHeight - window.innerHeight);
+    window.scrollTo({ top: Math.min(Math.max(0, targetTop), maxScroll), behavior: "smooth" });
 }
 
 function dispatchShortcut(key: string) { window.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true })); }
@@ -102,6 +128,10 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     const [placeMarker, setPlaceMarker] = useState<DeliveryPlaceMarker | null>(null);
     const [markerPosition, setMarkerPosition] = useState<MarkerPosition | null>(null);
 
+    const safeActiveIndex = Math.min(activeIndex, Math.max(0, sections.length - 1));
+    const activeSection = sections[safeActiveIndex];
+    const progressLabel = useMemo(() => `${safeActiveIndex + 1} of ${sections.length}`, [safeActiveIndex, sections.length]);
+
     useEffect(() => {
         if (sections.length === 0) return;
         const recovery = readRecoveryState(sections.length);
@@ -112,7 +142,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         if (target && !window.location.hash) {
             const targetId = sectionId(target.id);
             window.history.replaceState(null, "", `#${targetId}`);
-            window.setTimeout(() => { document.getElementById(targetId)?.scrollIntoView({ behavior: "auto", block: "start" }); }, 0);
+            window.setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: "auto", block: "start" }), 0);
         }
         setActiveIndex(recovery.sectionIndex);
         window.setTimeout(() => {
@@ -123,22 +153,16 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         if (recovery.focusModeRequested) document.documentElement.dataset.bsmpDeliveryFocusRecovery = "requested";
     }, [sections]);
 
-    const safeActiveIndex = Math.min(activeIndex, Math.max(0, sections.length - 1));
-    const activeSection = sections[safeActiveIndex];
-    const progressLabel = useMemo(() => `${safeActiveIndex + 1} of ${sections.length}`, [safeActiveIndex, sections.length]);
-
     useEffect(() => {
         if (sections.length === 0) return;
         let frame = 0;
-        const container = getScrollContainer();
         const updateActiveSection = () => {
-            const viewportPosition = getScrollTop(container) + DELIVERY_NAV_OFFSET;
+            const viewportPosition = getScrollTop() + DELIVERY_NAV_OFFSET;
             let nextIndex = 0;
             sections.forEach((section, index) => {
                 const element = document.getElementById(sectionId(section.id));
                 if (!element) return;
-                const documentTop = getDocumentTop(element, container);
-                if (documentTop <= viewportPosition) nextIndex = index;
+                if (getSectionDocumentTop(element) <= viewportPosition) nextIndex = index;
             });
             setActiveIndex((current) => current === nextIndex ? current : nextIndex);
             writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
@@ -147,13 +171,16 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         };
         const scheduleUpdate = () => { if (!frame) frame = window.requestAnimationFrame(updateActiveSection); };
         updateActiveSection();
-        container?.addEventListener("scroll", scheduleUpdate, { passive: true });
+        const fullscreenRoot = getFullscreenScrollContainer();
+        fullscreenRoot?.addEventListener("scroll", scheduleUpdate, { passive: true });
         window.addEventListener("scroll", scheduleUpdate, { passive: true });
         window.addEventListener("resize", scheduleUpdate, { passive: true });
+        document.addEventListener("fullscreenchange", scheduleUpdate);
         return () => {
-            container?.removeEventListener("scroll", scheduleUpdate);
+            fullscreenRoot?.removeEventListener("scroll", scheduleUpdate);
             window.removeEventListener("scroll", scheduleUpdate);
             window.removeEventListener("resize", scheduleUpdate);
+            document.removeEventListener("fullscreenchange", scheduleUpdate);
             if (frame) window.cancelAnimationFrame(frame);
         };
     }, [focusModeActive, sections]);
@@ -161,12 +188,14 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     function jumpTo(index: number) {
         if (sections.length === 0) return;
         const nextIndex = Math.max(0, Math.min(index, sections.length - 1));
-        const targetId = sectionId(sections[nextIndex].id);
+        const target = document.getElementById(sectionId(sections[nextIndex].id));
+        if (!target) return;
         setActiveIndex(nextIndex);
         writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
         setRecoveryAvailable(true);
+        const targetId = sectionId(sections[nextIndex].id);
         if (window.location.hash !== `#${targetId}`) window.history.replaceState(null, "", `#${targetId}`);
-        document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function markMyPlace() {
@@ -174,9 +203,8 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         const section = sections[safeActiveIndex];
         const element = document.getElementById(sectionId(section.id));
         if (!element) return;
-        const container = getScrollContainer();
-        const documentTop = getDocumentTop(element, container);
-        const currentScrollTop = getScrollTop(container);
+        const currentScrollTop = getScrollTop();
+        const documentTop = getSectionDocumentTop(element);
         const marker: DeliveryPlaceMarker = {
             sectionIndex: safeActiveIndex,
             offset: currentScrollTop - documentTop,
@@ -191,19 +219,15 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     function returnToMyPlace() {
         if (!placeMarker || sections.length === 0) return;
         const nextIndex = Math.max(0, Math.min(placeMarker.sectionIndex, sections.length - 1));
-        const section = sections[nextIndex];
-        const element = document.getElementById(sectionId(section.id));
-        const container = getScrollContainer();
+        const element = document.getElementById(sectionId(sections[nextIndex].id));
         if (!element) return;
-        const documentTop = getDocumentTop(element, container);
-        const targetScrollTop = Math.max(0, documentTop + placeMarker.offset);
-        const targetId = sectionId(section.id);
+        const targetTop = getSectionDocumentTop(element) + placeMarker.offset;
         setActiveIndex(nextIndex);
         writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
         setRecoveryAvailable(true);
+        const targetId = sectionId(sections[nextIndex].id);
         if (window.location.hash !== `#${targetId}`) window.history.replaceState(null, "", `#${targetId}`);
-        if (container) container.scrollTo({ top: targetScrollTop, behavior: "smooth" });
-        else window.scrollTo({ top: targetScrollTop, behavior: "smooth" });
+        scrollToDocumentPosition(targetTop);
     }
 
     function clearMyPlace() {
@@ -226,35 +250,31 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             return;
         }
         let frame = 0;
-        const markerScrollContainer = getScrollContainer();
         const updateMarkerPosition = () => {
-            const root = document.querySelector<HTMLElement>(".bsmp-delivery-root");
-            const markerSectionIndex = Math.max(0, Math.min(placeMarker.sectionIndex, sections.length - 1));
-            const section = sections[markerSectionIndex];
+            const root = getDeliveryRoot();
+            const section = sections[Math.max(0, Math.min(placeMarker.sectionIndex, sections.length - 1))];
             const element = section ? document.getElementById(sectionId(section.id)) : null;
             if (!root || !element) {
                 setMarkerPosition(null);
                 frame = 0;
                 return;
             }
-            const rootRect = root.getBoundingClientRect();
-            const containerRect = markerScrollContainer?.getBoundingClientRect();
-            const scrollDelta = markerScrollContainer ? markerScrollContainer.scrollTop - (markerScrollContainer === root ? 0 : (containerRect?.top ?? 0) - rootRect.top) : window.scrollY;
-            const top = element.getBoundingClientRect().top - rootRect.top + scrollDelta + placeMarker.offset;
+            const top = getMarkerTopWithinRoot(element, root) + placeMarker.offset;
             setMarkerPosition({ top: Math.round(top) });
             frame = 0;
         };
         const scheduleUpdate = () => { if (!frame) frame = window.requestAnimationFrame(updateMarkerPosition); };
         updateMarkerPosition();
+        const fullscreenRoot = getFullscreenScrollContainer();
+        fullscreenRoot?.addEventListener("scroll", scheduleUpdate, { passive: true });
+        window.addEventListener("scroll", scheduleUpdate, { passive: true });
         window.addEventListener("resize", scheduleUpdate, { passive: true });
         document.addEventListener("fullscreenchange", scheduleUpdate);
-        window.addEventListener("scroll", scheduleUpdate, { passive: true });
-        markerScrollContainer?.addEventListener("scroll", scheduleUpdate, { passive: true });
         return () => {
+            fullscreenRoot?.removeEventListener("scroll", scheduleUpdate);
+            window.removeEventListener("scroll", scheduleUpdate);
             window.removeEventListener("resize", scheduleUpdate);
             document.removeEventListener("fullscreenchange", scheduleUpdate);
-            window.removeEventListener("scroll", scheduleUpdate);
-            markerScrollContainer?.removeEventListener("scroll", scheduleUpdate);
             if (frame) window.cancelAnimationFrame(frame);
         };
     }, [focusModeActive, placeMarker, sections]);
@@ -401,7 +421,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         <div className="bsmp-delivery-controls-grid">
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Current section</span><strong>{activeSection?.title ?? "Current section"}</strong><span>{progressLabel}</span></div>
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Presentation</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("m")} disabled={recoveryFocusLabel === "Manuscript"}>Manuscript <kbd>M</kbd></button><button type="button" onClick={() => dispatchShortcut("n")} disabled={recoveryFocusLabel === "Notes"}>Notes <kbd>N</kbd></button></div></div>
-                            <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Text size</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("-")} disabled={recoverySizeLabel === "Compact"}>A−</button><button type="button" onClick={() => { if (recoverySizeLabel === "large") dispatchShortcut("-"); else if (recoverySizeLabel === "compact") dispatchShortcut("="); }} disabled={recoverySizeLabel === "Comfortable"}>A</button><button type="button" onClick={() => dispatchShortcut("=")} disabled={recoverySizeLabel === "Large"}>A+</button></div><span>{recoverySizeLabel}</span></div>
+                            <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Text size</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("-")} disabled={recoverySizeLabel === "Compact"}>A−</button><button type="button" onClick={() => { if (recoverySizeLabel === "Large") dispatchShortcut("-"); else if (recoverySizeLabel === "Compact") dispatchShortcut("="); }} disabled={recoverySizeLabel === "Comfortable"}>A</button><button type="button" onClick={() => dispatchShortcut("=")} disabled={recoverySizeLabel === "Large"}>A+</button></div><span>{recoverySizeLabel}</span></div>
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Focus & recovery</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button><button type="button" onClick={markMyPlace}>Mark My Place</button><button type="button" onClick={returnToMyPlace} disabled={!placeMarker}>Return to My Place <kbd>R</kbd></button><button type="button" onClick={clearMyPlace} disabled={!placeMarker}>Clear My Place</button></div><span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"} · {markerSavedLabel}</span></div>
                         </div>
                         <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">{recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}${placeMarker ? " · place marker saved" : ""}` : "Recovery not yet available"}</div>
