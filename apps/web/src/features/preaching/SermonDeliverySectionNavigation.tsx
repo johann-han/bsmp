@@ -1,21 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SermonManuscriptSection } from "@bsmp/preaching";
 
 interface Props {
     sections: readonly SermonManuscriptSection[];
 }
 
+interface ScreenWakeLockSentinelLike {
+    released: boolean;
+    release(): Promise<void>;
+}
+
 function sectionId(id: string): string {
     return `delivery-section-${encodeURIComponent(id)}`;
+}
+
+function navigationLinkId(id: string): string {
+    return `delivery-nav-${encodeURIComponent(id)}`;
 }
 
 const DELIVERY_NAV_OFFSET = 150;
 
 export function SermonDeliverySectionNavigation({ sections }: Props) {
     const [activeIndex, setActiveIndex] = useState(0);
+    const wakeLockRef = useRef<ScreenWakeLockSentinelLike | null>(null);
+    const [screenAwake, setScreenAwake] = useState(false);
 
     useEffect(() => {
         if (sections.length === 0) return;
@@ -106,6 +117,66 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     useEffect(() => {
         if (sections.length === 0) return;
 
+        const activeLink = document.getElementById(navigationLinkId(sections[safeActiveIndex].id));
+        activeLink?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }, [safeActiveIndex, sections]);
+
+    useEffect(() => {
+        if (sections.length === 0) return;
+
+        const browserNavigator = navigator as Navigator & {
+            wakeLock?: {
+                request(type: "screen"): Promise<ScreenWakeLockSentinelLike>;
+            };
+        };
+
+        if (!browserNavigator.wakeLock) return;
+
+        let disposed = false;
+
+        async function acquireWakeLock() {
+            if (disposed || document.visibilityState !== "visible" || wakeLockRef.current) return;
+
+            try {
+                const sentinel = await browserNavigator.wakeLock!.request("screen");
+                if (disposed) {
+                    await sentinel.release();
+                    return;
+                }
+                wakeLockRef.current = sentinel;
+                setScreenAwake(true);
+
+                sentinel.addEventListener?.("release", () => {
+                    if (wakeLockRef.current === sentinel) wakeLockRef.current = null;
+                    setScreenAwake(false);
+                });
+            } catch {
+                setScreenAwake(false);
+            }
+        }
+
+        function handleVisibilityChange() {
+            if (document.visibilityState === "visible") {
+                void acquireWakeLock();
+            }
+        }
+
+        void acquireWakeLock();
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            disposed = true;
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            const sentinel = wakeLockRef.current;
+            wakeLockRef.current = null;
+            setScreenAwake(false);
+            if (sentinel && !sentinel.released) void sentinel.release();
+        };
+    }, [sections.length]);
+
+    useEffect(() => {
+        if (sections.length === 0) return;
+
         const handleKeyDown = (event: KeyboardEvent) => {
             const target = event.target as HTMLElement | null;
             const isTextEntry =
@@ -142,8 +213,8 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             <div className="bsmp-delivery-section-nav-heading">
                 <div>
                     <div className="bsmp-delivery-section-nav-title">Sermon sections</div>
-                    <div className="bsmp-delivery-section-nav-help">
-                        {activeSection?.title ?? "Current section"} · {progressLabel} · P Previous · J Next
+                    <div className="bsmp-delivery-section-nav-help" aria-live="polite">
+                        {activeSection?.title ?? "Current section"} · {progressLabel} · P Previous · J Next · {screenAwake ? "Screen awake" : "Screen sleep may resume"}
                     </div>
                 </div>
                 <div
@@ -178,6 +249,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                     const active = index === safeActiveIndex;
                     return (
                         <Link
+                            id={navigationLinkId(section.id)}
                             key={section.id}
                             href={`#${sectionId(section.id)}`}
                             className="bsmp-delivery-section-nav-link"
