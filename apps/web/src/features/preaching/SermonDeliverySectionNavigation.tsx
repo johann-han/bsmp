@@ -72,6 +72,35 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         });
     }
 
+    useEffect(() => {
+        if (sections.length === 0) return;
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement | null;
+            const isTextEntry =
+                target?.tagName === "INPUT" ||
+                target?.tagName === "TEXTAREA" ||
+                target?.tagName === "SELECT" ||
+                target?.isContentEditable;
+
+            if (isTextEntry || event.altKey || event.ctrlKey || event.metaKey) return;
+
+            const key = event.key.toLowerCase();
+            if (key === "p") {
+                if (safeActiveIndex === 0) return;
+                event.preventDefault();
+                jumpTo(safeActiveIndex - 1);
+            } else if (key === "j") {
+                if (safeActiveIndex === sections.length - 1) return;
+                event.preventDefault();
+                jumpTo(safeActiveIndex + 1);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [safeActiveIndex, sections]);
+
     if (sections.length === 0) return null;
 
     return (
@@ -83,7 +112,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 <div>
                     <div className="bsmp-delivery-section-nav-title">Sermon sections</div>
                     <div className="bsmp-delivery-section-nav-help">
-                        {activeSection?.title ?? "Current section"} · {progressLabel}
+                        {activeSection?.title ?? "Current section"} · {progressLabel} · P Previous · J Next
                     </div>
                 </div>
                 <div
@@ -96,7 +125,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         onClick={() => jumpTo(safeActiveIndex - 1)}
                         disabled={safeActiveIndex === 0}
                         aria-label="Previous sermon section"
-                        title="Previous section"
+                        title="Previous section (P)"
                         style={{ minWidth: 92, padding: "7px 12px" }}
                     >
                         ← Previous
@@ -106,7 +135,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         onClick={() => jumpTo(safeActiveIndex + 1)}
                         disabled={safeActiveIndex === sections.length - 1}
                         aria-label="Next sermon section"
-                        title="Next section"
+                        title="Next section (J)"
                         style={{ minWidth: 92, padding: "7px 12px" }}
                     >
                         Next →
