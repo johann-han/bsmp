@@ -10,6 +10,7 @@ import type { StudySession } from "@bsmp/study";
 import { AppShell } from "@repo/ui";
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
+import { FinalSermonDraftNavigation } from "./FinalSermonDraftNavigation";
 
 interface Props { studyId: string; }
 
@@ -72,6 +73,16 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
         return () => { cancelled = true; };
     }, [studyId]);
 
+    useEffect(() => {
+        if (!hasUnsavedChanges) return;
+        function handleBeforeUnload(event: BeforeUnloadEvent) {
+            event.preventDefault();
+            event.returnValue = "";
+        }
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    });
+
     const wordCount = useMemo(() => manuscript.trim() ? manuscript.trim().split(/\s+/).length : 0, [manuscript]);
     const estimatedMinutes = Math.max(0, Math.round((wordCount / 130) * 10) / 10);
     const hasOutlineMaterial = Boolean(sermon?.outline.some((point) => point.text || point.explanation || point.illustration || point.application));
@@ -125,7 +136,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
 
     return (
         <AppShell title="Final Sermon Draft">
-            <style>{`@media print { .bsmp-print-hide { display: none !important; } .bsmp-print-page { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; } .bsmp-print-manuscript, .bsmp-print-notes { display: block !important; white-space: pre-wrap; line-height: 1.6 !important; font-size: 14pt !important; } .bsmp-print-meta { font-size: 10pt !important; color: #444 !important; } }`}</style>
+            <style>{`html { scroll-behavior: smooth; } @media print { .bsmp-print-hide { display: none !important; } .bsmp-print-page { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; background: transparent !important; } .bsmp-print-manuscript, .bsmp-print-notes { display: block !important; white-space: pre-wrap; line-height: 1.6 !important; font-size: 14pt !important; } .bsmp-print-meta { font-size: 10pt !important; color: #444 !important; } }`}</style>
             <div className="bsmp-print-page" style={{ display: "grid", gap: 20 }}>
                 <section className="bsmp-print-section" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>Final Manuscript & Delivery Preparation</div>
@@ -140,6 +151,8 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                         <Link href={`/preaching/exposition?studyId=${encodeURIComponent(studyId)}`} style={{ ...linkStyle, fontWeight: 600 }}>Review Exposition</Link>
                     </div>
                 </section>
+
+                <FinalSermonDraftNavigation studyId={studyId} sermon={sermon} sections={manuscriptSections} />
 
                 <section className="bsmp-print-section bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                     <h2 style={{ marginTop: 0 }}>Source Traceability</h2>
@@ -187,7 +200,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                             {manuscriptSections.map((section) => {
                                 const outlinePoint = section.outlinePointId ? sermon.outline.find((point) => point.id === section.outlinePointId) : undefined;
                                 return (
-                                    <article key={section.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}>
+                                    <article id={`manuscript-section-${encodeURIComponent(section.id)}`} key={section.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, scrollMarginTop: 20 }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                                             <strong>{section.title}</strong>
                                             {outlinePoint && <Link href={`/preaching/exposition?studyId=${encodeURIComponent(studyId)}&pointId=${encodeURIComponent(outlinePoint.id)}`} style={linkStyle}>Review sermon point</Link>}
