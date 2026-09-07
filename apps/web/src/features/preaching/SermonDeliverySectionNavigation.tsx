@@ -8,7 +8,7 @@ interface Props {
     sections: readonly SermonManuscriptSection[];
 }
 
-interface ScreenWakeLockSentinelLike {
+interface ScreenWakeLockSentinelLike extends EventTarget {
     released: boolean;
     release(): Promise<void>;
 }
@@ -146,7 +146,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 wakeLockRef.current = sentinel;
                 setScreenAwake(true);
 
-                sentinel.addEventListener?.("release", () => {
+                sentinel.addEventListener("release", () => {
                     if (wakeLockRef.current === sentinel) wakeLockRef.current = null;
                     setScreenAwake(false);
                 });
