@@ -22,17 +22,25 @@ export default function StudiesPage() {
     const [initialPassage, setInitialPassage] = useState("");
     const [initialTitle, setInitialTitle] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     async function loadStudies() {
-        const result = await repository.findAll();
-        setStudies(
-            result.map((study) => ({
-                id: study.id.value,
-                title: study.title.value,
-                passage: study.passage.toString(),
-                status: study.status.value,
-            })),
-        );
+        setError(null);
+        setLoading(true);
+
+        try {
+            const result = await repository.findAllSummaries();
+            setStudies(
+                result.map((study) => ({
+                    id: study.id,
+                    title: study.title,
+                    passage: `${study.passage_start_book} ${study.passage_start_chapter}:${study.passage_start_verse}-${study.passage_end_chapter}:${study.passage_end_verse}`,
+                    status: study.status,
+                })),
+            );
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {
@@ -85,6 +93,7 @@ export default function StudiesPage() {
             </div>
 
             {error ? <p role="alert" className="mb-4">{error}</p> : null}
+            {loading ? <p className="mb-4">Loading studies...</p> : null}
 
             <StudyList studies={studies} />
 
