@@ -226,6 +226,121 @@ input[type="radio"]:disabled {
     overflow-wrap: anywhere;
     padding-left: 20px;
   }
+
+  /* Biblical Theology is a focused single-column mobile workflow. */
+  body:has(.bsmp-bt-workspace) .bsmp-bt-overview,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-saved,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+    overflow: hidden;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-breadcrumb {
+    font-size: 12px !important;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-overview h1 {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-overview p,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form p,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-saved p,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor p {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form input,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form textarea,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form select,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    font: inherit;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form textarea {
+    min-height: 150px;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-supporting {
+    min-width: 0;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-supporting label {
+    min-width: 0;
+    align-items: flex-start !important;
+    line-height: 1.45;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-supporting label span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-supporting input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px;
+    flex: 0 0 20px;
+    margin-top: 1px;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form-actions,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-entry-actions {
+    align-items: stretch !important;
+    width: 100%;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form-actions button,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-entry-actions button,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor-button {
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form-actions button,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-entry-actions button {
+    flex: 1 1 140px;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-saved-entry {
+    padding: 14px !important;
+    overflow: hidden;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-saved-entry > strong {
+    display: block;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor-description {
+    line-height: 1.55;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor-button {
+    width: 100%;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor-result {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+  }
 }
 
 @media print {
