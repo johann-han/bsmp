@@ -146,6 +146,86 @@ input[type="radio"]:disabled {
     max-width: 100%;
     box-sizing: border-box;
   }
+
+  /* The lower study workflow is intentionally single-column on phones. */
+  body:has(#observation-composer) #observation-composer ~ section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-top: 14px !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section h2 {
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section p,
+  body:has(#observation-composer) #observation-composer ~ section strong,
+  body:has(#observation-composer) #observation-composer ~ section span,
+  body:has(#observation-composer) #observation-composer ~ section li,
+  body:has(#observation-composer) #observation-composer ~ section article {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section article {
+    box-sizing: border-box;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section textarea,
+  body:has(#observation-composer) #observation-composer ~ section select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    margin-top: 2px;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section button {
+    min-height: 40px;
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section > div {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section > div[style*="display: flex"] {
+    flex-wrap: wrap !important;
+    min-width: 0 !important;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section article > div[style*="display: flex"] {
+    align-items: flex-start;
+    flex-wrap: wrap !important;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section article > div[style*="display: flex"] button {
+    flex: 0 1 auto;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section ul {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    padding-left: 20px;
+  }
 }
 
 @media print {
