@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { CreateStudy } from "@bsmp/study";
 import {
@@ -26,6 +26,7 @@ type StudyApiRecord = {
 
 export default function StudiesPage() {
     const [studies, setStudies] = useState<StudySummary[]>([]);
+    const [search, setSearch] = useState("");
     const [open, setOpen] = useState(false);
     const [initialPassage, setInitialPassage] = useState("");
     const [initialTitle, setInitialTitle] = useState("");
@@ -37,9 +38,6 @@ export default function StudiesPage() {
         setLoading(true);
 
         try {
-            // The browser Supabase client owns the authenticated session.
-            // Pass its access token to the server route so the server-side
-            // repository can authenticate the database request consistently.
             const { data, error: sessionError } = await supabase.auth.getSession();
             if (sessionError) throw sessionError;
 
@@ -119,11 +117,25 @@ export default function StudiesPage() {
         setOpen(true);
     }
 
+    const filteredStudies = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        if (!query) return studies;
+
+        return studies.filter((study) =>
+            study.title.toLowerCase().includes(query) ||
+            study.passage.toLowerCase().includes(query) ||
+            study.status.toLowerCase().includes(query),
+        );
+    }, [search, studies]);
+
     return (
         <AppShell title="Study Library">
             <div className="mb-6 flex items-center justify-between">
                 <input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
                     placeholder="Search studies..."
+                    aria-label="Search studies"
                     className="w-96 rounded-lg border px-4 py-2"
                 />
 
@@ -133,7 +145,24 @@ export default function StudiesPage() {
             {error ? <p role="alert" className="mb-4">{error}</p> : null}
             {loading ? <p className="mb-4">Loading studies...</p> : null}
 
-            <StudyList studies={studies} />
+            {!loading && !error && studies.length === 0 ? (
+                <div className="rounded-lg border border-dashed p-8 text-center">
+                    <h2 className="mb-2 text-lg font-semibold">No studies yet</h2>
+                    <p className="mb-4">You do not have any Bible studies in your Study Library.</p>
+                    <NewStudyButton onClick={openBlankStudyDialog} />
+                </div>
+            ) : null}
+
+            {!loading && !error && studies.length > 0 && filteredStudies.length === 0 ? (
+                <div className="rounded-lg border border-dashed p-8 text-center">
+                    <h2 className="mb-2 text-lg font-semibold">No matching studies</h2>
+                    <p>No studies match “{search}”.</p>
+                </div>
+            ) : null}
+
+            {!loading && !error && filteredStudies.length > 0 ? (
+                <StudyList studies={filteredStudies} />
+            ) : null}
 
             <NewStudyDialog
                 open={open}
