@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SermonManuscriptSection } from "@bsmp/preaching";
 
 interface Props { sections: readonly SermonManuscriptSection[]; }
 interface ScreenWakeLockSentinelLike extends EventTarget { released: boolean; release(): Promise<void>; }
-interface DeliveryPlaceMarker { sectionIndex: number; offset: number; scrollY: number; savedAt: number; }
+interface DeliveryPlaceMarker { mode: "line"; sectionId: string; lineBottomOffset: number; savedAt: number; }
 interface DeliveryRecoveryState {
     sectionIndex: number;
     focus: "manuscript" | "notes";
@@ -14,7 +15,6 @@ interface DeliveryRecoveryState {
     focusModeRequested: boolean;
     placeMarker?: DeliveryPlaceMarker;
 }
-interface MarkerPosition { top: number; }
 
 function sectionId(id: string): string { return `delivery-section-${encodeURIComponent(id)}`; }
 function navigationLinkId(id: string): string { return `delivery-nav-${encodeURIComponent(id)}`; }
@@ -26,14 +26,14 @@ function recoveryKey(): string {
     return `${DELIVERY_RECOVERY_PREFIX}:${studyId}`;
 }
 
-function parsePlaceMarker(value: unknown, sectionCount: number): DeliveryPlaceMarker | undefined {
+function parsePlaceMarker(value: unknown): DeliveryPlaceMarker | undefined {
     if (!value || typeof value !== "object") return undefined;
     const marker = value as Partial<DeliveryPlaceMarker>;
-    if (typeof marker.sectionIndex !== "number" || typeof marker.offset !== "number" || typeof marker.scrollY !== "number" || typeof marker.savedAt !== "number") return undefined;
+    if (marker.mode !== "line" || typeof marker.sectionId !== "string" || typeof marker.lineBottomOffset !== "number" || typeof marker.savedAt !== "number") return undefined;
     return {
-        sectionIndex: Math.max(0, Math.min(Math.floor(marker.sectionIndex), Math.max(0, sectionCount - 1))),
-        offset: Number.isFinite(marker.offset) ? marker.offset : 0,
-        scrollY: Math.max(0, Number.isFinite(marker.scrollY) ? marker.scrollY : 0),
+        mode: "line",
+        sectionId: marker.sectionId,
+        lineBottomOffset: Math.max(0, Number.isFinite(marker.lineBottomOffset) ? marker.lineBottomOffset : 0),
         savedAt: marker.savedAt,
     };
 }
@@ -48,27 +48,16 @@ function readRecoveryState(sectionCount: number): DeliveryRecoveryState | null {
             focus: parsed.focus === "notes" ? "notes" : "manuscript",
             readingSize: parsed.readingSize === "compact" || parsed.readingSize === "large" ? parsed.readingSize : "comfortable",
             focusModeRequested: parsed.focusModeRequested === true,
-            placeMarker: parsePlaceMarker(parsed.placeMarker, sectionCount),
+            placeMarker: parsePlaceMarker(parsed.placeMarker),
         };
     } catch { return null; }
 }
 
 function writeRecoveryState(patch: Partial<DeliveryRecoveryState>, sectionCount: number) {
     try {
-        const existing = readRecoveryState(sectionCount) ?? {
-            sectionIndex: 0,
-            focus: "manuscript" as const,
-            readingSize: "comfortable" as const,
-            focusModeRequested: false,
-        };
+        const existing = readRecoveryState(sectionCount) ?? { sectionIndex: 0, focus: "manuscript" as const, readingSize: "comfortable" as const, focusModeRequested: false };
         window.localStorage.setItem(recoveryKey(), JSON.stringify({ ...existing, ...patch }));
-    } catch {
-        // Recovery is a convenience; delivery must work without local storage.
-    }
-}
-
-function getDeliveryRoot(): HTMLElement | null {
-    return document.querySelector<HTMLElement>(".bsmp-delivery-root");
+    } catch { /* Recovery is a convenience; delivery must work without local storage. */ }
 }
 
 function getFullscreenScrollContainer(): HTMLElement | null {
@@ -86,14 +75,6 @@ function getSectionDocumentTop(element: HTMLElement): number {
         return element.getBoundingClientRect().top - rootRect.top + fullscreenRoot.scrollTop;
     }
     return element.getBoundingClientRect().top + window.scrollY;
-}
-
-function getMarkerTopWithinRoot(element: HTMLElement, root: HTMLElement): number {
-    const fullscreenRoot = getFullscreenScrollContainer();
-    const rootRect = root.getBoundingClientRect();
-    const elementRect = element.getBoundingClientRect();
-    const scrollOffset = fullscreenRoot === root ? fullscreenRoot.scrollTop : 0;
-    return elementRect.top - rootRect.top + scrollOffset;
 }
 
 function scrollToDocumentPosition(targetTop: number) {
@@ -126,7 +107,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     const [focusModeActive, setFocusModeActive] = useState(false);
     const [recoveryAvailable, setRecoveryAvailable] = useState(false);
     const [placeMarker, setPlaceMarker] = useState<DeliveryPlaceMarker | null>(null);
-    const [markerPosition, setMarkerPosition] = useState<MarkerPosition | null>(null);
+    const [markerSectionElement, setMarkerSectionElement] = useState<HTMLElement | null>(null);
 
     const safeActiveIndex = Math.min(activeIndex, Math.max(0, sections.length - 1));
     const activeSection = sections[safeActiveIndex];
@@ -154,6 +135,11 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     }, [sections]);
 
     useEffect(() => {
+        if (!placeMarker) { setMarkerSectionElement(null); return; }
+        setMarkerSectionElement(document.getElementById(sectionId(placeMarker.sectionId)));
+    }, [placeMarker, sections]);
+
+    useEffect(() => {
         if (sections.length === 0) return;
         let frame = 0;
         const updateActiveSection = () => {
@@ -161,8 +147,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             let nextIndex = 0;
             sections.forEach((section, index) => {
                 const element = document.getElementById(sectionId(section.id));
-                if (!element) return;
-                if (getSectionDocumentTop(element) <= viewportPosition) nextIndex = index;
+                if (element && getSectionDocumentTop(element) <= viewportPosition) nextIndex = index;
             });
             setActiveIndex((current) => current === nextIndex ? current : nextIndex);
             writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
@@ -185,6 +170,65 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         };
     }, [focusModeActive, sections]);
 
+    useEffect(() => {
+        if (sections.length === 0) return;
+        const handleManuscriptLineClick = (event: MouseEvent) => {
+            const target = event.target instanceof HTMLElement ? event.target : event.target instanceof Node ? event.target.parentElement : null;
+            if (!target) return;
+            if (target.closest("button,a,input,textarea,select,[role=button],summary")) return;
+            const content = target.closest<HTMLElement>(".bsmp-delivery-section-content");
+            const sectionElement = target.closest<HTMLElement>(".bsmp-delivery-print-section");
+            if (!content || !sectionElement) return;
+            const domSectionIndex = sections.findIndex((section) => sectionId(section.id) === sectionElement.id);
+            if (domSectionIndex < 0) return;
+
+            const docWithCaret = document as Document & {
+                caretRangeFromPoint?: (x: number, y: number) => Range | null;
+                caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null;
+            };
+            let range = docWithCaret.caretRangeFromPoint?.(event.clientX, event.clientY) ?? null;
+            if (!range && docWithCaret.caretPositionFromPoint) {
+                const position = docWithCaret.caretPositionFromPoint(event.clientX, event.clientY);
+                if (position) {
+                    range = document.createRange();
+                    range.setStart(position.offsetNode, position.offset);
+                    range.collapse(true);
+                }
+            }
+            let lineBottom: number | null = null;
+            if (range) {
+                const rects = Array.from(range.getClientRects());
+                const matchingRect = rects.find((rect) => event.clientY >= rect.top && event.clientY <= rect.bottom + 1);
+                lineBottom = (matchingRect ?? range.getBoundingClientRect()).bottom;
+            }
+            if (lineBottom === null || !Number.isFinite(lineBottom)) {
+                const rect = target.getBoundingClientRect();
+                const style = window.getComputedStyle(target);
+                const fontSize = Number.parseFloat(style.fontSize);
+                const rawLineHeight = Number.parseFloat(style.lineHeight);
+                const lineHeight = Number.isFinite(rawLineHeight) && rawLineHeight > 0 ? rawLineHeight : Number.isFinite(fontSize) && fontSize > 0 ? fontSize * 1.45 : 24;
+                const lineIndex = Math.max(0, Math.floor((event.clientY - rect.top) / lineHeight));
+                lineBottom = Math.min(rect.bottom, rect.top + (lineIndex + 1) * lineHeight);
+            }
+
+            const sectionRect = sectionElement.getBoundingClientRect();
+            const lineBottomOffset = Math.max(0, Math.round(lineBottom - sectionRect.top));
+            const marker: DeliveryPlaceMarker = {
+                mode: "line",
+                sectionId: sections[domSectionIndex].id,
+                lineBottomOffset,
+                savedAt: Date.now(),
+            };
+            setPlaceMarker(marker);
+            setMarkerSectionElement(sectionElement);
+            setActiveIndex(domSectionIndex);
+            writeRecoveryState({ placeMarker: marker, sectionIndex: domSectionIndex }, sections.length);
+            setRecoveryAvailable(true);
+        };
+        document.addEventListener("click", handleManuscriptLineClick);
+        return () => document.removeEventListener("click", handleManuscriptLineClick);
+    }, [sections]);
+
     function jumpTo(index: number) {
         if (sections.length === 0) return;
         const nextIndex = Math.max(0, Math.min(index, sections.length - 1));
@@ -198,97 +242,45 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         target.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
-    function markMyPlace() {
-        if (sections.length === 0) return;
-        const section = sections[safeActiveIndex];
-        const element = document.getElementById(sectionId(section.id));
-        if (!element) return;
-        const currentScrollTop = getScrollTop();
-        const documentTop = getSectionDocumentTop(element);
-        const marker: DeliveryPlaceMarker = {
-            sectionIndex: safeActiveIndex,
-            offset: currentScrollTop - documentTop,
-            scrollY: currentScrollTop,
-            savedAt: Date.now(),
-        };
-        setPlaceMarker(marker);
-        writeRecoveryState({ placeMarker: marker, sectionIndex: safeActiveIndex }, sections.length);
-        setRecoveryAvailable(true);
-    }
-
     function returnToMyPlace() {
-        if (!placeMarker || sections.length === 0) return;
-        const nextIndex = Math.max(0, Math.min(placeMarker.sectionIndex, sections.length - 1));
-        const element = document.getElementById(sectionId(sections[nextIndex].id));
+        if (!placeMarker || placeMarker.mode !== "line" || sections.length === 0) return;
+        const nextIndex = sections.findIndex((section) => section.id === placeMarker.sectionId);
+        if (nextIndex < 0) return;
+        const element = document.getElementById(sectionId(placeMarker.sectionId));
         if (!element) return;
-        const targetTop = getSectionDocumentTop(element) + placeMarker.offset;
+        const lineViewportTop = element.getBoundingClientRect().top + placeMarker.lineBottomOffset;
+        const fullscreenRoot = getFullscreenScrollContainer();
+        const rootRect = fullscreenRoot?.getBoundingClientRect();
+        const header = getDeliveryRoot()?.querySelector<HTMLElement>(".bsmp-delivery-header");
+        const desiredViewportTop = fullscreenRoot ? (header?.getBoundingClientRect().bottom ?? rootRect!.top + 120) + 20 - rootRect!.top : (header?.getBoundingClientRect().bottom ?? 120) + 20;
+        const currentScrollTop = getScrollTop();
+        const targetScrollTop = Math.max(0, currentScrollTop + lineViewportTop - desiredViewportTop);
         setActiveIndex(nextIndex);
         writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
         setRecoveryAvailable(true);
-        const targetId = sectionId(sections[nextIndex].id);
+        const targetId = sectionId(placeMarker.sectionId);
         if (window.location.hash !== `#${targetId}`) window.history.replaceState(null, "", `#${targetId}`);
-        scrollToDocumentPosition(targetTop);
+        scrollToDocumentPosition(targetScrollTop);
     }
 
     function clearMyPlace() {
         setPlaceMarker(null);
-        setMarkerPosition(null);
+        setMarkerSectionElement(null);
         try {
             const recovery = readRecoveryState(sections.length);
             if (!recovery) return;
             const { placeMarker: _removed, ...withoutMarker } = recovery;
             window.localStorage.setItem(recoveryKey(), JSON.stringify(withoutMarker));
             setRecoveryAvailable(true);
-        } catch {
-            // Clearing the marker is a convenience and should never block delivery.
-        }
+        } catch { /* Clearing the marker never blocks delivery. */ }
     }
-
-    useEffect(() => {
-        if (sections.length === 0 || !placeMarker) {
-            setMarkerPosition(null);
-            return;
-        }
-        let frame = 0;
-        const updateMarkerPosition = () => {
-            const root = getDeliveryRoot();
-            const section = sections[Math.max(0, Math.min(placeMarker.sectionIndex, sections.length - 1))];
-            const element = section ? document.getElementById(sectionId(section.id)) : null;
-            if (!root || !element) {
-                setMarkerPosition(null);
-                frame = 0;
-                return;
-            }
-            const top = getMarkerTopWithinRoot(element, root) + placeMarker.offset;
-            setMarkerPosition({ top: Math.round(top) });
-            frame = 0;
-        };
-        const scheduleUpdate = () => { if (!frame) frame = window.requestAnimationFrame(updateMarkerPosition); };
-        updateMarkerPosition();
-        const fullscreenRoot = getFullscreenScrollContainer();
-        fullscreenRoot?.addEventListener("scroll", scheduleUpdate, { passive: true });
-        window.addEventListener("scroll", scheduleUpdate, { passive: true });
-        window.addEventListener("resize", scheduleUpdate, { passive: true });
-        document.addEventListener("fullscreenchange", scheduleUpdate);
-        return () => {
-            fullscreenRoot?.removeEventListener("scroll", scheduleUpdate);
-            window.removeEventListener("scroll", scheduleUpdate);
-            window.removeEventListener("resize", scheduleUpdate);
-            document.removeEventListener("fullscreenchange", scheduleUpdate);
-            if (frame) window.cancelAnimationFrame(frame);
-        };
-    }, [focusModeActive, placeMarker, sections]);
 
     useEffect(() => {
         if (sections.length === 0) return;
         const targetId = window.location.hash.slice(1);
         if (!targetId) return;
         const hashIndex = sections.findIndex((section) => sectionId(section.id) === targetId);
-        if (hashIndex >= 0) {
-            setActiveIndex(hashIndex);
-            writeRecoveryState({ sectionIndex: hashIndex }, sections.length);
-            setRecoveryAvailable(true);
-        }
+        if (hashIndex >= 0) { setActiveIndex(hashIndex); writeRecoveryState({ sectionIndex: hashIndex }, sections.length); setRecoveryAvailable(true); }
     }, [sections]);
 
     useEffect(() => {
@@ -296,11 +288,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         function handleHashChange() {
             const targetId = window.location.hash.slice(1);
             const nextIndex = sections.findIndex((section) => sectionId(section.id) === targetId);
-            if (nextIndex >= 0) {
-                setActiveIndex(nextIndex);
-                writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
-                setRecoveryAvailable(true);
-            }
+            if (nextIndex >= 0) { setActiveIndex(nextIndex); writeRecoveryState({ sectionIndex: nextIndex }, sections.length); setRecoveryAvailable(true); }
         }
         window.addEventListener("hashchange", handleHashChange);
         return () => window.removeEventListener("hashchange", handleHashChange);
@@ -324,23 +312,13 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 if (disposed) { await sentinel.release(); return; }
                 wakeLockRef.current = sentinel;
                 setScreenAwake(true);
-                sentinel.addEventListener("release", () => {
-                    if (wakeLockRef.current === sentinel) wakeLockRef.current = null;
-                    setScreenAwake(false);
-                });
+                sentinel.addEventListener("release", () => { if (wakeLockRef.current === sentinel) wakeLockRef.current = null; setScreenAwake(false); });
             } catch { setScreenAwake(false); }
         }
         function handleVisibilityChange() { if (document.visibilityState === "visible") void acquireWakeLock(); }
         void acquireWakeLock();
         document.addEventListener("visibilitychange", handleVisibilityChange);
-        return () => {
-            disposed = true;
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-            const sentinel = wakeLockRef.current;
-            wakeLockRef.current = null;
-            setScreenAwake(false);
-            if (sentinel && !sentinel.released) void sentinel.release();
-        };
+        return () => { disposed = true; document.removeEventListener("visibilitychange", handleVisibilityChange); const sentinel = wakeLockRef.current; wakeLockRef.current = null; setScreenAwake(false); if (sentinel && !sentinel.released) void sentinel.release(); };
     }, [sections.length]);
 
     useEffect(() => {
@@ -370,22 +348,28 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         };
         document.addEventListener("fullscreenchange", handleFullscreenChange);
         window.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("fullscreenchange", handleFullscreenChange);
-            window.removeEventListener("keydown", handleKeyDown);
-        };
+        return () => { document.removeEventListener("fullscreenchange", handleFullscreenChange); window.removeEventListener("keydown", handleKeyDown); };
     }, [placeMarker, safeActiveIndex, sections.length]);
 
     if (sections.length === 0) return null;
     const currentRecovery = readRecoveryState(sections.length);
     const recoveryFocusLabel = currentRecovery?.focus === "notes" ? "Notes" : "Manuscript";
     const recoverySizeLabel = currentRecovery?.readingSize === "large" ? "Large" : currentRecovery?.readingSize === "compact" ? "Compact" : "Comfortable";
-    const markerSavedLabel = placeMarker ? "Place marker saved" : "No place marker saved";
+    const markerSavedLabel = placeMarker ? "My Place set" : "Click a manuscript line to set My Place";
+    const markerView = placeMarker && markerSectionElement ? createPortal(
+        <div className="bsmp-delivery-place-marker bsmp-delivery-print-hide" style={{ top: placeMarker.lineBottomOffset }} aria-label="My Place marker">
+            <div className="bsmp-delivery-place-marker-line" />
+            <span className="bsmp-delivery-place-marker-label">My Place</span>
+            <div className="bsmp-delivery-place-marker-line" />
+        </div>,
+        markerSectionElement,
+    ) : null;
 
     return (
         <>
             <style>{`
-                .bsmp-delivery-root { position:relative; }
+                .bsmp-delivery-print-section { position:relative; }
+                .bsmp-delivery-section-content { cursor:crosshair; }
                 .bsmp-delivery-place-marker { position:absolute; left:0; right:0; z-index:40; pointer-events:none; display:flex; align-items:center; gap:10px; transform:translateY(-50%); }
                 .bsmp-delivery-place-marker-line { flex:1; height:3px; border-radius:999px; background:#b45309; box-shadow:0 0 0 1px rgba(255,255,255,.95),0 2px 8px rgba(180,83,9,.35); }
                 .bsmp-delivery-place-marker-label { flex:0 0 auto; padding:4px 9px; border-radius:999px; border:1px solid #b45309; background:#fffbeb; color:#92400e; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; box-shadow:0 2px 8px rgba(0,0,0,.16); }
@@ -404,13 +388,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 @media (max-width:900px) { .bsmp-delivery-controls-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
                 @media (max-width:700px) { .bsmp-delivery-controls-summary{gap:8px;padding:8px 0}.bsmp-delivery-controls-summary-status{display:block;margin-left:0;margin-top:3px}.bsmp-delivery-controls-panel{padding:10px}.bsmp-delivery-controls-grid{grid-template-columns:1fr;gap:10px}.bsmp-delivery-control-card{padding:10px}.bsmp-delivery-place-marker{left:8px;right:8px}.bsmp-delivery-place-marker-label{font-size:10px;padding:3px 7px} }
             `}</style>
-            {markerPosition && placeMarker && (
-                <div className="bsmp-delivery-place-marker bsmp-delivery-print-hide" style={{ top: markerPosition.top }} aria-label="My Place marker">
-                    <div className="bsmp-delivery-place-marker-line" />
-                    <span className="bsmp-delivery-place-marker-label">My Place</span>
-                    <div className="bsmp-delivery-place-marker-line" />
-                </div>
-            )}
+            {markerView}
             <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
                 <details className="bsmp-delivery-controls-details">
                     <summary className="bsmp-delivery-controls-summary">
@@ -422,15 +400,15 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Current section</span><strong>{activeSection?.title ?? "Current section"}</strong><span>{progressLabel}</span></div>
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Presentation</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("m")} disabled={recoveryFocusLabel === "Manuscript"}>Manuscript <kbd>M</kbd></button><button type="button" onClick={() => dispatchShortcut("n")} disabled={recoveryFocusLabel === "Notes"}>Notes <kbd>N</kbd></button></div></div>
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Text size</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("-")} disabled={recoverySizeLabel === "Compact"}>A−</button><button type="button" onClick={() => { if (recoverySizeLabel === "Large") dispatchShortcut("-"); else if (recoverySizeLabel === "Compact") dispatchShortcut("="); }} disabled={recoverySizeLabel === "Comfortable"}>A</button><button type="button" onClick={() => dispatchShortcut("=")} disabled={recoverySizeLabel === "Large"}>A+</button></div><span>{recoverySizeLabel}</span></div>
-                            <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Focus & recovery</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button><button type="button" onClick={markMyPlace}>Mark My Place</button><button type="button" onClick={returnToMyPlace} disabled={!placeMarker}>Return to My Place <kbd>R</kbd></button><button type="button" onClick={clearMyPlace} disabled={!placeMarker}>Clear My Place</button></div><span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"} · {markerSavedLabel}</span></div>
+                            <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Focus & recovery</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button><button type="button" onClick={returnToMyPlace} disabled={!placeMarker}>Return to My Place <kbd>R</kbd></button><button type="button" onClick={clearMyPlace} disabled={!placeMarker}>Clear My Place</button></div><span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"} · {markerSavedLabel}</span></div>
                         </div>
-                        <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">{recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}${placeMarker ? " · place marker saved" : ""}` : "Recovery not yet available"}</div>
+                        <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">{recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}${placeMarker ? " · place marker set" : ""}` : "Recovery not yet available"}</div>
                     </div>
                 </details>
                 <div className="bsmp-delivery-section-nav-links">
                     {sections.map((section, index) => {
                         const active = index === safeActiveIndex;
-                        return <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex: index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}><span>{index + 1}.</span><span>{section.title}</span></Link>;
+                        return <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex:index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor:"#1d4ed8", boxShadow:"0 0 0 1px #1d4ed8 inset" } : undefined}><span>{index+1}.</span><span>{section.title}</span></Link>;
                     })}
                 </div>
             </nav>
