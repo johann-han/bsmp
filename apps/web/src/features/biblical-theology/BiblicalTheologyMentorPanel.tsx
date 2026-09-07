@@ -84,34 +84,34 @@ export function BiblicalTheologyMentorPanel({ studyId }: Props) {
     }
 
     return (
-        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+        <section className="bsmp-bt-mentor" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
             <div style={{ fontSize: 13, color: "#6b7280" }}>Mentor review · Biblical Theology</div>
             <h2 style={{ margin: "4px 0 8px" }}>Test your synthesis</h2>
-            <p style={{ margin: "0 0 12px", color: "#6b7280" }}>
+            <p className="bsmp-bt-mentor-description" style={{ margin: "0 0 12px", color: "#6b7280" }}>
                 The mentor checks whether your theme and synthesis are grounded in the interpretations you selected. It does not write a replacement synthesis or invent doctrine.
             </p>
             {loading ? <p>Loading mentor context...</p> : entries.length === 0 ? <p style={{ color: "#6b7280" }}>Save a Biblical Theology synthesis first.</p> : (
                 <div style={{ display: "grid", gap: 10 }}>
                     <label style={{ display: "grid", gap: 6 }}>
                         <strong>Synthesis to review</strong>
-                        <select value={entryId} onChange={(event) => { setEntryId(event.target.value); setResult(null); }} style={{ padding: 10 }}>
+                        <select value={entryId} onChange={(event) => { setEntryId(event.target.value); setResult(null); }} style={{ padding: 10, width: "100%", boxSizing: "border-box" }}>
                             {entries.map((entry) => <option key={entry.id} value={entry.id}>{entry.theme}</option>)}
                         </select>
                     </label>
-                    <button type="button" onClick={() => void runMentor()} disabled={running || interpretations.length === 0}>
+                    <button className="bsmp-bt-mentor-button" type="button" onClick={() => void runMentor()} disabled={running || interpretations.length === 0}>
                         {running ? "Reviewing..." : "Review with Mentor"}
                     </button>
                     {result && (
-                        <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}>
+                        <div className="bsmp-bt-mentor-result" style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, minWidth: 0 }}>
                             <div><strong>Assessment:</strong> {assessmentLabel[result.assessment]}</div>
                             <p style={{ whiteSpace: "pre-wrap", marginBottom: 8 }}>{result.coaching}</p>
-                            {result.focuses.length > 0 && <div style={{ fontSize: 13, color: "#6b7280" }}>Focus: {result.focuses.join(", ")}</div>}
-                            <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 8 }}>{result.provider} · {result.model}</div>
+                            {result.focuses.length > 0 && <div style={{ fontSize: 13, color: "#6b7280", overflowWrap: "anywhere" }}>Focus: {result.focuses.join(", ")}</div>}
+                            <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 8, overflowWrap: "anywhere" }}>{result.provider} · {result.model}</div>
                         </div>
                     )}
                 </div>
             )}
-            {error && <p style={{ color: "#b91c1c", marginBottom: 0 }}>{error}</p>}
+            {error && <p style={{ color: "#b91c1c", marginBottom: 0, overflowWrap: "anywhere" }}>{error}</p>}
         </section>
     );
 }
