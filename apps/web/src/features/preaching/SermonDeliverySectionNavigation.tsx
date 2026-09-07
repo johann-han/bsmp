@@ -13,6 +13,13 @@ interface ScreenWakeLockSentinelLike extends EventTarget {
     release(): Promise<void>;
 }
 
+interface DeliveryRecoveryState {
+    sectionIndex: number;
+    focus: "manuscript" | "notes";
+    readingSize: "compact" | "comfortable" | "large";
+    focusModeRequested: boolean;
+}
+
 function sectionId(id: string): string {
     return `delivery-section-${encodeURIComponent(id)}`;
 }
@@ -22,6 +29,46 @@ function navigationLinkId(id: string): string {
 }
 
 const DELIVERY_NAV_OFFSET = 150;
+const DELIVERY_RECOVERY_PREFIX = "bsmp.delivery.recovery.v1";
+
+function recoveryKey(): string {
+    const studyId = new URLSearchParams(window.location.search).get("studyId") ?? "unknown";
+    return `${DELIVERY_RECOVERY_PREFIX}:${studyId}`;
+}
+
+function readRecoveryState(sectionCount: number): DeliveryRecoveryState | null {
+    try {
+        const raw = window.localStorage.getItem(recoveryKey());
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as Partial<DeliveryRecoveryState>;
+        return {
+            sectionIndex: typeof parsed.sectionIndex === "number"
+                ? Math.max(0, Math.min(Math.floor(parsed.sectionIndex), Math.max(0, sectionCount - 1)))
+                : 0,
+            focus: parsed.focus === "notes" ? "notes" : "manuscript",
+            readingSize: parsed.readingSize === "compact" || parsed.readingSize === "large"
+                ? parsed.readingSize
+                : "comfortable",
+            focusModeRequested: parsed.focusModeRequested === true,
+        };
+    } catch {
+        return null;
+    }
+}
+
+function writeRecoveryState(patch: Partial<DeliveryRecoveryState>, sectionCount: number) {
+    try {
+        const existing = readRecoveryState(sectionCount) ?? {
+            sectionIndex: 0,
+            focus: "manuscript" as const,
+            readingSize: "comfortable" as const,
+            focusModeRequested: false,
+        };
+        window.localStorage.setItem(recoveryKey(), JSON.stringify({ ...existing, ...patch }));
+    } catch {
+        // Recovery is a convenience; delivery must work without local storage.
+    }
+}
 
 export function SermonDeliverySectionNavigation({ sections }: Props) {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -31,23 +78,52 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     useEffect(() => {
         if (sections.length === 0) return;
 
+        const recovery = readRecoveryState(sections.length);
+        if (!recovery) return;
+
+        const target = sections[recovery.sectionIndex];
+        if (target && !window.location.hash) {
+            const targetId = sectionId(target.id);
+            window.history.replaceState(null, "", `#${targetId}`);
+            window.setTimeout(() => {
+                document.getElementById(targetId)?.scrollIntoView({ behavior: "auto", block: "start" });
+            }, 0);
+        }
+
+        setActiveIndex(recovery.sectionIndex);
+
+        // Re-use the existing parent keyboard handlers to restore presentation settings.
+        window.setTimeout(() => {
+            if (recovery.focus === "notes") {
+                window.dispatchEvent(new KeyboardEvent("keydown", { key: "n" }));
+            }
+            if (recovery.readingSize === "large") {
+                window.dispatchEvent(new KeyboardEvent("keydown", { key: "=" }));
+            } else if (recovery.readingSize === "compact") {
+                window.dispatchEvent(new KeyboardEvent("keydown", { key: "-" }));
+            }
+        }, 0);
+
+        if (recovery.focusModeRequested) {
+            document.documentElement.dataset.bsmpDeliveryFocusRecovery = "requested";
+        }
+    }, [sections]);
+
+    useEffect(() => {
+        if (sections.length === 0) return;
         let frame = 0;
 
         const updateActiveSection = () => {
             const viewportPosition = window.scrollY + DELIVERY_NAV_OFFSET;
             let nextIndex = 0;
-
             sections.forEach((section, index) => {
                 const element = document.getElementById(sectionId(section.id));
                 if (!element) return;
-
                 const documentTop = element.getBoundingClientRect().top + window.scrollY;
-                if (documentTop <= viewportPosition) {
-                    nextIndex = index;
-                }
+                if (documentTop <= viewportPosition) nextIndex = index;
             });
-
             setActiveIndex((current) => current === nextIndex ? current : nextIndex);
+            writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
             frame = 0;
         };
 
@@ -59,7 +135,6 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         updateActiveSection();
         window.addEventListener("scroll", scheduleUpdate, { passive: true });
         window.addEventListener("resize", scheduleUpdate, { passive: true });
-
         return () => {
             window.removeEventListener("scroll", scheduleUpdate);
             window.removeEventListener("resize", scheduleUpdate);
@@ -69,74 +144,59 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
 
     const safeActiveIndex = Math.min(activeIndex, Math.max(0, sections.length - 1));
     const activeSection = sections[safeActiveIndex];
-    const progressLabel = useMemo(
-        () => `${safeActiveIndex + 1} of ${sections.length}`,
-        [safeActiveIndex, sections.length],
-    );
+    const progressLabel = useMemo(() => `${safeActiveIndex + 1} of ${sections.length}`, [safeActiveIndex, sections.length]);
 
     function jumpTo(index: number) {
         if (sections.length === 0) return;
-
         const nextIndex = Math.max(0, Math.min(index, sections.length - 1));
         const targetId = sectionId(sections[nextIndex].id);
         setActiveIndex(nextIndex);
-
-        if (window.location.hash !== `#${targetId}`) {
-            window.history.replaceState(null, "", `#${targetId}`);
-        }
-
-        document.getElementById(targetId)?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-        });
+        writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
+        if (window.location.hash !== `#${targetId}`) window.history.replaceState(null, "", `#${targetId}`);
+        document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     useEffect(() => {
         if (sections.length === 0) return;
-
         const targetId = window.location.hash.slice(1);
         if (!targetId) return;
-
         const hashIndex = sections.findIndex((section) => sectionId(section.id) === targetId);
-        if (hashIndex >= 0) setActiveIndex(hashIndex);
+        if (hashIndex >= 0) {
+            setActiveIndex(hashIndex);
+            writeRecoveryState({ sectionIndex: hashIndex }, sections.length);
+        }
     }, [sections]);
 
     useEffect(() => {
         if (sections.length === 0) return;
-
         function handleHashChange() {
             const targetId = window.location.hash.slice(1);
             const nextIndex = sections.findIndex((section) => sectionId(section.id) === targetId);
-            if (nextIndex >= 0) setActiveIndex(nextIndex);
+            if (nextIndex >= 0) {
+                setActiveIndex(nextIndex);
+                writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
+            }
         }
-
         window.addEventListener("hashchange", handleHashChange);
         return () => window.removeEventListener("hashchange", handleHashChange);
     }, [sections]);
 
     useEffect(() => {
         if (sections.length === 0) return;
-
         const activeLink = document.getElementById(navigationLinkId(sections[safeActiveIndex].id));
         activeLink?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     }, [safeActiveIndex, sections]);
 
     useEffect(() => {
         if (sections.length === 0) return;
-
         const browserNavigator = navigator as Navigator & {
-            wakeLock?: {
-                request(type: "screen"): Promise<ScreenWakeLockSentinelLike>;
-            };
+            wakeLock?: { request(type: "screen"): Promise<ScreenWakeLockSentinelLike> };
         };
-
         if (!browserNavigator.wakeLock) return;
-
         let disposed = false;
 
         async function acquireWakeLock() {
             if (disposed || document.visibilityState !== "visible" || wakeLockRef.current) return;
-
             try {
                 const sentinel = await browserNavigator.wakeLock!.request("screen");
                 if (disposed) {
@@ -145,7 +205,6 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 }
                 wakeLockRef.current = sentinel;
                 setScreenAwake(true);
-
                 sentinel.addEventListener("release", () => {
                     if (wakeLockRef.current === sentinel) wakeLockRef.current = null;
                     setScreenAwake(false);
@@ -156,14 +215,11 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         }
 
         function handleVisibilityChange() {
-            if (document.visibilityState === "visible") {
-                void acquireWakeLock();
-            }
+            if (document.visibilityState === "visible") void acquireWakeLock();
         }
 
         void acquireWakeLock();
         document.addEventListener("visibilitychange", handleVisibilityChange);
-
         return () => {
             disposed = true;
             document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -176,40 +232,50 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
 
     useEffect(() => {
         if (sections.length === 0) return;
-
+        const handleFullscreenChange = () => {
+            writeRecoveryState({ focusModeRequested: document.fullscreenElement !== null }, sections.length);
+        };
         const handleKeyDown = (event: KeyboardEvent) => {
             const target = event.target as HTMLElement | null;
-            const isTextEntry =
-                target?.tagName === "INPUT" ||
-                target?.tagName === "TEXTAREA" ||
-                target?.tagName === "SELECT" ||
-                target?.isContentEditable;
-
+            const isTextEntry = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.tagName === "SELECT" || target?.isContentEditable;
             if (isTextEntry || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-
             const key = event.key.toLowerCase();
             if (key === "p") {
                 if (safeActiveIndex === 0) return;
                 event.preventDefault();
                 jumpTo(safeActiveIndex - 1);
-            } else if (key === "j") {
+                return;
+            }
+            if (key === "j") {
                 if (safeActiveIndex === sections.length - 1) return;
                 event.preventDefault();
                 jumpTo(safeActiveIndex + 1);
+                return;
+            }
+            if (key === "m" || key === "n") {
+                writeRecoveryState({ focus: key === "n" ? "notes" : "manuscript" }, sections.length);
+                return;
+            }
+            if (key === "-" || key === "=") {
+                const current = readRecoveryState(sections.length)?.readingSize ?? "comfortable";
+                const next = key === "="
+                    ? current === "compact" ? "comfortable" : "large"
+                    : current === "large" ? "comfortable" : "compact";
+                writeRecoveryState({ readingSize: next }, sections.length);
             }
         };
-
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
         window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [safeActiveIndex, sections]);
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [safeActiveIndex, sections.length]);
 
     if (sections.length === 0) return null;
 
     return (
-        <nav
-            aria-label="Delivery manuscript sections"
-            className="bsmp-delivery-section-nav bsmp-delivery-print-hide"
-        >
+        <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
             <div className="bsmp-delivery-section-nav-heading">
                 <div>
                     <div className="bsmp-delivery-section-nav-title">Sermon sections</div>
@@ -217,46 +283,16 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         {activeSection?.title ?? "Current section"} · {progressLabel} · P Previous · J Next · {screenAwake ? "Screen awake" : "Screen sleep may resume"}
                     </div>
                 </div>
-                <div
-                    className="bsmp-delivery-section-nav-controls"
-                    aria-label="Section navigation controls"
-                    style={{ display: "flex", gap: 14, marginLeft: "auto" }}
-                >
-                    <button
-                        type="button"
-                        onClick={() => jumpTo(safeActiveIndex - 1)}
-                        disabled={safeActiveIndex === 0}
-                        aria-label="Previous sermon section"
-                        title="Previous section (P)"
-                        style={{ minWidth: 92, padding: "7px 12px" }}
-                    >
-                        ← Previous
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => jumpTo(safeActiveIndex + 1)}
-                        disabled={safeActiveIndex === sections.length - 1}
-                        aria-label="Next sermon section"
-                        title="Next section (J)"
-                        style={{ minWidth: 92, padding: "7px 12px" }}
-                    >
-                        Next →
-                    </button>
+                <div className="bsmp-delivery-section-nav-controls" aria-label="Section navigation controls" style={{ display: "flex", gap: 14, marginLeft: "auto" }}>
+                    <button type="button" onClick={() => jumpTo(safeActiveIndex - 1)} disabled={safeActiveIndex === 0} aria-label="Previous sermon section" title="Previous section (P)" style={{ minWidth: 92, padding: "7px 12px" }}>← Previous</button>
+                    <button type="button" onClick={() => jumpTo(safeActiveIndex + 1)} disabled={safeActiveIndex === sections.length - 1} aria-label="Next sermon section" title="Next section (J)" style={{ minWidth: 92, padding: "7px 12px" }}>Next →</button>
                 </div>
             </div>
             <div className="bsmp-delivery-section-nav-links">
                 {sections.map((section, index) => {
                     const active = index === safeActiveIndex;
                     return (
-                        <Link
-                            id={navigationLinkId(section.id)}
-                            key={section.id}
-                            href={`#${sectionId(section.id)}`}
-                            className="bsmp-delivery-section-nav-link"
-                            aria-current={active ? "location" : undefined}
-                            onClick={() => setActiveIndex(index)}
-                            style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}
-                        >
+                        <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex: index }, sections.length); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}>
                             <span>{index + 1}.</span>
                             <span>{section.title}</span>
                         </Link>
