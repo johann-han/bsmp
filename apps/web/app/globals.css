@@ -341,6 +341,83 @@ input[type="radio"]:disabled {
     box-sizing: border-box;
     overflow-wrap: anywhere;
   }
+
+  /* Teaching workspace: use a single readable column and keep every control inside the phone viewport. */
+  body:has(input[placeholder="Teaching lesson title"]) main {
+    min-width: 0;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) main > div {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section h1,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section h2,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section h3,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section p,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section span,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section strong,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section label {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) input,
+  body:has(input[placeholder="Teaching lesson title"]) textarea,
+  body:has(input[placeholder="Teaching lesson title"]) select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section label:has(input[type="checkbox"]) {
+    align-items: flex-start !important;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
+    flex: 0 0 20px !important;
+    margin-top: 2px;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section > div[style*="display: flex"] {
+    flex-wrap: wrap !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    align-items: flex-start !important;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section button {
+    min-height: 42px;
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section a[href] {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section[style*="background: #f8fafc"] {
+    background: #f8fafc !important;
+  }
 }
 
 @media print {
