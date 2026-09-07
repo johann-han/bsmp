@@ -70,15 +70,30 @@ function writeRecoveryState(patch: Partial<DeliveryRecoveryState>, sectionCount:
     }
 }
 
+function dispatchShortcut(key: string) {
+    window.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+}
+
+function activateFocusMode() {
+    const focusButton = Array.from(document.querySelectorAll<HTMLButtonElement>("button[title]")).find((button) => {
+        const title = button.getAttribute("title") ?? "";
+        return title === "Enter distraction-free mode" || title === "Exit distraction-free mode";
+    });
+    focusButton?.click();
+}
+
 export function SermonDeliverySectionNavigation({ sections }: Props) {
     const [activeIndex, setActiveIndex] = useState(0);
     const wakeLockRef = useRef<ScreenWakeLockSentinelLike | null>(null);
     const [screenAwake, setScreenAwake] = useState(false);
+    const [focusModeActive, setFocusModeActive] = useState(false);
+    const [recoveryAvailable, setRecoveryAvailable] = useState(false);
 
     useEffect(() => {
         if (sections.length === 0) return;
 
         const recovery = readRecoveryState(sections.length);
+        setRecoveryAvailable(Boolean(recovery));
         if (!recovery) return;
 
         const target = sections[recovery.sectionIndex];
@@ -92,16 +107,10 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
 
         setActiveIndex(recovery.sectionIndex);
 
-        // Re-use the existing parent keyboard handlers to restore presentation settings.
         window.setTimeout(() => {
-            if (recovery.focus === "notes") {
-                window.dispatchEvent(new KeyboardEvent("keydown", { key: "n" }));
-            }
-            if (recovery.readingSize === "large") {
-                window.dispatchEvent(new KeyboardEvent("keydown", { key: "=" }));
-            } else if (recovery.readingSize === "compact") {
-                window.dispatchEvent(new KeyboardEvent("keydown", { key: "-" }));
-            }
+            if (recovery.focus === "notes") dispatchShortcut("n");
+            if (recovery.readingSize === "large") dispatchShortcut("=");
+            else if (recovery.readingSize === "compact") dispatchShortcut("-");
         }, 0);
 
         if (recovery.focusModeRequested) {
@@ -124,6 +133,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             });
             setActiveIndex((current) => current === nextIndex ? current : nextIndex);
             writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
+            setRecoveryAvailable(true);
             frame = 0;
         };
 
@@ -152,6 +162,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         const targetId = sectionId(sections[nextIndex].id);
         setActiveIndex(nextIndex);
         writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
+        setRecoveryAvailable(true);
         if (window.location.hash !== `#${targetId}`) window.history.replaceState(null, "", `#${targetId}`);
         document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -164,6 +175,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         if (hashIndex >= 0) {
             setActiveIndex(hashIndex);
             writeRecoveryState({ sectionIndex: hashIndex }, sections.length);
+            setRecoveryAvailable(true);
         }
     }, [sections]);
 
@@ -175,6 +187,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             if (nextIndex >= 0) {
                 setActiveIndex(nextIndex);
                 writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
+                setRecoveryAvailable(true);
             }
         }
         window.addEventListener("hashchange", handleHashChange);
@@ -233,8 +246,12 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     useEffect(() => {
         if (sections.length === 0) return;
         const handleFullscreenChange = () => {
-            writeRecoveryState({ focusModeRequested: document.fullscreenElement !== null }, sections.length);
+            const active = document.fullscreenElement !== null;
+            setFocusModeActive(active);
+            writeRecoveryState({ focusModeRequested: active }, sections.length);
+            setRecoveryAvailable(true);
         };
+        setFocusModeActive(document.fullscreenElement !== null);
         const handleKeyDown = (event: KeyboardEvent) => {
             const target = event.target as HTMLElement | null;
             const isTextEntry = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.tagName === "SELECT" || target?.isContentEditable;
@@ -254,6 +271,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             }
             if (key === "m" || key === "n") {
                 writeRecoveryState({ focus: key === "n" ? "notes" : "manuscript" }, sections.length);
+                setRecoveryAvailable(true);
                 return;
             }
             if (key === "-" || key === "=") {
@@ -262,6 +280,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                     ? current === "compact" ? "comfortable" : "large"
                     : current === "large" ? "comfortable" : "compact";
                 writeRecoveryState({ readingSize: next }, sections.length);
+                setRecoveryAvailable(true);
             }
         };
         document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -274,25 +293,62 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
 
     if (sections.length === 0) return null;
 
+    const currentRecovery = readRecoveryState(sections.length);
+    const recoveryFocusLabel = currentRecovery?.focus === "notes" ? "Notes" : "Manuscript";
+    const recoverySizeLabel = currentRecovery?.readingSize === "large"
+        ? "Large"
+        : currentRecovery?.readingSize === "compact"
+            ? "Compact"
+            : "Comfortable";
+
     return (
         <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
-            <div className="bsmp-delivery-section-nav-heading">
-                <div>
-                    <div className="bsmp-delivery-section-nav-title">Sermon sections</div>
-                    <div className="bsmp-delivery-section-nav-help" aria-live="polite">
-                        {activeSection?.title ?? "Current section"} · {progressLabel} · P Previous · J Next · {screenAwake ? "Screen awake" : "Screen sleep may resume"}
+            <details className="bsmp-delivery-controls-details">
+                <summary className="bsmp-delivery-controls-summary">
+                    <span><strong>Preaching Controls</strong><span className="bsmp-delivery-controls-summary-status"> · {activeSection?.title ?? "Current section"} · {progressLabel}</span></span>
+                    <span aria-hidden="true">⌄</span>
+                </summary>
+                <div className="bsmp-delivery-controls-panel">
+                    <div className="bsmp-delivery-controls-grid">
+                        <div className="bsmp-delivery-control-card">
+                            <span className="bsmp-delivery-control-label">Current section</span>
+                            <strong>{activeSection?.title ?? "Current section"}</strong>
+                            <span>{progressLabel}</span>
+                        </div>
+                        <div className="bsmp-delivery-control-card">
+                            <span className="bsmp-delivery-control-label">Presentation</span>
+                            <div className="bsmp-delivery-control-actions">
+                                <button type="button" onClick={() => dispatchShortcut("m")} disabled={recoveryFocusLabel === "Manuscript"}>Manuscript <kbd>M</kbd></button>
+                                <button type="button" onClick={() => dispatchShortcut("n")} disabled={recoveryFocusLabel === "Notes"}>Notes <kbd>N</kbd></button>
+                            </div>
+                        </div>
+                        <div className="bsmp-delivery-control-card">
+                            <span className="bsmp-delivery-control-label">Text size</span>
+                            <div className="bsmp-delivery-control-actions">
+                                <button type="button" onClick={() => dispatchShortcut("-")} disabled={recoverySizeLabel === "Compact"}>A−</button>
+                                <button type="button" onClick={() => { if (recoverySizeLabel === "large") dispatchShortcut("-"); else if (recoverySizeLabel === "compact") dispatchShortcut("="); }} disabled={recoverySizeLabel === "Comfortable"}>A</button>
+                                <button type="button" onClick={() => dispatchShortcut("=")} disabled={recoverySizeLabel === "Large"}>A+</button>
+                            </div>
+                            <span>{recoverySizeLabel}</span>
+                        </div>
+                        <div className="bsmp-delivery-control-card">
+                            <span className="bsmp-delivery-control-label">Focus & recovery</span>
+                            <div className="bsmp-delivery-control-actions">
+                                <button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button>
+                            </div>
+                            <span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"}</span>
+                        </div>
+                    </div>
+                    <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">
+                        {recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}` : "Recovery not yet available"}
                     </div>
                 </div>
-                <div className="bsmp-delivery-section-nav-controls" aria-label="Section navigation controls" style={{ display: "flex", gap: 14, marginLeft: "auto" }}>
-                    <button type="button" onClick={() => jumpTo(safeActiveIndex - 1)} disabled={safeActiveIndex === 0} aria-label="Previous sermon section" title="Previous section (P)" style={{ minWidth: 92, padding: "7px 12px" }}>← Previous</button>
-                    <button type="button" onClick={() => jumpTo(safeActiveIndex + 1)} disabled={safeActiveIndex === sections.length - 1} aria-label="Next sermon section" title="Next section (J)" style={{ minWidth: 92, padding: "7px 12px" }}>Next →</button>
-                </div>
-            </div>
+            </details>
             <div className="bsmp-delivery-section-nav-links">
                 {sections.map((section, index) => {
                     const active = index === safeActiveIndex;
                     return (
-                        <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex: index }, sections.length); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}>
+                        <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex: index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}>
                             <span>{index + 1}.</span>
                             <span>{section.title}</span>
                         </Link>
