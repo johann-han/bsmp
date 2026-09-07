@@ -12,6 +12,14 @@ import { SermonDeliverySectionNavigation } from "./SermonDeliverySectionNavigati
 
 interface Props { studyId: string; }
 
+type ReadingSize = "compact" | "comfortable" | "large";
+
+const readingSizeConfig: Record<ReadingSize, { label: string; manuscript: number; heading: number }> = {
+    compact: { label: "Compact", manuscript: 20, heading: 17 },
+    comfortable: { label: "Comfortable", manuscript: 22, heading: 19 },
+    large: { label: "Large", manuscript: 26, heading: 21 },
+};
+
 function splitParagraphs(value: string): string[] {
     return value.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
 }
@@ -29,6 +37,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [focus, setFocus] = useState<"manuscript" | "notes">("manuscript");
+    const [readingSize, setReadingSize] = useState<ReadingSize>("comfortable");
 
     useEffect(() => {
         let cancelled = false;
@@ -57,14 +66,18 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
     const hasTraceableSections = sections.length > 0;
     const wordCount = manuscript.trim() ? manuscript.trim().split(/\s+/).length : 0;
     const estimatedMinutes = Math.max(0, Math.round((wordCount / 130) * 10) / 10);
+    const readingConfig = readingSizeConfig[readingSize];
 
     useEffect(() => {
         function handleKeyDown(event: KeyboardEvent) {
             if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
             const target = event.target as HTMLElement | null;
             if (target?.isContentEditable || target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.tagName === "SELECT") return;
-            if (event.key.toLowerCase() === "m") setFocus("manuscript");
-            if (event.key.toLowerCase() === "n") setFocus("notes");
+            const key = event.key.toLowerCase();
+            if (key === "m") setFocus("manuscript");
+            if (key === "n") setFocus("notes");
+            if (key === "-") setReadingSize((current) => current === "large" ? "comfortable" : "compact");
+            if (key === "=") setReadingSize((current) => current === "compact" ? "comfortable" : "large");
         }
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
@@ -75,7 +88,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
 
     return (
         <AppShell title="Sermon Delivery">
-            <style>{`html { scroll-behavior: smooth; } .bsmp-delivery-print-page { max-width: 1100px; margin: 0 auto; padding: 16px 0 48px; } .bsmp-delivery-header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.98); border-bottom: 1px solid #e5e7eb; padding: 12px 0 0; backdrop-filter: blur(6px); } .bsmp-delivery-header-inner { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; } .bsmp-delivery-section-nav { width: 100%; margin: 12px 0 0; padding: 10px 14px 12px; border-top: 1px solid #e5e7eb; background: rgba(248,250,252,0.98); box-sizing: border-box; } .bsmp-delivery-section-nav-heading { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; } .bsmp-delivery-section-nav-title { font-weight: 700; } .bsmp-delivery-section-nav-help { color: #6b7280; font-size: 12px; line-height: 1.45; } .bsmp-delivery-section-nav-links { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; scrollbar-width: thin; } .bsmp-delivery-section-nav-link { display: inline-flex; gap: 6px; align-items: flex-start; flex: 0 0 auto; padding: 7px 9px; border: 1px solid #dbe3ee; border-radius: 8px; color: #1d4ed8; text-decoration: none; background: #fff; font-size: 12px; font-weight: 600; } @media (max-width: 640px) { .bsmp-delivery-print-page { padding-top: 0; } .bsmp-delivery-header { padding-top: 8px; } .bsmp-delivery-section-nav-heading { display: none; } .bsmp-delivery-section-nav { margin-top: 8px; padding: 8px 10px; } .bsmp-delivery-section-nav-links { margin-top: 0; gap: 6px; } .bsmp-delivery-section-nav-link { padding: 6px 8px; font-size: 11px; } } @media print { .bsmp-delivery-print-hide { display: none !important; } .bsmp-delivery-print-page { max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-delivery-print-main { max-width: none !important; margin: 0 !important; font-size: 14pt !important; line-height: 1.6 !important; } .bsmp-delivery-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 0 24px !important; break-inside: avoid; } .bsmp-delivery-print-notes { max-width: none !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; } }`}</style>
+            <style>{`html { scroll-behavior: smooth; } .bsmp-delivery-print-page { max-width: 1100px; margin: 0 auto; padding: 16px 0 48px; } .bsmp-delivery-header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,0.98); border-bottom: 1px solid #e5e7eb; padding: 12px 0 0; backdrop-filter: blur(6px); } .bsmp-delivery-header-inner { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; } .bsmp-delivery-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .bsmp-delivery-size-controls { display: flex; gap: 6px; align-items: center; padding-left: 8px; border-left: 1px solid #e5e7eb; } .bsmp-delivery-size-label { font-size: 12px; color: #6b7280; } .bsmp-delivery-size-button { min-width: 34px; padding: 6px 8px; } .bsmp-delivery-section-nav { width: 100%; margin: 12px 0 0; padding: 10px 14px 12px; border-top: 1px solid #e5e7eb; background: rgba(248,250,252,0.98); box-sizing: border-box; } .bsmp-delivery-section-nav-heading { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; } .bsmp-delivery-section-nav-title { font-weight: 700; } .bsmp-delivery-section-nav-help { color: #6b7280; font-size: 12px; line-height: 1.45; } .bsmp-delivery-section-nav-links { display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; scrollbar-width: thin; } .bsmp-delivery-section-nav-link { display: inline-flex; gap: 6px; align-items: flex-start; flex: 0 0 auto; padding: 7px 9px; border: 1px solid #dbe3ee; border-radius: 8px; color: #1d4ed8; text-decoration: none; background: #fff; font-size: 12px; font-weight: 600; } @media (max-width: 700px) { .bsmp-delivery-print-page { padding-top: 0; } .bsmp-delivery-header { padding-top: 8px; } .bsmp-delivery-toolbar { width: 100%; } .bsmp-delivery-size-controls { margin-left: auto; } .bsmp-delivery-section-nav-heading { display: none; } .bsmp-delivery-section-nav { margin-top: 8px; padding: 8px 10px; } .bsmp-delivery-section-nav-links { margin-top: 0; gap: 6px; } .bsmp-delivery-section-nav-link { padding: 6px 8px; font-size: 11px; } } @media print { .bsmp-delivery-print-hide { display: none !important; } .bsmp-delivery-print-page { max-width: none !important; margin: 0 !important; padding: 0 !important; } .bsmp-delivery-print-main { max-width: none !important; margin: 0 !important; font-size: 14pt !important; line-height: 1.6 !important; } .bsmp-delivery-print-section { border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 0 24px !important; break-inside: avoid; } .bsmp-delivery-print-notes { max-width: none !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; } }`}</style>
             <div className="bsmp-delivery-print-page">
                 <header className="bsmp-delivery-header bsmp-delivery-print-hide">
                     <div className="bsmp-delivery-header-inner">
@@ -84,9 +97,15 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                             <h1 style={{ margin: "2px 0" }}>{sermon.title.value}</h1>
                             <div style={{ color: "#6b7280", fontSize: 13 }}>{sermon.passage.toString()} · {wordCount} words · ≈ {estimatedMinutes} min</div>
                         </div>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <div className="bsmp-delivery-toolbar">
                             <button type="button" onClick={() => setFocus("manuscript")} disabled={focus === "manuscript"} title="Focus manuscript (M)">Manuscript</button>
                             <button type="button" onClick={() => setFocus("notes")} disabled={focus === "notes"} title="Focus delivery notes (N)">Delivery Notes</button>
+                            <div className="bsmp-delivery-size-controls" aria-label="Manuscript text size controls">
+                                <span className="bsmp-delivery-size-label">Text size</span>
+                                <button type="button" className="bsmp-delivery-size-button" onClick={() => setReadingSize((current) => current === "large" ? "comfortable" : "compact")} disabled={readingSize === "compact"} title="Decrease manuscript text size (minus key)" aria-label="Decrease manuscript text size">A−</button>
+                                <button type="button" className="bsmp-delivery-size-button" onClick={() => setReadingSize("comfortable")} disabled={readingSize === "comfortable"} title="Reset manuscript text size" aria-label="Reset manuscript text size">A</button>
+                                <button type="button" className="bsmp-delivery-size-button" onClick={() => setReadingSize((current) => current === "compact" ? "comfortable" : "large")} disabled={readingSize === "large"} title="Increase manuscript text size (equals key)" aria-label="Increase manuscript text size">A+</button>
+                            </div>
                             <button type="button" onClick={() => window.print()}>Print / Save PDF</button>
                             <button type="button" onClick={() => router.push(`/preaching/final?studyId=${encodeURIComponent(studyId)}`)}>Exit Delivery</button>
                         </div>
@@ -95,15 +114,15 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                 </header>
 
                 {focus === "manuscript" ? (
-                    <main className="bsmp-delivery-print-main" style={{ maxWidth: 820, margin: "28px auto 0", fontSize: 22, lineHeight: 1.8, fontFamily: "Georgia, serif" }}>
+                    <main className="bsmp-delivery-print-main" style={{ maxWidth: 820, margin: "28px auto 0", fontSize: readingConfig.manuscript, lineHeight: 1.8, fontFamily: "Georgia, serif" }}>
                         <h1 style={{ display: "none" }} className="bsmp-delivery-print-title">{sermon.title.value}</h1>
-                        {sermon.bigIdea && <p style={{ fontFamily: "inherit", fontSize: 18, fontWeight: 700, lineHeight: 1.5, borderLeft: "4px solid #d1d5db", paddingLeft: 16 }}>{sermon.bigIdea.value}</p>}
+                        {sermon.bigIdea && <p style={{ fontFamily: "inherit", fontSize: Math.max(16, readingConfig.manuscript - 4), fontWeight: 700, lineHeight: 1.5, borderLeft: "4px solid #d1d5db", paddingLeft: 16 }}>{sermon.bigIdea.value}</p>}
                         {hasTraceableSections ? (
                             sections.map((section: SermonManuscriptSection) => {
                                 const outlinePoint = section.outlinePointId ? sermon.outline.find((point) => point.id === section.outlinePointId) : undefined;
                                 return (
                                     <section id={`delivery-section-${encodeURIComponent(section.id)}`} key={section.id} className="bsmp-delivery-print-section" style={{ marginBottom: 30, scrollMarginTop: 160 }}>
-                                        <h2 style={{ fontSize: 18, lineHeight: 1.4, margin: "0 0 12px", fontFamily: "Arial, sans-serif" }}>{section.title}</h2>
+                                        <h2 style={{ fontSize: readingConfig.heading, lineHeight: 1.4, margin: "0 0 12px", fontFamily: "Arial, sans-serif" }}>{section.title}</h2>
                                         <div style={{ whiteSpace: "pre-wrap" }}>{section.content}</div>
                                         {outlinePoint && (
                                             <div className="bsmp-delivery-print-hide" style={{ marginTop: 10, fontFamily: "Arial, sans-serif", fontSize: 12, color: "#6b7280", display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -127,8 +146,8 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                 ) : (
                     <aside className="bsmp-delivery-print-notes" style={{ maxWidth: 820, margin: "28px auto 0" }}>
                         <h2>Delivery Notes</h2>
-                        {sermon.deliveryNotes?.value.trim() ? <div style={{ whiteSpace: "pre-wrap", fontSize: 18, lineHeight: 1.7, border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, background: "#fff" }}>{sermon.deliveryNotes.value}</div> : <p style={{ color: "#6b7280" }}>No delivery notes have been recorded yet. Return to Final Draft to add them.</p>}
-                        <p className="bsmp-delivery-print-hide" style={{ marginTop: 12, color: "#6b7280", fontSize: 13 }}>Tip: press <kbd>M</kbd> for manuscript or <kbd>N</kbd> for delivery notes.</p>
+                        {sermon.deliveryNotes?.value.trim() ? <div style={{ whiteSpace: "pre-wrap", fontSize: Math.max(17, readingConfig.manuscript - 3), lineHeight: 1.7, border: "1px solid #e5e7eb", borderRadius: 12, padding: 20, background: "#fff" }}>{sermon.deliveryNotes.value}</div> : <p style={{ color: "#6b7280" }}>No delivery notes have been recorded yet. Return to Final Draft to add them.</p>}
+                        <p className="bsmp-delivery-print-hide" style={{ marginTop: 12, color: "#6b7280", fontSize: 13 }}>Tip: press <kbd>M</kbd> for manuscript, <kbd>N</kbd> for delivery notes, <kbd>-</kbd> for smaller text, or <kbd>=</kbd> for larger text.</p>
                     </aside>
                 )}
             </div>
