@@ -56,7 +56,7 @@ export class SupabaseStudyRepository implements StudyRepository {
     }
 
     public async findAllSummaries(): Promise<readonly StudySummaryRecord[]> {
-        const user = await this.requireUserFromSession();
+        const user = await this.requireUser();
         const { data: studies, error } = await this.client
             .from("studies")
             .select("*")
