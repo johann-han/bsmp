@@ -20,6 +20,10 @@ function workspaceHref(studyId: string, target: string): string {
 
 const linkStyle = { color: "#1d4ed8", textDecoration: "none" } as const;
 
+function sectionsSignature(sections: readonly SermonManuscriptSection[]): string {
+    return JSON.stringify(sections.map((section) => ({ id: section.id, title: section.title, content: section.content, outlinePointId: section.outlinePointId ?? null })));
+}
+
 export function SermonFinalDraftWorkspace({ studyId }: Props) {
     const router = useRouter();
     const [study, setStudy] = useState<StudySession | null>(null);
@@ -27,6 +31,9 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
     const [manuscript, setManuscript] = useState("");
     const [manuscriptSections, setManuscriptSections] = useState<SermonManuscriptSection[]>([]);
     const [deliveryNotes, setDeliveryNotes] = useState("");
+    const [savedManuscript, setSavedManuscript] = useState("");
+    const [savedSectionsSignature, setSavedSectionsSignature] = useState("[]");
+    const [savedDeliveryNotes, setSavedDeliveryNotes] = useState("");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
@@ -46,11 +53,17 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                 if (cancelled) return;
                 if (!nextStudy) throw new Error("The selected study could not be found.");
                 if (!nextSermon) throw new Error("Create Sermon Preparation before drafting the final sermon.");
+                const nextManuscript = nextSermon.manuscript?.value ?? "";
+                const nextSections = [...nextSermon.manuscriptSections];
+                const nextDeliveryNotes = nextSermon.deliveryNotes?.value ?? "";
                 setStudy(nextStudy);
                 setSermon(nextSermon);
-                setManuscript(nextSermon.manuscript?.value ?? "");
-                setManuscriptSections([...nextSermon.manuscriptSections]);
-                setDeliveryNotes(nextSermon.deliveryNotes?.value ?? "");
+                setManuscript(nextManuscript);
+                setManuscriptSections(nextSections);
+                setDeliveryNotes(nextDeliveryNotes);
+                setSavedManuscript(nextManuscript);
+                setSavedSectionsSignature(sectionsSignature(nextSections));
+                setSavedDeliveryNotes(nextDeliveryNotes);
             } catch (reason: unknown) {
                 if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load the final sermon draft.");
             } finally { if (!cancelled) setLoading(false); }
@@ -63,6 +76,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
     const estimatedMinutes = Math.max(0, Math.round((wordCount / 130) * 10) / 10);
     const hasOutlineMaterial = Boolean(sermon?.outline.some((point) => point.text || point.explanation || point.illustration || point.application));
     const hasTraceableSections = manuscriptSections.length > 0;
+    const hasUnsavedChanges = manuscript !== savedManuscript || sectionsSignature(manuscriptSections) !== savedSectionsSignature || deliveryNotes !== savedDeliveryNotes;
 
     function buildTraceableSections() {
         if (!sermon) return;
@@ -81,18 +95,29 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
         setManuscript(composeSermonManuscript(sermon, next));
     }
 
-    async function save() {
-        if (!sermon) return;
+    async function save(): Promise<boolean> {
+        if (!sermon) return false;
         setSaving(true); setMessage(null); setError(null);
         try {
             sermon.defineManuscript(SermonManuscriptValue.from(manuscript));
             sermon.defineManuscriptSections(manuscriptSections);
             sermon.defineDeliveryNotes(SermonDeliveryNotesValue.from(deliveryNotes));
             await new SupabaseExpositorySermonRepository().save(sermon);
+            setSavedManuscript(manuscript);
+            setSavedSectionsSignature(sectionsSignature(manuscriptSections));
+            setSavedDeliveryNotes(deliveryNotes);
             setMessage("Final sermon draft saved.");
+            return true;
         } catch (reason: unknown) {
             setError(reason instanceof Error ? reason.message : "Unable to save the final sermon draft.");
+            return false;
         } finally { setSaving(false); }
+    }
+
+    async function saveAndOpenDeliveryMode() {
+        if (!manuscript.trim() || saving) return;
+        const saved = await save();
+        if (saved) router.push(`/preaching/delivery?studyId=${encodeURIComponent(studyId)}`);
     }
 
     if (loading) return <AppShell title="Final Sermon Draft"><p>Loading final sermon drafting...</p></AppShell>;
@@ -154,6 +179,7 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
                         <span><strong>{wordCount}</strong> words</span>
                         <span>≈ <strong>{estimatedMinutes}</strong> min at 130 wpm</span>
                         {hasTraceableSections && <span><strong>{manuscriptSections.length}</strong> traceable sections</span>}
+                        {hasUnsavedChanges && <span style={{ color: "#b45309" }}><strong>Unsaved changes</strong></span>}
                     </div>
 
                     {hasTraceableSections ? (
@@ -206,8 +232,8 @@ export function SermonFinalDraftWorkspace({ studyId }: Props) {
 
                 <div className="bsmp-print-hide" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <button type="button" onClick={() => void save()} disabled={saving} style={{ padding: "10px 16px", fontWeight: 600 }}>{saving ? "Saving..." : "Save Final Draft"}</button>
-                    <button type="button" onClick={() => window.print()} style={{ padding: "10px 16px", fontWeight: 600 }}>Print / Save PDF</button>
-                    <button type="button" onClick={() => router.push(`/preaching/delivery?studyId=${encodeURIComponent(studyId)}`)} disabled={!manuscript.trim()} style={{ padding: "10px 16px", fontWeight: 600 }}>Open Delivery Mode</button>
+                    <button type="button" onClick={() => window.print()} style={{ padding: "10px 16px" }}>Print / Save PDF</button>
+                    <button type="button" onClick={() => void saveAndOpenDeliveryMode()} disabled={saving || !manuscript.trim()} title={hasUnsavedChanges ? "Save your final draft before opening Delivery Mode." : undefined} style={{ padding: "10px 16px", fontWeight: 600 }}>{saving ? "Saving..." : "Save & Open Delivery Mode"}</button>
                     <button type="button" onClick={() => router.push(`/preaching/overview?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>← Sermon Overview</button>
                     <button type="button" onClick={() => router.push(`/preaching/exposition?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px" }}>Review Exposition</button>
                     {message && <span style={{ color: "#047857" }}>{message}</span>}
