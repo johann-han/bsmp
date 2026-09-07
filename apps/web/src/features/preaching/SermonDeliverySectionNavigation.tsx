@@ -60,6 +60,10 @@ function writeRecoveryState(patch: Partial<DeliveryRecoveryState>, sectionCount:
     } catch { /* Recovery is a convenience; delivery must work without local storage. */ }
 }
 
+function getDeliveryRoot(): HTMLElement | null {
+    return document.querySelector<HTMLElement>(".bsmp-delivery-root");
+}
+
 function getFullscreenScrollContainer(): HTMLElement | null {
     return document.fullscreenElement instanceof HTMLElement ? document.fullscreenElement : null;
 }
@@ -408,7 +412,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 <div className="bsmp-delivery-section-nav-links">
                     {sections.map((section, index) => {
                         const active = index === safeActiveIndex;
-                        return <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex:index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor:"#1d4ed8", boxShadow:"0 0 0 1px #1d4ed8 inset" } : undefined}><span>{index+1}.</span><span>{section.title}</span></Link>;
+                        return <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex:index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}><span>{index + 1}.</span><span>{section.title}</span></Link>;
                     })}
                 </div>
             </nav>
