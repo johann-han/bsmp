@@ -34,7 +34,9 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
 
         const { data: existingOutlineRows, error: existingOutlineError } = await supabase.from("sermon_outline_points").select("id").eq("sermon_id", sermon.id.value);
         if (existingOutlineError) throw existingOutlineError;
+        const existingIds = new Set((existingOutlineRows ?? []).map((item) => item.id));
 
+        const now = new Date().toISOString();
         const outlineRows = sermon.outline.map((point, index) => ({
             id: point.id,
             sermon_id: sermon.id.value,
@@ -42,7 +44,7 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
             heading: point.heading,
             truth: point.truth,
             position: index,
-            created_at: new Date().toISOString(),
+            created_at: now,
             text: point.text || null,
             explanation: point.explanation || null,
             illustration: point.illustration || null,
@@ -59,9 +61,36 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
             supporting_biblical_theology_ids: [...point.supportingBiblicalTheologyIds],
         }));
 
-        if (outlineRows.length > 0) {
-            const { error: outlineError } = await supabase.from("sermon_outline_points").upsert(outlineRows as unknown as never, { onConflict: "id" });
-            if (outlineError) throw outlineError;
+        const newRows = outlineRows.filter((point) => !existingIds.has(point.id));
+        const existingRows = outlineRows.filter((point) => existingIds.has(point.id));
+
+        if (newRows.length > 0) {
+            const { error: insertError } = await supabase.from("sermon_outline_points").insert(newRows as unknown as never);
+            if (insertError) throw insertError;
+        }
+
+        for (const point of existingRows) {
+            const { error: updateError } = await supabase.from("sermon_outline_points").update({
+                user_id: point.user_id,
+                heading: point.heading,
+                truth: point.truth,
+                position: point.position,
+                text: point.text,
+                explanation: point.explanation,
+                illustration: point.illustration,
+                application: point.application,
+                transition: point.transition,
+                text_observation_ids: point.text_observation_ids,
+                meaning_interpretation_ids: point.meaning_interpretation_ids,
+                meaning_evidence_ids: point.meaning_evidence_ids,
+                response_application_ids: point.response_application_ids,
+                supporting_observation_ids: point.supporting_observation_ids,
+                supporting_interpretation_ids: point.supporting_interpretation_ids,
+                supporting_evidence_ids: point.supporting_evidence_ids,
+                supporting_application_ids: point.supporting_application_ids,
+                supporting_biblical_theology_ids: point.supporting_biblical_theology_ids,
+            } as unknown as never).eq("id", point.id).eq("sermon_id", sermon.id.value);
+            if (updateError) throw updateError;
         }
 
         const currentIds = new Set(outlineRows.map((point) => point.id));
