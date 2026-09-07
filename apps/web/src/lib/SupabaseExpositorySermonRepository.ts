@@ -5,7 +5,7 @@ import { StudyId } from "@bsmp/study";
 import { supabase } from "./supabase";
 
 type DatabaseSermonRow = { id: string; study_id: string; user_id: string; title: string; big_idea: string | null; purpose: string | null; introduction?: string | null; context?: string | null; conclusion?: string | null; manuscript?: string | null; delivery_notes?: string | null; teaching_plan_id?: string | null; manuscript_sections?: unknown; created_at: string; };
-type DatabaseOutlinePointRow = { id: string; sermon_id: string; user_id: string; heading: string; truth: string; position: number; text?: string | null; explanation?: string | null; illustration?: string | null; application?: string | null; transition?: string | null; text_observation_ids?: string[] | null; meaning_interpretation_ids?: string[] | null; meaning_evidence_ids?: string[] | null; response_application_ids?: string[] | null; supporting_observation_ids?: string[] | null; supporting_interpretation_ids?: string[] | null; supporting_evidence_ids?: string[] | null; supporting_application_ids?: string[] | null; supporting_biblical_theology_ids?: string[] | null; };
+type DatabaseOutlinePointRow = { id: string; sermon_id: string; user_id: string; heading: string; truth: string; position: number; created_at: string; text?: string | null; explanation?: string | null; illustration?: string | null; application?: string | null; transition?: string | null; text_observation_ids?: string[] | null; meaning_interpretation_ids?: string[] | null; meaning_evidence_ids?: string[] | null; response_application_ids?: string[] | null; supporting_observation_ids?: string[] | null; supporting_interpretation_ids?: string[] | null; supporting_evidence_ids?: string[] | null; supporting_application_ids?: string[] | null; supporting_biblical_theology_ids?: string[] | null; };
 type ManuscriptSectionRow = { id?: unknown; title?: unknown; content?: unknown; outlinePointId?: unknown; };
 
 function parseManuscriptSections(value: unknown) {
@@ -31,10 +31,45 @@ export class SupabaseExpositorySermonRepository implements ExpositorySermonRepos
         }
         const row = { id: sermon.id.value, study_id: sermon.studyId.value, user_id: userData.user.id, title: sermon.title.value, big_idea: sermon.bigIdea?.value ?? null, purpose: sermon.purpose?.value ?? null, introduction: sermon.introduction?.value ?? null, context: sermon.context?.value ?? null, conclusion: sermon.conclusion?.value ?? null, manuscript: sermon.manuscript?.value ?? null, delivery_notes: sermon.deliveryNotes?.value ?? null, teaching_plan_id: sermon.teachingPlanId ?? null, manuscript_sections: sermon.manuscriptSections, created_at: sermon.createdAt.toISOString() };
         const { error } = await supabase.from("expository_sermons").upsert(row as unknown as never); if (error) throw error;
-        const { error: deleteError } = await supabase.from("sermon_outline_points").delete().eq("sermon_id", sermon.id.value); if (deleteError) throw deleteError;
-        if (sermon.outline.length > 0) {
-            const outlineRows = sermon.outline.map((point, index) => ({ id: point.id, sermon_id: sermon.id.value, user_id: userData.user!.id, heading: point.heading, truth: point.truth, position: index, text: point.text || null, explanation: point.explanation || null, illustration: point.illustration || null, application: point.application || null, transition: point.transition || null, text_observation_ids: [...point.textObservationIds], meaning_interpretation_ids: [...point.meaningInterpretationIds], meaning_evidence_ids: [...point.meaningEvidenceIds], response_application_ids: [...point.responseApplicationIds], supporting_observation_ids: [...point.supportingObservationIds], supporting_interpretation_ids: [...point.supportingInterpretationIds], supporting_evidence_ids: [...point.supportingEvidenceIds], supporting_application_ids: [...point.supportingApplicationIds], supporting_biblical_theology_ids: [...point.supportingBiblicalTheologyIds] }));
-            const { error: outlineError } = await supabase.from("sermon_outline_points").insert(outlineRows as unknown as never); if (outlineError) throw outlineError;
+
+        const { data: existingOutlineRows, error: existingOutlineError } = await supabase.from("sermon_outline_points").select("id").eq("sermon_id", sermon.id.value);
+        if (existingOutlineError) throw existingOutlineError;
+
+        const outlineRows = sermon.outline.map((point, index) => ({
+            id: point.id,
+            sermon_id: sermon.id.value,
+            user_id: userData.user!.id,
+            heading: point.heading,
+            truth: point.truth,
+            position: index,
+            created_at: new Date().toISOString(),
+            text: point.text || null,
+            explanation: point.explanation || null,
+            illustration: point.illustration || null,
+            application: point.application || null,
+            transition: point.transition || null,
+            text_observation_ids: [...point.textObservationIds],
+            meaning_interpretation_ids: [...point.meaningInterpretationIds],
+            meaning_evidence_ids: [...point.meaningEvidenceIds],
+            response_application_ids: [...point.responseApplicationIds],
+            supporting_observation_ids: [...point.supportingObservationIds],
+            supporting_interpretation_ids: [...point.supportingInterpretationIds],
+            supporting_evidence_ids: [...point.supportingEvidenceIds],
+            supporting_application_ids: [...point.supportingApplicationIds],
+            supporting_biblical_theology_ids: [...point.supportingBiblicalTheologyIds],
+        }));
+
+        if (outlineRows.length > 0) {
+            const { error: outlineError } = await supabase.from("sermon_outline_points").upsert(outlineRows as unknown as never, { onConflict: "id" });
+            if (outlineError) throw outlineError;
+        }
+
+        const currentIds = new Set(outlineRows.map((point) => point.id));
+        for (const existingRow of existingOutlineRows ?? []) {
+            if (!currentIds.has(existingRow.id)) {
+                const { error: deleteError } = await supabase.from("sermon_outline_points").delete().eq("id", existingRow.id).eq("sermon_id", sermon.id.value);
+                if (deleteError) throw deleteError;
+            }
         }
     }
     private async hydrate(row: DatabaseSermonRow): Promise<ExpositorySermon> {
