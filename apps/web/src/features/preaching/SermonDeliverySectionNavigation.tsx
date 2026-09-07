@@ -107,7 +107,6 @@ function activateFocusMode() {
 export function SermonDeliverySectionNavigation({ sections }: Props) {
     const [activeIndex, setActiveIndex] = useState(0);
     const wakeLockRef = useRef<ScreenWakeLockSentinelLike | null>(null);
-    const controlsRef = useRef<HTMLDetailsElement | null>(null);
     const [screenAwake, setScreenAwake] = useState(false);
     const [focusModeActive, setFocusModeActive] = useState(false);
     const [controlsOpen, setControlsOpen] = useState(false);
@@ -234,6 +233,15 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         document.addEventListener("click", handleManuscriptLineClick);
         return () => document.removeEventListener("click", handleManuscriptLineClick);
     }, [sections]);
+
+    useEffect(() => {
+        if (sections.length === 0) return;
+        const header = getDeliveryRoot()?.querySelector<HTMLElement>(".bsmp-delivery-header");
+        if (!header) return;
+        const handleHeaderMouseLeave = () => setControlsOpen(false);
+        header.addEventListener("mouseleave", handleHeaderMouseLeave);
+        return () => header.removeEventListener("mouseleave", handleHeaderMouseLeave);
+    }, [sections.length]);
 
     function jumpTo(index: number) {
         if (sections.length === 0) return;
@@ -397,14 +405,8 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             {markerView}
             <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
                 <details
-                    ref={controlsRef}
                     className="bsmp-delivery-controls-details"
                     open={controlsOpen}
-                    onMouseLeave={() => {
-                        const activeElement = document.activeElement;
-                        if (activeElement && controlsRef.current?.contains(activeElement)) return;
-                        setControlsOpen(false);
-                    }}
                 >
                     <summary
                         className="bsmp-delivery-controls-summary"
