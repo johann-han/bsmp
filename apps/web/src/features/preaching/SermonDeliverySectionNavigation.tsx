@@ -226,20 +226,20 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             return;
         }
         let frame = 0;
+        const markerScrollContainer = getScrollContainer();
         const updateMarkerPosition = () => {
             const root = document.querySelector<HTMLElement>(".bsmp-delivery-root");
             const markerSectionIndex = Math.max(0, Math.min(placeMarker.sectionIndex, sections.length - 1));
             const section = sections[markerSectionIndex];
             const element = section ? document.getElementById(sectionId(section.id)) : null;
-            const container = getScrollContainer();
             if (!root || !element) {
                 setMarkerPosition(null);
                 frame = 0;
                 return;
             }
             const rootRect = root.getBoundingClientRect();
-            const containerRect = container?.getBoundingClientRect();
-            const scrollDelta = container ? container.scrollTop - (container === root ? 0 : (containerRect?.top ?? 0) - rootRect.top) : window.scrollY;
+            const containerRect = markerScrollContainer?.getBoundingClientRect();
+            const scrollDelta = markerScrollContainer ? markerScrollContainer.scrollTop - (markerScrollContainer === root ? 0 : (containerRect?.top ?? 0) - rootRect.top) : window.scrollY;
             const top = element.getBoundingClientRect().top - rootRect.top + scrollDelta + placeMarker.offset;
             setMarkerPosition({ top: Math.round(top) });
             frame = 0;
@@ -249,21 +249,14 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         window.addEventListener("resize", scheduleUpdate, { passive: true });
         document.addEventListener("fullscreenchange", scheduleUpdate);
         window.addEventListener("scroll", scheduleUpdate, { passive: true });
-        containerScrollListener(scheduleUpdate);
+        markerScrollContainer?.addEventListener("scroll", scheduleUpdate, { passive: true });
         return () => {
             window.removeEventListener("resize", scheduleUpdate);
             document.removeEventListener("fullscreenchange", scheduleUpdate);
             window.removeEventListener("scroll", scheduleUpdate);
-            containerScrollCleanup(scheduleUpdate);
+            markerScrollContainer?.removeEventListener("scroll", scheduleUpdate);
             if (frame) window.cancelAnimationFrame(frame);
         };
-
-        function containerScrollListener(handler: EventListener) {
-            getScrollContainer()?.addEventListener("scroll", handler, { passive: true });
-        }
-        function containerScrollCleanup(handler: EventListener) {
-            getScrollContainer()?.removeEventListener("scroll", handler);
-        }
     }, [focusModeActive, placeMarker, sections]);
 
     useEffect(() => {
