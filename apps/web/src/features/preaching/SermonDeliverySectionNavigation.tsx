@@ -109,6 +109,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     const wakeLockRef = useRef<ScreenWakeLockSentinelLike | null>(null);
     const [screenAwake, setScreenAwake] = useState(false);
     const [focusModeActive, setFocusModeActive] = useState(false);
+    const [focusRecoveryPending, setFocusRecoveryPending] = useState(false);
     const [controlsOpen, setControlsOpen] = useState(false);
     const [recoveryAvailable, setRecoveryAvailable] = useState(false);
     const [placeMarker, setPlaceMarker] = useState<DeliveryPlaceMarker | null>(null);
@@ -123,6 +124,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         const recovery = readRecoveryState(sections.length);
         setRecoveryAvailable(Boolean(recovery));
         setPlaceMarker(recovery?.placeMarker ?? null);
+        setFocusRecoveryPending(recovery?.focusModeRequested === true && document.fullscreenElement === null);
         if (!recovery) return;
         const target = sections[recovery.sectionIndex];
         if (target && !window.location.hash) {
@@ -136,7 +138,6 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             if (recovery.readingSize === "large") dispatchShortcut("=");
             else if (recovery.readingSize === "compact") dispatchShortcut("-");
         }, 0);
-        if (recovery.focusModeRequested) document.documentElement.dataset.bsmpDeliveryFocusRecovery = "requested";
     }, [sections]);
 
     useEffect(() => {
@@ -340,6 +341,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         const handleFullscreenChange = () => {
             const active = document.fullscreenElement !== null;
             setFocusModeActive(active);
+            setFocusRecoveryPending(false);
             writeRecoveryState({ focusModeRequested: active }, sections.length);
             setRecoveryAvailable(true);
         };
@@ -370,6 +372,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     const recoveryFocusLabel = currentRecovery?.focus === "notes" ? "Notes" : "Manuscript";
     const recoverySizeLabel = currentRecovery?.readingSize === "large" ? "Large" : currentRecovery?.readingSize === "compact" ? "Compact" : "Comfortable";
     const markerSavedLabel = placeMarker ? "My Place set" : "Click a manuscript line to set My Place";
+    const focusLabel = focusModeActive ? "Focus active" : focusRecoveryPending ? "Focus ready to resume" : "Focus off";
     const markerView = placeMarker && markerSectionElement ? createPortal(
         <div className="bsmp-delivery-place-marker bsmp-delivery-print-hide" style={{ top: placeMarker.lineBottomOffset }} aria-label="My Place marker">
             <div className="bsmp-delivery-place-marker-line" />
@@ -423,9 +426,9 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Current section</span><strong>{activeSection?.title ?? "Current section"}</strong><span>{progressLabel}</span></div>
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Presentation</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("m")} disabled={recoveryFocusLabel === "Manuscript"}>Manuscript <kbd>M</kbd></button><button type="button" onClick={() => dispatchShortcut("n")} disabled={recoveryFocusLabel === "Notes"}>Notes <kbd>N</kbd></button></div></div>
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Text size</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("-")} disabled={recoverySizeLabel === "Compact"}>A−</button><button type="button" onClick={() => { if (recoverySizeLabel === "Large") dispatchShortcut("-"); else if (recoverySizeLabel === "Compact") dispatchShortcut("="); }} disabled={recoverySizeLabel === "Comfortable"}>A</button><button type="button" onClick={() => dispatchShortcut("=")} disabled={recoverySizeLabel === "Large"}>A+</button></div><span>{recoverySizeLabel}</span></div>
-                            <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Focus & recovery</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button><button type="button" onClick={returnToMyPlace} disabled={!placeMarker}>Return to My Place <kbd>R</kbd></button><button type="button" onClick={clearMyPlace} disabled={!placeMarker}>Clear My Place</button></div><span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"} · {markerSavedLabel}</span></div>
+                            <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Focus & recovery</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : focusRecoveryPending ? "Resume Focus" : "Focus Mode"}</button><button type="button" onClick={returnToMyPlace} disabled={!placeMarker}>Return to My Place <kbd>R</kbd></button><button type="button" onClick={clearMyPlace} disabled={!placeMarker}>Clear My Place</button></div><span>{focusLabel} · {screenAwake ? "Screen awake" : "Screen sleep may resume"} · {markerSavedLabel}</span></div>
                         </div>
-                        <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">{recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}${placeMarker ? " · place marker set" : ""}` : "Recovery not yet available"}</div>
+                        <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">{recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}${placeMarker ? " · place marker set" : ""}${focusRecoveryPending ? " · Focus can be resumed" : ""}` : "Recovery not yet available"}</div>
                     </div>
                 </details>
                 <div className="bsmp-delivery-section-nav-links">
