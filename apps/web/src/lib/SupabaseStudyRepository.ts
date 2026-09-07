@@ -56,7 +56,7 @@ export class SupabaseStudyRepository implements StudyRepository {
     }
 
     public async findAllSummaries(): Promise<readonly StudySummaryRecord[]> {
-        const user = await this.requireUser();
+        const user = await this.requireUserFromSession();
         const { data: studies, error } = await this.client
             .from("studies")
             .select("*")
@@ -232,6 +232,13 @@ export class SupabaseStudyRepository implements StudyRepository {
             case "PersonalNote": return EvidenceType.personalNote();
             default: return EvidenceType.other();
         }
+    }
+
+    private async requireUserFromSession() {
+        const result = await this.client.auth.getSession();
+        if (result.error) throw result.error;
+        if (!result.data.session?.user) throw new Error("A signed-in Supabase user is required for study persistence.");
+        return result.data.session.user;
     }
 
     private async requireUser() {
