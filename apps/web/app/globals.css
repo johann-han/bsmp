@@ -14,6 +14,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
 
 button:not(:disabled),
@@ -54,45 +55,31 @@ input[type="radio"]:disabled {
   z-index: 5 !important;
 }
 
-/* Small-screen study workspace: keep every study stage inside the viewport. */
+/* Small-screen study workspace: stack the passage and observation tools instead of squeezing them side-by-side. */
 @media (max-width: 700px) {
-  .bsmp-observation-workspace {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    overflow-x: clip;
-  }
-
-  .bsmp-observation-workspace > * {
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  .bsmp-observation-workspace > div[style*="grid-template-columns"] {
+  body:has(#study-translation) div[style*="grid-template-columns"] {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 14px !important;
   }
 
-  .bsmp-observation-workspace > div[style*="justify-content: flex-end"] {
+  body:has(#study-translation) div[style*="justify-content: flex-end"] {
     justify-content: stretch !important;
     align-items: stretch !important;
     flex-direction: column !important;
     gap: 6px !important;
   }
 
-  .bsmp-observation-workspace #study-translation {
+  body:has(#study-translation) #study-translation {
     width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box;
-    min-height: 44px;
   }
 
-  .bsmp-observation-workspace label[for="study-translation"] {
+  body:has(#study-translation) label[for="study-translation"] {
     font-weight: 700;
   }
 
-  .bsmp-observation-workspace aside {
+  body:has(#study-translation) aside {
     min-width: 0;
     overflow-wrap: anywhere;
     border: 1px solid #e5e7eb;
@@ -102,67 +89,62 @@ input[type="radio"]:disabled {
     box-sizing: border-box;
   }
 
-  .bsmp-observation-workspace aside h2 {
+  body:has(#study-translation) aside h2 {
     margin: 0 0 8px;
     font-size: 18px;
     line-height: 1.25;
   }
 
-  .bsmp-observation-workspace aside section + section {
+  body:has(#study-translation) aside section + section {
     margin-top: 18px;
     padding-top: 16px;
     border-top: 1px solid #e5e7eb;
   }
 
-  .bsmp-observation-workspace aside ul {
+  body:has(#study-translation) aside ul {
     margin: 0;
     padding-left: 20px;
   }
 
-  .bsmp-observation-workspace aside li {
+  body:has(#study-translation) aside li {
     margin: 0 0 8px;
     line-height: 1.45;
     overflow-wrap: anywhere;
   }
 
-  .bsmp-observation-workspace section {
-    min-width: 0;
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] > div:first-child > div:first-child {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] h2,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] p,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] strong,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] span,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] div {
     max-width: 100%;
-  }
-
-  .bsmp-observation-workspace section[style*="padding: 20px"] {
-    padding: 16px !important;
-  }
-
-  .bsmp-observation-workspace textarea,
-  .bsmp-observation-workspace select,
-  .bsmp-observation-workspace input {
-    max-width: 100%;
-  }
-
-  .bsmp-observation-workspace input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    flex: 0 0 auto;
-    margin-top: 2px;
-  }
-
-  .bsmp-observation-workspace button {
-    max-width: 100%;
-  }
-
-  .bsmp-observation-workspace article > div:first-child {
-    flex-wrap: wrap;
-  }
-
-  .bsmp-observation-workspace article > div:first-child > div {
-    flex-wrap: wrap;
-  }
-
-  .bsmp-observation-workspace article p,
-  .bsmp-observation-workspace article span,
-  .bsmp-observation-workspace article button {
     overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] textarea,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] button {
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
 
