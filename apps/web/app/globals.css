@@ -16,6 +16,29 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+button:not(:disabled),
+a[href],
+select:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled) {
+  cursor: pointer;
+}
+
+button:not(:disabled):hover {
+  filter: brightness(0.96);
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+button:disabled,
+select:disabled,
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  cursor: not-allowed;
+}
+
 @media print {
   .bsmp-print-hide {
     display: none !important;
