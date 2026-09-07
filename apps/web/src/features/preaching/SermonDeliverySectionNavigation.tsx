@@ -143,6 +143,18 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
         if (window.location.hash !== `#${targetId}`) window.history.replaceState(null, "", `#${targetId}`);
         window.scrollTo({ top: targetScrollY, behavior: "smooth" });
     }
+    function clearMyPlace() {
+        setPlaceMarker(null);
+        try {
+            const recovery = readRecoveryState(sections.length);
+            if (!recovery) return;
+            const { placeMarker: _removed, ...withoutMarker } = recovery;
+            window.localStorage.setItem(recoveryKey(), JSON.stringify(withoutMarker));
+            setRecoveryAvailable(true);
+        } catch {
+            // Clearing the marker remains a convenience and should never block delivery.
+        }
+    }
     useEffect(() => {
         if (sections.length === 0) return;
         const targetId = window.location.hash.slice(1);
@@ -243,7 +255,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Current section</span><strong>{activeSection?.title ?? "Current section"}</strong><span>{progressLabel}</span></div>
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Presentation</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("m")} disabled={recoveryFocusLabel === "Manuscript"}>Manuscript <kbd>M</kbd></button><button type="button" onClick={() => dispatchShortcut("n")} disabled={recoveryFocusLabel === "Notes"}>Notes <kbd>N</kbd></button></div></div>
                             <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Text size</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={() => dispatchShortcut("-")} disabled={recoverySizeLabel === "Compact"}>A−</button><button type="button" onClick={() => { if (recoverySizeLabel === "large") dispatchShortcut("-"); else if (recoverySizeLabel === "compact") dispatchShortcut("="); }} disabled={recoverySizeLabel === "Comfortable"}>A</button><button type="button" onClick={() => dispatchShortcut("=")} disabled={recoverySizeLabel === "Large"}>A+</button></div><span>{recoverySizeLabel}</span></div>
-                            <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Focus & recovery</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button><button type="button" onClick={markMyPlace}>Mark My Place</button><button type="button" onClick={returnToMyPlace} disabled={!placeMarker}>Return to My Place <kbd>R</kbd></button></div><span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"} · {markerSavedLabel}</span></div>
+                            <div className="bsmp-delivery-control-card"><span className="bsmp-delivery-control-label">Focus & recovery</span><div className="bsmp-delivery-control-actions"><button type="button" onClick={activateFocusMode}>{focusModeActive ? "Exit Focus" : "Focus Mode"}</button><button type="button" onClick={markMyPlace}>Mark My Place</button><button type="button" onClick={returnToMyPlace} disabled={!placeMarker}>Return to My Place <kbd>R</kbd></button><button type="button" onClick={clearMyPlace} disabled={!placeMarker}>Clear My Place</button></div><span>{focusModeActive ? "Focus active" : "Focus off"} · {screenAwake ? "Screen awake" : "Screen sleep may resume"} · {markerSavedLabel}</span></div>
                         </div>
                         <div className="bsmp-delivery-controls-recovery" role="status" aria-live="polite">{recoveryAvailable ? `Recovery ready · ${recoveryFocusLabel} · ${recoverySizeLabel} · section ${progressLabel}${placeMarker ? " · place marker saved" : ""}` : "Recovery not yet available"}</div>
                     </div>
