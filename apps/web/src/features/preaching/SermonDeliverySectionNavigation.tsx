@@ -14,6 +14,7 @@ interface DeliveryRecoveryState {
     focusModeRequested: boolean;
     placeMarker?: DeliveryPlaceMarker;
 }
+interface PlaceMarkerViewportState { visible: boolean; top: number; }
 function sectionId(id: string): string { return `delivery-section-${encodeURIComponent(id)}`; }
 function navigationLinkId(id: string): string { return `delivery-nav-${encodeURIComponent(id)}`; }
 const DELIVERY_NAV_OFFSET = 150;
@@ -61,6 +62,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     const [focusModeActive, setFocusModeActive] = useState(false);
     const [recoveryAvailable, setRecoveryAvailable] = useState(false);
     const [placeMarker, setPlaceMarker] = useState<DeliveryPlaceMarker | null>(null);
+    const [placeMarkerViewport, setPlaceMarkerViewport] = useState<PlaceMarkerViewportState | null>(null);
     useEffect(() => {
         if (sections.length === 0) return;
         const recovery = readRecoveryState(sections.length);
@@ -145,6 +147,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     }
     function clearMyPlace() {
         setPlaceMarker(null);
+        setPlaceMarkerViewport(null);
         try {
             const recovery = readRecoveryState(sections.length);
             if (!recovery) return;
@@ -155,6 +158,37 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             // Clearing the marker remains a convenience and should never block delivery.
         }
     }
+    useEffect(() => {
+        if (sections.length === 0 || !placeMarker) {
+            setPlaceMarkerViewport(null);
+            return;
+        }
+        let frame = 0;
+        const updatePlaceMarker = () => {
+            const markerSectionIndex = Math.max(0, Math.min(placeMarker.sectionIndex, sections.length - 1));
+            const section = sections[markerSectionIndex];
+            const element = section ? document.getElementById(sectionId(section.id)) : null;
+            if (!element) {
+                setPlaceMarkerViewport(null);
+                frame = 0;
+                return;
+            }
+            const documentTop = element.getBoundingClientRect().top + window.scrollY;
+            const viewportY = documentTop + placeMarker.offset - window.scrollY;
+            const visible = viewportY >= 76 && viewportY <= window.innerHeight - 18;
+            setPlaceMarkerViewport({ visible, top: Math.round(viewportY) });
+            frame = 0;
+        };
+        const scheduleUpdate = () => { if (!frame) frame = window.requestAnimationFrame(updatePlaceMarker); };
+        updatePlaceMarker();
+        window.addEventListener("scroll", scheduleUpdate, { passive: true });
+        window.addEventListener("resize", scheduleUpdate, { passive: true });
+        return () => {
+            window.removeEventListener("scroll", scheduleUpdate);
+            window.removeEventListener("resize", scheduleUpdate);
+            if (frame) window.cancelAnimationFrame(frame);
+        };
+    }, [placeMarker, sections]);
     useEffect(() => {
         if (sections.length === 0) return;
         const targetId = window.location.hash.slice(1);
@@ -229,6 +263,9 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     return (
         <>
             <style>{`
+                .bsmp-delivery-place-marker { position:fixed; left:16px; right:16px; z-index:90; pointer-events:none; display:flex; align-items:center; gap:10px; transform:translateY(-50%); }
+                .bsmp-delivery-place-marker-line { flex:1; height:2px; border-radius:999px; background:#b45309; box-shadow:0 0 0 1px rgba(255,255,255,.9),0 2px 8px rgba(180,83,9,.3); }
+                .bsmp-delivery-place-marker-label { flex:0 0 auto; padding:4px 8px; border-radius:999px; border:1px solid #b45309; background:#fffbeb; color:#92400e; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; box-shadow:0 2px 8px rgba(0,0,0,.12); }
                 .bsmp-delivery-controls-details { margin: 0; }
                 .bsmp-delivery-controls-summary { display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; padding:10px 0; list-style:none; user-select:none; }
                 .bsmp-delivery-controls-summary::-webkit-details-marker { display:none; }
@@ -242,8 +279,15 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 .bsmp-delivery-control-actions kbd { margin-left:6px; padding:1px 5px; border:1px solid #d1d5db; border-bottom-width:2px; border-radius:4px; font-size:10px; line-height:1.2; background:#fff; }
                 .bsmp-delivery-controls-recovery { margin-top:12px; padding-top:10px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; line-height:1.5; }
                 @media (max-width:900px) { .bsmp-delivery-controls-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-                @media (max-width:700px) { .bsmp-delivery-controls-summary{gap:8px;padding:8px 0}.bsmp-delivery-controls-summary-status{display:block;margin-left:0;margin-top:3px}.bsmp-delivery-controls-panel{padding:10px}.bsmp-delivery-controls-grid{grid-template-columns:1fr;gap:10px}.bsmp-delivery-control-card{padding:10px} }
+                @media (max-width:700px) { .bsmp-delivery-controls-summary{gap:8px;padding:8px 0}.bsmp-delivery-controls-summary-status{display:block;margin-left:0;margin-top:3px}.bsmp-delivery-controls-panel{padding:10px}.bsmp-delivery-controls-grid{grid-template-columns:1fr;gap:10px}.bsmp-delivery-control-card{padding:10px}.bsmp-delivery-place-marker{left:8px;right:8px}.bsmp-delivery-place-marker-label{font-size:10px;padding:3px 7px} }
             `}</style>
+            {placeMarkerViewport?.visible && (
+                <div className="bsmp-delivery-place-marker bsmp-delivery-print-hide" style={{ top: placeMarkerViewport.top }} aria-hidden="true">
+                    <div className="bsmp-delivery-place-marker-line" />
+                    <span className="bsmp-delivery-place-marker-label">My Place</span>
+                    <div className="bsmp-delivery-place-marker-line" />
+                </div>
+            )}
             <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
                 <details className="bsmp-delivery-controls-details">
                     <summary className="bsmp-delivery-controls-summary">
