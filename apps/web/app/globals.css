@@ -54,6 +54,68 @@ input[type="radio"]:disabled {
   z-index: 5 !important;
 }
 
+/* Small-screen study workspace: stack the passage and observation tools instead of squeezing them side-by-side. */
+@media (max-width: 700px) {
+  body:has(#study-translation) div[style*="grid-template-columns: minmax(0, 1fr) minmax(300px, 360px)"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  body:has(#study-translation) div[style*="justify-content: flex-end"] {
+    justify-content: stretch !important;
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  body:has(#study-translation) #study-translation {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  body:has(#study-translation) label[for="study-translation"] {
+    font-weight: 700;
+  }
+
+  body:has(#study-translation) aside {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  body:has(#study-translation) aside h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  body:has(#study-translation) aside section + section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  body:has(#study-translation) aside ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  body:has(#study-translation) aside li {
+    margin: 0 0 8px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(#study-translation) section[style*="border: 1px solid #e5e7eb"] {
+    min-width: 0;
+  }
+}
+
 @media print {
   .bsmp-print-hide {
     display: none !important;
