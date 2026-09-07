@@ -67,7 +67,11 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         {activeSection?.title ?? "Current section"} · {progressLabel}
                     </div>
                 </div>
-                <div className="bsmp-delivery-section-nav-controls" aria-label="Section navigation controls">
+                <div
+                    className="bsmp-delivery-section-nav-controls"
+                    aria-label="Section navigation controls"
+                    style={{ display: "flex", gap: 10, marginLeft: "auto" }}
+                >
                     <button
                         type="button"
                         onClick={() => jumpTo(safeActiveIndex - 1)}
@@ -75,7 +79,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         aria-label="Previous sermon section"
                         title="Previous section"
                     >
-                        ←
+                        ← Previous
                     </button>
                     <button
                         type="button"
@@ -84,7 +88,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                         aria-label="Next sermon section"
                         title="Next section"
                     >
-                        →
+                        Next →
                     </button>
                 </div>
             </div>
