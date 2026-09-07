@@ -49,6 +49,11 @@ input[type="radio"]:disabled {
   display: none !important;
 }
 
+/* Keep the manuscript place marker below the sticky delivery controls. */
+.bsmp-delivery-place-marker {
+  z-index: 5 !important;
+}
+
 @media print {
   .bsmp-print-hide {
     display: none !important;
