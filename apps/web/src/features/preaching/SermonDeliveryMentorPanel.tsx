@@ -43,7 +43,17 @@ export function SermonDeliveryMentorPanel({ studyId }: { studyId: string }) {
   if (loading) return <section className="bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginTop: 20 }}><strong>Sermon Delivery Mentor</strong><p>Loading saved sermon...</p></section>;
   if (!sermon) return <section className="bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginTop: 20 }}><h2 style={{ marginTop: 0 }}>Sermon Delivery Mentor</h2><p style={{ color: "#6b7280" }}>{error ?? "No sermon preparation is available."}</p></section>;
 
-  return <section className="bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginTop: 20 }}>
+  return <section className="bsmp-print-hide bsmp-delivery-mentor" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginTop: 20 }}>
+    <style>{`@media (max-width:700px){
+      .bsmp-delivery-mentor{padding:16px!important;overflow:hidden;min-width:0}
+      .bsmp-delivery-mentor *{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+      .bsmp-delivery-mentor h2{font-size:20px!important;line-height:1.3}
+      .bsmp-delivery-mentor > div:first-child{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important}
+      .bsmp-delivery-mentor > div:first-child > button{width:100%;min-height:44px;white-space:normal}
+      .bsmp-delivery-mentor > div:nth-child(2){display:flex!important;gap:10px!important;margin-top:12px!important}
+      .bsmp-delivery-mentor .bsmp-delivery-result{padding:14px!important}
+      .bsmp-delivery-mentor .bsmp-delivery-result-header{display:flex!important;align-items:flex-start!important;flex-direction:column!important;gap:8px!important}
+    }`}</style>
     <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
       <div><div style={{ fontSize: 13, color: "#6b7280" }}>AI coaching · delivery</div><h2 style={{ margin: "4px 0 8px" }}>Sermon Delivery Mentor</h2><p style={{ margin: 0, color: "#6b7280" }}>Checks whether delivery notes and delivery emphasis remain faithful to the saved manuscript, Big Idea, Purpose, and prepared outline. The mentor coaches; it does not rewrite the sermon.</p></div>
       <button type="button" onClick={review} disabled={running || !sermon.manuscript?.value?.trim()} style={{ padding: "10px 14px", fontWeight: 600 }}>{running ? "Reviewing..." : "Review Delivery Readiness"}</button>
@@ -51,6 +61,6 @@ export function SermonDeliveryMentorPanel({ studyId }: { studyId: string }) {
     <div style={{ marginTop: 12, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: "#6b7280" }}><span><strong>{wordCount}</strong> manuscript words</span><span>{sermon.outline.length} prepared outline point{sermon.outline.length === 1 ? "" : "s"}</span><span>{sermon.deliveryNotes?.value.trim() ? "Delivery notes recorded" : "No delivery notes"}</span></div>
     {sermon.manuscript?.value.trim() && !result && <p style={{ marginTop: 14, fontSize: 13, color: "#6b7280" }}>The review reads the manuscript and delivery notes saved to this Study at the time you start the review. Save recent edits in Final Sermon Draft, then review again.</p>}
     {error && <p style={{ color: "#b91c1c", marginTop: 14 }}>{error}</p>}
-    {result && <div style={{ marginTop: 16, padding: 16, borderRadius: 10, background: "#f8fafc", border: "1px solid #e5e7eb" }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><strong>Assessment: {labels[result.assessment]}</strong>{result.focuses.map((focus) => <span key={focus} style={{ padding: "3px 8px", borderRadius: 999, background: "#e5e7eb", fontSize: 12 }}>{focusLabels[focus] ?? focus}</span>)}</div><p style={{ margin: "12px 0" }}>{result.coaching}</p><div style={{ fontSize: 12, color: "#6b7280" }}>Provider: {result.provider} · Model: {result.model}</div></div>}
+    {result && <div className="bsmp-delivery-result" style={{ marginTop: 16, padding: 16, borderRadius: 10, background: "#f8fafc", border: "1px solid #e5e7eb" }}><div className="bsmp-delivery-result-header" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><strong>Assessment: {labels[result.assessment]}</strong>{result.focuses.map((focus) => <span key={focus} style={{ padding: "3px 8px", borderRadius: 999, background: "#e5e7eb", fontSize: 12 }}>{focusLabels[focus] ?? focus}</span>)}</div><p style={{ margin: "12px 0" }}>{result.coaching}</p><div style={{ fontSize: 12, color: "#6b7280" }}>Provider: {result.provider} · Model: {result.model}</div></div>}
   </section>;
 }
