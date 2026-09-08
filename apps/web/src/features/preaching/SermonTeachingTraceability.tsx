@@ -46,11 +46,20 @@ export function SermonTeachingTraceability({ studyId, variant = "final" }: { stu
         : "The sermon is explicitly linked to the completed Teaching Plan that preceded sermon preparation, preserving the full preparation chain.";
 
     return (
-        <section className="bsmp-print-section bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
-            <div style={{ fontSize: 13, color: "#6b7280" }}>Study → Biblical Theology → Teaching → Sermon</div>
+        <section className="bsmp-print-section bsmp-print-hide bsmp-sermon-teaching-trace" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+            <style>{`@media (max-width:700px){
+                .bsmp-sermon-teaching-trace{padding:16px!important;min-width:0;overflow:hidden}
+                .bsmp-sermon-teaching-trace *{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+                .bsmp-sermon-teaching-trace h2{font-size:20px!important;line-height:1.3}
+                .bsmp-sermon-teaching-trace .bsmp-trace-path{font-size:12px!important;line-height:1.4}
+                .bsmp-sermon-teaching-trace .bsmp-trace-card{padding:14px!important}
+                .bsmp-sermon-teaching-trace .bsmp-trace-links{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+                .bsmp-sermon-teaching-trace .bsmp-trace-links a{display:block;min-height:44px;padding:11px 0}
+            }`}</style>
+            <div className="bsmp-trace-path" style={{ fontSize: 13, color: "#6b7280" }}>Study → Biblical Theology → Teaching → Sermon</div>
             <h2 style={{ margin: "4px 0 8px" }}>{title}</h2>
             <p style={{ marginTop: 0, color: "#6b7280" }}>{description}</p>
-            <div style={{ padding: 14, borderRadius: 10, background: "#f8fafc", border: "1px solid #e5e7eb" }}>
+            <div className="bsmp-trace-card" style={{ padding: 14, borderRadius: 10, background: "#f8fafc", border: "1px solid #e5e7eb" }}>
                 <strong>{plan.title}</strong>
                 <p style={{ margin: "8px 0 4px" }}><strong>Central truth:</strong> {plan.central_truth || "Not recorded."}</p>
                 <p style={{ margin: "4px 0" }}><strong>Teaching aim:</strong> {plan.teaching_aim || "Not recorded."}</p>
@@ -58,7 +67,7 @@ export function SermonTeachingTraceability({ studyId, variant = "final" }: { stu
                     Supporting interpretations: {plan.supporting_interpretation_ids.length} · Supporting Biblical Theology entries: {plan.supporting_biblical_theology_ids.length}
                 </p>
             </div>
-            <div style={{ marginTop: 12, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13 }}>
+            <div className="bsmp-trace-links" style={{ marginTop: 12, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13 }}>
                 <Link href={`/teaching?studyId=${encodeURIComponent(studyId)}`} style={linkStyle}>Review Teaching Plan →</Link>
                 <Link href={`/preaching?studyId=${encodeURIComponent(studyId)}`} style={linkStyle}>Review Sermon Preparation →</Link>
             </div>
