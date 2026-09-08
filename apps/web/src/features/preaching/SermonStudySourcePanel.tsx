@@ -23,7 +23,17 @@ function WorkspaceLink({ href, study, children, style }: { href: string; study: 
 export function SermonStudySourcePanel({ study }: Props) {
     const studyId = study.id.value;
     return (
-        <aside style={{ display: "grid", gap: 16, position: "sticky", top: 68, alignSelf: "start", maxHeight: "calc(100vh - 84px)", overflowY: "auto", paddingRight: 4 }}>
+        <aside className="bsmp-sermon-source-panel" style={{ display: "grid", gap: 16, position: "sticky", top: 68, alignSelf: "start", maxHeight: "calc(100vh - 84px)", overflowY: "auto", paddingRight: 4 }}>
+            <style>{`@media (max-width:700px){
+                .bsmp-sermon-source-panel{position:static!important;top:auto!important;max-height:none!important;width:100%;min-width:0;overflow:hidden;padding-right:0!important;gap:14px!important}
+                .bsmp-sermon-source-panel section{width:100%;max-width:100%;min-width:0;box-sizing:border-box;padding:16px!important;overflow:hidden}
+                .bsmp-sermon-source-panel h2{font-size:20px!important;line-height:1.3;overflow-wrap:anywhere}
+                .bsmp-sermon-source-panel h3{font-size:17px!important;line-height:1.35}
+                .bsmp-sermon-source-panel p,.bsmp-sermon-source-panel article,.bsmp-sermon-source-panel div,.bsmp-sermon-source-panel a,.bsmp-sermon-source-panel strong{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+                .bsmp-sermon-source-panel article{min-width:0}
+                .bsmp-sermon-source-panel section > div{min-width:0}
+                .bsmp-sermon-source-panel section:first-child > div:last-child{display:flex;flex-direction:column;align-items:stretch;gap:10px!important}
+            }`}</style>
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 16, background: "#fff" }}>
                 <h2 style={{ marginTop: 0 }}>Study Source</h2>
                 <p style={{ marginBottom: 4 }}><strong>{study.title.value}</strong></p>
