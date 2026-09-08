@@ -85,6 +85,14 @@ export function BiblicalTheologyMentorPanel({ studyId }: Props) {
 
     return (
         <section className="bsmp-bt-mentor" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+            <style>{`@media (max-width:700px){
+                .bsmp-bt-mentor{padding:16px!important;min-width:0;overflow:hidden}
+                .bsmp-bt-mentor *{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+                .bsmp-bt-mentor h2{font-size:20px!important;line-height:1.3}
+                .bsmp-bt-mentor select{width:100%!important;min-height:44px}
+                .bsmp-bt-mentor .bsmp-bt-mentor-button{width:100%;min-height:44px;white-space:normal}
+                .bsmp-bt-mentor .bsmp-bt-mentor-result{padding:14px!important}
+            }`}</style>
             <div style={{ fontSize: 13, color: "#6b7280" }}>Mentor review · Biblical Theology</div>
             <h2 style={{ margin: "4px 0 8px" }}>Test your synthesis</h2>
             <p className="bsmp-bt-mentor-description" style={{ margin: "0 0 12px", color: "#6b7280" }}>
