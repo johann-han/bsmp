@@ -92,18 +92,20 @@ export function FinalSermonDraftReadiness({ studyId }: Props) {
 
     if (loading) {
         return (
-            <section className="bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginBottom: 20 }}>
+            <section className="bsmp-print-hide bsmp-final-readiness" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginBottom: 20 }}>
                 <strong>Final Sermon Readiness</strong>
                 <p style={{ marginBottom: 0, color: "#6b7280" }}>Checking the saved sermon preparation...</p>
+                <style>{`@media (max-width: 700px){.bsmp-final-readiness{padding:16px!important;min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden}.bsmp-final-readiness p{overflow-wrap:anywhere}}`}</style>
             </section>
         );
     }
 
     if (!sermon) {
         return (
-            <section className="bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginBottom: 20 }}>
+            <section className="bsmp-print-hide bsmp-final-readiness" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginBottom: 20 }}>
                 <h2 style={{ marginTop: 0 }}>Final Sermon Readiness</h2>
                 <p style={{ color: "#6b7280", marginBottom: 0 }}>{error ?? "Create Sermon Preparation before checking final sermon readiness."}</p>
+                <style>{`@media (max-width: 700px){.bsmp-final-readiness{padding:16px!important;min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden}.bsmp-final-readiness h2,.bsmp-final-readiness p{overflow-wrap:anywhere}}`}</style>
             </section>
         );
     }
@@ -112,9 +114,9 @@ export function FinalSermonDraftReadiness({ studyId }: Props) {
     const ready = completed === checks.length;
 
     return (
-        <section className="bsmp-print-hide" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
-                <div>
+        <section className="bsmp-print-hide bsmp-final-readiness" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginBottom: 20 }}>
+            <div className="bsmp-final-readiness-header" style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
+                <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>Preaching workflow · saved-state check</div>
                     <h2 style={{ margin: "4px 0 8px" }}>Final Sermon Readiness</h2>
                     <p style={{ margin: 0, color: "#6b7280" }}>
@@ -123,14 +125,14 @@ export function FinalSermonDraftReadiness({ studyId }: Props) {
                             : `${completed} of ${checks.length} core preparation checks are complete. Complete the missing items before treating the manuscript as preaching-ready.`}
                     </p>
                 </div>
-                <Link href={`/preaching/final?studyId=${encodeURIComponent(studyId)}`} style={linkStyle}>Open Final Draft</Link>
+                <Link className="bsmp-final-readiness-open" href={`/preaching/final?studyId=${encodeURIComponent(studyId)}`} style={linkStyle}>Open Final Draft</Link>
             </div>
 
-            <div style={{ marginTop: 16, display: "grid", gap: 10 }}>
+            <div className="bsmp-final-readiness-checks" style={{ marginTop: 16, display: "grid", gap: 10 }}>
                 {checks.map((check) => (
-                    <div key={check.label} style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 10, alignItems: "center", padding: 10, border: "1px solid #eef2f7", borderRadius: 8 }}>
+                    <div className="bsmp-final-readiness-check" key={check.label} style={{ display: "grid", gridTemplateColumns: "28px 1fr auto", gap: 10, alignItems: "center", padding: 10, border: "1px solid #eef2f7", borderRadius: 8 }}>
                         <span aria-hidden="true" style={{ fontSize: 18 }}>{check.complete ? "✓" : "○"}</span>
-                        <div>
+                        <div style={{ minWidth: 0 }}>
                             <strong>{check.label}</strong>
                             <div style={{ color: "#6b7280", fontSize: 13 }}>{check.description}</div>
                         </div>
@@ -142,6 +144,19 @@ export function FinalSermonDraftReadiness({ studyId }: Props) {
             <p style={{ margin: "14px 0 0", color: "#6b7280", fontSize: 12 }}>
                 This checklist reads the saved sermon only. Save recent changes in the Final Sermon Draft workspace before relying on the readiness state.
             </p>
+
+            <style>{`@media (max-width: 700px){
+.bsmp-final-readiness{padding:16px!important;min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden}
+.bsmp-final-readiness-header{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;align-items:stretch!important}
+.bsmp-final-readiness-header>div{min-width:0!important}
+.bsmp-final-readiness h2{font-size:20px!important;line-height:1.25;overflow-wrap:anywhere}
+.bsmp-final-readiness p,.bsmp-final-readiness strong,.bsmp-final-readiness a{overflow-wrap:anywhere}
+.bsmp-final-readiness-open{min-height:42px;display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border:1px solid #dbeafe;border-radius:8px;box-sizing:border-box}
+.bsmp-final-readiness-checks{gap:8px!important}
+.bsmp-final-readiness-check{grid-template-columns:24px minmax(0,1fr)!important;gap:8px!important;align-items:start!important;padding:10px!important;min-width:0;box-sizing:border-box}
+.bsmp-final-readiness-check>a{grid-column:2;justify-self:start;min-height:40px;display:inline-flex;align-items:center}
+.bsmp-final-readiness-check>span{line-height:1.4}
+}`}</style>
         </section>
     );
 }
