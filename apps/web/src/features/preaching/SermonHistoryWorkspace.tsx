@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ExpositorySermon } from "@bsmp/preaching";
+import type { ExpositorySermon, SermonOccurrence } from "@bsmp/preaching";
 import { ExpositorySermonId, SermonOccurrence, SermonOccurrenceId } from "@bsmp/preaching";
 import { AppShell } from "@repo/ui";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
@@ -117,7 +117,23 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
 
     return (
         <AppShell title="Preaching History">
-            <div style={{ display: "grid", gap: 20 }}>
+            <style>{`@media (max-width:700px){
+                .bsmp-sermon-history { gap: 14px !important; min-width: 0; overflow: hidden; }
+                .bsmp-sermon-history > section, .bsmp-sermon-history > div { width: 100%; max-width: 100%; box-sizing: border-box; min-width: 0; }
+                .bsmp-sermon-history > section { padding: 16px !important; overflow: hidden; }
+                .bsmp-sermon-history h2 { font-size: 20px !important; line-height: 1.3; overflow-wrap: anywhere; }
+                .bsmp-sermon-history p, .bsmp-sermon-history strong, .bsmp-sermon-history div { overflow-wrap: anywhere; }
+                .bsmp-sermon-history input, .bsmp-sermon-history textarea { width: 100% !important; max-width: 100%; min-width: 0; box-sizing: border-box; }
+                .bsmp-sermon-history input { min-height: 44px; }
+                .bsmp-sermon-history textarea { min-height: 110px; line-height: 1.5; }
+                .bsmp-sermon-history article { min-width: 0; overflow: hidden; }
+                .bsmp-sermon-history article > div:last-child { flex-wrap: wrap !important; }
+                .bsmp-sermon-history article button, .bsmp-sermon-history > section > button, .bsmp-sermon-history > div button { min-height: 42px; white-space: normal; }
+                .bsmp-sermon-history .bsmp-history-schedule-grid { grid-template-columns: minmax(0,1fr) !important; }
+                .bsmp-sermon-history .bsmp-history-actions { flex-direction: column !important; align-items: stretch !important; }
+                .bsmp-sermon-history .bsmp-history-actions button { width: 100%; }
+            }`}</style>
+            <div className="bsmp-sermon-history" style={{ display: "grid", gap: 20 }}>
                 <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                     <div style={{ color: "#6b7280", fontSize: 13 }}>Preaching History</div>
                     <h2 style={{ margin: "4px 0 8px" }}>{sermon.title.value}</h2>
@@ -127,7 +143,7 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
 
                 <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                     <h2>Schedule Preaching</h2>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+                    <div className="bsmp-history-schedule-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
                         <label>Date and time<input type="datetime-local" value={scheduledAt} onChange={(event) => setScheduledAt(event.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: 10, marginTop: 4 }} /></label>
                         <label>Service<input value={serviceName} onChange={(event) => setServiceName(event.target.value)} placeholder="Sunday morning" style={{ width: "100%", boxSizing: "border-box", padding: 10, marginTop: 4 }} /></label>
                         <label>Venue<input value={venue} onChange={(event) => setVenue(event.target.value)} placeholder="Church / venue" style={{ width: "100%", boxSizing: "border-box", padding: 10, marginTop: 4 }} /></label>
@@ -146,7 +162,7 @@ export function SermonHistoryWorkspace({ studyId }: Props) {
                     {completed.length === 0 ? <p style={{ color: "#6b7280" }}>No completed preaching occasions yet.</p> : <div style={{ display: "grid", gap: 10 }}>{completed.map((occurrence) => <article key={occurrence.id.value} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><strong>{formatDate(occurrence.preachedAt ?? occurrence.scheduledAt)}</strong><div style={{ color: "#047857", marginTop: 2 }}>Completed</div>{occurrence.serviceName && <div>{occurrence.serviceName}</div>}{occurrence.venue && <div>{occurrence.venue}</div>}{occurrence.notes && <p style={{ whiteSpace: "pre-wrap", color: "#6b7280" }}>{occurrence.notes}</p>}</article>)}</div>}
                 </section>
 
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><button type="button" onClick={() => router.push(link("/preaching/final", resolvedStudyId))}>Final Draft</button><button type="button" onClick={() => router.push(link("/preaching/delivery", resolvedStudyId))}>Delivery Mode</button><button type="button" onClick={() => router.push(link("/preaching/overview", resolvedStudyId))}>← Sermon Overview</button>{message && <span style={{ color: "#047857" }}>{message}</span>}{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
+                <div className="bsmp-history-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><button type="button" onClick={() => router.push(link("/preaching/final", resolvedStudyId))}>Final Draft</button><button type="button" onClick={() => router.push(link("/preaching/delivery", resolvedStudyId))}>Delivery Mode</button><button type="button" onClick={() => router.push(link("/preaching/overview", resolvedStudyId))}>← Sermon Overview</button>{message && <span style={{ color: "#047857" }}>{message}</span>}{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
             </div>
         </AppShell>
     );
