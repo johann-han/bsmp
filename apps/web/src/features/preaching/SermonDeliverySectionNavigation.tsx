@@ -223,12 +223,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
             if (!section) return;
             const sectionRect = sectionElement.getBoundingClientRect();
             const lineBottomOffset = Math.max(0, Math.round(lineBottom - sectionRect.top));
-            const marker: DeliveryPlaceMarker = {
-                mode: "line",
-                sectionId: section.id,
-                lineBottomOffset,
-                savedAt: Date.now(),
-            };
+            const marker: DeliveryPlaceMarker = { mode: "line", sectionId: section.id, lineBottomOffset, savedAt: Date.now() };
             setPlaceMarker(marker);
             setMarkerSectionElement(sectionElement);
             setActiveIndex(domSectionIndex);
@@ -403,7 +398,8 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 .bsmp-delivery-controls-details { margin:0; }
                 .bsmp-delivery-controls-summary { display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; padding:10px 0; list-style:none; user-select:none; }
                 .bsmp-delivery-controls-summary::-webkit-details-marker { display:none; }
-                .bsmp-delivery-controls-summary-status { display:inline-flex; align-items:center; gap:8px; margin-left:8px; color:#6b7280; font-weight:400; }
+                .bsmp-delivery-controls-summary > span:first-child { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+                .bsmp-delivery-controls-summary-status { display:inline; margin-left:8px; color:#6b7280; font-weight:400; }
                 .bsmp-delivery-controls-panel { margin-top:4px; padding:14px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
                 .bsmp-delivery-controls-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
                 .bsmp-delivery-control-card { display:flex; flex-direction:column; gap:8px; min-width:0; padding:12px; border:1px solid #e5e7eb; border-radius:9px; background:#f8fafc; line-height:1.45; }
@@ -412,15 +408,30 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 .bsmp-delivery-control-actions button { min-height:34px; padding:7px 10px; }
                 .bsmp-delivery-control-actions kbd { margin-left:6px; padding:1px 5px; border:1px solid #d1d5db; border-bottom-width:2px; border-radius:4px; font-size:10px; line-height:1.2; background:#fff; }
                 .bsmp-delivery-controls-recovery { margin-top:12px; padding-top:10px; border-top:1px solid #e5e7eb; color:#6b7280; font-size:12px; line-height:1.5; }
+                .bsmp-delivery-section-nav-links { display:flex; gap:8px; margin-top:8px; overflow-x:auto; overflow-y:hidden; padding:2px 0 4px; scrollbar-width:thin; -webkit-overflow-scrolling:touch; overscroll-behavior-x:contain; }
+                .bsmp-delivery-section-nav-link { display:inline-flex; gap:6px; align-items:flex-start; flex:0 0 auto; min-width:max-content; min-height:38px; box-sizing:border-box; padding:7px 9px; border:1px solid #dbe3ee; border-radius:8px; color:#1d4ed8; text-decoration:none; background:#fff; font-size:12px; font-weight:600; }
                 @media (max-width:900px) { .bsmp-delivery-controls-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-                @media (max-width:700px) { .bsmp-delivery-controls-summary{gap:8px;padding:8px 0}.bsmp-delivery-controls-summary-status{display:block;margin-left:0;margin-top:3px}.bsmp-delivery-controls-panel{padding:10px}.bsmp-delivery-controls-grid{grid-template-columns:1fr;gap:10px}.bsmp-delivery-control-card{padding:10px}.bsmp-delivery-place-marker{left:8px;right:8px}.bsmp-delivery-place-marker-label{font-size:10px;padding:3px 7px} }
+                @media (max-width:700px) {
+                    .bsmp-delivery-controls-summary { gap:8px; padding:7px 0; min-width:0; }
+                    .bsmp-delivery-controls-summary-status { margin-left:5px; }
+                    .bsmp-delivery-controls-panel { padding:8px; margin-top:3px; }
+                    .bsmp-delivery-controls-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+                    .bsmp-delivery-control-card { gap:6px; padding:8px; border-radius:8px; font-size:12px; }
+                    .bsmp-delivery-control-label { font-size:10px; }
+                    .bsmp-delivery-control-actions { gap:5px; }
+                    .bsmp-delivery-control-actions button { min-height:38px; flex:1 1 auto; min-width:0; padding:7px 7px; }
+                    .bsmp-delivery-control-actions kbd { display:none; }
+                    .bsmp-delivery-controls-recovery { margin-top:8px; padding-top:8px; font-size:11px; }
+                    .bsmp-delivery-section-nav-links { gap:6px; margin-top:0; padding:7px 12px 3px; scrollbar-width:none; }
+                    .bsmp-delivery-section-nav-links::-webkit-scrollbar { display:none; }
+                    .bsmp-delivery-section-nav-link { min-height:40px; padding:8px 10px; font-size:11px; border-radius:9px; }
+                    .bsmp-delivery-place-marker { left:8px; right:8px; }
+                    .bsmp-delivery-place-marker-label { font-size:10px; padding:3px 7px; }
+                }
             `}</style>
             {markerView}
             <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
-                <details
-                    className="bsmp-delivery-controls-details"
-                    open={controlsOpen}
-                >
+                <details className="bsmp-delivery-controls-details" open={controlsOpen}>
                     <summary
                         className="bsmp-delivery-controls-summary"
                         onClick={(event) => {
@@ -444,7 +455,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 <div className="bsmp-delivery-section-nav-links">
                     {sections.map((section, index) => {
                         const active = index === safeActiveIndex;
-                        return <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex:index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}><span>{index + 1}.</span><span>{section.title}</span></Link>;
+                        return <Link id={navigationLinkId(section.id)} key={section.id} href={`#${sectionId(section.id)}`} className="bsmp-delivery-section-nav-link" aria-current={active ? "location" : undefined} onClick={() => { setActiveIndex(index); writeRecoveryState({ sectionIndex: index }, sections.length); setRecoveryAvailable(true); }} style={active ? { borderColor: "#1d4ed8", boxShadow: "0 0 0 1px #1d4ed8 inset" } : undefined}><span>{index + 1}.</span><span>{section.title}</span></Link>;
                     })}
                 </div>
             </nav>
