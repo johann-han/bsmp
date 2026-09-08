@@ -59,7 +59,17 @@ export function TeachingSermonBridge({ studyId, sermon, onLinked }: { studyId: s
 
     const selected = plans.find((plan) => plan.id === selectedId);
     return (
-        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+        <section className="bsmp-teaching-sermon-bridge" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+            <style>{`@media (max-width:700px){
+              .bsmp-teaching-sermon-bridge{padding:16px!important;min-width:0;overflow:hidden}
+              .bsmp-teaching-sermon-bridge *{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+              .bsmp-teaching-sermon-bridge h2{font-size:20px!important;line-height:1.3}
+              .bsmp-teaching-sermon-bridge select{width:100%;min-height:44px}
+              .bsmp-teaching-sermon-bridge .bsmp-teaching-sermon-preview{padding:14px!important}
+              .bsmp-teaching-sermon-bridge .bsmp-teaching-sermon-actions{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+              .bsmp-teaching-sermon-bridge .bsmp-teaching-sermon-actions button{width:100%;min-height:44px;white-space:normal}
+              .bsmp-teaching-sermon-bridge .bsmp-teaching-sermon-actions span{display:block}
+            }`}</style>
             <div style={{ fontSize: 13, color: "#6b7280" }}>Teaching → Sermon Preparation</div>
             <h2 style={{ margin: "4px 0 8px" }}>Teaching Foundation</h2>
             <p style={{ marginTop: 0, color: "#6b7280" }}>Link one completed Teaching Plan so the sermon records the teaching foundation that preceded its preparation.</p>
@@ -72,7 +82,7 @@ export function TeachingSermonBridge({ studyId, sermon, onLinked }: { studyId: s
                         {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.title}{isComplete(plan) ? " — Complete" : " — In progress"}</option>)}
                     </select>
                     {selected && (
-                        <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: "#f8fafc", border: "1px solid #e5e7eb" }}>
+                        <div className="bsmp-teaching-sermon-preview" style={{ marginTop: 12, padding: 12, borderRadius: 10, background: "#f8fafc", border: "1px solid #e5e7eb" }}>
                             <strong>{selected.title}</strong>
                             <p style={{ margin: "6px 0" }}><strong>Central truth:</strong> {selected.central_truth || "Not yet recorded."}</p>
                             <p style={{ margin: "6px 0" }}><strong>Teaching aim:</strong> {selected.teaching_aim || "Not yet recorded."}</p>
@@ -80,7 +90,7 @@ export function TeachingSermonBridge({ studyId, sermon, onLinked }: { studyId: s
                             <Link href={`/teaching?studyId=${encodeURIComponent(studyId)}`} style={linkStyle}>Review Teaching Plan →</Link>
                         </div>
                     )}
-                    <div style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                    <div className="bsmp-teaching-sermon-actions" style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                         <button type="button" onClick={() => void saveLink()} disabled={saving}>{saving ? "Saving..." : "Save Teaching Link"}</button>
                         {message && <span style={{ color: "#047857" }}>{message}</span>}
                         {error && <span style={{ color: "#b91c1c" }}>{error}</span>}
