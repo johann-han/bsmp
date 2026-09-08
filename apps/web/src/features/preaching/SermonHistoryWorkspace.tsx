@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SermonOccurrence, SermonOccurrenceId, ExpositorySermonId } from "@bsmp/preaching";
+import type { ExpositorySermon } from "@bsmp/preaching";
 import { useRouter } from "next/navigation";
-import type { ExpositorySermon, SermonOccurrence } from "@bsmp/preaching";
-import { ExpositorySermonId, SermonOccurrence, SermonOccurrenceId } from "@bsmp/preaching";
 import { AppShell } from "@repo/ui";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
 import { SupabaseSermonOccurrenceRepository } from "../../lib/SupabaseSermonOccurrenceRepository";
