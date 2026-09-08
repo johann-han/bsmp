@@ -171,7 +171,6 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                 .bsmp-delivery-size-label { font-size: 12px; color: #6b7280; }
                 .bsmp-delivery-size-button { min-width: 34px; padding: 6px 8px; }
                 .bsmp-delivery-section-nav { width: 100%; margin: 12px 0 0; padding: 10px 14px 12px; border-top: 1px solid #e5e7eb; background: rgba(248,250,252,0.98); box-sizing: border-box; }
-                .bsmp-delivery-section-nav-title { font-weight: 700; }
                 .bsmp-delivery-manuscript { max-width: 820px; margin: 32px auto 0; color: #1f2937; }
                 .bsmp-delivery-big-idea { margin: 0 0 42px; padding: 18px 20px; border-left: 4px solid #9ca3af; border-radius: 0 10px 10px 0; background: #f3f4f6; font-weight: 700; }
                 .bsmp-delivery-print-section { margin-bottom: 52px; scroll-margin-top: 170px; }
@@ -223,61 +222,30 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                     <header className="bsmp-delivery-header bsmp-delivery-print-hide">
                         <div className="bsmp-delivery-header-inner">
                             <div>
-                                <div style={{ fontSize: 13, color: "#6b7280" }}>Delivery Mode</div>
-                                <h1 style={{ margin: "2px 0" }}>{sermon.title.value}</h1>
-                                <div style={{ color: "#6b7280", fontSize: 13 }}>{sermon.passage.toString()} · {wordCount} words · ≈ {estimatedMinutes} min</div>
+                                <h1 style={{ margin: 0 }}>{sermon.title.value}</h1>
+                                <div style={{ fontSize: 13, color: "#6b7280" }}>{sermon.passage.toString()} · {wordCount} words · ~{estimatedMinutes} min</div>
                             </div>
                             <div className="bsmp-delivery-toolbar">
-                                <button type="button" onClick={() => changeFocus("manuscript")} disabled={focus === "manuscript"} title="Focus manuscript (M)">Manuscript</button>
-                                <button type="button" onClick={() => changeFocus("notes")} disabled={focus === "notes"} title="Focus delivery notes (N)">Delivery Notes</button>
-                                <div className="bsmp-delivery-size-controls" aria-label="Manuscript text size controls">
-                                    <span className="bsmp-delivery-size-label">Text size</span>
-                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize(readingSize === "large" ? "comfortable" : "compact")} disabled={readingSize === "compact"} title="Decrease text size">A−</button>
-                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("comfortable")} disabled={readingSize === "comfortable"} title="Reset text size">A</button>
-                                    <button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize(readingSize === "compact" ? "comfortable" : "large")} disabled={readingSize === "large"} title="Increase text size">A+</button>
-                                </div>
-                                <button type="button" onClick={() => window.print()}>Print / Save PDF</button>
+                                <button type="button" onClick={() => changeFocus("manuscript")} disabled={focus === "manuscript"}>Manuscript</button>
+                                <button type="button" onClick={() => changeFocus("notes")} disabled={focus === "notes"}>Delivery Notes</button>
+                                <button type="button" onClick={() => changeReadingSize(readingSize === "compact" ? "comfortable" : readingSize === "comfortable" ? "large" : "compact")}>{readingConfig.label} Text</button>
+                                <button type="button" onClick={() => void toggleDistractionFree()} title={distractionFree ? "Exit distraction-free mode" : "Enter distraction-free mode"}>{distractionFree ? "Exit Focus" : "Focus Mode"}</button>
+                                <div className="bsmp-delivery-size-controls"><span className="bsmp-delivery-size-label">Text</span><button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("compact")} disabled={readingSize === "compact"}>A−</button><button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("comfortable")} disabled={readingSize === "comfortable"}>A</button><button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("large")} disabled={readingSize === "large"}>A+</button></div>
+                                <button type="button" onClick={() => window.print()}>Print</button>
                                 <button type="button" onClick={() => router.push(`/preaching/final?studyId=${encodeURIComponent(studyId)}`)}>Exit Delivery</button>
-                                <button type="button" onClick={toggleDistractionFree} title={distractionFree ? "Exit distraction-free mode" : "Enter distraction-free mode"}>{distractionFree ? "Exit Focus" : "Focus Mode"}</button>
                             </div>
                         </div>
-                        <SermonDeliverySectionNavigation sections={sections} />
                     </header>
-
-                    {focus === "manuscript" ? (
-                        <main className="bsmp-delivery-print-main">
-                            <div className="bsmp-delivery-manuscript">
-                                <div className="bsmp-delivery-big-idea">Big Idea: {bigIdea}</div>
-                                {hasTraceableSections ? sections.map((section: SermonManuscriptSection) => (
-                                    <section key={section.id} id={`delivery-section-${encodeURIComponent(section.id)}`} className="bsmp-delivery-print-section">
-                                        <h2 className="bsmp-delivery-section-heading" style={{ fontSize: `${readingConfig.heading}px` }}>{section.title}</h2>
-                                        <div className="bsmp-delivery-section-content" style={{ fontSize: `${readingConfig.manuscript}px`, lineHeight: 1.65 }}>
-                                            {splitParagraphs(normalizeTextValue(section.content)).map((paragraph, index) => {
-                                                const labeled = splitLabeledBlock(paragraph);
-                                                return labeled ? <div className="bsmp-delivery-content-block" key={`${section.id}-${index}`}><span className="bsmp-delivery-content-block-label">{labeled.label}</span><span className="bsmp-delivery-content-block-body">{labeled.body}</span></div> : <p className="bsmp-delivery-content-paragraph" key={`${section.id}-${index}`}>{paragraph}</p>;
-                                            })}
-                                        </div>
-                                    </section>
-                                )) : (
-                                    <section className="bsmp-delivery-print-section">
-                                        {paragraphs.map((paragraph, index) => {
-                                            const labeled = splitLabeledBlock(paragraph);
-                                            return labeled ? <div className="bsmp-delivery-content-block" key={`manuscript-${index}`}><span className="bsmp-delivery-content-block-label">{labeled.label}</span><span className="bsmp-delivery-content-block-body">{labeled.body}</span></div> : <p className="bsmp-delivery-content-paragraph" key={`manuscript-${index}`}>{paragraph}</p>;
-                                        })}
-                                    </section>
-                                )}
-                            </div>
-                        </main>
-                    ) : (
-                        <main className="bsmp-delivery-print-main">
-                            <div className="bsmp-delivery-notes">
-                                <h2>Delivery Notes</h2>
-                                <div className="bsmp-delivery-notes-content" style={{ fontSize: `${readingConfig.manuscript}px`, lineHeight: 1.65 }}>
-                                    {splitParagraphs(normalizeTextValue(sermon.deliveryNotes?.value) || "No delivery notes have been prepared.").map((paragraph, index) => <p key={`note-${index}`}>{paragraph}</p>)}
-                                </div>
-                            </div>
-                        </main>
-                    )}
+                    {hasTraceableSections ? <SermonDeliverySectionNavigation sections={sections} /> : null}
+                    <main className="bsmp-delivery-print-main">
+                        {focus === "manuscript" ? <div className="bsmp-delivery-manuscript" style={{ fontSize: readingConfig.manuscript, lineHeight: 1.7 }}>
+                            <div className="bsmp-delivery-big-idea">Big Idea: {bigIdea}</div>
+                            {hasTraceableSections ? sections.map((section) => <article id={`delivery-section-${encodeURIComponent(section.id)}`} className="bsmp-delivery-print-section" key={section.id} style={{ fontSize: readingConfig.manuscript }}><h2 className="bsmp-delivery-section-heading" style={{ fontSize: readingConfig.heading }}>{section.title}</h2><div className="bsmp-delivery-section-content">{splitParagraphs(section.body).map((paragraph, index) => { const labeled = splitLabeledBlock(paragraph); return labeled ? <p className="bsmp-delivery-content-block" key={`${section.id}-${index}`}><span className="bsmp-delivery-content-block-label">{labeled.label}</span><span className="bsmp-delivery-content-block-body">{labeled.body}</span></p> : <p className="bsmp-delivery-content-paragraph" key={`${section.id}-${index}`}>{paragraph}</p>; })}</div></article>) : paragraphs.map((paragraph, index) => <p className="bsmp-delivery-content-paragraph" key={index}>{paragraph}</p>)}
+                        </div> : <div className="bsmp-delivery-notes"><div className="bsmp-delivery-notes-content" style={{ fontSize: readingConfig.manuscript, lineHeight: 1.7 }}><h2>Delivery Notes</h2>{splitParagraphs(normalizeTextValue(sermon.deliveryNotes)).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div></div>}
+                    </main>
+                    <div className="bsmp-delivery-print-hide bsmp-delivery-trace-links" style={{ maxWidth: 820, margin: "36px auto 0", padding: "0 14px 48px", color: "#6b7280", fontSize: 13 }}>
+                        <p style={{ margin: 0 }}>Delivery mode presents the saved sermon manuscript for preaching. Return to Final Draft to edit or save changes.</p>
+                    </div>
                 </div>
             </div>
         </AppShell>
