@@ -48,13 +48,14 @@ export function FinalSermonDraftMentorPanel({ studyId }: { studyId: string }) {
   return <section className="bsmp-print-hide bsmp-final-sermon-mentor" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", marginTop: 20 }}>
     <style>{`@media (max-width:700px){
       .bsmp-final-sermon-mentor{padding:16px!important;min-width:0;overflow:hidden}
-      .bsmp-final-sermon-mentor h2{font-size:20px!important;line-height:1.3;overflow-wrap:anywhere}
-      .bsmp-final-sermon-mentor p,.bsmp-final-sermon-mentor strong,.bsmp-final-sermon-mentor div{overflow-wrap:anywhere}
+      .bsmp-final-sermon-mentor *{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+      .bsmp-final-sermon-mentor h2{font-size:20px!important;line-height:1.3}
       .bsmp-final-sermon-mentor > div:first-child{flex-direction:column!important;align-items:stretch!important;gap:12px!important}
       .bsmp-final-sermon-mentor > div:first-child button{width:100%;min-height:44px;white-space:normal}
       .bsmp-final-sermon-mentor .bsmp-final-sermon-mentor-meta{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
       .bsmp-final-sermon-mentor .bsmp-final-sermon-mentor-result{padding:14px!important}
       .bsmp-final-sermon-mentor .bsmp-final-sermon-mentor-result > div:first-child{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+      .bsmp-final-sermon-mentor .bsmp-final-sermon-mentor-result button{width:100%;min-height:44px}
     }`}</style>
     <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", alignItems: "end" }}>
       <div><div style={{ fontSize: 13, color: "#6b7280" }}>AI coaching · final manuscript</div><h2 style={{ margin: "4px 0 8px" }}>Final Sermon Draft Mentor</h2><p style={{ margin: 0, color: "#6b7280" }}>Checks the saved manuscript against the completed Big Idea, Purpose, Teaching Plan, and sermon exposition. The mentor coaches; it does not rewrite or save your sermon.</p></div>
