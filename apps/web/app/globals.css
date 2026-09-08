@@ -14,4 +14,414 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+button:not(:disabled),
+a[href],
+select:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled) {
+  cursor: pointer;
+}
+
+button:not(:disabled):hover {
+  filter: brightness(0.96);
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+button:disabled,
+select:disabled,
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  cursor: not-allowed;
+}
+
+/* Keep the focused preaching surface flush with the viewport. */
+.bsmp-delivery-root:fullscreen {
+  padding-top: 0 !important;
+}
+
+/* Traceability is useful during preparation, but should disappear while preaching. */
+.bsmp-delivery-root:fullscreen .bsmp-delivery-trace-links {
+  display: none !important;
+}
+
+/* Keep the manuscript place marker below the sticky delivery controls. */
+.bsmp-delivery-place-marker {
+  z-index: 5 !important;
+}
+
+/* Small-screen study workspace: stack the passage and observation tools instead of squeezing them side-by-side. */
+@media (max-width: 700px) {
+  body:has(#study-translation) div[style*="grid-template-columns"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  body:has(#study-translation) div[style*="justify-content: flex-end"] {
+    justify-content: stretch !important;
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  body:has(#study-translation) #study-translation {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  body:has(#study-translation) label[for="study-translation"] {
+    font-weight: 700;
+  }
+
+  body:has(#study-translation) aside {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  body:has(#study-translation) aside h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
+  body:has(#study-translation) aside section + section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  body:has(#study-translation) aside ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  body:has(#study-translation) aside li {
+    margin: 0 0 8px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] > div:first-child > div:first-child {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] h2,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] p,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] strong,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] span,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] div {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] textarea,
+  body:has(section[aria-label="Observation Mentor"]) section[aria-label="Observation Mentor"] button {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* The lower study workflow is intentionally single-column on phones. */
+  body:has(#observation-composer) #observation-composer ~ section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-top: 14px !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section h2 {
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section p,
+  body:has(#observation-composer) #observation-composer ~ section strong,
+  body:has(#observation-composer) #observation-composer ~ section span,
+  body:has(#observation-composer) #observation-composer ~ section li,
+  body:has(#observation-composer) #observation-composer ~ section article {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section article {
+    box-sizing: border-box;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section textarea,
+  body:has(#observation-composer) #observation-composer ~ section select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    margin-top: 2px;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section button {
+    min-height: 40px;
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section > div {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section > div[style*="display: flex"] {
+    flex-wrap: wrap !important;
+    min-width: 0 !important;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section article > div[style*="display: flex"] {
+    align-items: flex-start;
+    flex-wrap: wrap !important;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section article > div[style*="display: flex"] button {
+    flex: 0 1 auto;
+  }
+
+  body:has(#observation-composer) #observation-composer ~ section ul {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    padding-left: 20px;
+  }
+
+  /* Biblical Theology is a focused single-column mobile workflow. */
+  body:has(.bsmp-bt-workspace) .bsmp-bt-overview,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-saved,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+    overflow: hidden;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-breadcrumb {
+    font-size: 12px !important;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-overview h1 {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-overview p,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form p,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-saved p,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor p {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form input,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form textarea,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form select,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    font: inherit;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form textarea {
+    min-height: 150px;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-supporting {
+    min-width: 0;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-supporting label {
+    min-width: 0;
+    align-items: flex-start !important;
+    line-height: 1.45;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-supporting label span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-supporting input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px;
+    flex: 0 0 20px;
+    margin-top: 1px;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form-actions,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-entry-actions {
+    align-items: stretch !important;
+    width: 100%;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form-actions button,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-entry-actions button,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor-button {
+    min-height: 44px;
+    white-space: normal;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-form-actions button,
+  body:has(.bsmp-bt-workspace) .bsmp-bt-entry-actions button {
+    flex: 1 1 140px;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-saved-entry {
+    padding: 14px !important;
+    overflow: hidden;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-saved-entry > strong {
+    display: block;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor-description {
+    line-height: 1.55;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor-button {
+    width: 100%;
+  }
+
+  body:has(.bsmp-bt-workspace) .bsmp-bt-mentor-result {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+  }
+
+  /* Teaching workspace: use a single readable column and keep every control inside the phone viewport. */
+  body:has(input[placeholder="Teaching lesson title"]) main {
+    min-width: 0;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) main > div {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    overflow-wrap: anywhere;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section h1,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section h2,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section h3,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section p,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section span,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section strong,
+  body:has(input[placeholder="Teaching lesson title"]) main > div > section label {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) input,
+  body:has(input[placeholder="Teaching lesson title"]) textarea,
+  body:has(input[placeholder="Teaching lesson title"]) select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section label:has(input[type="checkbox"]) {
+    align-items: flex-start !important;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
+    flex: 0 0 20px !important;
+    margin-top: 2px;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section > div[style*="display: flex"] {
+    flex-wrap: wrap !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    align-items: flex-start !important;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section button {
+    min-height: 42px;
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section a[href] {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body:has(input[placeholder="Teaching lesson title"]) section[style*="background: #f8fafc"] {
+    background: #f8fafc !important;
+  }
+}
+
+@media print {
+  .bsmp-print-hide {
+    display: none !important;
+  }
 }

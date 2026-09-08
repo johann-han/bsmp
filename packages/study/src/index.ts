@@ -4,6 +4,7 @@ export * from "./domain/entities/Observation.js";
 export * from "./domain/entities/Evidence.js";
 export * from "./domain/entities/Interpretation.js";
 export * from "./domain/entities/Application.js";
+export * from "./domain/entities/BiblicalTheology.js";
 
 export * from "./domain/value-objects/index.js";
 

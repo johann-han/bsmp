@@ -14,6 +14,7 @@ export function AuthForm() {
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [resetSent, setResetSent] = useState(false);
 
     async function submit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -41,6 +42,26 @@ export function AuthForm() {
         const destination = next && next.startsWith("/") ? next : "/workspace";
         router.push(destination);
         router.refresh();
+    }
+
+    async function sendPasswordReset() {
+        setError(null);
+        setMessage(null);
+        if (!email.trim()) {
+            setError("Enter your email address first, then request a password reset.");
+            return;
+        }
+        setLoading(true);
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+            redirectTo: `${window.location.origin}/auth/recovery`,
+        });
+        setLoading(false);
+        if (resetError) {
+            setError(resetError.message);
+            return;
+        }
+        setResetSent(true);
+        setMessage("Password reset email sent. Check your inbox and follow the recovery link.");
     }
 
     return (
@@ -76,12 +97,23 @@ export function AuthForm() {
                     : mode === "sign-in" ? "Sign in" : "Create account"}
             </button>
 
+            {mode === "sign-in" ? (
+                <button type="button" onClick={() => void sendPasswordReset()} disabled={loading || resetSent}>
+                    {resetSent ? "Reset email sent" : "Forgot your password?"}
+                </button>
+            ) : null}
+
             {error ? <p role="alert">{error}</p> : null}
-            {message ? <p>{message}</p> : null}
+            {message ? <p role="status">{message}</p> : null}
 
             <button
                 type="button"
-                onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
+                onClick={() => {
+                    setMode(mode === "sign-in" ? "sign-up" : "sign-in");
+                    setError(null);
+                    setMessage(null);
+                    setResetSent(false);
+                }}
             >
                 {mode === "sign-in"
                     ? "Need an account? Create one"
