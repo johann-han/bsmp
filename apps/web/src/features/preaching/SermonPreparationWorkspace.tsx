@@ -306,8 +306,8 @@ export function SermonPreparationWorkspace() {
 
     return (
         <AppShell title="Sermon Preparation">
-            <div style={{ display: "grid", gap: 20 }}>
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20 }}>
+            <div className="bsmp-sermon-prep-workspace" style={{ display: "grid", gap: 20 }}>
+                <section className="bsmp-sermon-prep-card" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20 }}>
                     <h2>Study Source</h2>
                     <select value={selectedStudyId} onChange={(event) => selectStudy(event.target.value)} style={{ width: "100%", padding: 10 }}>
                         <option value="">Select a study</option>
@@ -320,7 +320,7 @@ export function SermonPreparationWorkspace() {
                 </section>
 
                 {selectedStudyId && !sermon && (
-                    <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20 }}>
+                    <section className="bsmp-sermon-prep-card" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20 }}>
                         <h2>Create Sermon Preparation</h2>
                         <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Sermon title" style={{ width: "100%", padding: 10, marginBottom: 10 }} />
                         <button onClick={() => void createSermon()} disabled={!title.trim()} style={{ padding: "10px 16px" }}>Create</button>
@@ -328,10 +328,12 @@ export function SermonPreparationWorkspace() {
                 )}
 
                 {sermon && selectedStudy && (
-                    <div style={{ display: "grid", gridTemplateColumns: "minmax(320px, 0.9fr) minmax(0, 1.1fr)", gap: 20, alignItems: "start" }}>
-                        <SermonStudySourcePanel study={selectedStudy} />
+                    <div className="bsmp-sermon-prep-editor" style={{ display: "grid", gridTemplateColumns: "minmax(320px, 0.9fr) minmax(0, 1.1fr)", gap: 20, alignItems: "start" }}>
+                        <div className="bsmp-sermon-prep-source">
+                            <SermonStudySourcePanel study={selectedStudy} />
+                        </div>
 
-                        <section style={{ display: "grid", gap: 16, border: "1px solid #ddd", borderRadius: 12, padding: 20 }}>
+                        <section className="bsmp-sermon-prep-card bsmp-sermon-prep-authoring" style={{ display: "grid", gap: 16, border: "1px solid #ddd", borderRadius: 12, padding: 20 }}>
                             <div><strong>Source passage:</strong> {sermon.passage.toString()}</div>
                             <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Sermon title" style={{ width: "100%", padding: 10 }} />
                             <textarea value={bigIdea} onChange={(event) => setBigIdea(event.target.value)} placeholder="Big Idea" rows={3} style={{ width: "100%", padding: 10 }} />
@@ -360,13 +362,13 @@ export function SermonPreparationWorkspace() {
                                     const hasStudySupport = observations.length + interpretations.length + evidence.length + applications.length > 0;
 
                                     return (
-                                        <div key={point.id} style={{ marginBottom: 16, border: editingOutlinePointId === point.id ? "2px solid #333" : "1px solid #eee", borderRadius: 8, padding: 12 }}>
-                                            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
-                                                <div style={{ flex: 1 }}>
+                                        <div key={point.id} className="bsmp-sermon-outline-point" style={{ marginBottom: 16, border: editingOutlinePointId === point.id ? "2px solid #333" : "1px solid #eee", borderRadius: 8, padding: 12 }}>
+                                            <div className="bsmp-sermon-outline-header" style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                                                <div style={{ flex: 1, minWidth: 0 }}>
                                                     <strong>{index + 1}. {point.heading}</strong>
                                                     <div>{point.truth}</div>
                                                 </div>
-                                                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                                                <div className="bsmp-sermon-outline-actions" style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
                                                     <button type="button" onClick={() => editOutlinePoint(point.id)}>Edit</button>
                                                     <button type="button" onClick={() => void deleteOutlinePoint(point.id)}>Delete</button>
                                                     <button type="button" onClick={() => void moveOutlinePoint(point.id, "up")} disabled={index === 0}>↑</button>
@@ -377,58 +379,10 @@ export function SermonPreparationWorkspace() {
                                             {hasStudySupport && (
                                                 <div style={{ marginTop: 10, fontSize: 13, color: "#4b5563" }}>
                                                     <strong>Study support</strong>
-                                                    {observations.length > 0 && (
-                                                        <div style={{ marginTop: 4 }}>
-                                                            <span>Observations: </span>
-                                                            {observations.map((observation, itemIndex) => (
-                                                                <span key={observation.id.value}>
-                                                                    {itemIndex > 0 && " • "}
-                                                                    <a href={workspaceHref(selectedStudy.id.value, `observation-${observation.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>
-                                                                        {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}
-                                                                    </a>
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    {interpretations.length > 0 && (
-                                                        <div style={{ marginTop: 4 }}>
-                                                            <span>Interpretations: </span>
-                                                            {interpretations.map((interpretation, itemIndex) => (
-                                                                <span key={interpretation.id.value}>
-                                                                    {itemIndex > 0 && " • "}
-                                                                    <a href={workspaceHref(selectedStudy.id.value, `interpretation-${interpretation.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>
-                                                                        {interpretation.statement.value}
-                                                                    </a>
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    {evidence.length > 0 && (
-                                                        <div style={{ marginTop: 4 }}>
-                                                            <span>Evidence: </span>
-                                                            {evidence.map((item, itemIndex) => (
-                                                                <span key={item.id.value}>
-                                                                    {itemIndex > 0 && " • "}
-                                                                    <a href={workspaceHref(selectedStudy.id.value, `evidence-${item.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>
-                                                                        {item.type.value}: {item.description.value}
-                                                                    </a>
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    {applications.length > 0 && (
-                                                        <div style={{ marginTop: 4 }}>
-                                                            <span>Applications: </span>
-                                                            {applications.map((application, itemIndex) => (
-                                                                <span key={application.id.value}>
-                                                                    {itemIndex > 0 && " • "}
-                                                                    <a href={workspaceHref(selectedStudy.id.value, `application-${application.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>
-                                                                        {application.principle.value}
-                                                                    </a>
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
+                                                    {observations.length > 0 && <div style={{ marginTop: 4 }}><span>Observations: </span>{observations.map((observation, itemIndex) => <span key={observation.id.value}>{itemIndex > 0 && " • "}<a href={workspaceHref(selectedStudy.id.value, `observation-${observation.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>{verseReferenceText(observation.target.verseReference)} — {observation.statement.value}</a></span>)}</div>}
+                                                    {interpretations.length > 0 && <div style={{ marginTop: 4 }}><span>Interpretations: </span>{interpretations.map((interpretation, itemIndex) => <span key={interpretation.id.value}>{itemIndex > 0 && " • "}<a href={workspaceHref(selectedStudy.id.value, `interpretation-${interpretation.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>{interpretation.statement.value}</a></span>)}</div>}
+                                                    {evidence.length > 0 && <div style={{ marginTop: 4 }}><span>Evidence: </span>{evidence.map((item, itemIndex) => <span key={item.id.value}>{itemIndex > 0 && " • "}<a href={workspaceHref(selectedStudy.id.value, `evidence-${item.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>{item.type.value}: {item.description.value}</a></span>)}</div>}
+                                                    {applications.length > 0 && <div style={{ marginTop: 4 }}><span>Applications: </span>{applications.map((application, itemIndex) => <span key={application.id.value}>{itemIndex > 0 && " • "}<a href={workspaceHref(selectedStudy.id.value, `application-${application.id.value}`)} style={studySupportLinkStyle} onClick={() => cacheStudyForWorkspace(selectedStudy)}>{application.principle.value}</a></span>)}</div>}
                                                 </div>
                                             )}
                                         </div>
@@ -438,59 +392,19 @@ export function SermonPreparationWorkspace() {
                                 <input value={heading} onChange={(event) => setHeading(event.target.value)} placeholder="Outline heading" style={{ width: "100%", padding: 10, marginBottom: 8 }} />
                                 <textarea value={truth} onChange={(event) => setTruth(event.target.value)} placeholder="Truth statement" rows={2} style={{ width: "100%", padding: 10, marginBottom: 12 }} />
 
-                                <div style={{ border: "1px solid #eee", borderRadius: 8, padding: 12, marginBottom: 12 }}>
+                                <div className="bsmp-sermon-support" style={{ border: "1px solid #eee", borderRadius: 8, padding: 12, marginBottom: 12 }}>
                                     <strong>Supporting Study Material</strong>
 
-                                    {selectedStudy.observations.length > 0 && (
-                                        <div style={{ marginTop: 10 }}>
-                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Observations</div>
-                                            {selectedStudy.observations.map((observation) => (
-                                                <label key={observation.id.value} style={{ display: "block", marginTop: 6 }}>
-                                                    <input type="checkbox" checked={supportingObservationIds.includes(observation.id.value)} onChange={() => toggleValue(supportingObservationIds, observation.id.value, setSupportingObservationIds)} /> {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
+                                    {selectedStudy.observations.length > 0 && <div style={{ marginTop: 10 }}><div style={{ fontSize: 13, fontWeight: 600 }}>Observations</div>{selectedStudy.observations.map((observation) => <label key={observation.id.value} style={{ display: "block", marginTop: 6 }}><input type="checkbox" checked={supportingObservationIds.includes(observation.id.value)} onChange={() => toggleValue(supportingObservationIds, observation.id.value, setSupportingObservationIds)} /> {verseReferenceText(observation.target.verseReference)} — {observation.statement.value}</label>)}</div>}
 
-                                    {selectedStudy.interpretations.length > 0 && (
-                                        <div style={{ marginTop: 10 }}>
-                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Interpretations</div>
-                                            {selectedStudy.interpretations.map((interpretation) => (
-                                                <label key={interpretation.id.value} style={{ display: "block", marginTop: 6 }}>
-                                                    <input type="checkbox" checked={supportingInterpretationIds.includes(interpretation.id.value)} onChange={() => toggleValue(supportingInterpretationIds, interpretation.id.value, setSupportingInterpretationIds)} /> {interpretation.statement.value}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
+                                    {selectedStudy.interpretations.length > 0 && <div style={{ marginTop: 10 }}><div style={{ fontSize: 13, fontWeight: 600 }}>Interpretations</div>{selectedStudy.interpretations.map((interpretation) => <label key={interpretation.id.value} style={{ display: "block", marginTop: 6 }}><input type="checkbox" checked={supportingInterpretationIds.includes(interpretation.id.value)} onChange={() => toggleValue(supportingInterpretationIds, interpretation.id.value, setSupportingInterpretationIds)} /> {interpretation.statement.value}</label>)}</div>}
 
-                                    {studyEvidence.length > 0 && (
-                                        <div style={{ marginTop: 10 }}>
-                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Evidence</div>
-                                            {studyEvidence.map((evidence) => (
-                                                <label key={evidence.id.value} style={{ display: "block", marginTop: 6 }}>
-                                                    <input type="checkbox" checked={supportingEvidenceIds.includes(evidence.id.value)} onChange={() => toggleValue(supportingEvidenceIds, evidence.id.value, setSupportingEvidenceIds)} /> {evidence.type.value}: {evidence.description.value}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
+                                    {studyEvidence.length > 0 && <div style={{ marginTop: 10 }}><div style={{ fontSize: 13, fontWeight: 600 }}>Evidence</div>{studyEvidence.map((evidence) => <label key={evidence.id.value} style={{ display: "block", marginTop: 6 }}><input type="checkbox" checked={supportingEvidenceIds.includes(evidence.id.value)} onChange={() => toggleValue(supportingEvidenceIds, evidence.id.value, setSupportingEvidenceIds)} /> {evidence.type.value}: {evidence.description.value}</label>)}</div>}
 
-                                    {selectedStudy.applications.length > 0 && (
-                                        <div style={{ marginTop: 10 }}>
-                                            <div style={{ fontSize: 13, fontWeight: 600 }}>Applications</div>
-                                            {selectedStudy.applications.map((application) => (
-                                                <label key={application.id.value} style={{ display: "block", marginTop: 6 }}>
-                                                    <input type="checkbox" checked={supportingApplicationIds.includes(application.id.value)} onChange={() => toggleValue(supportingApplicationIds, application.id.value, setSupportingApplicationIds)} /> {application.principle.value}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
+                                    {selectedStudy.applications.length > 0 && <div style={{ marginTop: 10 }}><div style={{ fontSize: 13, fontWeight: 600 }}>Applications</div>{selectedStudy.applications.map((application) => <label key={application.id.value} style={{ display: "block", marginTop: 6 }}><input type="checkbox" checked={supportingApplicationIds.includes(application.id.value)} onChange={() => toggleValue(supportingApplicationIds, application.id.value, setSupportingApplicationIds)} /> {application.principle.value}</label>)}</div>}
                                 </div>
 
-                                {editingOutlinePointId ? (
-                                    <button type="button" onClick={() => void saveEditedOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Save Outline Changes</button>
-                                ) : (
-                                    <button type="button" onClick={() => void addOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Add Outline Point</button>
-                                )}
+                                {editingOutlinePointId ? <button type="button" onClick={() => void saveEditedOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Save Outline Changes</button> : <button type="button" onClick={() => void addOutlinePoint()} disabled={!heading.trim() || !truth.trim()} style={{ padding: "10px 16px" }}>Add Outline Point</button>}
                             </div>
                         </section>
                     </div>
