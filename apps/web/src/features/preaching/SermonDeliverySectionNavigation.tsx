@@ -428,6 +428,13 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                     .bsmp-delivery-place-marker { left:8px; right:8px; }
                     .bsmp-delivery-place-marker-label { font-size:10px; padding:3px 7px; }
                 }
+                @media (max-width:420px) {
+                    .bsmp-delivery-controls-panel { padding:7px; }
+                    .bsmp-delivery-controls-grid { grid-template-columns:minmax(0,1fr); gap:7px; }
+                    .bsmp-delivery-control-card { padding:9px; font-size:12px; }
+                    .bsmp-delivery-control-actions button { flex:1 1 0; }
+                    .bsmp-delivery-section-nav-link { min-height:42px; padding:8px 11px; font-size:11px; }
+                }
             `}</style>
             {markerView}
             <nav aria-label="Delivery manuscript sections" className="bsmp-delivery-section-nav bsmp-delivery-print-hide">
