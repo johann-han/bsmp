@@ -27,13 +27,22 @@ function recoveryKey(): string {
 }
 
 function parsePlaceMarker(value: unknown): DeliveryPlaceMarker | undefined {
-    if (!value || typeof value !== "object") return undefined;
+    if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
     const marker = value as Partial<DeliveryPlaceMarker>;
-    if (marker.mode !== "line" || typeof marker.sectionId !== "string" || typeof marker.lineBottomOffset !== "number" || typeof marker.savedAt !== "number") return undefined;
+    if (
+        marker.mode !== "line" ||
+        typeof marker.sectionId !== "string" ||
+        !marker.sectionId.trim() ||
+        typeof marker.lineBottomOffset !== "number" ||
+        !Number.isFinite(marker.lineBottomOffset) ||
+        typeof marker.savedAt !== "number" ||
+        !Number.isFinite(marker.savedAt) ||
+        marker.savedAt <= 0
+    ) return undefined;
     return {
         mode: "line",
         sectionId: marker.sectionId,
-        lineBottomOffset: Math.max(0, Number.isFinite(marker.lineBottomOffset) ? marker.lineBottomOffset : 0),
+        lineBottomOffset: Math.max(0, marker.lineBottomOffset),
         savedAt: marker.savedAt,
     };
 }
@@ -42,14 +51,20 @@ function readRecoveryState(sectionCount: number): DeliveryRecoveryState | null {
     try {
         const raw = window.localStorage.getItem(recoveryKey());
         if (!raw) return null;
-        const parsed = JSON.parse(raw) as Partial<DeliveryRecoveryState>;
+        const parsed = JSON.parse(raw) as unknown;
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+        const recovery = parsed as Partial<DeliveryRecoveryState>;
+        const rawSectionIndex = recovery.sectionIndex;
+        const sectionIndex = typeof rawSectionIndex === "number" && Number.isFinite(rawSectionIndex)
+            ? Math.max(0, Math.min(Math.floor(rawSectionIndex), Math.max(0, sectionCount - 1)))
+            : 0;
         const state: DeliveryRecoveryState = {
-            sectionIndex: typeof parsed.sectionIndex === "number" ? Math.max(0, Math.min(Math.floor(parsed.sectionIndex), Math.max(0, sectionCount - 1))) : 0,
-            focus: parsed.focus === "notes" ? "notes" : "manuscript",
-            readingSize: parsed.readingSize === "compact" || parsed.readingSize === "large" ? parsed.readingSize : "comfortable",
-            focusModeRequested: parsed.focusModeRequested === true,
+            sectionIndex,
+            focus: recovery.focus === "notes" ? "notes" : "manuscript",
+            readingSize: recovery.readingSize === "compact" || recovery.readingSize === "large" ? recovery.readingSize : "comfortable",
+            focusModeRequested: recovery.focusModeRequested === true,
         };
-        const marker = parsePlaceMarker(parsed.placeMarker);
+        const marker = parsePlaceMarker(recovery.placeMarker);
         if (marker) state.placeMarker = marker;
         return state;
     } catch { return null; }
