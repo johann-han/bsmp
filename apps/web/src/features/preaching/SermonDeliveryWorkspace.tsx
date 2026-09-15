@@ -27,8 +27,8 @@ function normalizeTextValue(value: unknown): string {
     return "";
 }
 
-function splitParagraphs(value: string): string[] {
-    return value.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
+function splitParagraphs(value: unknown): string[] {
+    return normalizeTextValue(value).split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
 }
 
 function splitLabeledBlock(value: string): { label: string; body: string } | null {
@@ -243,7 +243,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                         {focus === "manuscript" ? <div className="bsmp-delivery-manuscript" style={{ fontSize: readingConfig.manuscript, lineHeight: 1.7 }}>
                             <div className="bsmp-delivery-big-idea">Big Idea: {bigIdea}</div>
                             {hasTraceableSections ? sections.map((section) => <article id={`delivery-section-${encodeURIComponent(section.id)}`} className="bsmp-delivery-print-section" key={section.id} style={{ fontSize: readingConfig.manuscript }}><h2 className="bsmp-delivery-section-heading" style={{ fontSize: readingConfig.heading }}>{section.title}</h2><div className="bsmp-delivery-section-content">{splitParagraphs(section.body).map((paragraph, index) => { const labeled = splitLabeledBlock(paragraph); return labeled ? <p className="bsmp-delivery-content-block" key={`${section.id}-${index}`}><span className="bsmp-delivery-content-block-label">{labeled.label}</span><span className="bsmp-delivery-content-block-body">{labeled.body}</span></p> : <p className="bsmp-delivery-content-paragraph" key={`${section.id}-${index}`}>{paragraph}</p>; })}</div></article>) : paragraphs.map((paragraph, index) => <p className="bsmp-delivery-content-paragraph" key={index}>{paragraph}</p>)}
-                        </div> : <div className="bsmp-delivery-notes"><div className="bsmp-delivery-notes-content" style={{ fontSize: readingConfig.manuscript, lineHeight: 1.7 }}><h2>Delivery Notes</h2>{splitParagraphs(normalizeTextValue(sermon.deliveryNotes)).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div></div>}
+                        </div> : <div className="bsmp-delivery-notes"><div className="bsmp-delivery-notes-content" style={{ fontSize: readingConfig.manuscript, lineHeight: 1.7 }}><h2>Delivery Notes</h2>{splitParagraphs(sermon.deliveryNotes).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div></div>}
                     </main>
                     <div className="bsmp-delivery-print-hide bsmp-delivery-trace-links" style={{ maxWidth: 820, margin: "36px auto 0", padding: "0 14px 48px", color: "#6b7280", fontSize: 13 }}>
                         <p style={{ margin: 0 }}>Delivery mode presents the saved sermon manuscript for preaching. Return to Final Draft to edit or save changes.</p>
