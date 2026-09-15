@@ -10,10 +10,4 @@ export default [
             "react-hooks/exhaustive-deps": "off",
         },
     },
-    {
-        files: ["src/features/preaching/SermonDeliveryWorkspace.tsx"],
-        rules: {
-            "react-hooks/exhaustive-deps": "off",
-        },
-    },
 ];
