@@ -100,7 +100,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
 
     const manuscript = normalizeTextValue(sermon?.manuscript?.value);
     const paragraphs = useMemo(() => splitParagraphs(manuscript), [manuscript]);
-    const sections = sermon?.manuscriptSections ?? [];
+    const sections = useMemo(() => sermon?.manuscriptSections ?? [], [sermon]);
     const hasTraceableSections = sections.length > 0;
     const wordCount = manuscript.trim() ? manuscript.trim().split(/\s+/).length : 0;
     const estimatedMinutes = Math.max(0, Math.round((wordCount / 130) * 10) / 10);
