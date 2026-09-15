@@ -39,7 +39,7 @@ export function AuthForm() {
         }
 
         const next = searchParams.get("next");
-        const destination = next && next.startsWith("/") ? next : "/workspace";
+        const destination = next && next.startsWith("/") && !next.startsWith("//") ? next : "/workspace";
         router.push(destination);
         router.refresh();
     }
