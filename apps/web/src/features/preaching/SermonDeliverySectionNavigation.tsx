@@ -216,6 +216,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
     useEffect(() => {
         if (sections.length === 0) return;
         let frame = 0;
+        let preserveInitialRecovery = Boolean(readRecoveryState(sections.length));
         const updateActiveSection = () => {
             const viewportPosition = getScrollTop() + DELIVERY_NAV_OFFSET;
             let nextIndex = 0;
@@ -224,7 +225,13 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 if (element && getSectionDocumentTop(element) <= viewportPosition) nextIndex = index;
             });
             setActiveIndex((current) => current === nextIndex ? current : nextIndex);
-            writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
+            if (preserveInitialRecovery) {
+                // The recovery effect restores the saved section asynchronously. Do not
+                // overwrite that saved position with the initial viewport (usually section 1).
+                preserveInitialRecovery = false;
+            } else {
+                writeRecoveryState({ sectionIndex: nextIndex }, sections.length);
+            }
             setRecoveryAvailable(true);
             frame = 0;
         };
