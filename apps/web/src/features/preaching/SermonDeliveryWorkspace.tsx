@@ -167,6 +167,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                 .bsmp-delivery-header-inner { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; }
                 .bsmp-delivery-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
                 .bsmp-delivery-toolbar > button { min-height: 38px; padding: 8px 11px; }
+                .bsmp-delivery-cyclic-size-button { display: inline-flex; }
                 .bsmp-delivery-size-controls { display: flex; gap: 6px; align-items: center; padding-left: 8px; border-left: 1px solid #e5e7eb; }
                 .bsmp-delivery-size-label { font-size: 12px; color: #6b7280; }
                 .bsmp-delivery-size-button { min-width: 34px; padding: 6px 8px; }
@@ -192,6 +193,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                     .bsmp-delivery-header-inner > div:first-child > div:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                     .bsmp-delivery-toolbar { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; padding: 0 12px 8px; }
                     .bsmp-delivery-toolbar > button { width: 100%; min-height: 44px; padding: 8px 10px; }
+                    .bsmp-delivery-cyclic-size-button { display: none; }
                     .bsmp-delivery-size-controls { grid-column: 1 / -1; display: grid; grid-template-columns: auto repeat(3,minmax(0,1fr)); gap: 6px; width: 100%; padding: 6px 0 0; border-left: 0; border-top: 1px solid #e5e7eb; }
                     .bsmp-delivery-size-label { display: flex; align-items: center; justify-content: center; font-size: 11px; }
                     .bsmp-delivery-size-button { min-width: 0; min-height: 42px; width: 100%; }
@@ -228,7 +230,7 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                             <div className="bsmp-delivery-toolbar">
                                 <button type="button" onClick={() => changeFocus("manuscript")} disabled={focus === "manuscript"}>Manuscript</button>
                                 <button type="button" onClick={() => changeFocus("notes")} disabled={focus === "notes"}>Delivery Notes</button>
-                                <button type="button" onClick={() => changeReadingSize(readingSize === "compact" ? "comfortable" : readingSize === "comfortable" ? "large" : "compact")}>{readingConfig.label} Text</button>
+                                <button type="button" className="bsmp-delivery-cyclic-size-button" onClick={() => changeReadingSize(readingSize === "compact" ? "comfortable" : readingSize === "comfortable" ? "large" : "compact")}>{readingConfig.label} Text</button>
                                 <button type="button" onClick={() => void toggleDistractionFree()} title={distractionFree ? "Exit distraction-free mode" : "Enter distraction-free mode"}>{distractionFree ? "Exit Focus" : "Focus Mode"}</button>
                                 <div className="bsmp-delivery-size-controls"><span className="bsmp-delivery-size-label">Text</span><button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("compact")} disabled={readingSize === "compact"}>A−</button><button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("comfortable")} disabled={readingSize === "comfortable"}>A</button><button type="button" className="bsmp-delivery-size-button" onClick={() => changeReadingSize("large")} disabled={readingSize === "large"}>A+</button></div>
                                 <button type="button" onClick={() => window.print()}>Print</button>
