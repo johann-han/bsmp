@@ -38,12 +38,36 @@ export function SermonTeachingTraceability({ studyId, variant = "final" }: { stu
         return () => { active = false; };
     }, [studyId]);
 
-    if (loading || error || !sermon?.teachingPlanId || !plan) return null;
+    if (loading || !sermon?.teachingPlanId) return null;
 
     const title = variant === "delivery" ? "Teaching Foundation" : "Teaching Plan Foundation";
     const description = variant === "delivery"
         ? "This sermon was prepared from the linked completed Teaching Plan. Use the source link to review the teaching foundation behind the delivered message."
         : "The sermon is explicitly linked to the completed Teaching Plan that preceded sermon preparation, preserving the full preparation chain.";
+
+    if (error) {
+        return (
+            <section className="bsmp-print-section bsmp-print-hide bsmp-sermon-teaching-trace" style={{ border: "1px solid #fecaca", borderRadius: 12, padding: 20, background: "#fef2f2" }}>
+                <div className="bsmp-trace-path" style={{ fontSize: 13, color: "#991b1b" }}>Study → Biblical Theology → Teaching → Sermon</div>
+                <h2 style={{ margin: "4px 0 8px" }}>Teaching Foundation unavailable</h2>
+                <p style={{ margin: 0, color: "#7f1d1d" }}>{error}</p>
+            </section>
+        );
+    }
+
+    if (!plan) {
+        return (
+            <section className="bsmp-print-section bsmp-print-hide bsmp-sermon-teaching-trace" style={{ border: "1px solid #fde68a", borderRadius: 12, padding: 20, background: "#fffbeb" }}>
+                <div className="bsmp-trace-path" style={{ fontSize: 13, color: "#92400e" }}>Study → Biblical Theology → Teaching → Sermon</div>
+                <h2 style={{ margin: "4px 0 8px" }}>Teaching Foundation needs attention</h2>
+                <p style={{ margin: 0, color: "#78350f" }}>This sermon retains a Teaching Plan link, but the linked Teaching Plan is no longer available in the current study scope.</p>
+                <div className="bsmp-trace-links" style={{ marginTop: 12, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13 }}>
+                    <Link href={`/teaching?studyId=${encodeURIComponent(studyId)}`} style={linkStyle}>Open Teaching →</Link>
+                    <Link href={`/preaching?studyId=${encodeURIComponent(studyId)}`} style={linkStyle}>Open Sermon Preparation →</Link>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="bsmp-print-section bsmp-print-hide bsmp-sermon-teaching-trace" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
