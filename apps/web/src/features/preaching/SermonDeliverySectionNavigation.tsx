@@ -14,6 +14,7 @@ interface DeliveryRecoveryState {
     readingSize: "compact" | "comfortable" | "large";
     focusModeRequested: boolean;
     placeMarker?: DeliveryPlaceMarker;
+    sectionSignature?: string;
 }
 
 function sectionId(id: string): string { return `delivery-section-${encodeURIComponent(id)}`; }
@@ -24,6 +25,10 @@ const DELIVERY_RECOVERY_PREFIX = "bsmp.delivery.recovery.v1";
 function recoveryKey(): string {
     const studyId = new URLSearchParams(window.location.search).get("studyId") ?? "unknown";
     return `${DELIVERY_RECOVERY_PREFIX}:${studyId}`;
+}
+
+function getSectionSignature(sections: readonly SermonManuscriptSection[]): string {
+    return JSON.stringify(sections.map((section) => section.id));
 }
 
 function parsePlaceMarker(value: unknown): DeliveryPlaceMarker | undefined {
@@ -64,10 +69,41 @@ function readRecoveryState(sectionCount: number): DeliveryRecoveryState | null {
             readingSize: recovery.readingSize === "compact" || recovery.readingSize === "large" ? recovery.readingSize : "comfortable",
             focusModeRequested: recovery.focusModeRequested === true,
         };
+        if (typeof recovery.sectionSignature === "string" && recovery.sectionSignature) state.sectionSignature = recovery.sectionSignature;
         const marker = parsePlaceMarker(recovery.placeMarker);
         if (marker) state.placeMarker = marker;
         return state;
     } catch { return null; }
+}
+
+function synchronizeRecoveryIdentity(sections: readonly SermonManuscriptSection[]) {
+    if (sections.length === 0) return;
+    const signature = getSectionSignature(sections);
+    try {
+        const raw = window.localStorage.getItem(recoveryKey());
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as unknown;
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return;
+        const recovery = parsed as Partial<DeliveryRecoveryState>;
+        if (recovery.sectionSignature === signature) return;
+
+        const existing = readRecoveryState(sections.length);
+        if (!existing) return;
+
+        const marker = existing.placeMarker && sections.some((section) => section.id === existing.placeMarker?.sectionId)
+            ? existing.placeMarker
+            : undefined;
+        const markerIndex = marker ? sections.findIndex((section) => section.id === marker.sectionId) : -1;
+        const nextState: DeliveryRecoveryState = {
+            sectionIndex: markerIndex >= 0 ? markerIndex : 0,
+            focus: existing.focus,
+            readingSize: existing.readingSize,
+            focusModeRequested: existing.focusModeRequested,
+            sectionSignature: signature,
+        };
+        if (marker) nextState.placeMarker = marker;
+        window.localStorage.setItem(recoveryKey(), JSON.stringify(nextState));
+    } catch { /* Recovery identity is a convenience; delivery must work without local storage. */ }
 }
 
 function writeRecoveryState(patch: Partial<DeliveryRecoveryState>, sectionCount: number) {
@@ -138,6 +174,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
 
     useEffect(() => {
         if (sections.length === 0) return;
+        synchronizeRecoveryIdentity(sections);
         const recovery = readRecoveryState(sections.length);
         setRecoveryAvailable(Boolean(recovery));
         setPlaceMarker(recovery?.placeMarker ?? null);
