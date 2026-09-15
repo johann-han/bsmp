@@ -102,6 +102,8 @@ The delivery view provides:
 
 The delivery workspace also defensively normalizes persisted text values so missing or malformed section text does not crash the delivery screen.
 
+Delivery recovery now validates saved “My Place” section references against the loaded manuscript sections. When a section has been deleted or otherwise becomes unavailable, the stale local marker is removed silently rather than producing a broken recovery target. Local recovery remains a convenience only and cannot block delivery when browser storage is malformed, inaccessible, or inconsistent.
+
 ## Sermon Scheduling & Preaching History
 
 The `/preaching/history` workspace now manages repeatable preaching occurrences for a sermon rather than storing a single preaching date on the sermon itself.
@@ -186,8 +188,10 @@ The Delivery Mode mobile controls, section navigation, recovery state, Focus Mod
 
 The `SermonDeliveryWorkspace` section property mismatch (`body` versus `content`) that failed typecheck has been corrected. The final restored workspace now uses the persisted `content` field when rendering traceable manuscript sections. The follow-up lint issue from the no-longer-needed manuscript-section import was also removed, and CI run `884` subsequently completed successfully.
 
+Delivery recovery-state hardening is committed as `1d655b7ef42b0de9da2aa5aa9fb1bab1e9d03fdc`, and the follow-up lint localization is committed as `6ea4e5fa2a1bde4b401d706e5fa58af7ecfafe63`. CI run `34984262546` (run `890`) completed successfully through dependency installation, typecheck, tests, lint, and production build. The latest delivery hardening therefore has a green repository validation result.
+
 ## Next Work
 
 1. Complete authenticated browser verification of the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough, including refresh persistence and source-traceability navigation.
-2. Continue production hardening over delivery recovery-state edge cases, stale local recovery references, permission boundaries, and read-only behavior before changing branch history.
+2. Continue production hardening over permission boundaries, read-only behavior, and other recovery edge cases before changing branch history.
 3. Reconcile the final-drafting branch with any intentionally retained changes from `main` before merge, rather than blindly forcing the divergent histories together.
