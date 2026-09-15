@@ -396,10 +396,11 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 .bsmp-delivery-place-marker-line { flex:1; height:3px; border-radius:999px; background:#b45309; box-shadow:0 0 0 1px rgba(255,255,255,.95),0 2px 8px rgba(180,83,9,.35); }
                 .bsmp-delivery-place-marker-label { flex:0 0 auto; padding:4px 9px; border-radius:999px; border:1px solid #b45309; background:#fffbeb; color:#92400e; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; box-shadow:0 2px 8px rgba(0,0,0,.16); }
                 .bsmp-delivery-controls-details { margin:0; }
-                .bsmp-delivery-controls-summary { display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; padding:10px 0; list-style:none; user-select:none; }
+                .bsmp-delivery-controls-summary { display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; padding:10px 0; min-height:44px; box-sizing:border-box; list-style:none; user-select:none; }
                 .bsmp-delivery-controls-summary::-webkit-details-marker { display:none; }
                 .bsmp-delivery-controls-summary > span:first-child { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
                 .bsmp-delivery-controls-summary-status { display:inline; margin-left:8px; color:#6b7280; font-weight:400; }
+                .bsmp-delivery-controls-summary-arrow { flex:0 0 auto; transition:transform 160ms ease; }
                 .bsmp-delivery-controls-panel { margin-top:4px; padding:14px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
                 .bsmp-delivery-controls-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
                 .bsmp-delivery-control-card { display:flex; flex-direction:column; gap:8px; min-width:0; padding:12px; border:1px solid #e5e7eb; border-radius:9px; background:#f8fafc; line-height:1.45; }
@@ -412,7 +413,7 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 .bsmp-delivery-section-nav-link { display:inline-flex; gap:6px; align-items:flex-start; flex:0 0 auto; min-width:max-content; min-height:38px; box-sizing:border-box; padding:7px 9px; border:1px solid #dbe3ee; border-radius:8px; color:#1d4ed8; text-decoration:none; background:#fff; font-size:12px; font-weight:600; }
                 @media (max-width:900px) { .bsmp-delivery-controls-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
                 @media (max-width:700px) {
-                    .bsmp-delivery-controls-summary { gap:8px; padding:7px 0; min-width:0; }
+                    .bsmp-delivery-controls-summary { gap:8px; padding:7px 0; }
                     .bsmp-delivery-controls-summary-status { margin-left:5px; }
                     .bsmp-delivery-controls-panel { padding:8px; margin-top:3px; }
                     .bsmp-delivery-controls-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
@@ -441,13 +442,14 @@ export function SermonDeliverySectionNavigation({ sections }: Props) {
                 <details className="bsmp-delivery-controls-details" open={controlsOpen}>
                     <summary
                         className="bsmp-delivery-controls-summary"
+                        aria-expanded={controlsOpen}
                         onClick={(event) => {
                             event.preventDefault();
                             setControlsOpen((open) => !open);
                         }}
                     >
                         <span><strong>Preaching Controls</strong><span className="bsmp-delivery-controls-summary-status"> · {activeSection?.title ?? "Current section"} · {progressLabel}</span></span>
-                        <span aria-hidden="true">⌄</span>
+                        <span className="bsmp-delivery-controls-summary-arrow" aria-hidden="true" style={{ transform: controlsOpen ? "rotate(180deg)" : undefined }}>⌄</span>
                     </summary>
                     <div className="bsmp-delivery-controls-panel">
                         <div className="bsmp-delivery-controls-grid">
