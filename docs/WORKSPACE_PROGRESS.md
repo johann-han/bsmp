@@ -144,7 +144,7 @@ Leaked-password protection remains deferred because the connected Supabase proje
 
 Repository CI is defined in `.github/workflows/ci.yml` for feature branches and pull requests. The workflow now relies on the repository `packageManager` field for the pnpm version instead of declaring a conflicting second version in the action configuration.
 
-The latest CI run for the Teaching traceability fix, run `33885564111`, completed successfully through dependency installation, typecheck, tests, and production build.
+CI run `34982836931` (run `884`) for the restored final-drafting head completed successfully through dependency installation, typecheck, tests, lint, and production build. This validates the restored `SermonDeliveryWorkspace` state after the earlier section-property correction and lint cleanup.
 
 The final-drafting migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
 
@@ -184,8 +184,10 @@ Supabase confirms the current application tables are RLS-enabled, including `stu
 
 The Delivery Mode mobile controls, section navigation, recovery state, Focus Mode, screen wake-lock, and My Place functionality are now implemented on `feat/final-sermon-drafting`. The delivery workspace also includes a defensive text-normalization fix for persisted section values. Authenticated browser verification has confirmed the Delivery Mode workflow after the normalization fix.
 
+The `SermonDeliveryWorkspace` section property mismatch (`body` versus `content`) that failed typecheck has been corrected. The final restored workspace now uses the persisted `content` field when rendering traceable manuscript sections. The follow-up lint issue from the no-longer-needed manuscript-section import was also removed, and CI run `884` subsequently completed successfully.
+
 ## Next Work
 
 1. Complete authenticated browser verification of the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough, including refresh persistence and source-traceability navigation.
-2. Run a production-hardening pass over permission boundaries, persisted type definitions, recovery-state edge cases, and delivery/read-only behavior.
+2. Continue production hardening over delivery recovery-state edge cases, stale local recovery references, permission boundaries, and read-only behavior before changing branch history.
 3. Reconcile the final-drafting branch with any intentionally retained changes from `main` before merge, rather than blindly forcing the divergent histories together.
