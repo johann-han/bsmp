@@ -91,6 +91,16 @@ The delivery view provides:
 - Print / Save PDF support
 - direct return to Final Draft
 - linked Teaching Foundation traceability
+- Manuscript / Delivery Notes focus switching
+- adjustable reading size with keyboard shortcuts
+- section navigation with active-section tracking
+- distraction-free fullscreen Focus Mode
+- local recovery of section, focus, reading size, and focus-mode preferences
+- screen wake-lock support where the browser permits it
+- a preacher-set “My Place” line that can be restored after navigation or interruption
+- responsive phone controls, including narrow-phone layout handling
+
+The delivery workspace also defensively normalizes persisted text values so missing or malformed section text does not crash the delivery screen.
 
 ## Sermon Scheduling & Preaching History
 
@@ -154,7 +164,7 @@ The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df6
 
 The Biblical Theology index migration is committed as `2b0e825839ba574739ac5fdc096d50d452fbc02e` and has passed repository CI.
 
-The section-aware manuscript work is committed on `feat/final-sermon-drafting`. Repository CI is green. Authenticated browser verification remains pending for the new final-draft section editor and the complete Study → Biblical Theology → Sermon → Delivery walkthrough.
+The section-aware manuscript work is committed on `feat/final-sermon-drafting`. Repository CI is green. Authenticated browser verification remains pending for the new final-draft section editor and the complete Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough.
 
 The Application Mentor integration is committed on `feat/final-sermon-drafting`. CI run `33878617356` completed successfully through dependency installation, typecheck, tests, and production build, including the new provider tests.
 
@@ -172,8 +182,10 @@ A Supabase security-advisor warning for the Teaching `updated_at` trigger's muta
 
 Supabase confirms the current application tables are RLS-enabled, including `studies`, `expository_sermons`, `sermon_outline_points`, `biblical_theology_entries`, and `teaching_plans`; the Teaching → Sermon foreign key is present from `expository_sermons.teaching_plan_id` to `teaching_plans.id`. The only remaining security-advisor warning is the unavailable leaked-password protection feature.
 
+The Delivery Mode mobile controls, section navigation, recovery state, Focus Mode, screen wake-lock, and My Place functionality are now implemented on `feat/final-sermon-drafting`. The delivery workspace also includes a defensive text-normalization fix for persisted section values. Authenticated browser verification has confirmed the Delivery Mode workflow after the normalization fix.
+
 ## Next Work
 
-1. Complete authenticated browser verification of Teaching, Teaching Mentor, Teaching → Sermon inheritance, and refresh persistence.
-2. Complete authenticated browser verification of the traceable manuscript section editor and the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough.
-3. Continue production-hardening review of permissions, source traceability, and delivery/read-only presentation as the workflow expands.
+1. Complete authenticated browser verification of the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough, including refresh persistence and source-traceability navigation.
+2. Run a production-hardening pass over permission boundaries, persisted type definitions, recovery-state edge cases, and delivery/read-only behavior.
+3. Reconcile the final-drafting branch with any intentionally retained changes from `main` before merge, rather than blindly forcing the divergent histories together.
