@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ExpositorySermon } from "@bsmp/preaching";
 import { StudyId } from "@bsmp/study";
@@ -36,6 +36,29 @@ function splitLabeledBlock(value: string): { label: string; body: string } | nul
     const label = match?.[1];
     if (!label) return null;
     return { label, body: match[2]?.trim() ?? "" };
+}
+
+function sanitizeDeliveryRecovery(studyId: string, sections: readonly { id: string }[]) {
+    try {
+        const key = `bsmp.delivery.recovery.v1:${studyId}`;
+        const raw = window.localStorage.getItem(key);
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        const marker = parsed.placeMarker;
+        if (!marker || typeof marker !== "object") return;
+        const markerSectionId = (marker as { sectionId?: unknown }).sectionId;
+        if (typeof markerSectionId !== "string") {
+            delete parsed.placeMarker;
+            window.localStorage.setItem(key, JSON.stringify(parsed));
+            return;
+        }
+        if (!sections.some((section) => section.id === markerSectionId)) {
+            delete parsed.placeMarker;
+            window.localStorage.setItem(key, JSON.stringify(parsed));
+        }
+    } catch {
+        // Recovery is optional; malformed local state must never block delivery.
+    }
 }
 
 export function SermonDeliveryWorkspace({ studyId }: Props) {
@@ -83,6 +106,11 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
     const estimatedMinutes = Math.max(0, Math.round((wordCount / 130) * 10) / 10);
     const readingConfig = readingSizeConfig[readingSize];
     const bigIdea = normalizeTextValue(sermon?.bigIdea?.value) || "No Big Idea has been prepared.";
+
+    useLayoutEffect(() => {
+        if (!studyId || sections.length === 0) return;
+        sanitizeDeliveryRecovery(studyId, sections);
+    }, [studyId, sections]);
 
     const persistRecoveryState = useCallback((patch: { focus?: "manuscript" | "notes"; readingSize?: ReadingSize }) => {
         try {
