@@ -90,6 +90,20 @@ function synchronizeRecoveryIdentity(sections: readonly SermonManuscriptSection[
         const existing = readRecoveryState(sections.length);
         if (!existing) return;
 
+        if (typeof recovery.sectionSignature !== "string" || !recovery.sectionSignature) {
+            // Legacy recovery records have no manuscript identity. Preserve the user's
+            // existing position once, then attach the current section signature so
+            // subsequent manuscript replacements/reorders can be detected safely.
+            window.localStorage.setItem(recoveryKey(), JSON.stringify({
+                ...existing,
+                sectionSignature: signature,
+            }));
+            return;
+        }
+
+        // A previously identified manuscript has changed. Preserve a valid My Place
+        // anchor when possible; otherwise restart from the first section rather than
+        // restoring a potentially unrelated section index.
         const marker = existing.placeMarker && sections.some((section) => section.id === existing.placeMarker?.sectionId)
             ? existing.placeMarker
             : undefined;
