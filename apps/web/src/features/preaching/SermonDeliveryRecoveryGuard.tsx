@@ -7,7 +7,13 @@ const DELIVERY_SECTION_PREFIX = "delivery-section-";
 function sanitizeDeliveryHash() {
     const hash = window.location.hash.slice(1);
     if (!hash.startsWith(DELIVERY_SECTION_PREFIX)) return;
+
+    // Do not clear a valid recovery hash while the delivery workspace is still loading.
+    // The navigation/section DOM is the signal that persisted manuscript sections are ready.
+    const deliverySectionContainer = document.querySelector<HTMLElement>(".bsmp-delivery-section-nav");
+    if (!deliverySectionContainer) return;
     if (document.getElementById(hash)) return;
+
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
 }
 
