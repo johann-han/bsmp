@@ -8,6 +8,22 @@ import { supabase } from "../../lib/supabase";
 type Result = { assessment: "grounded" | "mixed" | "unclear" | "overstated"; coaching: string; focuses: string[]; model: string; provider: "openai" | "gemini" };
 const labels: Record<Result["assessment"], string> = { grounded: "Grounded", mixed: "Mixed", unclear: "Unclear", overstated: "Overstated" };
 const focusLabels: Record<string, string> = { message: "Message", deliveryNotes: "Delivery Notes", clarity: "Clarity", emphasis: "Emphasis", application: "Application" };
+const allowedAssessments = new Set<Result["assessment"]>(["grounded", "mixed", "unclear", "overstated"]);
+
+function parseMentorResult(value: unknown): Result | null {
+  if (!value || typeof value !== "object") return null;
+  const result = value as Partial<Result>;
+  if (typeof result.assessment !== "string" || !allowedAssessments.has(result.assessment as Result["assessment"])) return null;
+  if (typeof result.coaching !== "string" || !Array.isArray(result.focuses) || !result.focuses.every((focus) => typeof focus === "string")) return null;
+  if (typeof result.model !== "string" || (result.provider !== "openai" && result.provider !== "gemini")) return null;
+  return {
+    assessment: result.assessment as Result["assessment"],
+    coaching: result.coaching,
+    focuses: result.focuses,
+    model: result.model,
+    provider: result.provider,
+  };
+}
 
 export function SermonDeliveryMentorPanel({ studyId }: { studyId: string }) {
   const [sermon, setSermon] = useState<ExpositorySermon | null>(null);
@@ -35,7 +51,14 @@ export function SermonDeliveryMentorPanel({ studyId }: { studyId: string }) {
     try {
       const session = await supabase.auth.getSession(); const token = session.data.session?.access_token; if (!token) throw new Error("A signed-in Supabase session is required for the sermon delivery mentor.");
       const response = await fetch("/api/ai/sermon-delivery-mentor", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ studyId }) });
-      const payload = await response.json() as Result & { error?: string }; if (!response.ok) throw new Error(payload.error ?? "The sermon delivery mentor could not respond."); setResult(payload);
+      const payload = await response.json() as unknown;
+      if (!response.ok) {
+        const apiError = payload && typeof payload === "object" && "error" in payload && typeof (payload as { error?: unknown }).error === "string" ? (payload as { error: string }).error : "The sermon delivery mentor could not respond.";
+        throw new Error(apiError);
+      }
+      const parsed = parseMentorResult(payload);
+      if (!parsed) throw new Error("The sermon delivery mentor returned an invalid response.");
+      setResult(parsed);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to run the sermon delivery mentor."); }
     finally { setRunning(false); }
   }
