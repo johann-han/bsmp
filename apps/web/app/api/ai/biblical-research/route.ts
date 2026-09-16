@@ -1,14 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
-import { runBiblicalResearch } from "../../../../src/lib/biblicalResearchProvider";
+import { runBiblicalResearch, type BiblicalResearchFocus } from "../../../../src/lib/biblicalResearchProvider";
 import { runExternalBiblicalResearch } from "../../../../src/lib/externalBiblicalResearchProvider";
 
-interface RequestBody { studyId?: unknown; question?: unknown; external?: unknown; sourceUrls?: unknown; }
+interface RequestBody { studyId?: unknown; question?: unknown; external?: unknown; sourceUrls?: unknown; focus?: unknown; }
+const VALID_FOCUSES: readonly BiblicalResearchFocus[] = ["general", "geography", "customs_culture", "historical_period", "social_political", "religious_context", "literary_setting", "archaeology_material", "language_terminology"];
 
 function requiredText(value: unknown, name: string): string {
     if (typeof value !== "string" || !value.trim()) throw new Error(`${name} is required.`);
     return value.trim();
+}
+
+function researchFocus(value: unknown): BiblicalResearchFocus {
+    return typeof value === "string" && VALID_FOCUSES.includes(value as BiblicalResearchFocus) ? value as BiblicalResearchFocus : "general";
 }
 
 function bearer(request: Request): string {
@@ -47,6 +52,7 @@ export async function POST(request: Request) {
         const body = await request.json() as RequestBody;
         const studyId = requiredText(body.studyId, "Study ID");
         const question = requiredText(body.question, "Research question");
+        const focus = researchFocus(body.focus);
         const useExternal = body.external === true;
 
         const { data: study, error: studyError } = await client.from("studies").select("id, title, passage_start_book, passage_start_chapter, passage_start_verse, passage_end_book, passage_end_chapter, passage_end_verse").eq("id", studyId).eq("user_id", userId).maybeSingle();
@@ -70,7 +76,7 @@ export async function POST(request: Request) {
         ];
 
         if (useExternal) {
-            const result = await runExternalBiblicalResearch({ question, studyTitle: study.title, passage, studyContext, sourceUrls: sourceUrls(body.sourceUrls) });
+            const result = await runExternalBiblicalResearch({ question, studyTitle: study.title, passage, studyContext, sourceUrls: sourceUrls(body.sourceUrls), focus });
             return NextResponse.json(result);
         }
 
@@ -78,6 +84,7 @@ export async function POST(request: Request) {
             question,
             studyTitle: study.title,
             passage,
+            focus,
             observations: (observations ?? []).map((item) => `${item.verse_book} ${item.verse_chapter}:${item.verse_verse}: ${item.statement}`),
             interpretations: (interpretations ?? []).map((item) => item.statement),
             biblicalTheology: (theology ?? []).map((item) => ({ theme: item.theme, synthesis: item.synthesis })),
