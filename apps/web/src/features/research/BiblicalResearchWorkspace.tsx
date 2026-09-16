@@ -11,7 +11,7 @@ import type { BiblicalResearchFocus } from "../../lib/biblicalResearchProvider";
 interface Props { studyId: string; }
 interface ResearchSource { url: string; title: string; }
 interface SavedResearchSource { id: string; study_id: string | null; url: string; title: string; source_type: string; last_used_at: string | null; }
-interface ResearchResult { answer: string; textualBasis: string[]; furtherQuestions: string[]; cautions: string[]; sources?: ResearchSource[]; model: string; provider: string; }
+interface ResearchResult { answer: string; textualBasis: string[]; furtherQuestions: string[]; cautions: string[]; sources?: ResearchSource[]; sourceCitationsReturned?: boolean; model: string; provider: string; }
 
 const RESEARCH_FOCUSES: readonly { value: BiblicalResearchFocus; label: string; description: string }[] = [
     { value: "general", label: "General Biblical Research", description: "Investigate a focused question without limiting the research to one context category." },
@@ -134,9 +134,16 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             const response = await fetch("/api/ai/biblical-research", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ studyId, question: question.trim(), external: effectiveExternal, sourceUrls: urls, focus }) });
             const payload = await response.json() as Partial<ResearchResult> & { error?: unknown };
             if (!response.ok) throw new Error(typeof payload.error === "string" ? payload.error : "The Biblical Research assistant request failed.");
-            const nextResult = { answer: payload.answer ?? "", textualBasis: payload.textualBasis ?? [], furtherQuestions: payload.furtherQuestions ?? [], sources: payload.sources ?? [], cautions: payload.cautions ?? [], model: payload.model ?? "", provider: payload.provider ?? "" };
+            const returnedSources = payload.sources ?? [];
+            const sourceCitationsReturned = returnedSources.length > 0;
+            const requestSources = sourceCitationsReturned ? returnedSources : urls.map((url) => ({ url, title: fallbackTitle(url) }));
+            const nextCautions = [...(payload.cautions ?? [])];
+            if (effectiveExternal && !sourceCitationsReturned && urls.length) {
+                nextCautions.push("The provider did not return formal citation annotations. The URLs shown below were supplied to the research request; verify important claims directly against those sources.");
+            }
+            const nextResult = { answer: payload.answer ?? "", textualBasis: payload.textualBasis ?? [], furtherQuestions: payload.furtherQuestions ?? [], sources: requestSources, sourceCitationsReturned, cautions: nextCautions, model: payload.model ?? "", provider: payload.provider ?? "" };
             setResult(nextResult);
-            if (effectiveExternal) await saveSources(nextResult.sources ?? [], urls, userId);
+            if (effectiveExternal) await saveSources(requestSources, urls, userId);
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Unable to run Biblical Research.");
         } finally { setRunning(false); }
@@ -188,14 +195,14 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
                 <button type="button" onClick={addSavedSourcesToQuestion} disabled={!savedSources.length} style={{ marginTop: 10 }}>Add selected sources to research</button>
             </div>}
 
-            {effectiveExternal && <div style={{ marginTop: 10 }}><label style={{ display: "block", fontSize: 13, marginBottom: 6 }}>Optional public source URLs (one per line; up to 10)</label><textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} rows={4} placeholder="https://example.org/article" style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} /><p style={{ fontSize: 12, color: "#6b7280" }}>External research uses Gemini&apos;s public web-search and URL-context tools when available. The OpenRouter fallback can use supplied URLs. Retrieved sources are shown separately from your Study evidence and saved for later reuse.</p></div>}
+            {effectiveExternal && <div style={{ marginTop: 10 }}><label style={{ display: "block", fontSize: 13, marginBottom: 6 }}>Optional public source URLs (one per line; up to 10)</label><textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} rows={4} placeholder="https://example.org/article" style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} /><p style={{ fontSize: 12, color: "#6b7280" }}>External research uses Gemini&apos;s public web-search and URL-context tools when available. The OpenRouter fallback can use supplied URLs. Research sources are shown with their provenance status and saved for later reuse.</p></div>}
             <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 12 }}><button type="button" onClick={() => void runResearch()} disabled={running}>{running ? "Researching..." : effectiveExternal ? "Research with Sources" : "Investigate Question"}</button>{error && <span style={{ color: "#b91c1c" }}>{error}</span>}{sourceMessage && <span style={{ color: "#166534" }}>{sourceMessage}</span>}</div>
         </section>
 
         {result && <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", display: "grid", gap: 18 }}>
             <div><h2 style={{ marginTop: 0 }}>Research Guidance</h2><p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{result.answer}</p></div>
             <div><h3>Textual Basis</h3>{result.textualBasis.length ? <ul>{result.textualBasis.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No specific textual basis was returned from the supplied Study context.</p>}</div>
-            {effectiveExternal && <div><h3>Retrieved Sources</h3>{result.sources?.length ? <ul>{result.sources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" style={linkStyle}>{source.title}</a> <span style={{ color: "#6b7280" }}>({source.url})</span></li>)}</ul> : <p>No source citations were returned by the external research tools.</p>}</div>}
+            {effectiveExternal && <div><h3>{result.sourceCitationsReturned ? "Retrieved Sources" : "Sources Supplied to Research"}</h3>{result.sources?.length ? <ul>{result.sources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" style={linkStyle}>{source.title}</a> <span style={{ color: "#6b7280" }}>({source.url})</span></li>)}</ul> : <p>No external source URLs were supplied or returned.</p>}{result.sources?.length && !result.sourceCitationsReturned ? <p style={{ fontSize: 12, color: "#92400e" }}>These URLs were supplied to the research request. The provider did not return formal citation annotations, so important claims should be checked directly against the source.</p> : null}</div>}
             <div><h3>Questions for Further Study</h3>{result.furtherQuestions.length ? <ul>{result.furtherQuestions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional questions were suggested.</p>}</div>
             <div><h3>Cautions</h3>{result.cautions.length ? <ul>{result.cautions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional cautions were returned.</p>}</div>
             <div style={{ fontSize: 12, color: "#6b7280" }}>AI provider: {result.provider} · model: {result.model}</div>
