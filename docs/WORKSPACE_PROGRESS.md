@@ -167,9 +167,12 @@ The Research implementation uses no new Supabase tables or migrations. Existing 
 
 Supabase security-advisor status remains unchanged: the only outstanding advisory is leaked-password protection, which is unavailable on the connected project plan.
 
+Research source planning is documented in PR #5. The next external-source layer is explicitly separated from student-authored Study context and requires source URLs, retrieval timestamps, provenance, unsupported-source handling, and authenticated browser verification before source-derived material influences sermon stages.
+
 ## Next Work
 
-1. Add a distinct research-source layer that can retrieve and cite external material rather than merely planning or synthesizing from Study context.
-2. Keep external-source retrieval separate from student-authored Study observations, interpretations, Biblical Theology, and Teaching so provenance remains explicit.
-3. Add citation provenance, source URLs, retrieval timestamps, and failure/unsupported-source handling before allowing external evidence to influence later sermon stages.
-4. Verify the external-research workflow in an authenticated browser before introducing any automatic source-derived content into the sermon pipeline.
+1. Add the external-source retrieval layer behind a distinct source/provenance boundary.
+2. Persist or expose citation metadata only when a source was actually retrieved and verified.
+3. Define safe retrieval constraints, including supported source types and protection against untrusted or unsupported destinations.
+4. Keep source-derived evidence separate from student-authored Study evidence so traceability remains explicit.
+5. Verify external research in an authenticated browser before allowing source-derived material to flow into sermon stages.
