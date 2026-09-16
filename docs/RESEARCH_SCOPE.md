@@ -16,6 +16,12 @@ The workspace provides focused modes for:
 - Archaeology & Material Context
 - Language & Terminology
 
+## Research Questions helper
+
+Each research mode presents a curated set of suggested research questions. The student can select a suggestion to populate the research-question field, then edit it before submitting the research request.
+
+The question bank is deterministic and transparent; it does not silently generate or submit a question. The suggestions are intended as starting points for disciplined investigation and do not replace the student's own observations, interpretation, or theological judgment.
+
 ## Contextual research
 
 Contextual modes are intended to investigate background information that may illuminate a passage without silently turning that information into the student's interpretation.
@@ -44,4 +50,4 @@ When external evidence is used, the application should show the returned source 
 
 ## Verification
 
-Automated repository CI must pass before the external-source slice is merged. Authenticated browser verification must confirm that contextual research can be run from a real Study, that retrieved sources remain visibly separate from Study evidence, and that navigation back to the Study, Biblical Theology, and Teaching stages preserves the selected study.
+Automated repository CI must pass before the external-source slice is merged. Authenticated browser verification must confirm that contextual research can be run from a real Study, that a research-question suggestion populates the editable question field, that retrieved sources remain visibly separate from Study evidence, and that navigation back to the Study, Biblical Theology, and Teaching stages preserves the selected study.
