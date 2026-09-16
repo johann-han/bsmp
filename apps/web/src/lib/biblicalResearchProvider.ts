@@ -89,7 +89,7 @@ export async function runBiblicalResearch(input: BiblicalResearchInput): Promise
     if (provider === "openai") {
         const apiKey = process.env.OPENAI_API_KEY;
         if (!apiKey) throw new Error("OpenAI research is not configured. Set OPENAI_API_KEY on the web server.");
-        const model = process.env.OPENAI_MODEL ?? "gpt-5.6-luna";
+        const model = process.env.OPENAI_RESEARCH_MODEL ?? process.env.OPENAI_MODEL ?? "gpt-5.6-luna";
         const response = await fetch("https://api.openai.com/v1/responses", {
             method: "POST",
             headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -102,7 +102,7 @@ export async function runBiblicalResearch(input: BiblicalResearchInput): Promise
     if (provider === "gemini") {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) throw new Error("Gemini research is not configured. Set GEMINI_API_KEY on the web server.");
-        const model = process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
+        const model = process.env.GEMINI_RESEARCH_MODEL ?? process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
         const response = await fetch(endpoint, {
             method: "POST",
