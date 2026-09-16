@@ -59,8 +59,9 @@ function buildInput(input: OpenRouterBiblicalResearchInput): string {
         "Do not replace the student's interpretation, Biblical Theology, or Teaching.",
         "Distinguish established facts from uncertainty and do not treat an uncited claim as verified.",
         input.external
-            ? "External research is allowed only from the supplied public source URLs. Use the web-fetch tool for those URLs when needed. Do not claim to have searched the wider web."
+            ? "External research is allowed only from the supplied public source URLs. Use the openrouter:web_fetch tool for those URLs when needed. Do not claim to have searched the wider web."
             : "Use only the supplied Study context. Do not claim to have consulted external sources.",
+        "When possible, return the requested JSON object exactly. If the model cannot produce structured JSON, provide a concise factual answer instead of discussing the API or the response format.",
         `Research focus: ${input.focus}`,
         FOCUS_GUIDANCE[input.focus],
         `Study: ${input.studyTitle}`,
@@ -119,19 +120,51 @@ function extractSources(payload: unknown): OpenRouterResearchSource[] {
     return Array.from(sources.values()).slice(0, 10);
 }
 
-function parseResult(raw: string): Omit<OpenRouterBiblicalResearchResult, "model" | "provider" | "sources"> {
-    const stripped = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
-    const parsed = JSON.parse(stripped) as Record<string, unknown>;
-    const list = (value: unknown) => Array.isArray(value)
+function list(value: unknown): string[] {
+    return Array.isArray(value)
         ? value.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean).slice(0, 5)
         : [];
-    const answer = typeof parsed.answer === "string" ? parsed.answer.trim() : "";
-    if (!answer) throw new Error("The OpenRouter research assistant returned no usable answer.");
+}
+
+function parseStructuredObject(raw: string): Record<string, unknown> | null {
+    const stripped = raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
+    try {
+        const parsed = JSON.parse(stripped) as unknown;
+        return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : null;
+    } catch {
+        const start = stripped.indexOf("{");
+        const end = stripped.lastIndexOf("}");
+        if (start < 0 || end <= start) return null;
+        try {
+            const parsed = JSON.parse(stripped.slice(start, end + 1)) as unknown;
+            return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as Record<string, unknown> : null;
+        } catch {
+            return null;
+        }
+    }
+}
+
+function parseResult(raw: string): Omit<OpenRouterBiblicalResearchResult, "model" | "provider" | "sources"> {
+    const parsed = parseStructuredObject(raw);
+    if (parsed) {
+        const answer = typeof parsed.answer === "string" ? parsed.answer.trim() : "";
+        if (answer) {
+            return {
+                answer,
+                textualBasis: list(parsed.textualBasis),
+                furtherQuestions: list(parsed.furtherQuestions),
+                cautions: list(parsed.cautions),
+            };
+        }
+    }
+
+    const fallbackAnswer = raw.trim();
+    if (!fallbackAnswer) throw new Error("The OpenRouter research assistant returned no usable answer.");
     return {
-        answer,
-        textualBasis: list(parsed.textualBasis),
-        furtherQuestions: list(parsed.furtherQuestions),
-        cautions: list(parsed.cautions),
+        answer: fallbackAnswer,
+        textualBasis: [],
+        furtherQuestions: [],
+        cautions: ["The free fallback returned an unstructured response; treat claims as research guidance and verify them against the retrieved source material."],
     };
 }
 
