@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { supabase } from "../lib/supabase";
 
-const protectedPaths = ["/studies", "/workspace", "/bible", "/settings", "/preaching", "/teaching", "/biblical-theology"];
+const protectedPaths = ["/studies", "/workspace", "/bible", "/settings", "/preaching", "/teaching", "/biblical-theology", "/research"];
 
 function isProtectedPath(pathname: string): boolean {
     return protectedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
