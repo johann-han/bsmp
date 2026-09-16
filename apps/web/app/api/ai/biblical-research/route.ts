@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
-import { runBiblicalResearch, type BiblicalResearchFocus } from "../../../../src/lib/biblicalResearchProvider";
-import { runExternalBiblicalResearch } from "../../../../src/lib/externalBiblicalResearchProvider";
+import { runRoutedBiblicalResearch, runRoutedExternalBiblicalResearch } from "../../../../src/lib/biblicalResearchRouter";
+import type { BiblicalResearchFocus } from "../../../../src/lib/biblicalResearchProvider";
 
 interface RequestBody { studyId?: unknown; question?: unknown; external?: unknown; sourceUrls?: unknown; focus?: unknown; }
 const VALID_FOCUSES: readonly BiblicalResearchFocus[] = ["general", "geography", "customs_culture", "historical_period", "social_political", "religious_context", "literary_setting", "archaeology_material", "language_terminology"];
@@ -84,11 +84,11 @@ export async function POST(request: Request) {
         ];
 
         if (useExternal) {
-            const result = await runExternalBiblicalResearch({ question, studyTitle: study.title, passage, studyContext, sourceUrls: sourceUrls(body.sourceUrls), focus });
+            const result = await runRoutedExternalBiblicalResearch({ question, studyTitle: study.title, passage, studyContext, sourceUrls: sourceUrls(body.sourceUrls), focus });
             return NextResponse.json(result);
         }
 
-        const result = await runBiblicalResearch({
+        const result = await runRoutedBiblicalResearch({
             question,
             studyTitle: study.title,
             passage,
