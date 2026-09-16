@@ -22,10 +22,14 @@ function getManuscriptSignature(): string | null {
     const sections = Array.from(document.querySelectorAll<HTMLElement>(".bsmp-delivery-print-section"));
     if (sections.length === 0) return null;
 
-    return JSON.stringify(sections.map((section) => ({
-        id: section.id,
-        text: section.textContent?.replace(/\s+/g, " ").trim() ?? "",
-    })));
+    return JSON.stringify(sections.map((section) => {
+        const clone = section.cloneNode(true) as HTMLElement;
+        clone.querySelectorAll(".bsmp-delivery-place-marker").forEach((marker) => marker.remove());
+        return {
+            id: section.id,
+            text: clone.textContent?.replace(/\s+/g, " ").trim() ?? "",
+        };
+    }));
 }
 
 function invalidateStaleMyPlace() {
