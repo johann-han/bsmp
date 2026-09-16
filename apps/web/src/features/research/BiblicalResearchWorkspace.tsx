@@ -41,9 +41,11 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
     const [running, setRunning] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const selectedFocus = RESEARCH_FOCUSES.find((item) => item.value === focus);
-    const selectedFocusDescription = selectedFocus?.description ?? "";
+    const selectedFocus = RESEARCH_FOCUSES.find((item) => item.value === focus) ?? RESEARCH_FOCUSES[0]!;
+    const selectedFocusDescription = selectedFocus.description;
     const questionSuggestions = RESEARCH_QUESTION_SUGGESTIONS[focus];
+    const contextualResearch = focus !== "general";
+    const effectiveExternal = external || contextualResearch;
 
     const load = useCallback(async () => {
         if (!studyId) { setLoading(false); return; }
@@ -74,9 +76,9 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
         if (!studyId) { setError("Open Biblical Research from a Study."); return; }
         if (question.trim().length < 8) { setError("Enter a specific research question before running the assistant."); return; }
         const urls = sourceText.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean).slice(0, 10);
-        if (external && urls.some((url) => !/^https:\/\//i.test(url))) { setError("External research sources must use complete HTTPS URLs."); return; }
-        if (focus !== "general" && !external) {
-            setError("Turn on Include external research for contextual research modes.");
+        if (effectiveExternal && urls.some((url) => !/^https:\/\//i.test(url))) { setError("External research sources must use complete HTTPS URLs."); return; }
+        if (contextualResearch && !effectiveExternal) {
+            setError("Contextual research requires external sources.");
             return;
         }
         setRunning(true);
@@ -84,7 +86,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             const session = await supabase.auth.getSession();
             const token = session.data.session?.access_token;
             if (!token) throw new Error("A signed-in user is required.");
-            const response = await fetch("/api/ai/biblical-research", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ studyId, question: question.trim(), external, sourceUrls: urls, focus }) });
+            const response = await fetch("/api/ai/biblical-research", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ studyId, question: question.trim(), external: effectiveExternal, sourceUrls: urls, focus }) });
             const payload = await response.json() as Partial<ResearchResult> & { error?: unknown };
             if (!response.ok) throw new Error(typeof payload.error === "string" ? payload.error : "The Biblical Research assistant request failed.");
             setResult({ answer: payload.answer ?? "", textualBasis: payload.textualBasis ?? [], furtherQuestions: payload.furtherQuestions ?? [], sources: payload.sources ?? [], cautions: payload.cautions ?? [], model: payload.model ?? "", provider: payload.provider ?? "" });
@@ -127,16 +129,16 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
 
             <h2 style={{ marginTop: 20 }}>Research Question</h2>
             <textarea value={question} onChange={(event) => setQuestion(event.target.value)} rows={5} placeholder="Choose a suggested question above or write your own focused research question." style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} />
-            <label style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 12, fontWeight: 600 }}><input type="checkbox" checked={external} onChange={(event) => setExternal(event.target.checked)} /> Include external research</label>
-            {focus !== "general" && <p style={{ fontSize: 12, color: "#6b7280", marginTop: 8 }}>Contextual research modes use external sources so geographical, cultural, historical, archaeological, and language claims can be checked against retrieved evidence.</p>}
-            {external && <div style={{ marginTop: 10 }}><label style={{ display: "block", fontSize: 13, marginBottom: 6 }}>Optional public source URLs (one per line; up to 10)</label><textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} rows={4} placeholder="https://example.org/article" style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} /><p style={{ fontSize: 12, color: "#6b7280" }}>External research uses Gemini&apos;s public web-search and URL-context tools. Retrieved sources are shown separately from your Study evidence.</p></div>}
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 12 }}><button type="button" onClick={() => void runResearch()} disabled={running}>{running ? "Researching..." : external ? "Research with Sources" : "Investigate Question"}</button>{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
+            <label style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 12, fontWeight: 600 }}><input type="checkbox" checked={effectiveExternal} disabled={contextualResearch} onChange={(event) => setExternal(event.target.checked)} /> Include external research</label>
+            {contextualResearch && <p style={{ fontSize: 12, color: "#6b7280", marginTop: 8 }}>Contextual research modes automatically use external sources so geographical, cultural, historical, archaeological, and language claims can be checked against retrieved evidence. The option is required for this research focus.</p>}
+            {effectiveExternal && <div style={{ marginTop: 10 }}><label style={{ display: "block", fontSize: 13, marginBottom: 6 }}>Optional public source URLs (one per line; up to 10)</label><textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} rows={4} placeholder="https://example.org/article" style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} /><p style={{ fontSize: 12, color: "#6b7280" }}>External research uses Gemini&apos;s public web-search and URL-context tools. Retrieved sources are shown separately from your Study evidence.</p></div>}
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 12 }}><button type="button" onClick={() => void runResearch()} disabled={running}>{running ? "Researching..." : effectiveExternal ? "Research with Sources" : "Investigate Question"}</button>{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
         </section>
 
         {result && <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", display: "grid", gap: 18 }}>
             <div><h2 style={{ marginTop: 0 }}>Research Guidance</h2><p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{result.answer}</p></div>
             <div><h3>Textual Basis</h3>{result.textualBasis.length ? <ul>{result.textualBasis.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No specific textual basis was returned from the supplied Study context.</p>}</div>
-            {external && <div><h3>Retrieved Sources</h3>{result.sources?.length ? <ul>{result.sources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" style={linkStyle}>{source.title}</a> <span style={{ color: "#6b7280" }}>({source.url})</span></li>)}</ul> : <p>No source citations were returned by the external research tools.</p>}</div>}
+            {effectiveExternal && <div><h3>Retrieved Sources</h3>{result.sources?.length ? <ul>{result.sources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" style={linkStyle}>{source.title}</a> <span style={{ color: "#6b7280" }}>({source.url})</span></li>)}</ul> : <p>No source citations were returned by the external research tools.</p>}</div>}
             <div><h3>Questions for Further Study</h3>{result.furtherQuestions.length ? <ul>{result.furtherQuestions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional questions were suggested.</p>}</div>
             <div><h3>Cautions</h3>{result.cautions.length ? <ul>{result.cautions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional cautions were returned.</p>}</div>
             <div style={{ fontSize: 12, color: "#6b7280" }}>AI provider: {result.provider} · model: {result.model}</div>
