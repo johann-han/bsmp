@@ -41,7 +41,8 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
     const [running, setRunning] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const selectedFocus = RESEARCH_FOCUSES.find((item) => item.value === focus) ?? RESEARCH_FOCUSES[0];
+    const selectedFocus = RESEARCH_FOCUSES.find((item) => item.value === focus);
+    const selectedFocusDescription = selectedFocus?.description ?? "";
     const questionSuggestions = RESEARCH_QUESTION_SUGGESTIONS[focus];
 
     const load = useCallback(async () => {
@@ -112,7 +113,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             <select id="research-focus" value={focus} onChange={(event) => setFocus(event.target.value as BiblicalResearchFocus)} style={{ width: "100%", padding: 12, boxSizing: "border-box" }}>
                 {RESEARCH_FOCUSES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
-            <p style={{ fontSize: 13, color: "#6b7280", marginTop: 8 }}>{selectedFocus.description}</p>
+            <p style={{ fontSize: 13, color: "#6b7280", marginTop: 8 }}>{selectedFocusDescription}</p>
 
             <div style={{ marginTop: 16, padding: 14, border: "1px solid #e5e7eb", borderRadius: 10, background: "#f9fafb" }}>
                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
