@@ -6,14 +6,13 @@ import { StudyId } from "@bsmp/study";
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { supabase } from "../../lib/supabase";
 import { RESEARCH_QUESTION_SUGGESTIONS } from "./researchQuestionBank";
+import type { BiblicalResearchFocus } from "../../lib/biblicalResearchProvider";
 
 interface Props { studyId: string; }
 interface ResearchSource { url: string; title: string; }
 interface ResearchResult { answer: string; textualBasis: string[]; furtherQuestions: string[]; cautions: string[]; sources?: ResearchSource[]; model: string; provider: string; }
 
-type ResearchFocus = "general" | "geography" | "customs_culture" | "historical_period" | "social_political" | "religious_context" | "literary_setting" | "archaeology_material" | "language_terminology";
-
-const RESEARCH_FOCUSES: readonly { value: ResearchFocus; label: string; description: string }[] = [
+const RESEARCH_FOCUSES: readonly { value: BiblicalResearchFocus; label: string; description: string }[] = [
     { value: "general", label: "General Biblical Research", description: "Investigate a focused question without limiting the research to one context category." },
     { value: "geography", label: "Geographical Setting", description: "Places, routes, terrain, regions, climate, distances, borders, and location-related context." },
     { value: "customs_culture", label: "Customs & Culture", description: "Social customs, family life, hospitality, honor and shame, food, clothing, marriage, burial, festivals, and daily life." },
@@ -33,7 +32,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
     const [observations, setObservations] = useState(0);
     const [interpretations, setInterpretations] = useState(0);
     const [theology, setTheology] = useState(0);
-    const [focus, setFocus] = useState<ResearchFocus>("general");
+    const [focus, setFocus] = useState<BiblicalResearchFocus>("general");
     const [question, setQuestion] = useState("");
     const [external, setExternal] = useState(false);
     const [sourceText, setSourceText] = useState("");
@@ -110,7 +109,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
         <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
             <h2 style={{ marginTop: 0 }}>Research Focus</h2>
             <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }} htmlFor="research-focus">Research area</label>
-            <select id="research-focus" value={focus} onChange={(event) => setFocus(event.target.value as ResearchFocus)} style={{ width: "100%", padding: 12, boxSizing: "border-box" }}>
+            <select id="research-focus" value={focus} onChange={(event) => setFocus(event.target.value as BiblicalResearchFocus)} style={{ width: "100%", padding: 12, boxSizing: "border-box" }}>
                 {RESEARCH_FOCUSES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
             <p style={{ fontSize: 13, color: "#6b7280", marginTop: 8 }}>{selectedFocus.description}</p>
@@ -138,7 +137,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             <div><h3>Textual Basis</h3>{result.textualBasis.length ? <ul>{result.textualBasis.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No specific textual basis was returned from the supplied Study context.</p>}</div>
             {external && <div><h3>Retrieved Sources</h3>{result.sources?.length ? <ul>{result.sources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" style={linkStyle}>{source.title}</a> <span style={{ color: "#6b7280" }}>({source.url})</span></li>)}</ul> : <p>No source citations were returned by the external research tools.</p>}</div>}
             <div><h3>Questions for Further Study</h3>{result.furtherQuestions.length ? <ul>{result.furtherQuestions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional questions were suggested.</p>}</div>
-            <div><h3>Cautions</h3>{result.cautions.length ? <ul>{result.cautions.map((item) => <li key={item}>{item}</li>}) : <p>No additional cautions were returned.</p>}</div>
+            <div><h3>Cautions</h3>{result.cautions.length ? <ul>{result.cautions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional cautions were returned.</p>}</div>
             <div style={{ fontSize: 12, color: "#6b7280" }}>AI provider: {result.provider} · model: {result.model}</div>
         </section>}
     </main>;
