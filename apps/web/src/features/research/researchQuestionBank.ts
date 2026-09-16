@@ -8,9 +8,9 @@ export interface ResearchQuestionSuggestion {
 export const RESEARCH_QUESTION_SUGGESTIONS: Readonly<Record<BiblicalResearchFocus, readonly ResearchQuestionSuggestion[]>> = {
     general: [
         { id: "general-1", question: "What background information would help me understand this passage without replacing what the text itself says?" },
-        { id: "general-2", question: "What important contextual facts should I investigate before drawing conclusions from this passage?" },
-        { id: "general-3", question: "What historical, cultural, literary, or geographical context is most relevant to this passage?" },
-        { id: "general-4", question: "What outside information could clarify the passage, and what should remain an open question?" },
+        { id: "general-2", question: "What important context should I investigate before drawing conclusions from my study of this passage?" },
+        { id: "general-3", question: "What questions arise from my observations and interpretations that need further investigation?" },
+        { id: "general-4", question: "What outside information could clarify a point in my study, and what should remain an open question?" },
     ],
     geography: [
         { id: "geography-1", question: "Where was this event taking place, and what geographical features are important to the passage?" },
