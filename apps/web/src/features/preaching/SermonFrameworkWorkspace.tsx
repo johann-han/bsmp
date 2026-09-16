@@ -71,7 +71,18 @@ export function SermonFrameworkWorkspace({ studyId }: Props) {
 
     return (
         <AppShell title="Sermon Framework">
-            <div style={{ display: "grid", gap: 20 }}>
+            <div className="bsmp-sermon-framework">
+                <style>{`@media (max-width:700px){
+                    .bsmp-sermon-framework{display:grid;gap:14px;min-width:0;overflow:hidden}
+                    .bsmp-sermon-framework>section{width:100%;max-width:100%;min-width:0;box-sizing:border-box;padding:16px!important;overflow:hidden}
+                    .bsmp-sermon-framework h2{font-size:20px!important;line-height:1.28;overflow-wrap:anywhere}
+                    .bsmp-sermon-framework p{overflow-wrap:anywhere}
+                    .bsmp-sermon-framework textarea{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box;min-height:150px;line-height:1.5;padding:12px}
+                    .bsmp-sermon-framework button{min-height:42px;max-width:100%;white-space:normal}
+                    .bsmp-sermon-framework>div:last-child{gap:8px!important;align-items:stretch!important}
+                    .bsmp-sermon-framework>div:last-child button{flex:1 1 100%;}
+                    .bsmp-sermon-framework>div:last-child span{flex:1 1 100%;}
+                }`}</style>
                 <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                     <div style={{ fontSize: 13, color: "#6b7280" }}>Expository Sermon Preparation</div>
                     <h2 style={{ marginBottom: 8 }}>{sermon.title.value}</h2>
@@ -80,9 +91,9 @@ export function SermonFrameworkWorkspace({ studyId }: Props) {
                     {sermon.bigIdea && <p style={{ margin: "12px 0 4px" }}><strong>Big Idea:</strong> {sermon.bigIdea.value}</p>}
                     {sermon.purpose && <p style={{ margin: "4px 0" }}><strong>Purpose:</strong> {sermon.purpose.value}</p>}
                 </section>
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><h2>Introduction</h2><p style={{ color: "#6b7280", marginTop: 0 }}>Build the opening that gains attention, introduces the need, and leads naturally into the text.</p><textarea value={introduction} onChange={(event) => setIntroduction(event.target.value)} rows={7} placeholder="Write the sermon introduction..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></section>
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><h2>Context / Setting</h2><p style={{ color: "#6b7280", marginTop: 0 }}>Record the historical, literary, and immediate context that the congregation needs before the main exposition.</p><textarea value={context} onChange={(event) => setContext(event.target.value)} rows={9} placeholder="Record the context and setting..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></section>
-                <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><h2>Conclusion</h2><p style={{ color: "#6b7280", marginTop: 0 }}>Bring the sermon to a clear landing: restate the truth, press the purpose, and call for an appropriate response.</p><textarea value={conclusion} onChange={(event) => setConclusion(event.target.value)} rows={7} placeholder="Write the sermon conclusion and response..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></section>
+                <section id="introduction" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", scrollMarginTop: 96 }}><h2>Introduction</h2><p style={{ color: "#6b7280", marginTop: 0 }}>Build the opening that gains attention, introduces the need, and leads naturally into the text.</p><textarea value={introduction} onChange={(event) => setIntroduction(event.target.value)} rows={7} placeholder="Write the sermon introduction..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></section>
+                <section id="context" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", scrollMarginTop: 96 }}><h2>Context / Setting</h2><p style={{ color: "#6b7280", marginTop: 0 }}>Record the historical, literary, and immediate context that the congregation needs before the main exposition.</p><textarea value={context} onChange={(event) => setContext(event.target.value)} rows={9} placeholder="Record the context and setting..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></section>
+                <section id="conclusion" style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff", scrollMarginTop: 96 }}><h2>Conclusion</h2><p style={{ color: "#6b7280", marginTop: 0 }}>Bring the sermon to a clear landing: restate the truth, press the purpose, and call for an appropriate response.</p><textarea value={conclusion} onChange={(event) => setConclusion(event.target.value)} rows={7} placeholder="Write the sermon conclusion and response..." style={{ width: "100%", padding: 12, resize: "vertical" }} /></section>
                 <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                     <button type="button" onClick={() => void save()} disabled={saving} style={{ padding: "10px 16px", fontWeight: 600 }}>{saving ? "Saving..." : "Save Sermon Framework"}</button>
                     <button type="button" onClick={() => router.push(`/preaching/exposition?studyId=${encodeURIComponent(studyId)}`)} style={{ padding: "10px 16px", fontWeight: 600 }}>Develop Outline Exposition →</button>

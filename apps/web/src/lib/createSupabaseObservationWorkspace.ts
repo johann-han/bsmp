@@ -2,17 +2,14 @@ import { StudyId, createStudyPassage, createObservationWorkspace } from "@bsmp/s
 import type { StudySession } from "@bsmp/study";
 
 import { SupabaseStudyRepository } from "./SupabaseStudyRepository";
-import { takeCachedStudyForWorkspace } from "./studyWorkspaceNavigationCache";
 
 export async function createSupabaseObservationWorkspace(
     studyId?: string,
     existingStudy?: StudySession,
 ) {
     const repository = new SupabaseStudyRepository();
-    const cachedStudy = studyId ? takeCachedStudyForWorkspace(studyId) : undefined;
 
     const study = existingStudy
-        ?? cachedStudy
         ?? (studyId
             ? await repository.find(StudyId.from(studyId))
             : (await repository.findAll())[0]);

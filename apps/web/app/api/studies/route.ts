@@ -104,14 +104,14 @@ function repositoryFromRequest(request: Request): SupabaseStudyRepository {
 export async function GET(request: Request) {
     try {
         const repository = repositoryFromRequest(request);
-        const studies = await repository.findAll();
+        const studies = await repository.findAllSummaries();
 
         return NextResponse.json(
             studies.map((study) => ({
-                id: study.id.value,
-                title: study.title.value,
-                passage: study.passage.toString(),
-                status: study.status.value,
+                id: study.id,
+                title: study.title,
+                passage: `${study.passage_start_book} ${study.passage_start_chapter}:${study.passage_start_verse}-${study.passage_end_chapter}:${study.passage_end_verse}`,
+                status: study.status,
             })),
         );
     } catch (reason: unknown) {

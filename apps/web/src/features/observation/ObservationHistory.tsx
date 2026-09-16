@@ -62,18 +62,27 @@ export function ObservationHistory({
             const verseNumber = verseNumberOf(observation.target.verseReference);
             if (verseNumber === null) throw new Error("Unable to determine the observation verse.");
 
+            const wordTarget = observation.target.wordIndex !== null && observation.target.translation && observation.target.wordText
+                ? {
+                    translation: observation.target.translation,
+                    wordIndex: observation.target.wordIndex,
+                    wordText: observation.target.wordText,
+                    markupSymbol: observation.target.markupSymbol,
+                }
+                : undefined;
+            const textTarget = observation.target.wordIndex === null && observation.target.translation && observation.target.wordText
+                ? {
+                    translation: observation.target.translation,
+                    textCue: observation.target.wordText,
+                }
+                : undefined;
+
             await workspace.updateObservation(
                 observation.id,
                 passageService.getVerseReference(verseNumber),
                 statement,
-                observation.target.wordIndex !== null && observation.target.translation && observation.target.wordText && observation.target.markupSymbol
-                    ? {
-                        translation: observation.target.translation,
-                        wordIndex: observation.target.wordIndex,
-                        wordText: observation.target.wordText,
-                        markupSymbol: observation.target.markupSymbol,
-                    }
-                    : undefined,
+                wordTarget,
+                textTarget,
             );
 
             void onChanged?.();
@@ -113,13 +122,7 @@ export function ObservationHistory({
 
     return (
         <section
-            style={{
-                marginTop: 20,
-                border: "1px solid #e5e7eb",
-                borderRadius: 12,
-                background: "#ffffff",
-                padding: 20,
-            }}
+            style={{ marginTop: 20, border: "1px solid #e5e7eb", borderRadius: 12, background: "#ffffff", padding: 20 }}
         >
             <p style={{ margin: 0, fontSize: 12, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6b7280" }}>
                 Observation History
@@ -136,7 +139,8 @@ export function ObservationHistory({
             ) : (
                 <div style={{ display: "grid", gap: 12 }}>
                     {visibleObservations.map((observation) => {
-                        const isWordTarget = observation.target.wordText !== null;
+                        const isWordTarget = observation.target.wordIndex !== null;
+                        const isTextTarget = observation.target.wordIndex === null && observation.target.wordText !== null;
                         const markupLabel = observation.target.markupSymbol
                             ? MARKUP_LABELS[observation.target.markupSymbol] ?? observation.target.markupSymbol
                             : null;
@@ -153,37 +157,30 @@ export function ObservationHistory({
                                         {observation.verseReference}
                                         {isWordTarget && (
                                             <span style={{ marginLeft: 8, color: "#1e3a8a" }}>
-                                                · {observation.target.wordText}
+                                                · word: {observation.target.wordText}
                                                 {observation.target.markupSymbol && markupLabel
                                                     ? ` · ${observation.target.markupSymbol} ${markupLabel}`
                                                     : ""}
                                             </span>
                                         )}
+                                        {isTextTarget && !isWordTarget && (
+                                            <span style={{ marginLeft: 8, color: "#1e3a8a" }}>
+                                                · text target: “{observation.target.wordText}”
+                                            </span>
+                                        )}
                                     </p>
 
                                     <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => void editObservation(observation)}
-                                            disabled={busy}
-                                            style={{ border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", padding: "4px 8px", cursor: busy ? "not-allowed" : "pointer", fontSize: 12 }}
-                                        >
+                                        <button type="button" onClick={() => void editObservation(observation)} disabled={busy} style={{ border: "1px solid #d1d5db", borderRadius: 6, background: "#fff", padding: "4px 8px", cursor: busy ? "not-allowed" : "pointer", fontSize: 12 }}>
                                             {busy ? "Saving..." : "Edit"}
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => void deleteObservation(observation)}
-                                            disabled={busy}
-                                            style={{ border: "1px solid #fecaca", borderRadius: 6, background: "#fff", color: "#b91c1c", padding: "4px 8px", cursor: busy ? "not-allowed" : "pointer", fontSize: 12 }}
-                                        >
+                                        <button type="button" onClick={() => void deleteObservation(observation)} disabled={busy} style={{ border: "1px solid #fecaca", borderRadius: 6, background: "#fff", color: "#b91c1c", padding: "4px 8px", cursor: busy ? "not-allowed" : "pointer", fontSize: 12 }}>
                                             Delete
                                         </button>
                                     </div>
                                 </div>
 
-                                <p style={{ margin: "6px 0 0", lineHeight: 1.6 }}>
-                                    {observation.statement}
-                                </p>
+                                <p style={{ margin: "6px 0 0", lineHeight: 1.6 }}>{observation.statement}</p>
                             </article>
                         );
                     })}

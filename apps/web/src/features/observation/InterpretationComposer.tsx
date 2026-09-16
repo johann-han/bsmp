@@ -4,18 +4,32 @@ import { useState } from "react";
 
 import type { InterpretationViewModel, ObservationWorkspaceService, ObservationViewModel } from "@bsmp/study";
 
+import { InterpretationMentorPanel } from "./InterpretationMentorPanel";
+
 export interface InterpretationComposerProps {
     readonly workspace: ObservationWorkspaceService;
     readonly observations: readonly ObservationViewModel[];
     readonly onSaved: () => Promise<void> | void;
+    readonly onObservationSelect?: (observation: ObservationViewModel) => void;
     readonly onOptimisticCreate?: (interpretation: InterpretationViewModel) => void;
     readonly onRollbackCreate?: (id: string) => void;
+}
+
+function observationTargetLabel(observation: ObservationViewModel): string {
+    if (observation.target.wordIndex !== null && observation.target.wordText) {
+        return `${observation.verseReference} · word: “${observation.target.wordText}”`;
+    }
+    if (observation.target.wordText) {
+        return `${observation.verseReference} · text: “${observation.target.wordText}”`;
+    }
+    return observation.verseReference;
 }
 
 export function InterpretationComposer({
     workspace,
     observations,
     onSaved,
+    onObservationSelect,
     onOptimisticCreate,
     onRollbackCreate,
 }: InterpretationComposerProps) {
@@ -39,6 +53,10 @@ export function InterpretationComposer({
             setError("Enter an interpretation before saving.");
             return;
         }
+        if (selectedObservationIds.length === 0) {
+            setError("Select at least one supporting observation before saving an interpretation.");
+            return;
+        }
 
         setError(null);
         setMessage(null);
@@ -57,7 +75,9 @@ export function InterpretationComposer({
             await workspace.addInterpretation(trimmed, selectedObservationIds);
             setStatement("");
             setSelectedObservationIds([]);
-            setMessage("Interpretation saved.");
+            setMessage(
+                `Interpretation saved with ${selectedObservationIds.length} supporting observation${selectedObservationIds.length === 1 ? "" : "s"}.`,
+            );
             await onSaved();
         } catch (saveError) {
             onRollbackCreate?.(optimisticId);
@@ -66,6 +86,9 @@ export function InterpretationComposer({
             setSaving(false);
         }
     }
+
+    const canSave = !saving && Boolean(statement.trim()) && selectedObservationIds.length > 0;
+    const selectedObservations = observations.filter((observation) => selectedObservationIds.includes(observation.id));
 
     return (
         <section
@@ -87,14 +110,38 @@ export function InterpretationComposer({
             {observations.length > 0 ? (
                 <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
                     <p style={{ margin: 0, fontSize: 13, color: "#4b5563" }}>
-                        Support this interpretation with observations:
+                        Select the observations that provide the textual basis for this interpretation.
                     </p>
-                    {observations.map((observation) => (
-                        <label key={observation.id} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                            <input type="checkbox" checked={selectedObservationIds.includes(observation.id)} onChange={() => toggleObservation(observation.id)} disabled={saving} />
-                            <span><strong>{observation.verseReference}</strong>{" "}{observation.statement}</span>
-                        </label>
-                    ))}
+                    <p style={{ margin: 0, fontSize: 12, color: "#6b7280" }}>
+                        {selectedObservationIds.length} supporting observation{selectedObservationIds.length === 1 ? "" : "s"} selected.
+                    </p>
+                    {observations.map((observation) => {
+                        const selected = selectedObservationIds.includes(observation.id);
+                        return (
+                            <label
+                                key={observation.id}
+                                style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: 8, background: selected ? "#eff6ff" : "#ffffff" }}
+                            >
+                                <input type="checkbox" checked={selected} onChange={() => toggleObservation(observation.id)} disabled={saving} />
+                                <button
+                                    type="button"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        onObservationSelect?.(observation);
+                                    }}
+                                    disabled={!onObservationSelect || saving}
+                                    style={{ border: 0, padding: 0, background: "transparent", color: "inherit", cursor: onObservationSelect && !saving ? "pointer" : "default", textAlign: "left", flex: 1 }}
+                                >
+                                    <span>
+                                        <strong>{observationTargetLabel(observation)}</strong>
+                                        <span style={{ display: "block", marginTop: 2, color: "#4b5563" }}>{observation.statement}</span>
+                                        {onObservationSelect && <span style={{ display: "block", marginTop: 4, fontSize: 11, color: "#6b7280" }}>Click to recheck this observation in the study.</span>}
+                                    </span>
+                                </button>
+                            </label>
+                        );
+                    })}
                 </div>
             ) : (
                 <p style={{ color: "#6b7280" }}>Record observations first so they can support this interpretation.</p>
@@ -102,7 +149,13 @@ export function InterpretationComposer({
 
             <textarea value={statement} onChange={(event) => setStatement(event.target.value)} placeholder="State what you believe the passage means..." rows={5} disabled={saving} style={{ width: "100%", resize: "vertical", boxSizing: "border-box", border: "1px solid #d1d5db", borderRadius: 8, padding: 12, font: "inherit" }} />
 
-            <button type="button" onClick={saveInterpretation} disabled={saving} style={{ marginTop: 12, border: 0, borderRadius: 8, background: saving ? "#9ca3af" : "#111827", color: "#ffffff", padding: "10px 14px", fontWeight: 600 }}>
+            <InterpretationMentorPanel
+                interpretation={statement}
+                observations={selectedObservations}
+                {...(onObservationSelect ? { onObservationSelect } : {})}
+            />
+
+            <button type="button" onClick={() => void saveInterpretation()} disabled={!canSave} style={{ marginTop: 12, border: 0, borderRadius: 8, background: canSave ? "#111827" : "#9ca3af", color: "#ffffff", padding: "10px 14px", fontWeight: 600, cursor: canSave ? "pointer" : "not-allowed" }}>
                 {saving ? "Saving..." : "Save Interpretation"}
             </button>
 

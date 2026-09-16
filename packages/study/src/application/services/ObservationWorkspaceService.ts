@@ -14,6 +14,7 @@ import { UpdateApplication } from "../commands/UpdateApplication.js";
 import { UpdateInterpretation } from "../commands/UpdateInterpretation.js";
 import type {
     ApplicationViewModel,
+    BiblicalTheologyViewModel,
     ConnectingWordViewModel,
     EvidenceViewModel,
     InterpretationViewModel,
@@ -21,11 +22,13 @@ import type {
     ObservationViewModel,
 } from "../view-models/index.js";
 import type { Application } from "../../domain/entities/Application.js";
+import { BiblicalTheology } from "../../domain/entities/BiblicalTheology.js";
 import type { Evidence } from "../../domain/entities/Evidence.js";
 import type { Interpretation } from "../../domain/entities/Interpretation.js";
 import type { Observation } from "../../domain/entities/Observation.js";
 import type { StudyRepository } from "../../domain/repositories/StudyRepository.js";
 import { ApplicationId } from "../../domain/value-objects/ApplicationId.js";
+import { BiblicalTheologyId } from "../../domain/value-objects/BiblicalTheologyId.js";
 import { ObservationId } from "../../domain/value-objects/ObservationId.js";
 import { InterpretationId } from "../../domain/value-objects/InterpretationId.js";
 import {
@@ -35,7 +38,7 @@ import {
     ObservationStatement,
     ObservationTarget,
 } from "../../domain/value-objects/index.js";
-import type { ObservationWordTargetInput, StudyId } from "../../domain/value-objects/index.js";
+import type { ObservationTextTargetInput, ObservationWordTargetInput, StudyId } from "../../domain/value-objects/index.js";
 
 export interface ObservationWorkspaceData {
     observationQuestions: readonly ObservationQuestionViewModel[];
@@ -43,6 +46,7 @@ export interface ObservationWorkspaceData {
     observations: readonly ObservationViewModel[];
     interpretations: readonly InterpretationViewModel[];
     applications: readonly ApplicationViewModel[];
+    biblicalTheology: readonly BiblicalTheologyViewModel[];
 }
 
 export class ObservationWorkspaceService {
@@ -64,196 +68,113 @@ export class ObservationWorkspaceService {
             this.listObservationQuestions.execute(),
             this.listConnectingWords.execute(),
         ]);
-
-        const study = this.studyId && this.studyRepository
-            ? await this.studyRepository.find(this.studyId)
-            : undefined;
-
+        const study = this.studyId && this.studyRepository ? await this.studyRepository.find(this.studyId) : undefined;
         return {
-            observationQuestions: observationQuestions.map((question) =>
-                this.toObservationQuestionViewModel(question),
-            ),
-            connectingWords: connectingWords.map((word) =>
-                this.toConnectingWordViewModel(word),
-            ),
-            observations: (study?.observations ?? []).map((observation) =>
-                this.toObservationViewModel(observation),
-            ),
-            interpretations: (study?.interpretations ?? []).map((interpretation) =>
-                this.toInterpretationViewModel(interpretation),
-            ),
-            applications: (study?.applications ?? []).map((application) =>
-                this.toApplicationViewModel(application),
-            ),
+            observationQuestions: observationQuestions.map((question) => this.toObservationQuestionViewModel(question)),
+            connectingWords: connectingWords.map((word) => this.toConnectingWordViewModel(word)),
+            observations: (study?.observations ?? []).map((observation) => this.toObservationViewModel(observation)),
+            interpretations: (study?.interpretations ?? []).map((interpretation) => this.toInterpretationViewModel(interpretation)),
+            applications: (study?.applications ?? []).map((application) => this.toApplicationViewModel(application)),
+            biblicalTheology: (study?.biblicalTheology ?? []).map((entry) => this.toBiblicalTheologyViewModel(entry)),
         };
     }
 
-    public async addObservation(
-        verseReference: VerseReference,
-        statement: string,
-        wordTarget?: ObservationWordTargetInput,
-    ): Promise<Observation> {
-        if (!this.addObservationCommand || !this.studyId) {
-            throw new Error("Observation persistence is not configured for this workspace.");
-        }
-        return this.addObservationCommand.execute(this.studyId, verseReference, statement, wordTarget);
+    public async addObservation(verseReference: VerseReference, statement: string, wordTarget?: ObservationWordTargetInput, textTarget?: ObservationTextTargetInput): Promise<Observation> {
+        if (!this.addObservationCommand || !this.studyId) throw new Error("Observation persistence is not configured for this workspace.");
+        return this.addObservationCommand.execute(this.studyId, verseReference, statement, wordTarget, textTarget);
     }
 
-    public async updateObservation(
-        observationId: string,
-        verseReference: VerseReference,
-        statement: string,
-        wordTarget?: ObservationWordTargetInput,
-    ): Promise<void> {
-        if (!this.studyRepository || !this.studyId) {
-            throw new Error("Observation persistence is not configured for this workspace.");
-        }
-
+    public async updateObservation(observationId: string, verseReference: VerseReference, statement: string, wordTarget?: ObservationWordTargetInput, textTarget?: ObservationTextTargetInput): Promise<void> {
+        if (!this.studyRepository || !this.studyId) throw new Error("Observation persistence is not configured for this workspace.");
+        if (wordTarget && textTarget) throw new Error("Observation cannot have both a word target and a text target.");
         const study = await this.studyRepository.find(this.studyId);
         if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
-
-        const target = wordTarget
-            ? ObservationTarget.word(verseReference, wordTarget)
-            : ObservationTarget.verse(verseReference);
+        const target = textTarget ? ObservationTarget.text(verseReference, textTarget) : wordTarget ? ObservationTarget.word(verseReference, wordTarget) : ObservationTarget.verse(verseReference);
         const normalizedStatement = statement.trim();
         const currentId = ObservationId.from(observationId);
-
-        const duplicate = study.observations.find((existing) =>
-            existing.id.value !== currentId.value &&
-            existing.statement.value === normalizedStatement &&
-            this.sameTarget(existing.target, target),
-        );
-
-        if (duplicate) {
-            throw new Error("An identical observation already exists for this study target.");
-        }
-
-        study.updateObservation(
-            currentId,
-            ObservationStatement.from(normalizedStatement),
-            target,
-        );
+        const duplicate = study.observations.find((existing) => existing.id.value !== currentId.value && existing.statement.value === normalizedStatement && this.sameTarget(existing.target, target));
+        if (duplicate) throw new Error("An identical observation already exists for this study target.");
+        study.updateObservation(currentId, ObservationStatement.from(normalizedStatement), target);
         await this.studyRepository.save(study);
     }
 
     public async removeObservation(observationId: string): Promise<void> {
-        if (!this.studyRepository || !this.studyId) {
-            throw new Error("Observation persistence is not configured for this workspace.");
-        }
-
+        if (!this.studyRepository || !this.studyId) throw new Error("Observation persistence is not configured for this workspace.");
         const study = await this.studyRepository.find(this.studyId);
         if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
-
         study.removeObservation(ObservationId.from(observationId));
         await this.studyRepository.save(study);
     }
 
     public async addInterpretation(statement: string, observationIds: readonly string[] = []): Promise<Interpretation> {
-        if (!this.createInterpretationCommand || !this.studyId) {
-            throw new Error("Interpretation persistence is not configured for this workspace.");
-        }
-        return this.createInterpretationCommand.execute(
-            this.studyId,
-            statement,
-            observationIds.map((id) => ObservationId.from(id)),
-        );
+        if (!this.createInterpretationCommand || !this.studyId) throw new Error("Interpretation persistence is not configured for this workspace.");
+        return this.createInterpretationCommand.execute(this.studyId, statement, observationIds.map((id) => ObservationId.from(id)));
     }
 
     public async updateInterpretation(interpretationId: string, statement: string, observationIds: readonly string[] = []): Promise<Interpretation> {
-        if (!this.updateInterpretationCommand || !this.studyId) {
-            throw new Error("Interpretation editing is not configured for this workspace.");
-        }
-        return this.updateInterpretationCommand.execute(
-            this.studyId,
-            interpretationId,
-            statement,
-            observationIds.map((id) => ObservationId.from(id)),
-        );
+        if (!this.updateInterpretationCommand || !this.studyId) throw new Error("Interpretation editing is not configured for this workspace.");
+        return this.updateInterpretationCommand.execute(this.studyId, interpretationId, statement, observationIds.map((id) => ObservationId.from(id)));
     }
 
     public async addEvidence(interpretationId: string, type: string, description: string): Promise<Evidence> {
-        if (!this.createEvidenceCommand || !this.studyId) {
-            throw new Error("Evidence persistence is not configured for this workspace.");
-        }
+        if (!this.createEvidenceCommand || !this.studyId) throw new Error("Evidence persistence is not configured for this workspace.");
         return this.createEvidenceCommand.execute(this.studyId, interpretationId, type, description);
     }
 
-    public async updateEvidence(
-        interpretationId: string,
-        evidenceId: string,
-        type: string,
-        description: string,
-    ): Promise<void> {
-        if (!this.studyRepository || !this.studyId) {
-            throw new Error("Evidence editing is not configured for this workspace.");
-        }
-
+    public async updateEvidence(interpretationId: string, evidenceId: string, type: string, description: string): Promise<void> {
+        if (!this.studyRepository || !this.studyId) throw new Error("Evidence editing is not configured for this workspace.");
         const study = await this.studyRepository.find(this.studyId);
         if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
-
-        const normalizedDescription = description.trim();
-        const evidenceType = this.toEvidenceType(type);
-        const currentInterpretationId = InterpretationId.from(interpretationId);
-        const currentEvidenceId = EvidenceId.from(evidenceId);
-
-        study.updateEvidence(
-            currentInterpretationId,
-            currentEvidenceId,
-            evidenceType,
-            EvidenceDescription.from(normalizedDescription),
-        );
+        study.updateEvidence(InterpretationId.from(interpretationId), EvidenceId.from(evidenceId), this.toEvidenceType(type), EvidenceDescription.from(description.trim()));
         await this.studyRepository.save(study);
     }
 
-    public async addApplication(
-        interpretationId: string,
-        principle: string,
-        personal: string,
-        ministry: string,
-        action: string,
-    ): Promise<Application> {
-        if (!this.createApplicationCommand || !this.studyId) {
-            throw new Error("Application persistence is not configured for this workspace.");
-        }
-        return this.createApplicationCommand.execute(
-            this.studyId,
-            InterpretationId.from(interpretationId),
-            principle,
-            personal,
-            ministry,
-            action,
-        );
+    public async addApplication(interpretationId: string, principle: string, personal: string, ministry: string, action: string): Promise<Application> {
+        if (!this.createApplicationCommand || !this.studyId) throw new Error("Application persistence is not configured for this workspace.");
+        return this.createApplicationCommand.execute(this.studyId, InterpretationId.from(interpretationId), principle, personal, ministry, action);
     }
 
-    public async updateApplication(
-        applicationId: string,
-        principle: string,
-        personal: string,
-        ministry: string,
-        action: string,
-    ): Promise<void> {
-        if (!this.updateApplicationCommand || !this.studyId) {
-            throw new Error("Application editing is not configured for this workspace.");
-        }
-        await this.updateApplicationCommand.execute(
-            this.studyId,
-            ApplicationId.from(applicationId),
-            principle,
-            personal,
-            ministry,
-            action,
-        );
+    public async updateApplication(applicationId: string, principle: string, personal: string, ministry: string, action: string): Promise<void> {
+        if (!this.updateApplicationCommand || !this.studyId) throw new Error("Application editing is not configured for this workspace.");
+        await this.updateApplicationCommand.execute(this.studyId, ApplicationId.from(applicationId), principle, personal, ministry, action);
     }
 
     public async removeApplication(applicationId: string): Promise<void> {
-        if (!this.studyRepository || !this.studyId) {
-            throw new Error("Application persistence is not configured for this workspace.");
-        }
-
+        if (!this.studyRepository || !this.studyId) throw new Error("Application persistence is not configured for this workspace.");
         const study = await this.studyRepository.find(this.studyId);
         if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
-
         study.removeApplication(ApplicationId.from(applicationId));
+        await this.studyRepository.save(study);
+    }
+
+    public async addBiblicalTheology(theme: string, synthesis: string, interpretationIds: readonly string[]): Promise<BiblicalTheology> {
+        if (!this.studyRepository || !this.studyId) throw new Error("Biblical theology persistence is not configured for this workspace.");
+        const study = await this.studyRepository.find(this.studyId);
+        if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
+        const ids = interpretationIds.map((id) => InterpretationId.from(id));
+        const missing = ids.filter((id) => !study.interpretations.some((item) => item.id.value === id.value));
+        if (missing.length > 0) throw new Error("Every biblical theology entry must reference existing study interpretations.");
+        const entry = BiblicalTheology.create(BiblicalTheologyId.create(), theme, synthesis, ids);
+        study.addBiblicalTheology(entry);
+        await this.studyRepository.save(study);
+        return entry;
+    }
+
+    public async updateBiblicalTheology(id: string, theme: string, synthesis: string, interpretationIds: readonly string[]): Promise<void> {
+        if (!this.studyRepository || !this.studyId) throw new Error("Biblical theology persistence is not configured for this workspace.");
+        const study = await this.studyRepository.find(this.studyId);
+        if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
+        const ids = interpretationIds.map((value) => InterpretationId.from(value));
+        if (ids.some((candidate) => !study.interpretations.some((item) => item.id.value === candidate.value))) throw new Error("Every biblical theology entry must reference existing study interpretations.");
+        study.updateBiblicalTheology(BiblicalTheologyId.from(id), theme, synthesis, ids);
+        await this.studyRepository.save(study);
+    }
+
+    public async removeBiblicalTheology(id: string): Promise<void> {
+        if (!this.studyRepository || !this.studyId) throw new Error("Biblical theology persistence is not configured for this workspace.");
+        const study = await this.studyRepository.find(this.studyId);
+        if (!study) throw new Error(`Study not found: ${this.studyId.toString()}`);
+        study.removeBiblicalTheology(BiblicalTheologyId.from(id));
         await this.studyRepository.save(study);
     }
 
@@ -271,54 +192,14 @@ export class ObservationWorkspaceService {
     }
 
     private sameTarget(left: ObservationTarget, right: ObservationTarget): boolean {
-        return left.verseReference.toString() === right.verseReference.toString()
-            && left.translation === right.translation
-            && left.wordIndex === right.wordIndex
-            && left.wordText === right.wordText
-            && left.markupSymbol === right.markupSymbol;
+        return left.verseReference.toString() === right.verseReference.toString() && left.translation === right.translation && left.wordIndex === right.wordIndex && left.wordText === right.wordText && left.markupSymbol === right.markupSymbol;
     }
 
-    private toObservationQuestionViewModel(question: ObservationQuestion): ObservationQuestionViewModel {
-        return { id: question.id.toString(), question: question.question.toString(), purpose: question.purpose.toString() };
-    }
-
-    private toConnectingWordViewModel(word: ConnectingWord): ConnectingWordViewModel {
-        return { id: word.id.toString(), text: word.text.toString(), category: word.category, meaning: word.meaning.toString() };
-    }
-
-    private toObservationViewModel(observation: Observation): ObservationViewModel {
-        return {
-            id: observation.id.value,
-            verseReference: observation.verseReference.toString(),
-            target: {
-                verseReference: observation.target.verseReference.toString(),
-                translation: observation.target.translation,
-                wordIndex: observation.target.wordIndex,
-                wordText: observation.target.wordText,
-                markupSymbol: observation.target.markupSymbol,
-            },
-            statement: observation.statement.value,
-            createdAt: observation.createdAt.toISOString(),
-        };
-    }
-
-    private toEvidenceViewModel(evidence: Evidence): EvidenceViewModel {
-        return { id: evidence.id.value, type: evidence.type.value, description: evidence.description.value, createdAt: evidence.createdAt.toISOString() };
-    }
-
-    private toInterpretationViewModel(interpretation: Interpretation): InterpretationViewModel {
-        return { id: interpretation.id.value, statement: interpretation.statement.value, observationIds: interpretation.observationIds.map((id) => id.value), evidence: interpretation.evidence.map((evidence) => this.toEvidenceViewModel(evidence)), createdAt: interpretation.createdAt.toISOString() };
-    }
-
-    private toApplicationViewModel(application: Application): ApplicationViewModel {
-        return {
-            id: application.id.value,
-            interpretationId: application.interpretationId.value,
-            principle: application.principle.value,
-            personal: application.personal.value,
-            ministry: application.ministry.value,
-            action: application.action.value,
-            createdAt: application.createdAt.toISOString(),
-        };
-    }
+    private toObservationQuestionViewModel(question: ObservationQuestion): ObservationQuestionViewModel { return { id: question.id.toString(), question: question.question.toString(), purpose: question.purpose.toString() }; }
+    private toConnectingWordViewModel(word: ConnectingWord): ConnectingWordViewModel { return { id: word.id.toString(), text: word.text.toString(), category: word.category, meaning: word.meaning.toString() }; }
+    private toObservationViewModel(observation: Observation): ObservationViewModel { return { id: observation.id.value, verseReference: observation.verseReference.toString(), target: { verseReference: observation.target.verseReference.toString(), translation: observation.target.translation, wordIndex: observation.target.wordIndex, wordText: observation.target.wordText, markupSymbol: observation.target.markupSymbol }, statement: observation.statement.value, createdAt: observation.createdAt.toISOString() }; }
+    private toEvidenceViewModel(evidence: Evidence): EvidenceViewModel { return { id: evidence.id.value, type: evidence.type.value, description: evidence.description.value, createdAt: evidence.createdAt.toISOString() }; }
+    private toInterpretationViewModel(interpretation: Interpretation): InterpretationViewModel { return { id: interpretation.id.value, statement: interpretation.statement.value, observationIds: interpretation.observationIds.map((id) => id.value), evidence: interpretation.evidence.map((evidence) => this.toEvidenceViewModel(evidence)), createdAt: interpretation.createdAt.toISOString() }; }
+    private toApplicationViewModel(application: Application): ApplicationViewModel { return { id: application.id.value, interpretationId: application.interpretationId.value, principle: application.principle.value, personal: application.personal.value, ministry: application.ministry.value, action: application.action.value, createdAt: application.createdAt.toISOString() }; }
+    private toBiblicalTheologyViewModel(entry: BiblicalTheology): BiblicalTheologyViewModel { return { id: entry.id.value, theme: entry.theme, synthesis: entry.synthesis, interpretationIds: entry.interpretationIds.map((id) => id.value), createdAt: entry.createdAt.toISOString() }; }
 }

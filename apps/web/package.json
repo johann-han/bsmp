@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@bsmp/bible": "workspace:^",
+    "@bsmp/inductive": "workspace:^",
     "@bsmp/preaching": "workspace:^",
     "@bsmp/study": "workspace:^",
     "@repo/ui": "workspace:*",

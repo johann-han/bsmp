@@ -25,7 +25,7 @@ export class CreateEvidence {
         }
 
         const interpretation = study.interpretations.find(
-            (item) => item.id.toString() === interpretationId,
+            (item) => item.id.value === interpretationId,
         );
 
         if (!interpretation) {

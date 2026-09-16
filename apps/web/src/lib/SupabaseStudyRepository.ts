@@ -55,6 +55,17 @@ export class SupabaseStudyRepository implements StudyRepository {
         return Promise.all((studies ?? []).map((study) => this.hydrateStudy(study)));
     }
 
+    public async findAllSummaries(): Promise<readonly StudySummaryRecord[]> {
+        const user = await this.requireUser();
+        const { data: studies, error } = await this.client
+            .from("studies")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+        if (error) throw error;
+        return studies ?? [];
+    }
+
     public async save(study: StudySession): Promise<void> {
         const user = await this.requireUser();
         const passage = study.passage;
@@ -169,7 +180,12 @@ export class SupabaseStudyRepository implements StudyRepository {
                     wordText: observationRow.target_word_text ?? "",
                     markupSymbol: observationRow.target_markup_symbol ?? "",
                 })
-                : ObservationTarget.verse(observationReference);
+                : observationRow.target_word_text !== null && observationRow.target_translation
+                    ? ObservationTarget.text(observationReference, {
+                        translation: observationRow.target_translation,
+                        textCue: observationRow.target_word_text,
+                    })
+                    : ObservationTarget.verse(observationReference);
 
             study.addObservation(Observation.create(
                 ObservationId.from(observationRow.id),
@@ -218,6 +234,13 @@ export class SupabaseStudyRepository implements StudyRepository {
         }
     }
 
+    private async requireUserFromSession() {
+        const result = await this.client.auth.getSession();
+        if (result.error) throw result.error;
+        if (!result.data.session?.user) throw new Error("A signed-in Supabase user is required for study persistence.");
+        return result.data.session.user;
+    }
+
     private async requireUser() {
         const result = this.accessToken
             ? await this.client.auth.getUser(this.accessToken)
@@ -233,3 +256,5 @@ type DatabaseStudyRow = {
     passage_start_book: string; passage_start_chapter: number; passage_start_verse: number;
     passage_end_book: string; passage_end_chapter: number; passage_end_verse: number; created_at: string;
 };
+
+export type StudySummaryRecord = DatabaseStudyRow;

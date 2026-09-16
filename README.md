@@ -16,9 +16,34 @@ The Bible Study & Ministry Platform is a professional application for:
 
 0.1.0 – Foundation
 
-## Current Sprint
+## Current Development Status
 
-Sprint 0 – Foundation
+The foundation now supports the complete preparation path from Study through sermon delivery:
+
+**Inductive Study → Biblical Theology → Teaching → Sermon Framework → Exposition → Final Manuscript → Delivery**
+
+AI mentor stages are implemented as coaching layers that review user-authored work without replacing it:
+
+- Observation Mentor
+- Interpretation Mentor
+- Application Mentor
+- Biblical Theology Mentor
+- Teaching Mentor
+- Sermon Exposition Mentor
+- Final Sermon Draft Mentor
+- Sermon Delivery Mentor
+
+The design principle is deliberate: **AI assists; the user studies, reasons, writes, and owns the final work.**
+
+## Verification Status
+
+CI currently validates the monorepo with:
+
+- `pnpm typecheck`
+- `pnpm test`
+- `pnpm build`
+
+The latest CI run for the current feature branch passed all three checks. Authenticated browser walkthrough and connected-Supabase persistence/refresh verification remain runtime checks rather than CI guarantees.
 
 ## Technology Stack
 

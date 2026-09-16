@@ -3,17 +3,21 @@ import { describe, expect, it } from "vitest";
 import { CreateApplication } from "./CreateApplication.js";
 import { CreateInterpretation } from "./CreateInterpretation.js";
 import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
-import { createStudy } from "../../test/index.js";
+import { createObservation, createStudy } from "../../test/index.js";
 
 describe("CreateApplication", () => {
     it("adds an application anchored to an interpretation", async () => {
         const study = createStudy("Romans");
+        const observation = createObservation("The passage identifies people with different roles.");
+        study.addObservation(observation);
+
         const repository = new InMemoryStudyRepository([study]);
         const createInterpretation = new CreateInterpretation(repository);
 
         const interpretation = await createInterpretation.execute(
             study.id,
             "God justifies the sinner by faith.",
+            [observation.id],
         );
 
         const createApplication = new CreateApplication(repository);
