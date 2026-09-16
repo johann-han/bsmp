@@ -34,6 +34,16 @@ The Teaching Mentor evaluates whether the student's teaching plan faithfully com
 
 The Global Navigation now exposes Biblical Theology and Teaching as first-class stages, and `/teaching` is included in the authenticated route set.
 
+## Biblical Research
+
+The `/research?studyId=...` workspace is a first-class authenticated Research stage linked to the selected Study. It displays the Study title, passage, observation/interpretation/Biblical Theology counts, a focused research-question editor, grounded research guidance, textual basis, further-study questions, cautions, and direct links back to Study Workspace, Biblical Theology, and Teaching.
+
+The first Research slice is deliberately Study-grounded. The protected `/api/ai/biblical-research` route requires a valid Supabase bearer session, verifies the selected Study belongs to the signed-in user, then loads that user's observations, interpretations, and Biblical Theology entries for the selected Study before invoking the research provider. The provider is explicitly constrained not to invent quotations, sources, historical facts, Greek/Hebrew claims, or cross-references and to acknowledge insufficient context.
+
+Automated provider tests cover missing configuration, structured-result parsing, preservation of Study context in the prompt, and response-list bounds. Repository CI passed typecheck, tests, lint, and production build for the Research slice, and authenticated browser verification has been completed successfully for the workflow: Study → Research → focused question → grounded response → links back to Study Workspace, Biblical Theology, and Teaching.
+
+No external source discovery or citation retrieval is included in this first slice. This is intentional: the current Research assistant distinguishes Study-grounded synthesis from later source-retrieval functionality rather than implying that external sources were actually consulted.
+
 ## Sermon Preparation
 
 The `/preaching` workspace creates an expository sermon preparation record from a Study and provides sermon title, Big Idea, Purpose, outline construction, editing, deletion, ordering, and links to Study source material.
@@ -139,59 +149,30 @@ Leaked-password protection remains deferred because the connected Supabase proje
 ## Current Branches
 
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
-- `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
-- `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, Study → Sermon traceability, the first Biblical Theology stage, and the first Teaching stage with Teaching → Sermon inheritance.
+- `feat/observation-workspace-route` is the integrated Study Workspace, Research, Biblical Theology, Teaching, Sermon Preparation, Sermon Delivery, scheduling/history, and authentication baseline.
+- `feat/final-sermon-drafting` contains the earlier final-drafting development history that was merged into the integrated baseline.
+- `feat/research-source-planning` is the documentation/roadmap branch for the next Research increment. `main` remains untouched.
 
 ## Verification
 
 Repository CI is defined in `.github/workflows/ci.yml` for feature branches and pull requests. The workflow now relies on the repository `packageManager` field for the pnpm version instead of declaring a conflicting second version in the action configuration.
 
-CI run `34982836931` (run `884`) for the restored final-drafting head completed successfully through dependency installation, typecheck, tests, lint, and production build. This validates the restored `SermonDeliveryWorkspace` state after the earlier section-property correction and lint cleanup.
+The integrated Study → Sermon → Delivery baseline has green repository CI and authenticated browser verification as recorded above.
 
-The final-drafting migration has been applied successfully to the connected BSMP Supabase project. The `manuscript` and `delivery_notes` columns are present on `public.expository_sermons`.
+Research CI run `35121312369` (run `937`) completed successfully through dependency installation, typecheck, tests, lint, and production build for PR #4.
 
-The scheduling migration has been applied successfully to the connected Supabase project and browser persistence has been verified.
+Research PR #4 was merged into `feat/observation-workspace-route` as merge commit `59d2f6b6285bacb86d87964e718af3250189f704` after successful authenticated browser verification. `main` was not modified.
 
-The Biblical Theology migration has been applied successfully to the connected Supabase project. The new `public.biblical_theology_entries` table is RLS-protected for the signed-in user.
+The Research implementation uses no new Supabase tables or migrations. Existing user-scoped tables remain the source of Research context, and the Research API enforces the signed-in user's Study ownership before reading that context.
 
-The Sermon Biblical Theology support migration has also been applied successfully to the connected Supabase project. `public.sermon_outline_points` now persists `supporting_biblical_theology_ids` with an empty-array default for existing rows.
+Supabase security-advisor status remains unchanged: the only outstanding advisory is leaked-password protection, which is unavailable on the connected project plan.
 
-The Biblical Theology `user_id` foreign-key index recommendation has now been addressed. The connected Supabase project contains `idx_biblical_theology_entries_user_id`, and migration `20260902185121_add_biblical_theology_user_id_index` is recorded as applied.
-
-The sermon manuscript sections migration has now been applied to the connected Supabase project. `public.expository_sermons` persists `manuscript_sections` as JSONB with an empty-array default for existing sermons.
-
-The missing `@bsmp/inductive` workspace importer has now been synchronized into `pnpm-lock.yaml` so `pnpm install --frozen-lockfile` matches `apps/web/package.json` again.
-
-The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df60ba26f496c76b11daf9f`. Its UI provides per-outline-point navigation back to recorded Study foundations. Browser verification was not performed for that specific change in this environment.
-
-The Biblical Theology index migration is committed as `2b0e825839ba574739ac5fdc096d50d452fbc02e` and has passed repository CI.
-
-The section-aware manuscript work is committed on `feat/final-sermon-drafting`. Repository CI is green. Authenticated browser verification remains pending for the new final-draft section editor and the complete Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough.
-
-The Application Mentor integration is committed on `feat/final-sermon-drafting`. CI run `33878617356` completed successfully through dependency installation, typecheck, tests, and production build, including the new provider tests.
-
-The Teaching migration has been applied successfully to the connected BSMP Supabase project. `public.teaching_plans` now exists with user/study indexes, row-level security, and an `updated_at` trigger.
-
-The Teaching workspace, persistence layer, protected Teaching Mentor API, and Teaching Mentor provider tests are committed on `feat/final-sermon-drafting` and the corrected Teaching Mentor API passed CI through typecheck, tests, and production build.
-
-The Teaching → Sermon migration `20260904143000_link_teaching_plan_to_sermon.sql` has been applied successfully to the connected Supabase project. `public.expository_sermons.teaching_plan_id` is nullable, foreign-keyed to `public.teaching_plans(id)` with `ON DELETE SET NULL`, and indexed.
-
-The Teaching → Sermon bridge, domain linkage, persistence updates, and regression test are committed on `feat/final-sermon-drafting`. A completed Teaching Plan is required before the bridge will save it onto a sermon.
-
-The final-draft and delivery Teaching Foundation traceability surface is committed on `feat/final-sermon-drafting`. It reads the persisted linked Teaching Plan from the study and exposes a read-only source summary with navigation back to Teaching and Sermon Preparation. Authenticated browser verification has not yet been performed for this latest UI change.
-
-A Supabase security-advisor warning for the Teaching `updated_at` trigger's mutable `search_path` was identified and remediated. The connected database function now has `search_path = public`. The remediation is recorded in migration `20260904150000_harden_teaching_plans_trigger_search_path.sql`.
-
-Supabase confirms the current application tables are RLS-enabled, including `studies`, `expository_sermons`, `sermon_outline_points`, `biblical_theology_entries`, and `teaching_plans`; the Teaching → Sermon foreign key is present from `expository_sermons.teaching_plan_id` to `teaching_plans.id`. The only remaining security-advisor warning is the unavailable leaked-password protection feature.
-
-The Delivery Mode mobile controls, section navigation, recovery state, Focus Mode, screen wake-lock, and My Place functionality are now implemented on `feat/final-sermon-drafting`. The delivery workspace also includes a defensive text-normalization fix for persisted section values. Authenticated browser verification has confirmed the Delivery Mode workflow after the normalization fix.
-
-The `SermonDeliveryWorkspace` section property mismatch (`body` versus `content`) that failed typecheck has been corrected. The final restored workspace now uses the persisted `content` field when rendering traceable manuscript sections. The follow-up lint issue from the no-longer-needed manuscript-section import was also removed, and CI run `884` subsequently completed successfully.
-
-Delivery recovery-state hardening is committed as `1d655b7ef42b0de9da2aa5aa9fb1bab1e9d03fdc`, and the follow-up lint localization is committed as `6ea4e5fa2a1bde4b401d706e5fa58af7ecfafe63`. CI run `34984262546` (run `890`) completed successfully through dependency installation, typecheck, tests, lint, and production build. The latest delivery hardening therefore has a green repository validation result.
+Research source planning is documented in PR #5. The next external-source layer is explicitly separated from student-authored Study context and requires source URLs, retrieval timestamps, provenance, unsupported-source handling, and authenticated browser verification before source-derived material influences sermon stages.
 
 ## Next Work
 
-1. Complete authenticated browser verification of the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough, including refresh persistence and source-traceability navigation.
-2. Continue production hardening over permission boundaries, read-only behavior, and other recovery edge cases before changing branch history.
-3. Reconcile the final-drafting branch with any intentionally retained changes from `main` before merge, rather than blindly forcing the divergent histories together.
+1. Add the external-source retrieval layer behind a distinct source/provenance boundary.
+2. Persist or expose citation metadata only when a source was actually retrieved and verified.
+3. Define safe retrieval constraints, including supported source types and protection against untrusted or unsupported destinations.
+4. Keep source-derived evidence separate from student-authored Study evidence so traceability remains explicit.
+5. Verify external research in an authenticated browser before allowing source-derived material to flow into sermon stages.
