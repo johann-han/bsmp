@@ -41,8 +41,16 @@ async function context(token: string) {
 
 function errorStatus(message: string): number {
     if (/signed-in|session/i.test(message)) return 401;
+    if (/quota|rate limit|too many requests|resource_exhausted|429/i.test(message)) return 429;
     if (/Missing Supabase environment|not configured|Unsupported AI_PROVIDER/i.test(message)) return 503;
     return 502;
+}
+
+function clientErrorMessage(message: string): string {
+    if (/quota|rate limit|too many requests|resource_exhausted|429/i.test(message)) {
+        return "External research is temporarily unavailable because the configured AI provider has reached its current quota or rate limit. Check the provider usage/billing settings, or retry after the quota resets.";
+    }
+    return message;
 }
 
 export async function POST(request: Request) {
@@ -93,6 +101,6 @@ export async function POST(request: Request) {
         return NextResponse.json(result);
     } catch (reason: unknown) {
         const message = reason instanceof Error ? reason.message : "Unable to run Biblical Research.";
-        return NextResponse.json({ error: message }, { status: errorStatus(message) });
+        return NextResponse.json({ error: clientErrorMessage(message) }, { status: errorStatus(message) });
     }
 }
