@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { StudyId } from "@bsmp/study";
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
 import { supabase } from "../../lib/supabase";
+import { RESEARCH_QUESTION_SUGGESTIONS } from "./researchQuestionBank";
 
 interface Props { studyId: string; }
 interface ResearchSource { url: string; title: string; }
@@ -42,6 +43,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
     const [error, setError] = useState<string | null>(null);
 
     const selectedFocus = RESEARCH_FOCUSES.find((item) => item.value === focus) ?? RESEARCH_FOCUSES[0];
+    const questionSuggestions = RESEARCH_QUESTION_SUGGESTIONS[focus];
 
     const load = useCallback(async () => {
         if (!studyId) { setLoading(false); return; }
@@ -113,8 +115,18 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             </select>
             <p style={{ fontSize: 13, color: "#6b7280", marginTop: 8 }}>{selectedFocus.description}</p>
 
+            <div style={{ marginTop: 16, padding: 14, border: "1px solid #e5e7eb", borderRadius: 10, background: "#f9fafb" }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                    <h3 style={{ margin: 0 }}>Research Questions</h3>
+                    <span style={{ fontSize: 12, color: "#6b7280" }}>Select one to use it as a starting point</span>
+                </div>
+                <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+                    {questionSuggestions.map((suggestion) => <button key={suggestion.id} type="button" onClick={() => { setQuestion(suggestion.question); setError(null); }} style={{ textAlign: "left", padding: "10px 12px", border: "1px solid #d1d5db", borderRadius: 8, background: "#fff", cursor: "pointer", lineHeight: 1.45 }}>{suggestion.question}</button>)}
+                </div>
+            </div>
+
             <h2 style={{ marginTop: 20 }}>Research Question</h2>
-            <textarea value={question} onChange={(event) => setQuestion(event.target.value)} rows={5} placeholder="Example: What geographical features of the passage's setting would help me understand the movement or audience described here?" style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} />
+            <textarea value={question} onChange={(event) => setQuestion(event.target.value)} rows={5} placeholder="Choose a suggested question above or write your own focused research question." style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} />
             <label style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 12, fontWeight: 600 }}><input type="checkbox" checked={external} onChange={(event) => setExternal(event.target.checked)} /> Include external research</label>
             {focus !== "general" && <p style={{ fontSize: 12, color: "#6b7280", marginTop: 8 }}>Contextual research modes use external sources so geographical, cultural, historical, archaeological, and language claims can be checked against retrieved evidence.</p>}
             {external && <div style={{ marginTop: 10 }}><label style={{ display: "block", fontSize: 13, marginBottom: 6 }}>Optional public source URLs (one per line; up to 10)</label><textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} rows={4} placeholder="https://example.org/article" style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} /><p style={{ fontSize: 12, color: "#6b7280" }}>External research uses Gemini&apos;s public web-search and URL-context tools. Retrieved sources are shown separately from your Study evidence.</p></div>}
@@ -126,7 +138,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             <div><h3>Textual Basis</h3>{result.textualBasis.length ? <ul>{result.textualBasis.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No specific textual basis was returned from the supplied Study context.</p>}</div>
             {external && <div><h3>Retrieved Sources</h3>{result.sources?.length ? <ul>{result.sources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" style={linkStyle}>{source.title}</a> <span style={{ color: "#6b7280" }}>({source.url})</span></li>)}</ul> : <p>No source citations were returned by the external research tools.</p>}</div>}
             <div><h3>Questions for Further Study</h3>{result.furtherQuestions.length ? <ul>{result.furtherQuestions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional questions were suggested.</p>}</div>
-            <div><h3>Cautions</h3>{result.cautions.length ? <ul>{result.cautions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional cautions were returned.</p>}</div>
+            <div><h3>Cautions</h3>{result.cautions.length ? <ul>{result.cautions.map((item) => <li key={item}>{item}</li>}) : <p>No additional cautions were returned.</p>}</div>
             <div style={{ fontSize: 12, color: "#6b7280" }}>AI provider: {result.provider} · model: {result.model}</div>
         </section>}
     </main>;
