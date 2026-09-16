@@ -73,8 +73,8 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
         if (question.trim().length < 8) { setError("Enter a specific research question before running the assistant."); return; }
         const urls = sourceText.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean).slice(0, 10);
         if (external && urls.some((url) => !/^https:\/\//i.test(url))) { setError("External research sources must use complete HTTPS URLs."); return; }
-        if (["geography", "customs_culture", "historical_period", "social_political", "religious_context", "archaeology_material", "language_terminology"].includes(focus) && !external) {
-            setError("Turn on Include external research for historical, geographical, cultural, archaeological, or language research.");
+        if (focus !== "general" && !external) {
+            setError("Turn on Include external research for contextual research modes.");
             return;
         }
         setRunning(true);
@@ -116,6 +116,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             <h2 style={{ marginTop: 20 }}>Research Question</h2>
             <textarea value={question} onChange={(event) => setQuestion(event.target.value)} rows={5} placeholder="Example: What geographical features of the passage's setting would help me understand the movement or audience described here?" style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} />
             <label style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 12, fontWeight: 600 }}><input type="checkbox" checked={external} onChange={(event) => setExternal(event.target.checked)} /> Include external research</label>
+            {focus !== "general" && <p style={{ fontSize: 12, color: "#6b7280", marginTop: 8 }}>Contextual research modes use external sources so geographical, cultural, historical, archaeological, and language claims can be checked against retrieved evidence.</p>}
             {external && <div style={{ marginTop: 10 }}><label style={{ display: "block", fontSize: 13, marginBottom: 6 }}>Optional public source URLs (one per line; up to 10)</label><textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} rows={4} placeholder="https://example.org/article" style={{ width: "100%", padding: 12, boxSizing: "border-box", resize: "vertical" }} /><p style={{ fontSize: 12, color: "#6b7280" }}>External research uses Gemini&apos;s public web-search and URL-context tools. Retrieved sources are shown separately from your Study evidence.</p></div>}
             <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 12 }}><button type="button" onClick={() => void runResearch()} disabled={running}>{running ? "Researching..." : external ? "Research with Sources" : "Investigate Question"}</button>{error && <span style={{ color: "#b91c1c" }}>{error}</span>}</div>
         </section>
