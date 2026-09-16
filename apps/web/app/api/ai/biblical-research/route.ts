@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
 import { runBiblicalResearch } from "../../../../src/lib/biblicalResearchProvider";
+import { runExternalBiblicalResearch } from "../../../../src/lib/externalBiblicalResearchProvider";
 
-interface RequestBody { studyId?: unknown; question?: unknown; }
+interface RequestBody { studyId?: unknown; question?: unknown; external?: unknown; sourceUrls?: unknown; }
 
 function requiredText(value: unknown, name: string): string {
     if (typeof value !== "string" || !value.trim()) throw new Error(`${name} is required.`);
@@ -16,6 +17,11 @@ function bearer(request: Request): string {
     const token = value.slice(7).trim();
     if (!token) throw new Error("A signed-in Supabase session is required.");
     return token;
+}
+
+function sourceUrls(value: unknown): string[] {
+    if (!Array.isArray(value)) return [];
+    return Array.from(new Set(value.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean))).slice(0, 10);
 }
 
 async function context(token: string) {
@@ -41,6 +47,7 @@ export async function POST(request: Request) {
         const body = await request.json() as RequestBody;
         const studyId = requiredText(body.studyId, "Study ID");
         const question = requiredText(body.question, "Research question");
+        const useExternal = body.external === true;
 
         const { data: study, error: studyError } = await client.from("studies").select("id, title, passage_start_book, passage_start_chapter, passage_start_verse, passage_end_book, passage_end_chapter, passage_end_verse").eq("id", studyId).eq("user_id", userId).maybeSingle();
         if (studyError) throw studyError;
@@ -56,6 +63,17 @@ export async function POST(request: Request) {
         if (theologyError) throw theologyError;
 
         const passage = `${study.passage_start_book} ${study.passage_start_chapter}:${study.passage_start_verse}-${study.passage_end_book} ${study.passage_end_chapter}:${study.passage_end_verse}`;
+        const studyContext = [
+            ...(observations ?? []).map((item) => `Observation — ${item.verse_book} ${item.verse_chapter}:${item.verse_verse}: ${item.statement}`),
+            ...(interpretations ?? []).map((item) => `Interpretation — ${item.statement}`),
+            ...(theology ?? []).map((item) => `Biblical Theology — ${item.theme}: ${item.synthesis}`),
+        ];
+
+        if (useExternal) {
+            const result = await runExternalBiblicalResearch({ question, studyTitle: study.title, passage, studyContext, sourceUrls: sourceUrls(body.sourceUrls) });
+            return NextResponse.json(result);
+        }
+
         const result = await runBiblicalResearch({
             question,
             studyTitle: study.title,
