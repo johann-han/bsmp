@@ -37,6 +37,7 @@ function buildInput(input: ExternalBiblicalResearchInput): string {
     const context = input.studyContext.length ? input.studyContext.map((item, index) => `${index + 1}. ${item}`).join("\n") : "None recorded.";
     const urls = input.sourceUrls.length ? input.sourceUrls.join("\n") : "No URLs supplied; use Google Search only when appropriate.";
     return [
+        INSTRUCTIONS,
         `Study: ${input.studyTitle}`,
         `Passage: ${input.passage}`,
         `\nResearch question:\n${input.question}`,
