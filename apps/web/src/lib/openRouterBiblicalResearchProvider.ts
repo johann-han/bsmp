@@ -62,7 +62,7 @@ function buildInput(input: OpenRouterBiblicalResearchInput): string {
             ? "External research is allowed only from the supplied public source URLs. Use the openrouter:web_fetch tool for those URLs when needed. Do not claim to have searched the wider web."
             : "Use only the supplied Study context. Do not claim to have consulted external sources.",
         "Do not reveal private reasoning, scratch work, planning, tool-use narration, API details, or attempts to construct the response. Start directly with the final answer content.",
-        "Return the requested JSON object exactly. Do not place commentary before or after the JSON object. If structured output cannot be produced, return a concise factual answer only; never explain the formatting problem.",
+        "Return exactly one JSON object with answer, textualBasis, furtherQuestions, and cautions. Do not place commentary before or after the JSON object. Never discuss the response format or API.",
         `Research focus: ${input.focus}`,
         FOCUS_GUIDANCE[input.focus],
         `Study: ${input.studyTitle}`,
@@ -146,19 +146,18 @@ function parseStructuredObject(raw: string): Record<string, unknown> | null {
 
 function parseResult(raw: string): Omit<OpenRouterBiblicalResearchResult, "model" | "provider" | "sources"> {
     const parsed = parseStructuredObject(raw);
-    if (parsed) {
-        const answer = typeof parsed.answer === "string" ? parsed.answer.trim() : "";
-        if (answer && !/^(?:wait,|let me|i need to|i should|actually,? looking|given the strict constraints)/i.test(answer)) {
-            return {
-                answer,
-                textualBasis: list(parsed.textualBasis),
-                furtherQuestions: list(parsed.furtherQuestions),
-                cautions: list(parsed.cautions),
-            };
-        }
+    if (!parsed) throw new Error("The OpenRouter research assistant did not return a structured research response. Please retry the research request.");
+    const answer = typeof parsed.answer === "string" ? parsed.answer.trim() : "";
+    if (!answer) throw new Error("The OpenRouter research assistant did not return a usable research answer. Please retry the research request.");
+    if (/^(?:wait,|let me|i need to|i should|actually,? looking|given the strict constraints)/i.test(answer)) {
+        throw new Error("The OpenRouter research assistant did not return a structured research response. Please retry the research request.");
     }
-
-    throw new Error("The OpenRouter research assistant did not return a structured research response. Please retry the research request.");
+    return {
+        answer,
+        textualBasis: list(parsed.textualBasis),
+        furtherQuestions: list(parsed.furtherQuestions),
+        cautions: list(parsed.cautions),
+    };
 }
 
 export async function runOpenRouterBiblicalResearch(input: OpenRouterBiblicalResearchInput): Promise<OpenRouterBiblicalResearchResult> {
@@ -182,7 +181,7 @@ export async function runOpenRouterBiblicalResearch(input: OpenRouterBiblicalRes
             model,
             input: buildInput(input),
             ...(tools ? { tools } : {}),
-            text: { format: { type: "json_schema", name: "biblical_research_response", strict: true, schema: RESPONSE_SCHEMA } },
+            response_format: { type: "json_schema", json_schema: { name: "biblical_research_response", strict: false, schema: RESPONSE_SCHEMA } },
             reasoning: { exclude: true },
             max_output_tokens: 1600,
         }),
