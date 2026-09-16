@@ -1,6 +1,6 @@
 import { runBiblicalResearch, type BiblicalResearchFocus, type BiblicalResearchResult } from "./biblicalResearchProvider";
 import { runExternalBiblicalResearch, type ExternalBiblicalResearchResult } from "./externalBiblicalResearchProvider";
-import { runOpenRouterBiblicalResearch } from "./openRouterBiblicalResearchProvider";
+import { runOpenRouterBiblicalResearch, type OpenRouterBiblicalResearchResult } from "./openRouterBiblicalResearchProvider";
 import type { OpenRouterBiblicalResearchInput } from "./openRouterBiblicalResearchProvider";
 
 export interface RoutedBiblicalResearchInput {
@@ -56,7 +56,7 @@ export async function runRoutedBiblicalResearch(input: RoutedBiblicalResearchInp
     }
 }
 
-export async function runRoutedExternalBiblicalResearch(input: RoutedExternalBiblicalResearchInput): Promise<ExternalBiblicalResearchResult | ReturnType<typeof runOpenRouterBiblicalResearch>> {
+export async function runRoutedExternalBiblicalResearch(input: RoutedExternalBiblicalResearchInput): Promise<ExternalBiblicalResearchResult | OpenRouterBiblicalResearchResult> {
     try {
         return await runExternalBiblicalResearch(input);
     } catch (reason) {
