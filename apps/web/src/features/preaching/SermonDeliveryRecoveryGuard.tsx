@@ -3,6 +3,60 @@
 import { useEffect } from "react";
 
 const DELIVERY_SECTION_PREFIX = "delivery-section-";
+const DELIVERY_RECOVERY_PREFIX = "bsmp.delivery.recovery.v1";
+const DELIVERY_MANUSCRIPT_SIGNATURE_PREFIX = "bsmp.delivery.manuscript.signature.v1";
+
+function studyIdFromLocation(): string {
+    return new URLSearchParams(window.location.search).get("studyId") ?? "unknown";
+}
+
+function recoveryKey(): string {
+    return `${DELIVERY_RECOVERY_PREFIX}:${studyIdFromLocation()}`;
+}
+
+function manuscriptSignatureKey(): string {
+    return `${DELIVERY_MANUSCRIPT_SIGNATURE_PREFIX}:${studyIdFromLocation()}`;
+}
+
+function getManuscriptSignature(): string | null {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>(".bsmp-delivery-print-section"));
+    if (sections.length === 0) return null;
+
+    return JSON.stringify(sections.map((section) => ({
+        id: section.id,
+        text: section.textContent?.replace(/\s+/g, " ").trim() ?? "",
+    })));
+}
+
+function invalidateStaleMyPlace() {
+    const signature = getManuscriptSignature();
+    if (!signature) return;
+
+    try {
+        const key = manuscriptSignatureKey();
+        const previousSignature = window.localStorage.getItem(key);
+        if (previousSignature && previousSignature !== signature) {
+            const recoveryRaw = window.localStorage.getItem(recoveryKey());
+            if (recoveryRaw) {
+                const parsed = JSON.parse(recoveryRaw) as unknown;
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+                    const recovery = parsed as Record<string, unknown>;
+                    if (recovery.placeMarker) {
+                        // A line offset belongs to a specific rendered manuscript. When
+                        // authored text changes, the same section id can remain while the
+                        // saved line moves; discard only My Place and preserve the rest of
+                        // the preacher's Delivery recovery state.
+                        delete recovery.placeMarker;
+                        window.localStorage.setItem(recoveryKey(), JSON.stringify(recovery));
+                    }
+                }
+            }
+        }
+        window.localStorage.setItem(key, signature);
+    } catch {
+        // Recovery is optional; storage failures must never block delivery.
+    }
+}
 
 function sanitizeDeliveryHash() {
     const hash = window.location.hash.slice(1);
@@ -24,10 +78,12 @@ export function SermonDeliveryRecoveryGuard() {
             if (frame) return;
             frame = window.requestAnimationFrame(() => {
                 frame = 0;
+                invalidateStaleMyPlace();
                 sanitizeDeliveryHash();
             });
         };
 
+        invalidateStaleMyPlace();
         sanitizeDeliveryHash();
         window.addEventListener("hashchange", schedule);
         window.addEventListener("popstate", schedule);
