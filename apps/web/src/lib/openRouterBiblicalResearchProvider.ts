@@ -168,7 +168,7 @@ export async function runOpenRouterBiblicalResearch(input: OpenRouterBiblicalRes
         throw new Error("The free OpenRouter fallback can use supplied source URLs, but it does not provide free general web search. Add one or more HTTPS source URLs or use Gemini when available.");
     }
 
-    const model = process.env.OPENROUTER_RESEARCH_MODEL ?? "openrouter/free";
+    const model = process.env.OPENROUTER_RESEARCH_MODEL ?? "google/gemma-4-31b-it:free";
     const tools = input.external ? [{ type: "openrouter:web_fetch", parameters: { engine: "openrouter", max_content_tokens: 12000 } }] : undefined;
     const response = await fetch("https://openrouter.ai/api/v1/responses", {
         method: "POST",
