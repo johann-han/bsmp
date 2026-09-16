@@ -61,7 +61,8 @@ function buildInput(input: OpenRouterBiblicalResearchInput): string {
         input.external
             ? "External research is allowed only from the supplied public source URLs. Use the openrouter:web_fetch tool for those URLs when needed. Do not claim to have searched the wider web."
             : "Use only the supplied Study context. Do not claim to have consulted external sources.",
-        "When possible, return the requested JSON object exactly. If the model cannot produce structured JSON, provide a concise factual answer instead of discussing the API or the response format.",
+        "Do not reveal private reasoning, scratch work, planning, tool-use narration, API details, or attempts to construct the response. Start directly with the final answer content.",
+        "Return the requested JSON object exactly. Do not place commentary before or after the JSON object. If structured output cannot be produced, return a concise factual answer only; never explain the formatting problem.",
         `Research focus: ${input.focus}`,
         FOCUS_GUIDANCE[input.focus],
         `Study: ${input.studyTitle}`,
@@ -69,7 +70,6 @@ function buildInput(input: OpenRouterBiblicalResearchInput): string {
         `\nResearch question:\n${input.question}`,
         `\nStudent-authored Study context:\n${context}`,
         `\nSource URLs:\n${sources}`,
-        "Return exactly one JSON object with answer, textualBasis, furtherQuestions, and cautions.",
     ].join("\n");
 }
 
@@ -148,7 +148,7 @@ function parseResult(raw: string): Omit<OpenRouterBiblicalResearchResult, "model
     const parsed = parseStructuredObject(raw);
     if (parsed) {
         const answer = typeof parsed.answer === "string" ? parsed.answer.trim() : "";
-        if (answer) {
+        if (answer && !/^(?:wait,|let me|i need to|i should|actually,? looking|given the strict constraints)/i.test(answer)) {
             return {
                 answer,
                 textualBasis: list(parsed.textualBasis),
@@ -158,14 +158,7 @@ function parseResult(raw: string): Omit<OpenRouterBiblicalResearchResult, "model
         }
     }
 
-    const fallbackAnswer = raw.trim();
-    if (!fallbackAnswer) throw new Error("The OpenRouter research assistant returned no usable answer.");
-    return {
-        answer: fallbackAnswer,
-        textualBasis: [],
-        furtherQuestions: [],
-        cautions: ["The free fallback returned an unstructured response; treat claims as research guidance and verify them against the retrieved source material."],
-    };
+    throw new Error("The OpenRouter research assistant did not return a structured research response. Please retry the research request.");
 }
 
 export async function runOpenRouterBiblicalResearch(input: OpenRouterBiblicalResearchInput): Promise<OpenRouterBiblicalResearchResult> {
@@ -190,7 +183,8 @@ export async function runOpenRouterBiblicalResearch(input: OpenRouterBiblicalRes
             input: buildInput(input),
             ...(tools ? { tools } : {}),
             text: { format: { type: "json_schema", name: "biblical_research_response", strict: true, schema: RESPONSE_SCHEMA } },
-            max_output_tokens: 1200,
+            reasoning: { exclude: true },
+            max_output_tokens: 1600,
         }),
     });
     const payload = await response.json() as { output_text?: unknown; output?: unknown; error?: { message?: unknown } };
