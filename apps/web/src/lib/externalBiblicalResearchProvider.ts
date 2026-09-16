@@ -1,9 +1,12 @@
+import type { BiblicalResearchFocus } from "./biblicalResearchProvider";
+
 export interface ExternalBiblicalResearchInput {
     readonly question: string;
     readonly studyTitle: string;
     readonly passage: string;
     readonly studyContext: readonly string[];
     readonly sourceUrls: readonly string[];
+    readonly focus: BiblicalResearchFocus;
 }
 
 export interface ExternalResearchSource {
@@ -20,6 +23,18 @@ export interface ExternalBiblicalResearchResult {
     readonly model: string;
     readonly provider: "gemini";
 }
+
+const FOCUS_GUIDANCE: Record<BiblicalResearchFocus, string> = {
+    general: "Investigate the focused biblical research question without assuming a particular contextual category.",
+    geography: "Investigate the geographical setting: places, routes, terrain, distances, climate, regions, political boundaries, and how location may clarify the passage. Distinguish secure geographical facts from reconstructions or uncertain identifications.",
+    customs_culture: "Investigate customs and culture: social practices, family life, hospitality, honor and shame, clothing, food, marriage, burial, festivals, agricultural practices, and other cultural conventions relevant to the passage. Explain only practices relevant to the passage and distinguish period-specific evidence from generalized claims.",
+    historical_period: "Investigate the historical and chronological setting: approximate date, major historical events, rulers, empires, conflicts, and developments relevant to the passage. Clearly distinguish established chronology from debated dating.",
+    social_political: "Investigate the social and political setting: governing authorities, institutions, social classes, citizenship, taxation, patronage, slavery or servitude where relevant, ethnic relations, and other power structures that illuminate the passage.",
+    religious_context: "Investigate the religious setting: worship practices, temple or synagogue context, festivals, purity practices, priesthood, competing religious beliefs, and relevant Jewish, Greco-Roman, or other religious background. Distinguish historical description from theological interpretation.",
+    literary_setting: "Investigate the literary and historical setting: genre, immediate literary context, audience, occasion, rhetorical situation, authorship and provenance where reasonably established, and how the passage functions within its surrounding book. Do not substitute external theories for the student's own interpretation.",
+    archaeology_material: "Investigate archaeological and material context: sites, inscriptions, artifacts, architecture, roads, household structures, tools, coins, agriculture, and other material evidence relevant to the passage. Identify the limits of archaeological evidence and avoid treating an artifact as proof of a specific interpretation without adequate support.",
+    language_terminology: "Investigate important language and terminology: significant Hebrew, Aramaic, or Greek terms, semantic range, idioms, translation issues, and relevant ancient usage. Do not invent lexical data, morphology, or etymologies, and make uncertainty explicit.",
+};
 
 const INSTRUCTIONS = [
     "You are the BSMP External Biblical Research Assistant.",
@@ -38,6 +53,8 @@ function buildInput(input: ExternalBiblicalResearchInput): string {
     const urls = input.sourceUrls.length ? input.sourceUrls.join("\n") : "No URLs supplied; use Google Search only when appropriate.";
     return [
         INSTRUCTIONS,
+        `Research focus: ${input.focus}`,
+        FOCUS_GUIDANCE[input.focus],
         `Study: ${input.studyTitle}`,
         `Passage: ${input.passage}`,
         `\nResearch question:\n${input.question}`,
