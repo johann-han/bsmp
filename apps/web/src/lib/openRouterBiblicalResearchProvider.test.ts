@@ -37,6 +37,14 @@ describe("runOpenRouterBiblicalResearch", () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
         const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
         expect(body.reasoning).toEqual({ exclude: true });
+        expect(body.response_format).toEqual({
+            type: "json_schema",
+            json_schema: {
+                name: "biblical_research_response",
+                strict: false,
+                schema: expect.any(Object),
+            },
+        });
 
         fetchMock.mockRestore();
     });
