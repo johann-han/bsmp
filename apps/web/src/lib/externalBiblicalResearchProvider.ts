@@ -150,7 +150,10 @@ export async function runExternalBiblicalResearch(input: ExternalBiblicalResearc
         }),
     });
     const payload = await response.json() as { status?: unknown; output_text?: unknown; error?: { message?: unknown }; steps?: unknown };
-    if (!response.ok) throw new Error(typeof payload.error?.message === "string" ? payload.error.message : "The Gemini external research request failed.");
+    if (!response.ok) {
+        const detail = typeof payload.error?.message === "string" ? payload.error.message : "The Gemini external research request failed.";
+        throw new Error(`[gemini:${response.status}] ${detail}`);
+    }
     if (payload.status === "failed" || payload.status === "cancelled") throw new Error("The Gemini external research interaction did not complete.");
     const raw = typeof payload.output_text === "string" ? payload.output_text : textFromSteps(payload);
     const result = parseResult(raw);
