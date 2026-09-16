@@ -57,6 +57,37 @@ describe("buildSermonManuscript", () => {
         expect(pointSection?.content).toContain("Explanation\nAbiding describes dependent fellowship with Christ.");
     });
 
+    it("keeps section ids stable when authored content changes", () => {
+        const sermon = preparedSermon();
+        const before = buildSermonManuscriptSections(sermon);
+
+        sermon.defineIntroduction(SermonIntroduction.from("A revised introduction for delivery."));
+        sermon.updateOutlinePoint("point-1", "Abide deeply in the vine", "Life comes from Christ.", {}, {
+            text: "A revised exposition of Jesus' command.",
+            explanation: "The revised explanation gives the preacher more clarity.",
+            illustration: "A branch remains connected to the vine.",
+            application: "Remain dependent on Christ.",
+            transition: "Now consider the fruit this abiding produces.",
+        });
+        const after = buildSermonManuscriptSections(sermon);
+
+        expect(after.map((section) => section.id)).toEqual(before.map((section) => section.id));
+        expect(after.find((section) => section.id === "outline-point-1")?.outlinePointId).toBe("point-1");
+        expect(after.find((section) => section.id === "outline-point-1")?.content).toContain("A revised exposition");
+    });
+
+    it("does not create empty manuscript sections", () => {
+        const sermon = preparedSermon();
+        sermon.defineIntroduction(SermonIntroduction.from(""));
+        sermon.defineContext(SermonContext.from(""));
+        sermon.defineConclusion(SermonConclusion.from(""));
+
+        const sections = buildSermonManuscriptSections(sermon);
+
+        expect(sections.map((section) => section.id)).toEqual(["outline-point-1"]);
+        expect(sections.every((section) => section.title.trim() && section.content.trim())).toBe(true);
+    });
+
     it("composes an authored section set without losing traceability metadata", () => {
         const sermon = preparedSermon();
         const sections = [
