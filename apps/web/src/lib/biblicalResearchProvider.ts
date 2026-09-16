@@ -122,7 +122,10 @@ export async function runBiblicalResearch(input: BiblicalResearchInput): Promise
             body: JSON.stringify({ model, instructions: INSTRUCTIONS, input: [{ role: "user", content: [{ type: "input_text", text: prompt(input) }] }], text: { format: { type: "json_schema", name: "biblical_research_response", strict: true, schema: RESPONSE_SCHEMA } }, max_output_tokens: 900 }),
         });
         const payload = await response.json() as { output_text?: unknown; error?: { message?: unknown } };
-        if (!response.ok) throw new Error(typeof payload.error?.message === "string" ? payload.error.message : "The OpenAI research request failed.");
+        if (!response.ok) {
+            const detail = typeof payload.error?.message === "string" ? payload.error.message : "The OpenAI research request failed.";
+            throw new Error(`[openai:${response.status}] ${detail}`);
+        }
         return { ...parseResult(extractOpenAIText(payload)), model, provider: "openai" };
     }
     if (provider === "gemini") {
@@ -136,7 +139,10 @@ export async function runBiblicalResearch(input: BiblicalResearchInput): Promise
             body: JSON.stringify({ systemInstruction: { parts: [{ text: INSTRUCTIONS }] }, contents: [{ role: "user", parts: [{ text: prompt(input) }] }], generationConfig: { responseMimeType: "application/json", maxOutputTokens: 1200 } }),
         });
         const payload = await response.json() as { candidates?: unknown; error?: { message?: unknown } };
-        if (!response.ok) throw new Error(typeof payload.error?.message === "string" ? payload.error.message : "The Gemini research request failed.");
+        if (!response.ok) {
+            const detail = typeof payload.error?.message === "string" ? payload.error.message : "The Gemini research request failed.";
+            throw new Error(`[gemini:${response.status}] ${detail}`);
+        }
         return { ...parseResult(extractGeminiText(payload)), model, provider: "gemini" };
     }
     throw new Error(`Unsupported AI_PROVIDER: ${provider}. Use "gemini" or "openai".`);
