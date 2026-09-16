@@ -12,6 +12,7 @@ const items = [
     ["Studies", "/studies"],
     ["Workspace", "/workspace"],
     ["Biblical Theology", "/biblical-theology"],
+    ["Research", "/research"],
     ["Teaching", "/teaching"],
     ["Sermon Preparation", "/preaching"],
     ["Sermon Overview", "/preaching/overview"],
@@ -22,6 +23,7 @@ const items = [
 const studyScopedPaths = new Set([
     "/workspace",
     "/biblical-theology",
+    "/research",
     "/teaching",
     "/preaching",
     "/preaching/overview",
