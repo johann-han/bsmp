@@ -22,8 +22,15 @@ describe("runOpenRouterBiblicalResearch", () => {
                 cautions: [],
             }),
             output: [{
+                type: "message",
                 content: [{
                     type: "output_text",
+                    text: JSON.stringify({
+                        answer: "The supplied source provides regional geographical context.",
+                        textualBasis: [],
+                        furtherQuestions: ["What specific location does Exodus 31 identify?"],
+                        cautions: [],
+                    }),
                     annotations: [{ type: "url_citation", url: input.sourceUrls[0], title: "Geography of Israel" }],
                 }],
             }],
@@ -37,14 +44,15 @@ describe("runOpenRouterBiblicalResearch", () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
         const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
         expect(body.reasoning).toEqual({ exclude: true });
-        expect(body.response_format).toEqual({
-            type: "json_schema",
-            json_schema: {
+        expect(body.text).toEqual({
+            format: {
+                type: "json_schema",
                 name: "biblical_research_response",
                 strict: false,
                 schema: expect.any(Object),
             },
         });
+        expect(body.response_format).toBeUndefined();
 
         fetchMock.mockRestore();
     });
