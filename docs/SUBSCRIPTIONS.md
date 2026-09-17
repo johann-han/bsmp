@@ -2,7 +2,7 @@
 
 ## Purpose
 
-BSMP now has a provider-neutral subscription data model that can support future paid plans, AI quotas, feature entitlements, and payment-provider integration without coupling billing logic to Study content or AI provider implementations.
+BSMP has a provider-neutral subscription data model that can support future paid plans, AI quotas, feature entitlements, and payment-provider integration without coupling billing logic to Study content or AI provider implementations.
 
 ## Tables
 
@@ -20,10 +20,20 @@ Stores a user's current and historical subscription state. The model supports tr
 
 Only the user's own subscription rows are readable through the authenticated client. Plan definitions and active entitlements are readable, while subscription mutations remain server-side.
 
+## AI quota enforcement
+
+The reserved entitlement key `ai_monthly_operations` represents a finite monthly count of AI operations when its `limit_unit` is `count` and `limit_value` is populated on the user's active or trialing plan.
+
+Before any metered AI mentor call, the server checks the user's current-month `ai_usage_events` count against that entitlement. Biblical Research performs the same preflight check. A request that reaches the configured limit is rejected before the provider is called and returns HTTP 429 with an account-facing quota message.
+
+When no service-role key is configured, quota enforcement is intentionally disabled so local development and existing non-metered deployments are not broken. When a signed-in user has no active/trialing subscription, or the current plan has no finite `ai_monthly_operations` entitlement, the request remains allowed and the UI reports that no finite quota is configured.
+
+The current implementation is a lightweight preflight guard. It deliberately does not attempt to make external-provider calls and database usage accounting one atomic transaction. Concurrent requests can therefore race near the limit. Production billing should add an atomic reservation/allowance mechanism before hard enforcement becomes a financial control.
+
 ## Relationship to AI metering
 
-`ai_usage_events` remains the usage ledger. Subscription entitlements do not copy prompts, generated content, or Study evidence into billing records. A future server-side quota service can read the user's active entitlement and compare it with usage recorded in `ai_usage_events` for the current subscription period.
+`ai_usage_events` remains the usage ledger. Subscription entitlements read that ledger rather than copying prompts, generated content, or Study evidence into billing records. The AI Usage page displays both recorded activity and the current subscription allowance when one is configured.
 
 ## Deliberately deferred
 
-This phase does not connect a payment provider, publish pricing, create checkout sessions, process webhooks, or enforce quotas. Those decisions require the final product plan and billing provider choice.
+This phase does not connect a payment provider, publish pricing, create checkout sessions, process webhooks, or choose final plan values. Those decisions remain separate from the entitlement and metering infrastructure.
