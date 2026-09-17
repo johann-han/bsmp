@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
+import { assertAiQuotaAvailable } from "./aiQuota";
+
 export type AiUsageStatus = "success" | "error";
 
 export interface AiUsageEventInput {
@@ -73,9 +75,11 @@ export async function recordAiUsageEvent(input: AiUsageEventInput): Promise<bool
 /**
  * Wrap one provider call so successful and failed AI executions share the same
  * provider-neutral usage accounting path. Prompt and generated content are never
- * written to the ledger.
+ * written to the ledger. A configured finite AI quota is checked before the
+ * provider is called.
  */
 export async function runMeteredAiOperation<T extends { readonly provider: string; readonly model: string }>(input: MeteredAiOperationInput<T>): Promise<T> {
+    await assertAiQuotaAvailable(input.userId);
     const startedAt = Date.now();
 
     try {

@@ -18,6 +18,17 @@ interface UsageEvent {
     created_at: string;
 }
 
+interface QuotaView {
+    planName: string | null;
+    limit: number | null;
+    used: number;
+    remaining: number | null;
+    start: string;
+    end: string;
+    enforced: boolean;
+    reason: "no_subscription" | "no_quota" | "quota_available" | "quota_exceeded";
+}
+
 function client() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -33,8 +44,15 @@ function labelFeature(value: string): string {
         .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function monthPeriod(now = new Date()) {
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+    return { start, end };
+}
+
 export function AiUsageWorkspace() {
     const [events, setEvents] = useState<UsageEvent[]>([]);
+    const [quota, setQuota] = useState<QuotaView | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -44,20 +62,77 @@ export function AiUsageWorkspace() {
         async function load() {
             try {
                 const supabase = client();
-                const startOfMonth = new Date();
-                startOfMonth.setDate(1);
-                startOfMonth.setHours(0, 0, 0, 0);
+                const { data: userData, error: userError } = await supabase.auth.getUser();
+                if (userError) throw userError;
+                if (!userData.user) throw new Error("A signed-in account is required.");
 
-                const { data, error: queryError } = await supabase
-                    .from("ai_usage_events")
-                    .select("id, feature, operation, provider, model, status, duration_ms, input_tokens, output_tokens, total_tokens, estimated_cost_usd, created_at")
-                    .gte("created_at", startOfMonth.toISOString())
-                    .order("created_at", { ascending: false })
-                    .limit(500);
+                const { start, end } = monthPeriod();
+                const [eventsResult, subscriptionResult] = await Promise.all([
+                    supabase
+                        .from("ai_usage_events")
+                        .select("id, feature, operation, provider, model, status, duration_ms, input_tokens, output_tokens, total_tokens, estimated_cost_usd, created_at")
+                        .gte("created_at", start.toISOString())
+                        .lt("created_at", end.toISOString())
+                        .order("created_at", { ascending: false })
+                        .limit(500),
+                    supabase
+                        .from("user_subscriptions")
+                        .select("id, plan_id, status")
+                        .eq("user_id", userData.user.id)
+                        .in("status", ["trialing", "active"])
+                        .order("created_at", { ascending: false })
+                        .limit(1),
+                ]);
+
+                if (eventsResult.error) throw eventsResult.error;
+                if (subscriptionResult.error) throw subscriptionResult.error;
+
+                const selectedSubscription = ((subscriptionResult.data ?? [])[0] ?? null) as { id: string; plan_id: string; status: string } | null;
+                let quotaView: QuotaView = {
+                    planName: null,
+                    limit: null,
+                    used: (eventsResult.data ?? []).length,
+                    remaining: null,
+                    start: start.toISOString(),
+                    end: end.toISOString(),
+                    enforced: false,
+                    reason: selectedSubscription ? "no_quota" : "no_subscription",
+                };
+
+                if (selectedSubscription) {
+                    const [{ data: plan, error: planError }, { data: entitlement, error: entitlementError }] = await Promise.all([
+                        supabase.from("subscription_plans").select("name").eq("id", selectedSubscription.plan_id).maybeSingle(),
+                        supabase
+                            .from("subscription_plan_entitlements")
+                            .select("limit_value, limit_unit, enabled")
+                            .eq("plan_id", selectedSubscription.plan_id)
+                            .eq("entitlement_key", "ai_monthly_operations")
+                            .eq("enabled", true)
+                            .maybeSingle(),
+                    ]);
+                    if (planError) throw planError;
+                    if (entitlementError) throw entitlementError;
+
+                    const rawLimit = entitlement?.limit_unit === "count" && entitlement.limit_value !== null && entitlement.limit_value !== undefined
+                        ? Number(entitlement.limit_value)
+                        : null;
+                    const limit = rawLimit !== null && Number.isFinite(rawLimit) ? Math.max(0, Math.floor(rawLimit)) : null;
+                    const used = (eventsResult.data ?? []).length;
+                    quotaView = {
+                        planName: typeof plan?.name === "string" ? plan.name : null,
+                        limit,
+                        used,
+                        remaining: limit === null ? null : Math.max(0, limit - used),
+                        start: start.toISOString(),
+                        end: end.toISOString(),
+                        enforced: limit !== null,
+                        reason: limit === null ? "no_quota" : used < limit ? "quota_available" : "quota_exceeded",
+                    };
+                }
 
                 if (!active) return;
-                if (queryError) throw queryError;
-                setEvents((data ?? []) as UsageEvent[]);
+                setEvents((eventsResult.data ?? []) as UsageEvent[]);
+                setQuota(quotaView);
             } catch (reason) {
                 if (!active) return;
                 setError(reason instanceof Error ? reason.message : "Unable to load AI usage.");
@@ -89,6 +164,14 @@ export function AiUsageWorkspace() {
 
     if (loading) return <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}><p>Loading AI Usage...</p></main>;
 
+    const quotaMessage = quota?.reason === "quota_exceeded"
+        ? "Your current AI allowance has been reached. New AI operations are blocked until the current calendar month changes or the plan entitlement is changed."
+        : quota?.reason === "quota_available"
+            ? `Your current plan allows ${quota.limit?.toLocaleString()} AI operations this calendar month.`
+            : quota?.reason === "no_subscription"
+                ? "No active subscription is assigned. AI quota enforcement is not configured for this account yet."
+                : "No finite AI operation quota is configured for the current plan yet.";
+
     return (
         <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24, display: "grid", gap: 18 }}>
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
@@ -98,6 +181,22 @@ export function AiUsageWorkspace() {
                     Server-recorded AI operations for the current calendar month. This view records usage metadata, not your prompts or generated Study content.
                 </p>
                 {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
+            </section>
+
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                <h2 style={{ marginTop: 0 }}>Current AI Allowance</h2>
+                <p style={{ margin: "0 0 10px", color: "#6b7280" }}>{quotaMessage}</p>
+                {quota?.planName && <div style={{ marginBottom: 6 }}><strong>Plan:</strong> {quota.planName}</div>}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginTop: 12 }}>
+                    <div><strong>Used</strong><div>{quota?.used.toLocaleString() ?? "—"}</div></div>
+                    <div><strong>Limit</strong><div>{quota?.limit === null ? "—" : quota?.limit.toLocaleString()}</div></div>
+                    <div><strong>Remaining</strong><div>{quota?.remaining === null ? "—" : quota?.remaining.toLocaleString()}</div></div>
+                </div>
+                {quota?.enforced && (
+                    <p style={{ margin: "10px 0 0", color: "#6b7280", fontSize: 13 }}>
+                        Period: {new Date(quota.start).toLocaleDateString()} to {new Date(quota.end).toLocaleDateString()}
+                    </p>
+                )}
             </section>
 
             <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
