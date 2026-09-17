@@ -32,6 +32,16 @@ Sources are reusable across Studies while remaining owned and isolated by the si
 
 Successful external research saves returned source citations when available. When an external provider returns no citation annotations but the student supplied valid HTTPS URLs, those supplied URLs are saved with a hostname-based title so they remain reusable.
 
+## Research History and provenance
+
+Every completed research request is retained as a **Research Run** associated with the Study and the signed-in user. A run stores the research question, focus, answer, textual basis, further questions, cautions, provider, model, and supplied/cited source information.
+
+The normalized `research_run_sources` records connect each source to the specific Research Run that used it. Each relationship records whether the source was a **Provider citation** or a **Supplied URL**, whether a formal citation annotation was returned, and the relevant reusable Research Source record when one exists.
+
+Research History is available as its own workspace at `/research/history`. It can be scoped to a Study with `studyId`, filtered by research focus, and used to inspect the saved answer and its source provenance. Deleting a Research Run also removes its run-specific provenance records through the database foreign-key cascade; it does not delete the reusable Research Source Library record itself.
+
+The provenance layer is deliberately normalized rather than stored only inside JSON. This provides a reliable audit trail for future work such as retrieval timestamps, provider usage accounting, AI cost metering, quotas, and subscription entitlements without coupling those concerns to Study evidence.
+
 ## Source boundary
 
 External research is supplementary. Retrieved material is displayed separately as **Retrieved Sources** and is not written automatically into Study observations, interpretations, Biblical Theology, Teaching, or sermon records.
@@ -40,4 +50,4 @@ When external evidence is used, the application should show the returned source 
 
 ## Verification
 
-Automated repository CI must pass before the research-source slice is merged. Authenticated browser verification must confirm that contextual research automatically enables external retrieval, that a research-question suggestion populates the editable question field, that retrieved sources remain visibly separate from Study evidence, that a successful research run saves reusable sources, that saved sources can be selected in a later request, that a saved source can be removed, and that navigation back to the Study, Biblical Theology, and Teaching stages preserves the selected study.
+Automated repository CI must pass before each research slice is merged. Authenticated browser verification must confirm that contextual research automatically enables external retrieval, that a research-question suggestion populates the editable question field, that retrieved sources remain visibly separate from Study evidence, that a successful research run saves reusable sources, that saved sources can be selected in a later request, that a saved source can be removed, that a completed research result survives refresh, that Research History can reopen saved runs, and that source provenance remains attached to the correct run.
