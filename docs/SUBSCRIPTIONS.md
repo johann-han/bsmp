@@ -20,6 +20,14 @@ Stores a user's current and historical subscription state. The model supports tr
 
 Only the user's own subscription rows are readable through the authenticated client. Plan definitions and active entitlements are readable, while subscription mutations remain server-side.
 
+## Subscription administration
+
+`platform_user_roles` stores the small platform-level authorization boundary used by administrative workflows. The current role vocabulary contains `admin`. Authenticated users can only read their own role rows; role assignment and removal remain server-side operations.
+
+`/settings/subscription/admin` is protected by a server-side admin check. The page can create and update plan definitions and plan entitlements through a server API. The Supabase service-role credential is never sent to the browser.
+
+The administration layer deliberately manages product capability data only. It does not expose payment credentials, choose a payment provider, or make customer billing changes.
+
 ## AI quota enforcement
 
 The reserved entitlement key `ai_monthly_operations` represents a finite monthly count of AI operations when its `limit_unit` is `count` and `limit_value` is populated on the user's active or trialing plan.
