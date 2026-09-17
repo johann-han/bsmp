@@ -19,6 +19,7 @@ const items = [
     ["Sermon Overview", "/preaching/overview"],
     ["Preaching History", "/preaching/history"],
     ["Settings", "/settings"],
+    ["Subscription", "/settings/subscription"],
     ["AI Usage", "/settings/ai-usage"],
 ] as const;
 
