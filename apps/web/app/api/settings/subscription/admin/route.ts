@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { SubscriptionAdminError, requireSubscriptionAdmin } from "../../../../../../src/lib/subscriptionAdmin";
+import { SubscriptionAdminError, requireSubscriptionAdmin } from "../../../../../src/lib/subscriptionAdmin";
 
 function text(value: unknown, field: string, max = 200): string {
     if (typeof value !== "string" || !value.trim()) throw new Error(`${field} is required.`);
@@ -39,13 +39,8 @@ export async function GET(request: Request) {
     try {
         const { adminClient } = await requireSubscriptionAdmin(request);
         const [{ data: plans, error: plansError }, { data: entitlements, error: entitlementsError }] = await Promise.all([
-            adminClient
-                .from("subscription_plans")
-                .select("id, code, name, description, active, display_order, created_at, updated_at")
-                .order("display_order", { ascending: true }),
-            adminClient
-                .from("subscription_plan_entitlements")
-                .select("id, plan_id, entitlement_key, enabled, limit_value, limit_unit, created_at, updated_at"),
+            adminClient.from("subscription_plans").select("id, code, name, description, active, display_order, created_at, updated_at").order("display_order", { ascending: true }),
+            adminClient.from("subscription_plan_entitlements").select("id, plan_id, entitlement_key, enabled, limit_value, limit_unit, created_at, updated_at"),
         ]);
         if (plansError) throw plansError;
         if (entitlementsError) throw entitlementsError;
@@ -62,15 +57,11 @@ export async function POST(request: Request) {
         const action = text(body.action, "Action", 40);
 
         if (action === "create_plan") {
+            const displayOrder = Number(body.displayOrder ?? 0);
+            if (!Number.isInteger(displayOrder)) throw new Error("Display order must be an integer.");
             const { data, error } = await adminClient
                 .from("subscription_plans")
-                .insert({
-                    code: text(body.code, "Plan code", 80).toLowerCase(),
-                    name: text(body.name, "Plan name", 120),
-                    description: optionalText(body.description, "Description"),
-                    active: bool(body.active, false),
-                    display_order: Number(body.displayOrder ?? 0),
-                })
+                .insert({ code: text(body.code, "Plan code", 80).toLowerCase(), name: text(body.name, "Plan name", 120), description: optionalText(body.description, "Description"), active: bool(body.active, false), display_order: displayOrder })
                 .select("id, code, name, description, active, display_order")
                 .single();
             if (error) throw error;
@@ -83,14 +74,7 @@ export async function POST(request: Request) {
             if (!Number.isInteger(displayOrder)) throw new Error("Display order must be an integer.");
             const { data, error } = await adminClient
                 .from("subscription_plans")
-                .update({
-                    code: text(body.code, "Plan code", 80).toLowerCase(),
-                    name: text(body.name, "Plan name", 120),
-                    description: optionalText(body.description, "Description"),
-                    active: bool(body.active, false),
-                    display_order: displayOrder,
-                    updated_at: new Date().toISOString(),
-                })
+                .update({ code: text(body.code, "Plan code", 80).toLowerCase(), name: text(body.name, "Plan name", 120), description: optionalText(body.description, "Description"), active: bool(body.active, false), display_order: displayOrder, updated_at: new Date().toISOString() })
                 .eq("id", id)
                 .select("id, code, name, description, active, display_order")
                 .single();
@@ -105,14 +89,7 @@ export async function POST(request: Request) {
             const limitValue = optionalNonNegativeNumber(body.limitValue, "Limit value");
             const { data, error } = await adminClient
                 .from("subscription_plan_entitlements")
-                .upsert({
-                    plan_id: planId,
-                    entitlement_key: entitlementKey,
-                    enabled: bool(body.enabled, true),
-                    limit_value: limitValue,
-                    limit_unit: limitUnit,
-                    updated_at: new Date().toISOString(),
-                }, { onConflict: "plan_id,entitlement_key" })
+                .upsert({ plan_id: planId, entitlement_key: entitlementKey, enabled: bool(body.enabled, true), limit_value: limitValue, limit_unit: limitUnit, updated_at: new Date().toISOString() }, { onConflict: "plan_id,entitlement_key" })
                 .select("id, plan_id, entitlement_key, enabled, limit_value, limit_unit")
                 .single();
             if (error) throw error;
