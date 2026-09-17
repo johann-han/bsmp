@@ -120,7 +120,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             setTheology(bt.count ?? 0);
             setSavedSources(sources.data ?? []);
             setResearchRuns(nextRuns);
-            if (!result && nextRuns[0]) {
+            if (nextRuns[0]) {
                 const latest = nextRuns[0];
                 const latestFocus = isFocus(latest.focus) ? latest.focus : "general";
                 const latestSourceUrls = stringList(latest.source_urls);
@@ -129,13 +129,15 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
                 setExternal(latestFocus !== "general" || latestSourceUrls.length > 0);
                 setSourceText(latestSourceUrls.join("\n"));
                 setResult(resultFromRun(latest));
+            } else {
+                setResult(null);
             }
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Unable to load Biblical Research.");
         } finally {
             if (showLoading) setLoading(false);
         }
-    }, [studyId, result]);
+    }, [studyId]);
 
     useEffect(() => { void load(true); }, [load]);
 
