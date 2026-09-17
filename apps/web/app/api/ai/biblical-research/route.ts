@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
 import { runRoutedBiblicalResearch, runRoutedExternalBiblicalResearch } from "../../../../src/lib/biblicalResearchRouter";
 import type { BiblicalResearchFocus } from "../../../../src/lib/biblicalResearchProvider";
+import { recordAiUsageEvent } from "../../../../src/lib/aiUsage";
 
 interface RequestBody { studyId?: unknown; question?: unknown; external?: unknown; sourceUrls?: unknown; focus?: unknown; }
 interface ResearchSource { url: string; title: string; }
@@ -144,16 +145,27 @@ function addFallbackProvenanceCaution(result: ResearchResult, requestedUrls: rea
 }
 
 export async function POST(request: Request) {
+    const startedAt = Date.now();
+    let meteringUserId: string | null = null;
+    let meteringStudyId: string | null = null;
+    let meteringProvider = "unknown";
+    let meteringModel = "unknown";
+    let meteringOperation = "research";
+
     try {
         const token = bearer(request);
         const { client, userId } = await context(token);
+        meteringUserId = userId;
+
         const body = await request.json() as RequestBody;
         const studyId = requiredText(body.studyId, "Study ID");
+        meteringStudyId = studyId;
         const question = requiredText(body.question, "Research question");
         const focus = researchFocus(body.focus);
         const requestedUrls = sourceUrls(body.sourceUrls);
         validateExternalUrls(requestedUrls);
         const useExternal = body.external === true || focus !== "general";
+        meteringOperation = useExternal ? "external_research" : "grounded_research";
 
         const { data: study, error: studyError } = await client.from("studies").select("id, title, passage_start_book, passage_start_chapter, passage_start_verse, passage_end_book, passage_end_chapter, passage_end_verse").eq("id", studyId).eq("user_id", userId).maybeSingle();
         if (studyError) throw studyError;
@@ -191,10 +203,42 @@ export async function POST(request: Request) {
             });
         }
 
+        meteringProvider = result.provider;
+        meteringModel = result.model;
         const persistence = await persistResearch(client, userId, studyId, question, focus, requestedUrls, result);
+        await recordAiUsageEvent({
+            userId,
+            studyId,
+            feature: "biblical_research",
+            operation: meteringOperation,
+            provider: result.provider,
+            model: result.model,
+            status: "success",
+            durationMs: Date.now() - startedAt,
+            metadata: {
+                focus,
+                external: useExternal,
+                source_count: requestedUrls.length,
+                formal_citation_count: normalizeSources(result.sources).length,
+            },
+        });
+
         return NextResponse.json({ ...result, sources: normalizeSources(result.sources), sourceUrls: requestedUrls, persistence });
     } catch (reason: unknown) {
         const message = reason instanceof Error ? reason.message : "Unable to run Biblical Research.";
+        if (meteringUserId) {
+            await recordAiUsageEvent({
+                userId: meteringUserId,
+                studyId: meteringStudyId,
+                feature: "biblical_research",
+                operation: meteringOperation,
+                provider: meteringProvider,
+                model: meteringModel,
+                status: "error",
+                durationMs: Date.now() - startedAt,
+                errorCode: String(errorStatus(message)),
+            });
+        }
         return NextResponse.json({ error: clientErrorMessage(message) }, { status: errorStatus(message) });
     }
 }
