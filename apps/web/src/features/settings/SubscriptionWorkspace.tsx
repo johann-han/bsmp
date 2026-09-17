@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -54,6 +55,7 @@ export function SubscriptionWorkspace() {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -66,6 +68,15 @@ export function SubscriptionWorkspace() {
                 const { data: userData, error: userError } = await supabase.auth.getUser();
                 if (userError) throw userError;
                 if (!userData.user) throw new Error("A signed-in account is required.");
+
+                const session = (await supabase.auth.getSession()).data.session;
+                const adminCheck = session
+                    ? await fetch("/api/settings/subscription/admin", {
+                        headers: { Authorization: `Bearer ${session.access_token}` },
+                        cache: "no-store",
+                    })
+                    : null;
+                if (active) setIsAdmin(adminCheck?.ok === true);
 
                 const [plansResult, entitlementsResult, subscriptionResult] = await Promise.all([
                     supabase
@@ -115,7 +126,10 @@ export function SubscriptionWorkspace() {
         <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24, display: "grid", gap: 18 }}>
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                 <div style={{ fontSize: 13, color: "#6b7280" }}>BSMP → Settings → Subscription</div>
-                <h1 style={{ margin: "4px 0 8px" }}>Subscription</h1>
+                <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
+                    <h1 style={{ margin: "4px 0 8px" }}>Subscription</h1>
+                    {isAdmin && <Link href="/settings/subscription/admin" style={{ color: "#334155", fontWeight: 700, textDecoration: "none" }}>Administration</Link>}
+                </div>
                 <p style={{ margin: 0, color: "#6b7280" }}>
                     Subscription and entitlement information for your BSMP account. AI usage is metered separately so future quotas can be enforced without mixing billing data into Study content.
                 </p>
