@@ -25,7 +25,7 @@ export interface BiblicalResearchResult {
     readonly furtherQuestions: readonly string[];
     readonly cautions: readonly string[];
     readonly model: string;
-    readonly provider: "openai" | "gemini";
+    readonly provider: "openai" | "gemini" | "openrouter";
 }
 
 const FOCUS_GUIDANCE: Record<BiblicalResearchFocus, string> = {
