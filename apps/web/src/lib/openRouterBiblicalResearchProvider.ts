@@ -181,7 +181,14 @@ export async function runOpenRouterBiblicalResearch(input: OpenRouterBiblicalRes
             model,
             input: buildInput(input),
             ...(tools ? { tools } : {}),
-            response_format: { type: "json_schema", json_schema: { name: "biblical_research_response", strict: false, schema: RESPONSE_SCHEMA } },
+            text: {
+                format: {
+                    type: "json_schema",
+                    name: "biblical_research_response",
+                    strict: false,
+                    schema: RESPONSE_SCHEMA,
+                },
+            },
             reasoning: { exclude: true },
             max_output_tokens: 1600,
         }),
