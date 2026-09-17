@@ -6,6 +6,7 @@ import {
     createInterpretationMentorProvider,
     type InterpretationMentorObservation,
 } from "../../../../src/lib/interpretationMentorProvider";
+import { runMeteredAiOperation } from "../../../../src/lib/aiUsage";
 
 interface MentorRequest {
     readonly interpretation?: unknown;
@@ -20,7 +21,7 @@ function requireBearerToken(request: Request): string {
     return token;
 }
 
-async function assertSignedIn(accessToken: string): Promise<void> {
+async function getSignedInUser(accessToken: string): Promise<string> {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
     if (!url || !publishableKey) throw new Error("Missing Supabase environment configuration.");
@@ -31,6 +32,7 @@ async function assertSignedIn(accessToken: string): Promise<void> {
     });
     const { data, error } = await client.auth.getUser(accessToken);
     if (error || !data.user) throw new Error("A valid signed-in Supabase session is required.");
+    return data.user.id;
 }
 
 function requiredText(value: unknown, field: string): string {
@@ -56,13 +58,17 @@ function parseObservations(value: unknown): InterpretationMentorObservation[] {
 export async function POST(request: Request) {
     try {
         const accessToken = requireBearerToken(request);
-        await assertSignedIn(accessToken);
+        const userId = await getSignedInUser(accessToken);
         const body = await request.json() as MentorRequest;
 
-        const provider = createInterpretationMentorProvider();
-        const result = await provider.assess({
-            interpretation: requiredText(body.interpretation, "Interpretation"),
-            observations: parseObservations(body.observations),
+        const result = await runMeteredAiOperation({
+            userId,
+            feature: "interpretation_mentor",
+            operation: "assess",
+            run: () => createInterpretationMentorProvider().assess({
+                interpretation: requiredText(body.interpretation, "Interpretation"),
+                observations: parseObservations(body.observations),
+            }),
         });
 
         return NextResponse.json(result);
