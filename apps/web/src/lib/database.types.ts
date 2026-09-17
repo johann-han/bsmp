@@ -13,6 +13,12 @@ export interface Database {
                 Update: Partial<Database["public"]["Tables"]["research_sources"]["Insert"]>;
                 Relationships: [];
             };
+            research_runs: {
+                Row: { id: string; user_id: string; study_id: string; question: string; focus: string; answer: string; textual_basis: unknown; further_questions: unknown; cautions: unknown; sources: unknown; source_urls: unknown; provider: string; model: string; created_at: string; };
+                Insert: { id?: string; user_id: string; study_id: string; question: string; focus?: string; answer: string; textual_basis?: unknown; further_questions?: unknown; cautions?: unknown; sources?: unknown; source_urls?: unknown; provider: string; model: string; created_at?: string; };
+                Update: Partial<Database["public"]["Tables"]["research_runs"]["Insert"]>;
+                Relationships: [];
+            };
             study_observations: {
                 Row: { id: string; study_id: string; user_id: string; verse_book: string; verse_chapter: number; verse_verse: number; target_translation: string | null; target_word_index: number | null; target_word_text: string | null; target_markup_symbol: string | null; statement: string; created_at: string; };
                 Insert: { id: string; study_id: string; user_id: string; verse_book: string; verse_chapter: number; verse_verse: number; target_translation?: string | null; target_word_index?: number | null; target_word_text?: string | null; target_markup_symbol?: string | null; statement: string; created_at?: string; };
