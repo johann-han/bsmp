@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
 import { runRoutedBiblicalResearch, runRoutedExternalBiblicalResearch } from "../../../../src/lib/biblicalResearchRouter";
 import type { BiblicalResearchFocus } from "../../../../src/lib/biblicalResearchProvider";
+import { AiQuotaExceededError, assertAiQuotaAvailable } from "../../../../src/lib/aiQuota";
 import { recordAiUsageEvent } from "../../../../src/lib/aiUsage";
 
 interface RequestBody { studyId?: unknown; question?: unknown; external?: unknown; sourceUrls?: unknown; focus?: unknown; }
@@ -73,13 +74,16 @@ async function context(token: string) {
 
 function errorStatus(message: string): number {
     if (/signed-in|session/i.test(message)) return 401;
-    if (/quota|rate limit|too many requests|resource_exhausted|429/i.test(message)) return 429;
+    if (/AI_QUOTA_EXCEEDED|your current AI usage allowance|rate limit|too many requests|resource_exhausted|429/i.test(message)) return 429;
     if (/Missing Supabase environment|not configured|Unsupported AI_PROVIDER/i.test(message)) return 503;
     return 502;
 }
 
 function clientErrorMessage(message: string): string {
-    if (/quota|rate limit|too many requests|resource_exhausted|429/i.test(message)) {
+    if (/AI_QUOTA_EXCEEDED|your current AI usage allowance/i.test(message)) {
+        return "Your current BSMP AI usage allowance has been reached. Review your Subscription and AI Usage pages for the current allowance and usage.";
+    }
+    if (/rate limit|too many requests|resource_exhausted|429/i.test(message)) {
         return "External research is temporarily unavailable because the configured AI provider has reached its current quota or rate limit. Check the provider usage/billing settings, or retry after the quota resets.";
     }
     return message;
@@ -167,6 +171,8 @@ export async function POST(request: Request) {
         const useExternal = body.external === true || focus !== "general";
         meteringOperation = useExternal ? "external_research" : "grounded_research";
 
+        await assertAiQuotaAvailable(userId);
+
         const { data: study, error: studyError } = await client.from("studies").select("id, title, passage_start_book, passage_start_chapter, passage_start_verse, passage_end_book, passage_end_chapter, passage_end_verse").eq("id", studyId).eq("user_id", userId).maybeSingle();
         if (studyError) throw studyError;
         if (!study) throw new Error("The selected Study could not be found.");
@@ -226,7 +232,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ ...result, sources: normalizeSources(result.sources), sourceUrls: requestedUrls, persistence });
     } catch (reason: unknown) {
         const message = reason instanceof Error ? reason.message : "Unable to run Biblical Research.";
-        if (meteringUserId) {
+        if (meteringUserId && !(reason instanceof AiQuotaExceededError)) {
             await recordAiUsageEvent({
                 userId: meteringUserId,
                 studyId: meteringStudyId,
