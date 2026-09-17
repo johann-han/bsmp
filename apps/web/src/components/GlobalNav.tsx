@@ -19,6 +19,7 @@ const items = [
     ["Sermon Overview", "/preaching/overview"],
     ["Preaching History", "/preaching/history"],
     ["Settings", "/settings"],
+    ["AI Usage", "/settings/ai-usage"],
 ] as const;
 
 const studyScopedPaths = new Set([
