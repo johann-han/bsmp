@@ -203,7 +203,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
             const requestSources = stringList(payload.sourceUrls);
             const persisted = payload.persistence;
             const nextResult: ResearchResult = {
-                researchRunId: persisted?.researchRunId,
+                ...(persisted?.researchRunId ? { researchRunId: persisted.researchRunId } : {}),
                 answer: typeof payload.answer === "string" ? payload.answer : "",
                 textualBasis: stringList(payload.textualBasis),
                 furtherQuestions: stringList(payload.furtherQuestions),
@@ -245,7 +245,7 @@ export function BiblicalResearchWorkspace({ studyId }: Props) {
                     <div style={{ display: "flex", gap: 6 }}><button type="button" onClick={() => openRun(run)}>Open</button><button type="button" onClick={() => void deleteRun(run.id)}>Delete</button></div>
                 </div>)}
             </div>
-        </section>}
+        </section>
 
         <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
             <h2 style={{ marginTop: 0 }}>Research Focus</h2>
