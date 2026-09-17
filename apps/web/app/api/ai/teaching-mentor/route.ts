@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "../../../../src/lib/database.types";
 import { createTeachingMentorProvider } from "../../../../src/lib/teachingMentorProvider";
+import { runMeteredAiOperation } from "../../../../src/lib/aiUsage";
 
 interface MentorRequest {
     readonly interpretation?: unknown;
@@ -23,13 +24,14 @@ function requireBearerToken(request: Request): string {
     return token;
 }
 
-async function assertSignedIn(accessToken: string): Promise<void> {
+async function getSignedInUser(accessToken: string): Promise<string> {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
     if (!url || !publishableKey) throw new Error("Missing Supabase environment configuration.");
     const client = createClient<Database>(url, publishableKey, { global: { headers: { Authorization: `Bearer ${accessToken}` } }, auth: { persistSession: false, autoRefreshToken: false } });
     const { data, error } = await client.auth.getUser(accessToken);
     if (error || !data.user) throw new Error("A valid signed-in Supabase session is required.");
+    return data.user.id;
 }
 
 function requiredText(value: unknown, field: string): string {
@@ -56,17 +58,22 @@ function optionalTextArray(value: unknown): string[] {
 export async function POST(request: Request) {
     try {
         const accessToken = requireBearerToken(request);
-        await assertSignedIn(accessToken);
+        const userId = await getSignedInUser(accessToken);
         const body = await request.json() as MentorRequest;
-        const result = await createTeachingMentorProvider().assess({
-            interpretation: requiredText(body.interpretation, "Interpretation"),
-            theology: requiredText(body.theology, "Biblical Theology"),
-            centralTruth: requiredText(body.centralTruth, "Central truth"),
-            teachingAim: requiredText(body.teachingAim, "Teaching aim"),
-            keyPoints: requiredTextArray(body.keyPoints, "Key points"),
-            explanation: requiredText(body.explanation, "Explanation"),
-            discussionQuestions: optionalTextArray(body.discussionQuestions),
-            responsePrompt: requiredText(body.responsePrompt, "Response prompt"),
+        const result = await runMeteredAiOperation({
+            userId,
+            feature: "teaching_mentor",
+            operation: "assess",
+            run: () => createTeachingMentorProvider().assess({
+                interpretation: requiredText(body.interpretation, "Interpretation"),
+                theology: requiredText(body.theology, "Biblical Theology"),
+                centralTruth: requiredText(body.centralTruth, "Central truth"),
+                teachingAim: requiredText(body.teachingAim, "Teaching aim"),
+                keyPoints: requiredTextArray(body.keyPoints, "Key points"),
+                explanation: requiredText(body.explanation, "Explanation"),
+                discussionQuestions: optionalTextArray(body.discussionQuestions),
+                responsePrompt: requiredText(body.responsePrompt, "Response prompt"),
+            }),
         });
         return NextResponse.json(result);
     } catch (reason: unknown) {
