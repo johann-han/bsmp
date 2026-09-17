@@ -4,28 +4,28 @@ export type AiUsageStatus = "success" | "error";
 
 export interface AiUsageEventInput {
     readonly userId: string;
-    readonly studyId?: string | null;
+    readonly studyId?: string | null | undefined;
     readonly feature: string;
-    readonly operation?: string;
+    readonly operation?: string | undefined;
     readonly provider: string;
     readonly model: string;
     readonly status: AiUsageStatus;
-    readonly durationMs?: number | null;
-    readonly inputTokens?: number | null;
-    readonly outputTokens?: number | null;
-    readonly totalTokens?: number | null;
-    readonly estimatedCostUsd?: number | null;
-    readonly errorCode?: string | null;
-    readonly metadata?: Record<string, unknown>;
+    readonly durationMs?: number | null | undefined;
+    readonly inputTokens?: number | null | undefined;
+    readonly outputTokens?: number | null | undefined;
+    readonly totalTokens?: number | null | undefined;
+    readonly estimatedCostUsd?: number | null | undefined;
+    readonly errorCode?: string | null | undefined;
+    readonly metadata?: Record<string, unknown> | undefined;
 }
 
 export interface MeteredAiOperationInput<T> {
     readonly userId: string;
-    readonly studyId?: string | null;
+    readonly studyId?: string | null | undefined;
     readonly feature: string;
     readonly operation: string;
     readonly run: () => Promise<T>;
-    readonly metadata?: Record<string, unknown>;
+    readonly metadata?: Record<string, unknown> | undefined;
 }
 
 function serverClient() {
