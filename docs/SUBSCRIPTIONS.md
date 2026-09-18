@@ -57,3 +57,11 @@ The current implementation is a lightweight preflight guard. It deliberately doe
 ## Deliberately deferred
 
 This phase does not connect a payment provider, publish pricing, create checkout sessions, process webhooks, or choose final plan values. Those decisions remain separate from the entitlement and metering infrastructure.
+
+## Billing provider boundary
+
+The reserved provider-neutral billing contract lives in `apps/web/src/lib/billingProvider.ts`. It defines future checkout-session creation, external-subscription cancellation, and verified webhook normalization without selecting a payment provider.
+
+`BILLING_PROVIDER` is reserved for the future provider adapter selection. It is intentionally unset until a provider is chosen and connected. No provider secret belongs in client-exposed environment variables.
+
+Future checkout should create a provider session and allow the provider webhook to establish authoritative `user_subscriptions` state. The browser must not directly create or mutate subscription records.
