@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -24,7 +25,10 @@ export async function POST(request: Request) {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
         if (!url || !publishableKey) throw new Error("Supabase is not configured on the server.");
-        const authClient = createClient(url, publishableKey, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false, autoRefreshToken: false } });
+        const authClient = createClient(url, publishableKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+            auth: { persistSession: false, autoRefreshToken: false },
+        });
         const { data: userData, error: userError } = await authClient.auth.getUser(token);
         if (userError || !userData.user) return NextResponse.json({ error: "A valid signed-in Supabase session is required." }, { status: 401 });
 
@@ -33,25 +37,59 @@ export async function POST(request: Request) {
         if (!planCode) return NextResponse.json({ error: "Plan code is required." }, { status: 400 });
 
         const client = serviceClient();
-        const { data: plan, error: planError } = await client.from("subscription_plans").select("id, code, name, active").eq("code", planCode).eq("active", true).maybeSingle();
+        const { data: plan, error: planError } = await client
+            .from("subscription_plans")
+            .select("id, code, name, active")
+            .eq("code", planCode)
+            .eq("active", true)
+            .maybeSingle();
         if (planError) throw planError;
         if (!plan) return NextResponse.json({ error: "The selected subscription plan is not available." }, { status: 404 });
 
-        const { data: existing, error: existingError } = await client.from("user_subscriptions").select("id").eq("user_id", userData.user.id).in("status", ["trialing", "active", "past_due", "paused", "incomplete"]).limit(1);
+        const { data: existing, error: existingError } = await client
+            .from("user_subscriptions")
+            .select("id")
+            .eq("user_id", userData.user.id)
+            .in("status", ["trialing", "active", "past_due", "paused", "incomplete"])
+            .limit(1);
         if (existingError) throw existingError;
         if (existing?.length) return NextResponse.json({ error: "This account already has a subscription. Manage the existing subscription before starting another checkout." }, { status: 409 });
 
         const provider = getBillingProvider();
+        const paymentReference = randomUUID();
         const origin = new URL(request.url).origin;
         const result = await provider.createCheckoutSession({
             userId: userData.user.id,
             planCode: plan.code,
+            paymentReference,
             customerEmail: userData.user.email ?? null,
-            successUrl: `${origin}/settings/subscription?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+            successUrl: `${origin}/settings/subscription?checkout=success`,
             cancelUrl: `${origin}/settings/subscription?checkout=canceled`,
         });
 
-        return NextResponse.json({ checkoutUrl: result.checkoutUrl, provider: result.provider, planName: plan.name });
+        const { error: intentError } = await client.from("billing_checkout_intents").insert({
+            id: paymentReference,
+            user_id: userData.user.id,
+            plan_id: plan.id,
+            provider: result.provider,
+            payment_reference: paymentReference,
+            amount: result.amount ?? "0.00",
+            currency: result.currency ?? "ZAR",
+            status: "pending",
+            metadata: {
+                checkout_method: result.checkoutMethod ?? "GET",
+                plan_code: plan.code,
+            },
+        });
+        if (intentError) throw intentError;
+
+        return NextResponse.json({
+            checkoutUrl: result.checkoutUrl,
+            checkoutMethod: result.checkoutMethod ?? "GET",
+            checkoutFields: result.formFields ?? null,
+            provider: result.provider,
+            planName: plan.name,
+        });
     } catch (reason) {
         const message = reason instanceof Error ? reason.message : "Unable to start subscription checkout.";
         const status = message.includes("signed-in") ? 401 : 400;
