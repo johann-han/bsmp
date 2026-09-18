@@ -77,7 +77,7 @@ The first provider-specific adapter is Stripe. Stripe currently lists South Afri
 
 `apps/web/src/lib/stripeBillingProvider.ts` calls Stripe server-side, creates hosted Checkout Sessions for recurring Prices, supports immediate or end-of-period cancellation, verifies `Stripe-Signature`, and normalizes subscription webhooks into the BSMP billing event contract. Stripe documents signature verification using the raw request body, the `Stripe-Signature` header, and the endpoint secret.
 
-Plan-to-Price mapping is intentionally outside the public plan table: each active BSMP plan code maps to a server-side `STRIPE_PRICE_<PLAN_CODE>` environment variable. This keeps provider price identifiers out of browser-visible configuration.
+Plan-to-Price mapping is intentionally outside the public plan table: `STRIPE_PRICE_MAP` is a server-side JSON object keyed by stable BSMP plan code. This keeps provider price identifiers out of browser-visible configuration and avoids duplicating environment variables as plans are added.
 
 Relevant server-only variables are `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and the per-plan Stripe Price identifiers. They must not be prefixed with `NEXT_PUBLIC_`.
 
