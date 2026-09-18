@@ -30,6 +30,16 @@ The administration layer also supports controlled **manual subscription assignme
 
 These manual controls are intended for administration and development/testing. They do not represent a payment, do not charge an account, and do not replace payment-provider webhooks.
 
+## Subscription event history
+
+`subscription_events` is the lifecycle audit ledger for subscription changes. It records the affected account, subscription, acting administrator when applicable, event type, provider, effective time, and non-sensitive metadata.
+
+Manual plan assignments currently create `manual_assigned` events, and administrators ending a subscription create `canceled` events. Client applications can read only events belonging to the signed-in account. Administrative reads and writes use the server-side service role.
+
+An optional `external_event_id` plus a unique provider/event index provides an idempotency boundary for future payment-provider webhook processing. Provider synchronization is reserved as an event type but is not connected yet.
+
+The audit ledger is deliberately separate from `ai_usage_events`: subscription lifecycle records do not contain prompts, generated content, or Study evidence.
+
 ## AI quota enforcement
 
 The reserved entitlement key `ai_monthly_operations` represents a finite monthly count of AI operations when its `limit_unit` is `count` and `limit_value` is populated on the user's active or trialing plan.
