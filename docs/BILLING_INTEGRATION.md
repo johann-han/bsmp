@@ -83,3 +83,34 @@ Relevant server-only variables are `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STR
 
 Stripe is not connected to the live BSMP deployment by this phase. No live key, webhook secret, product, or Price has been added to the repository.
 
+
+## PayFast integration
+
+PayFast is the payment provider intended for BSMP. PayFast's current developer documentation supports custom hosted checkout forms and recurring subscriptions through its API. Recurring subscriptions use `subscription_type=1`; PayFast documents `cycles=0` for an indefinite subscription, with frequency values including monthly, quarterly, biannual, and annual. 
+
+The BSMP PayFast adapter posts a signed subscription form to PayFast's hosted payment page. It uses the merchant ID, merchant key, passphrase, plan billing configuration, a server-generated `m_payment_id`, and a server-controlled `notify_url`. PayFast documents that the customer is redirected to its secure payment page and that the notification sent to the `notify_url` is the source used to confirm payment. 
+
+PayFast ITNs are verified with the documented security checks: signature verification, source validation, expected amount comparison, and server confirmation against PayFast's `/eng/query/validate` endpoint. 
+
+PayFast recurring-billing API operations use the subscription token returned in notifications. The current adapter supports cancellation; PayFast also exposes fetch, pause, unpause, update, and ad-hoc token operations for future management features. 
+
+### PayFast configuration
+
+Server-only environment variables:
+
+- `BILLING_PROVIDER=payfast`
+- `PAYFAST_MERCHANT_ID`
+- `PAYFAST_MERCHANT_KEY`
+- `PAYFAST_PASSPHRASE`
+- `PAYFAST_SANDBOX=true` while testing
+- `PAYFAST_PLAN_MAP` containing recurring amount/frequency/cycles for each BSMP plan code
+- `PAYFAST_ITN_ALLOWED_IPS` as an optional explicit allowlist in addition to DNS-based PayFast source validation
+
+Do not expose PayFast credentials through `NEXT_PUBLIC_*` variables.
+
+`billing_checkout_intents` records a server-generated payment reference and the expected initial amount. This lets the ITN handler bind PayFast's notification to the correct signed-in BSMP account and compare the received payment amount before activating subscription state.
+
+Browser return URLs are informational only. BSMP treats a verified PayFast ITN, not the browser redirect, as the authoritative payment confirmation.
+
+PayFast's sandbox is intended for testing without moving real funds and supports recurring-payment testing. A public `notify_url` is required for end-to-end ITN testing; local development therefore needs a publicly reachable development URL/tunnel. 
+
