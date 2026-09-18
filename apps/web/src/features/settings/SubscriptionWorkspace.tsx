@@ -31,6 +31,13 @@ interface Subscription {
     cancel_at_period_end: boolean;
 }
 
+interface CheckoutResponse {
+    checkoutUrl?: string;
+    checkoutMethod?: "GET" | "POST";
+    checkoutFields?: Record<string, string> | null;
+    error?: string;
+}
+
 function client() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -57,7 +64,9 @@ export function SubscriptionWorkspace() {
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [message, setMessage] = useState<string | null>(null);
 
     useEffect(() => {
         let active = true;
@@ -104,6 +113,13 @@ export function SubscriptionWorkspace() {
                 setPlans((plansResult.data ?? []) as Plan[]);
                 setEntitlements((entitlementsResult.data ?? []) as Entitlement[]);
                 setSubscription(((subscriptionResult.data ?? [])[0] ?? null) as Subscription | null);
+
+                const query = new URLSearchParams(window.location.search);
+                if (query.get("checkout") === "success") {
+                    setMessage("Payment completed at PayFast. BSMP will activate the subscription when the verified PayFast notification is processed.");
+                } else if (query.get("checkout") === "canceled") {
+                    setMessage("The PayFast checkout was canceled.");
+                }
             } catch (reason) {
                 if (!active) return;
                 setError(reason instanceof Error ? reason.message : "Unable to load subscription information.");
@@ -115,6 +131,57 @@ export function SubscriptionWorkspace() {
         void load();
         return () => { active = false; };
     }, []);
+
+
+    async function startCheckout(planCode: string) {
+        setCheckoutPlan(planCode);
+        setError(null);
+        setMessage(null);
+
+        try {
+            const supabase = client();
+            const session = (await supabase.auth.getSession()).data.session;
+            if (!session) throw new Error("A signed-in account is required.");
+
+            const response = await fetch("/api/billing/checkout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ planCode }),
+            });
+
+            const payload = (await response.json()) as CheckoutResponse;
+            if (!response.ok) throw new Error(payload.error ?? "Unable to start PayFast checkout.");
+            if (!payload.checkoutUrl) throw new Error("The billing provider did not return a checkout URL.");
+
+            if (payload.checkoutMethod === "POST" && payload.checkoutFields) {
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = payload.checkoutUrl;
+                form.style.display = "none";
+
+                for (const [name, value] of Object.entries(payload.checkoutFields)) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+                return;
+            }
+
+            window.location.assign(payload.checkoutUrl);
+        } catch (reason) {
+            setError(reason instanceof Error ? reason.message : "Unable to start PayFast checkout.");
+        } finally {
+            setCheckoutPlan(null);
+        }
+    }
 
     if (loading) {
         return <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}><p>Loading Subscription...</p></main>;
@@ -131,9 +198,10 @@ export function SubscriptionWorkspace() {
                     {isAdmin && <Link href="/settings/subscription/admin" style={{ color: "#334155", fontWeight: 700, textDecoration: "none" }}>Administration</Link>}
                 </div>
                 <p style={{ margin: 0, color: "#6b7280" }}>
-                    Subscription and entitlement information for your BSMP account. AI usage is metered separately so future quotas can be enforced without mixing billing data into Study content.
+                    Subscription and entitlement information for your BSMP account. Payments are processed by PayFast; BSMP records the verified subscription state separately from Study and AI content.
                 </p>
                 {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
+                {message && <p style={{ color: "#166534" }}>{message}</p>}
             </section>
 
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
@@ -151,7 +219,7 @@ export function SubscriptionWorkspace() {
                     </div>
                 ) : (
                     <p style={{ margin: 0, color: "#6b7280" }}>
-                        No active subscription is assigned to this account yet. The billing provider and checkout flow will be connected in a later phase.
+                        No active subscription is assigned to this account yet. Select a plan below to start PayFast checkout.
                     </p>
                 )}
             </section>
@@ -175,13 +243,23 @@ export function SubscriptionWorkspace() {
                                     ) : (
                                         <span style={{ fontSize: 13, color: "#6b7280" }}>No entitlements published yet.</span>
                                     )}
+                                    {!subscription && (
+                                        <button
+                                            type="button"
+                                            disabled={checkoutPlan !== null}
+                                            onClick={() => void startCheckout(plan.code)}
+                                            style={{ justifySelf: "start", padding: "9px 14px", fontWeight: 700 }}
+                                        >
+                                            {checkoutPlan === plan.code ? "Opening PayFast..." : "Subscribe with PayFast"}
+                                        </button>
+                                    )}
                                 </article>
                             );
                         })}
                     </div>
                 ) : (
                     <p style={{ margin: 0, color: "#6b7280" }}>
-                        No public subscription plans have been published yet. This foundation is ready for plan definitions, AI quotas, feature entitlements, and payment-provider integration.
+                        No public subscription plans have been published yet. Publish a plan and configure its PayFast billing amount before checkout is available.
                     </p>
                 )}
             </section>
