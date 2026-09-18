@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { supabase } from "../../lib/supabase";
+
 interface Plan { id: string; code: string; name: string; description: string; active: boolean; display_order: number; }
 interface Entitlement { id: string; plan_id: string; entitlement_key: string; enabled: boolean; limit_value: number | null; limit_unit: string; }
 interface UserAccount { id: string; email: string; }
@@ -72,7 +74,14 @@ export function SubscriptionAdminWorkspace() {
     async function load() {
         setLoading(true); setError(null);
         try {
-            const response = await fetch("/api/settings/subscription/admin", { cache: "no-store" });
+            const session = await supabase.auth.getSession();
+            const token = session.data.session?.access_token;
+            if (!token) throw new Error("A signed-in user is required.");
+
+            const response = await fetch("/api/settings/subscription/admin", {
+                cache: "no-store",
+                headers: { Authorization: `Bearer ${token}` },
+            });
             const payload = await response.json() as {
                 plans?: Plan[];
                 entitlements?: Entitlement[];
@@ -120,9 +129,16 @@ export function SubscriptionAdminWorkspace() {
     async function post(body: Record<string, unknown>) {
         setSaving(true); setError(null); setMessage(null);
         try {
+            const session = await supabase.auth.getSession();
+            const token = session.data.session?.access_token;
+            if (!token) throw new Error("A signed-in user is required.");
+
             const response = await fetch("/api/settings/subscription/admin", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify(body),
             });
             const payload = await response.json() as { error?: string };
