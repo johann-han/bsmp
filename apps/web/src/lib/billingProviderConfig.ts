@@ -6,7 +6,7 @@ export interface BillingProviderConfiguration {
 }
 
 export function getBillingProviderConfiguration(
-    environment: NodeJS.ProcessEnv = process.env,
+    environment: { BILLING_PROVIDER?: string } = process.env,
 ): BillingProviderConfiguration {
     const rawProvider = environment.BILLING_PROVIDER?.trim();
 
