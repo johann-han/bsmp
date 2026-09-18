@@ -37,10 +37,42 @@ function status(reason: unknown): number {
 
 const ACTIVE_STATUSES = ["trialing", "active"] as const;
 
+async function recordSubscriptionEvent(
+    adminClient: ReturnType<typeof createAdminClient>,
+    input: {
+        userId: string;
+        subscriptionId: string;
+        actorUserId: string;
+        eventType: string;
+        provider: string;
+        metadata?: Record<string, unknown>;
+    },
+) {
+    const { error } = await adminClient.from("subscription_events").insert({
+        user_id: input.userId,
+        subscription_id: input.subscriptionId,
+        actor_user_id: input.actorUserId,
+        event_type: input.eventType,
+        provider: input.provider,
+        metadata: input.metadata ?? {},
+    });
+
+    if (error) {
+        console.error("subscription_events insert failed", error);
+    }
+}
+
+function createAdminClient(url: string, key: string) {
+    // Kept local to avoid coupling this route to generated database types.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { createClient } = require("@supabase/supabase-js") as typeof import("@supabase/supabase-js");
+    return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
 export async function GET(request: Request) {
     try {
         const { adminClient } = await requireSubscriptionAdmin(request);
-        const [plansResult, entitlementsResult, subscriptionsResult, usersResult] = await Promise.all([
+        const [plansResult, entitlementsResult, subscriptionsResult, eventsResult, usersResult] = await Promise.all([
             adminClient
                 .from("subscription_plans")
                 .select("id, code, name, description, active, display_order, created_at, updated_at")
@@ -53,12 +85,18 @@ export async function GET(request: Request) {
                 .select("id, user_id, plan_id, status, provider, external_customer_id, external_subscription_id, current_period_start, current_period_end, cancel_at_period_end, metadata, created_at, updated_at")
                 .order("created_at", { ascending: false })
                 .limit(200),
+            adminClient
+                .from("subscription_events")
+                .select("id, user_id, subscription_id, actor_user_id, event_type, provider, external_event_id, effective_at, metadata, created_at")
+                .order("created_at", { ascending: false })
+                .limit(200),
             adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 }),
         ]);
 
         if (plansResult.error) throw plansResult.error;
         if (entitlementsResult.error) throw entitlementsResult.error;
         if (subscriptionsResult.error) throw subscriptionsResult.error;
+        if (eventsResult.error) throw eventsResult.error;
         if (usersResult.error) throw usersResult.error;
 
         const users = (usersResult.data.users ?? []).map((user: { id: string; email?: string | null }) => ({
@@ -70,6 +108,7 @@ export async function GET(request: Request) {
             plans: plansResult.data ?? [],
             entitlements: entitlementsResult.data ?? [],
             subscriptions: subscriptionsResult.data ?? [],
+            events: eventsResult.data ?? [],
             users,
         });
     } catch (reason) {
@@ -80,7 +119,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
-        const { adminClient } = await requireSubscriptionAdmin(request);
+        const { adminClient, userId: actorUserId } = await requireSubscriptionAdmin(request);
         const body = await request.json() as Record<string, unknown>;
         const action = text(body.action, "Action", 40);
 
@@ -157,7 +196,7 @@ export async function POST(request: Request) {
 
             const { data: plan, error: planError } = await adminClient
                 .from("subscription_plans")
-                .select("id, active")
+                .select("id, active, name")
                 .eq("id", planId)
                 .maybeSingle();
             if (planError) throw planError;
@@ -195,11 +234,35 @@ export async function POST(request: Request) {
                 .single();
 
             if (error) throw error;
+
+            await recordSubscriptionEvent(adminClient, {
+                userId,
+                subscriptionId: subscription.id,
+                actorUserId,
+                eventType: "manual_assigned",
+                provider: "manual",
+                metadata: {
+                    assignment_source: "subscription_admin",
+                    plan_name: plan.name,
+                },
+            });
+
             return NextResponse.json({ subscription });
         }
 
         if (action === "cancel_subscription") {
             const subscriptionId = text(body.subscriptionId, "Subscription ID", 80);
+            const { data: before, error: beforeError } = await adminClient
+                .from("user_subscriptions")
+                .select("id, user_id, plan_id, provider, status")
+                .eq("id", subscriptionId)
+                .maybeSingle();
+            if (beforeError) throw beforeError;
+            if (!before) throw new Error("The subscription could not be found.");
+            if (![...ACTIVE_STATUSES].includes(before.status as (typeof ACTIVE_STATUSES)[number])) {
+                throw new Error("Only active or trialing subscriptions can be ended.");
+            }
+
             const { data: subscription, error } = await adminClient
                 .from("user_subscriptions")
                 .update({
@@ -212,6 +275,19 @@ export async function POST(request: Request) {
                 .single();
 
             if (error) throw error;
+
+            await recordSubscriptionEvent(adminClient, {
+                userId: before.user_id,
+                subscriptionId: subscription.id,
+                actorUserId,
+                eventType: "canceled",
+                provider: subscription.provider,
+                metadata: {
+                    cancellation_source: "subscription_admin",
+                    previous_status: before.status,
+                },
+            });
+
             return NextResponse.json({ subscription });
         }
 
