@@ -17,8 +17,9 @@ describe("StripeBillingProvider", () => {
         vi.restoreAllMocks();
     });
 
-    it("normalizes plan price environment keys", () => {
-        expect(__test__.priceEnvironmentKey("pro-monthly")).toBe("STRIPE_PRICE_PRO_MONTHLY");
+    it("resolves a plan price from the configured map", () => {
+        process.env.STRIPE_PRICE_MAP = JSON.stringify({ "pro-monthly": "price_test_123" });
+        expect(__test__.requiredPriceId("pro-monthly")).toBe("price_test_123");
     });
 
     it("maps Stripe subscription statuses", () => {
