@@ -184,7 +184,7 @@ export class PayFastBillingProvider implements BillingProvider {
             checkoutUrl: sandboxEnabled() ? SANDBOX_CHECKOUT_URL : LIVE_CHECKOUT_URL,
             checkoutMethod: "POST",
             formFields: formFields(input, plan, notifyUrl),
-            amount: plan.recurringAmount ?? plan.amount,
+            amount: plan.amount,
             currency: "ZAR",
         };
     }
