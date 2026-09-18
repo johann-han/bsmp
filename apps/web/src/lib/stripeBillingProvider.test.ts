@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { __test__, StripeBillingProvider } from "./stripeBillingProvider";
@@ -31,10 +32,7 @@ describe("StripeBillingProvider", () => {
         const rawBody = JSON.stringify({ id: "evt_test" });
         const secret = "whsec_test";
         const timestamp = Math.floor(Date.now() / 1000);
-        const signature = (awaitable: never) => awaitable;
-        void signature;
-        const crypto = require("node:crypto") as typeof import("node:crypto");
-        const digest = crypto.createHmac("sha256", secret).update(`${timestamp}.${rawBody}`, "utf8").digest("hex");
+        const digest = createHmac("sha256", secret).update(`${timestamp}.${rawBody}`, "utf8").digest("hex");
         expect(() => __test__.verifyStripeSignature(rawBody, `t=${timestamp},v1=${digest}`, secret)).not.toThrow();
     });
 
