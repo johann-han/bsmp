@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { SubscriptionAdminError, requireSubscriptionAdmin } from "../../../../../src/lib/subscriptionAdmin";
+import { getBillingProvider } from "../../../../../src/lib/billingProviderRegistry";
 
 function text(value: unknown, field: string, max = 200): string {
     if (typeof value !== "string" || !value.trim()) throw new Error(`${field} is required.`);
@@ -248,13 +249,28 @@ export async function POST(request: Request) {
             const subscriptionId = text(body.subscriptionId, "Subscription ID", 80);
             const { data: before, error: beforeError } = await adminClient
                 .from("user_subscriptions")
-                .select("id, user_id, plan_id, provider, status")
+                .select("id, user_id, plan_id, provider, status, external_subscription_id")
                 .eq("id", subscriptionId)
                 .maybeSingle();
             if (beforeError) throw beforeError;
             if (!before) throw new Error("The subscription could not be found.");
             if (![...ACTIVE_STATUSES].includes(before.status as (typeof ACTIVE_STATUSES)[number])) {
                 throw new Error("Only active or trialing subscriptions can be ended.");
+            }
+
+            if (before.provider !== "manual" && before.provider === "payfast") {
+                const provider = getBillingProvider();
+                if (provider.id !== before.provider) {
+                    throw new Error(`Billing provider ${before.provider} is not the active provider.`);
+                }
+                const externalSubscriptionId = (before as { external_subscription_id?: string | null }).external_subscription_id;
+                if (!externalSubscriptionId) {
+                    throw new Error("The external PayFast subscription identifier is missing.");
+                }
+                await provider.cancelSubscription({
+                    externalSubscriptionId,
+                    cancelAtPeriodEnd: false,
+                });
             }
 
             const { data: subscription, error } = await adminClient
