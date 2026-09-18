@@ -22,6 +22,8 @@ describe("StripeBillingProvider", () => {
     });
 
     it("maps Stripe subscription statuses", () => {
+        expect(__test__.billingStatusFor("unpaid")).toBe("past_due");
+        expect(__test__.billingStatusFor("incomplete_expired")).toBe("canceled");
         expect(__test__.eventTypeFor("trialing")).toBe("trial_started");
         expect(__test__.eventTypeFor("active")).toBe("activated");
         expect(__test__.eventTypeFor("past_due")).toBe("past_due");
