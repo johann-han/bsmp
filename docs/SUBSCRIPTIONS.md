@@ -65,3 +65,5 @@ The reserved provider-neutral billing contract lives in `apps/web/src/lib/billin
 `BILLING_PROVIDER` is reserved for the future provider adapter selection. It is intentionally unset until a provider is chosen and connected. No provider secret belongs in client-exposed environment variables.
 
 Future checkout should create a provider session and allow the provider webhook to establish authoritative `user_subscriptions` state. The browser must not directly create or mutate subscription records.
+
+Provider synchronization now has a transactional server-side database boundary at `public.apply_subscription_billing_event(jsonb)`. The function is executable by the server service role only, uses the external provider event id for idempotency, updates `user_subscriptions`, and links the resulting state change to `subscription_events` in one transaction.
