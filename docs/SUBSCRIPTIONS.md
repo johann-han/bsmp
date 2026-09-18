@@ -26,7 +26,9 @@ Only the user's own subscription rows are readable through the authenticated cli
 
 `/settings/subscription/admin` is protected by a server-side admin check. The page can create and update plan definitions and plan entitlements through a server API. The Supabase service-role credential is never sent to the browser.
 
-The administration layer deliberately manages product capability data only. It does not expose payment credentials, choose a payment provider, or make customer billing changes.
+The administration layer also supports controlled **manual subscription assignment** and ending an existing subscription. Manual assignments use provider `manual`, start immediately, and remain open-ended unless a later billing integration supplies period dates. An active or trialing subscription must be ended before another plan can be assigned to the same account.
+
+These manual controls are intended for administration and development/testing. They do not represent a payment, do not charge an account, and do not replace payment-provider webhooks.
 
 ## AI quota enforcement
 
