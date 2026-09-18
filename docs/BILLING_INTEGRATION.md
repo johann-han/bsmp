@@ -22,7 +22,7 @@ The normalized event includes the provider, optional external event id, affected
 
 `BILLING_PROVIDER` is the reserved server-side configuration key for selecting the provider adapter.
 
-At present no adapter is registered and no payment provider is connected. An unset `BILLING_PROVIDER` therefore means billing is not configured.
+PayFast is the intended BSMP payment provider. An unset `BILLING_PROVIDER` still means billing is not configured.
 
 The configuration helper exposes only whether a provider id is configured and its normalized id. Provider secrets and webhook signing material remain server-only.
 
@@ -56,7 +56,7 @@ The webhook path must remain separate from AI usage records and Study content.
 
 No payment provider, checkout session, customer portal, webhook endpoint, product price, or public pricing value is configured by this phase.
 
-The next provider-specific phase can add an adapter without changing the core subscription entitlement model.
+The provider-neutral contract remains available for another adapter in the future without changing the core subscription entitlement model.
 
 ## Atomic subscription synchronization
 
