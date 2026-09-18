@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import type {
     BillingCancelSubscriptionInput,
+    BillingSubscriptionStatus,
     BillingCheckoutInput,
     BillingCheckoutSession,
     BillingProvider,
@@ -109,7 +110,25 @@ function requiredPriceId(planCode: string): string {
     return value;
 }
 
-function eventTypeFor(status: string): NormalizedBillingEvent["eventType"] {
+function billingStatusFor(status: string): BillingSubscriptionStatus {
+    switch (status) {
+        case "trialing":
+        case "active":
+        case "past_due":
+        case "paused":
+        case "canceled":
+        case "incomplete":
+            return status;
+        case "unpaid":
+            return "past_due";
+        case "incomplete_expired":
+            return "canceled";
+        default:
+            throw new Error(`Unsupported Stripe subscription status: ${status}`);
+    }
+}
+
+function eventTypeFor(status: BillingSubscriptionStatus): NormalizedBillingEvent["eventType"] {
     switch (status) {
         case "trialing": return "trial_started";
         case "active": return "activated";
@@ -121,17 +140,18 @@ function eventTypeFor(status: string): NormalizedBillingEvent["eventType"] {
 }
 
 function normalizeSubscriptionEvent(subscription: StripeSubscriptionLike, externalEventId: string): NormalizedBillingEvent {
+    const status = billingStatusFor(subscription.status);
     const planCode = subscription.metadata?.plan_code || null;
     const userId = subscription.metadata?.user_id || null;
     return {
         provider: "stripe",
         externalEventId,
-        eventType: eventTypeFor(subscription.status),
+        eventType: eventTypeFor(status),
         userId,
         planCode,
         externalCustomerId: subscription.customer,
         externalSubscriptionId: subscription.id,
-        status: subscription.status === "unpaid" ? "past_due" : subscription.status === "incomplete_expired" ? "canceled" : subscription.status as NormalizedBillingEvent["status"],
+        status,
         currentPeriodStart: unixSecondsToIso(subscription.current_period_start),
         currentPeriodEnd: unixSecondsToIso(subscription.current_period_end),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
@@ -222,4 +242,4 @@ export function createStripeBillingProvider(): StripeBillingProvider {
     return new StripeBillingProvider();
 }
 
-export const __test__ = { verifyStripeSignature, signatureParts, priceEnvironmentKey, eventTypeFor };
+export const __test__ = { verifyStripeSignature, signatureParts, priceEnvironmentKey, billingStatusFor, eventTypeFor };
