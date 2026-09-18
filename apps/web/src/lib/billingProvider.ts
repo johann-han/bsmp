@@ -20,6 +20,8 @@ export interface BillingCheckoutSession {
     checkoutUrl: string;
     checkoutMethod?: "GET" | "POST";
     formFields?: Record<string, string>;
+    amount?: string | null;
+    currency?: string;
     externalCustomerId?: string | null;
     externalSubscriptionId?: string | null;
     expiresAt?: string | null;
