@@ -57,3 +57,16 @@ The webhook path must remain separate from AI usage records and Study content.
 No payment provider, checkout session, customer portal, webhook endpoint, product price, or public pricing value is configured by this phase.
 
 The next provider-specific phase can add an adapter without changing the core subscription entitlement model.
+
+## Atomic subscription synchronization
+
+`public.apply_subscription_billing_event(jsonb)` is the server-side database boundary for applying a normalized provider event.
+
+It requires an external event id and external subscription id, reserves the event idempotency key in `subscription_events`, resolves an existing provider subscription or creates one from a user and plan code, updates subscription state, and links the audit event to the resulting subscription within one database transaction.
+
+The function is executable by `service_role` only. Anonymous and authenticated client roles cannot execute it directly.
+
+`apps/web/src/lib/billingSubscriptionSync.ts` is the server-side application helper that validates the minimum event identity fields and calls this database function.
+
+This transactional path is deliberately provider-neutral. Provider-specific adapters remain responsible for signature verification and normalization; they do not receive authority to write raw provider payloads directly into BSMP tables.
+
