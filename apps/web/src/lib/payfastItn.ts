@@ -1,4 +1,3 @@
-import { dns } from "node:module";
 import { lookup } from "node:dns/promises";
 
 const PAYFAST_HOSTS = ["www.payfast.co.za", "w1w.payfast.co.za", "w2w.payfast.co.za", "sandbox.payfast.co.za"] as const;
@@ -41,4 +40,4 @@ export async function verifyPayFastSourceIp(ip: string | null): Promise<void> {
     if (!allowedByDns && !allowedByConfigured) throw new Error("PayFast ITN source IP verification failed.");
 }
 
-export function __test__() { void dns; void matchesCidr; }
+export const __test__ = { matchesCidr };
