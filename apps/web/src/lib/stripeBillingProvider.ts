@@ -97,17 +97,30 @@ async function stripeRequest<T>(path: string, init: RequestInit = {}, environmen
     return parsed as T;
 }
 
-function priceEnvironmentKey(planCode: string): string {
-    const normalized = planCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "_");
-    if (!normalized) throw new Error("Plan code is required.");
-    return `STRIPE_PRICE_${normalized}`;
-}
-
 function requiredPriceId(planCode: string): string {
-    const key = priceEnvironmentKey(planCode);
-    const value = process.env[key]?.trim();
-    if (!value) throw new Error(`${key} is not configured for this BSMP plan.`);
-    return value;
+    const normalizedPlanCode = planCode.trim().toLowerCase();
+    if (!normalizedPlanCode) throw new Error("Plan code is required.");
+
+    const raw = process.env.STRIPE_PRICE_MAP?.trim();
+    if (!raw) throw new Error("STRIPE_PRICE_MAP is not configured.");
+
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        throw new Error("STRIPE_PRICE_MAP must contain valid JSON.");
+    }
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("STRIPE_PRICE_MAP must be a JSON object.");
+    }
+
+    const value = (parsed as Record<string, unknown>)[normalizedPlanCode];
+    if (typeof value !== "string" || !value.trim()) {
+        throw new Error(`No Stripe Price is configured for BSMP plan ${normalizedPlanCode}.`);
+    }
+
+    return value.trim();
 }
 
 function billingStatusFor(status: string): BillingSubscriptionStatus {
@@ -242,4 +255,4 @@ export function createStripeBillingProvider(): StripeBillingProvider {
     return new StripeBillingProvider();
 }
 
-export const __test__ = { verifyStripeSignature, signatureParts, priceEnvironmentKey, billingStatusFor, eventTypeFor };
+export const __test__ = { verifyStripeSignature, signatureParts, requiredPriceId, billingStatusFor, eventTypeFor };
