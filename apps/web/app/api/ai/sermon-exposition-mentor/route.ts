@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
 import { createSermonExpositionMentorProvider } from "../../../../src/lib/sermonExpositionMentorProvider";
+import { runMeteredAiOperation } from "../../../../src/lib/aiUsage";
 
 interface RequestBody {
   studyId?: unknown; truth?: unknown; text?: unknown; meaning?: unknown; preaching?: unknown; response?: unknown; transition?: unknown;
@@ -35,7 +36,13 @@ export async function POST(request: Request) {
     const evidence = byId(evidenceResult.data ?? [], evidenceIds).map((row) => `${row.evidence_type}: ${row.description}`);
     const applications = byId(applicationsResult.data ?? [], applicationIds).map((row) => `${row.principle}: ${row.action}`);
     const biblicalTheology = byId(theologyResult.data ?? [], biblicalTheologyIds).map((row) => `${row.theme}: ${row.synthesis}`);
-    const result = await createSermonExpositionMentorProvider().assess({ truth: requiredText(body.truth, "Outline truth"), text: requiredText(body.text, "Text exposition"), meaning: requiredText(body.meaning, "Meaning exposition"), preaching: requiredText(body.preaching, "Preaching development"), response: requiredText(body.response, "Response development"), transition: typeof body.transition === "string" ? body.transition.trim() : "", observations, interpretations, evidence, applications, biblicalTheology });
+    const result = await runMeteredAiOperation({
+      userId,
+      studyId,
+      feature: "sermon_exposition_mentor",
+      operation: "assess",
+      run: () => createSermonExpositionMentorProvider().assess({ truth: requiredText(body.truth, "Outline truth"), text: requiredText(body.text, "Text exposition"), meaning: requiredText(body.meaning, "Meaning exposition"), preaching: requiredText(body.preaching, "Preaching development"), response: requiredText(body.response, "Response development"), transition: typeof body.transition === "string" ? body.transition.trim() : "", observations, interpretations, evidence, applications, biblicalTheology }),
+    });
     return NextResponse.json(result);
   } catch (reason: unknown) { const message = reason instanceof Error ? reason.message : "Unable to run the sermon exposition mentor."; const status = /signed-in|session|Supabase|Study could not be found/i.test(message) ? 401 : /not configured|Unsupported AI_PROVIDER/i.test(message) ? 503 : 502; return NextResponse.json({ error: message }, { status }); }
 }

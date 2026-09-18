@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
 import { createFinalSermonDraftMentorProvider } from "../../../../src/lib/finalSermonDraftMentorProvider";
+import { runMeteredAiOperation } from "../../../../src/lib/aiUsage";
 
 interface RequestBody { studyId?: unknown; }
 type OutlineRow = { heading: string; truth: string; text: string | null; explanation: string | null; illustration: string | null; application: string | null; transition: string | null; };
@@ -19,7 +20,13 @@ export async function POST(request: Request) {
     let teachingCentralTruth = ""; let teachingAim = ""; let keyPoints: string[] = [];
     if (sermon.teaching_plan_id) { const { data: plan, error: planError } = await client.from("teaching_plans").select("id, central_truth, teaching_aim, key_points").eq("id", sermon.teaching_plan_id).eq("study_id", studyId).maybeSingle(); if (planError) throw planError; if (plan) { teachingCentralTruth = plan.central_truth; teachingAim = plan.teaching_aim; keyPoints = plan.key_points ?? []; } }
     const preparedOutline = outline.map((point) => [point.heading, `Truth: ${point.truth}`, `Text: ${point.text ?? ""}`, `Meaning: ${point.explanation ?? ""}`, `Preaching: ${point.illustration ?? ""}`, `Response: ${point.application ?? ""}`, `Transition: ${point.transition ?? ""}`].join("\n"));
-    const result = await createFinalSermonDraftMentorProvider().assess({ bigIdea: sermon.big_idea ?? "", purpose: sermon.purpose ?? "", teachingCentralTruth, teachingAim, keyPoints, outline: preparedOutline, manuscript });
+    const result = await runMeteredAiOperation({
+      userId,
+      studyId,
+      feature: "final_sermon_draft_mentor",
+      operation: "assess",
+      run: () => createFinalSermonDraftMentorProvider().assess({ bigIdea: sermon.big_idea ?? "", purpose: sermon.purpose ?? "", teachingCentralTruth, teachingAim, keyPoints, outline: preparedOutline, manuscript }),
+    });
     return NextResponse.json(result);
   } catch (reason: unknown) { const message = reason instanceof Error ? reason.message : "Unable to run the final sermon draft mentor."; return NextResponse.json({ error: message }, { status: errorStatus(message) }); }
 }
