@@ -71,9 +71,9 @@ The function is executable by `service_role` only. Anonymous and authenticated c
 This transactional path is deliberately provider-neutral. Provider-specific adapters remain responsible for signature verification and normalization; they do not receive authority to write raw provider payloads directly into BSMP tables.
 
 
-## Stripe adapter
+## Optional Stripe adapter
 
-The first provider-specific adapter is Stripe. Stripe currently lists South Africa as a supported country/region, and its Checkout API supports subscription-mode sessions.
+An optional Stripe adapter remains in the repository as a provider-neutral implementation example. It is not the payment provider used for BSMP.
 
 `apps/web/src/lib/stripeBillingProvider.ts` calls Stripe server-side, creates hosted Checkout Sessions for recurring Prices, supports immediate or end-of-period cancellation, verifies `Stripe-Signature`, and normalizes subscription webhooks into the BSMP billing event contract. Stripe documents signature verification using the raw request body, the `Stripe-Signature` header, and the endpoint secret.
 
@@ -81,7 +81,7 @@ Plan-to-Price mapping is intentionally outside the public plan table: `STRIPE_PR
 
 Relevant server-only variables are `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and the per-plan Stripe Price identifiers. They must not be prefixed with `NEXT_PUBLIC_`.
 
-Stripe is not connected to the live BSMP deployment by this phase. No live key, webhook secret, product, or Price has been added to the repository.
+Stripe is not connected to the BSMP deployment. No Stripe credentials, products, or Prices have been added.
 
 
 ## PayFast integration
