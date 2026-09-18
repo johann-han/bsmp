@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { SubscriptionAdminError, requireSubscriptionAdmin } from "../../../../../src/lib/subscriptionAdmin";
 
@@ -38,12 +39,12 @@ function status(reason: unknown): number {
 const ACTIVE_STATUSES = ["trialing", "active"] as const;
 
 async function recordSubscriptionEvent(
-    adminClient: ReturnType<typeof createAdminClient>,
+    adminClient: SupabaseClient,
     input: {
         userId: string;
         subscriptionId: string;
         actorUserId: string;
-        eventType: string;
+        eventType: "manual_assigned" | "canceled";
         provider: string;
         metadata?: Record<string, unknown>;
     },
@@ -60,13 +61,6 @@ async function recordSubscriptionEvent(
     if (error) {
         console.error("subscription_events insert failed", error);
     }
-}
-
-function createAdminClient(url: string, key: string) {
-    // Kept local to avoid coupling this route to generated database types.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { createClient } = require("@supabase/supabase-js") as typeof import("@supabase/supabase-js");
-    return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
 export async function GET(request: Request) {
