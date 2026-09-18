@@ -22,7 +22,7 @@ The normalized event includes the provider, optional external event id, affected
 
 `BILLING_PROVIDER` is the reserved server-side configuration key for selecting the provider adapter.
 
-At present no adapter is registered and no payment provider is connected. An unset `BILLING_PROVIDER` therefore means billing is not configured.
+PayFast is the intended BSMP payment provider. An unset `BILLING_PROVIDER` still means billing is not configured.
 
 The configuration helper exposes only whether a provider id is configured and its normalized id. Provider secrets and webhook signing material remain server-only.
 
@@ -56,7 +56,7 @@ The webhook path must remain separate from AI usage records and Study content.
 
 No payment provider, checkout session, customer portal, webhook endpoint, product price, or public pricing value is configured by this phase.
 
-The next provider-specific phase can add an adapter without changing the core subscription entitlement model.
+The provider-neutral contract remains available for another adapter in the future without changing the core subscription entitlement model.
 
 ## Atomic subscription synchronization
 
@@ -71,9 +71,9 @@ The function is executable by `service_role` only. Anonymous and authenticated c
 This transactional path is deliberately provider-neutral. Provider-specific adapters remain responsible for signature verification and normalization; they do not receive authority to write raw provider payloads directly into BSMP tables.
 
 
-## Stripe adapter
+## Optional Stripe adapter
 
-The first provider-specific adapter is Stripe. Stripe currently lists South Africa as a supported country/region, and its Checkout API supports subscription-mode sessions.
+An optional Stripe adapter remains in the repository as a provider-neutral implementation example. It is not the payment provider used for BSMP.
 
 `apps/web/src/lib/stripeBillingProvider.ts` calls Stripe server-side, creates hosted Checkout Sessions for recurring Prices, supports immediate or end-of-period cancellation, verifies `Stripe-Signature`, and normalizes subscription webhooks into the BSMP billing event contract. Stripe documents signature verification using the raw request body, the `Stripe-Signature` header, and the endpoint secret.
 
@@ -81,5 +81,36 @@ Plan-to-Price mapping is intentionally outside the public plan table: `STRIPE_PR
 
 Relevant server-only variables are `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and the per-plan Stripe Price identifiers. They must not be prefixed with `NEXT_PUBLIC_`.
 
-Stripe is not connected to the live BSMP deployment by this phase. No live key, webhook secret, product, or Price has been added to the repository.
+Stripe is not connected to the BSMP deployment. No Stripe credentials, products, or Prices have been added.
+
+
+## PayFast integration
+
+PayFast is the payment provider intended for BSMP. PayFast's current developer documentation supports custom hosted checkout forms and recurring subscriptions through its API. Recurring subscriptions use `subscription_type=1`; PayFast documents `cycles=0` for an indefinite subscription, with frequency values including monthly, quarterly, biannual, and annual. 
+
+The BSMP PayFast adapter posts a signed subscription form to PayFast's hosted payment page. It uses the merchant ID, merchant key, passphrase, plan billing configuration, a server-generated `m_payment_id`, and a server-controlled `notify_url`. PayFast documents that the customer is redirected to its secure payment page and that the notification sent to the `notify_url` is the source used to confirm payment. 
+
+PayFast ITNs are verified with the documented security checks: signature verification, source validation, expected amount comparison, and server confirmation against PayFast's `/eng/query/validate` endpoint. 
+
+PayFast recurring-billing API operations use the subscription token returned in notifications. The current adapter supports cancellation; PayFast also exposes fetch, pause, unpause, update, and ad-hoc token operations for future management features. 
+
+### PayFast configuration
+
+Server-only environment variables:
+
+- `BILLING_PROVIDER=payfast`
+- `PAYFAST_MERCHANT_ID`
+- `PAYFAST_MERCHANT_KEY`
+- `PAYFAST_PASSPHRASE`
+- `PAYFAST_SANDBOX=true` while testing
+- `PAYFAST_PLAN_MAP` containing recurring amount/frequency/cycles for each BSMP plan code
+- `PAYFAST_ITN_ALLOWED_IPS` as an optional explicit allowlist in addition to DNS-based PayFast source validation
+
+Do not expose PayFast credentials through `NEXT_PUBLIC_*` variables.
+
+`billing_checkout_intents` records a server-generated payment reference and the expected initial amount. This lets the ITN handler bind PayFast's notification to the correct signed-in BSMP account and compare the received payment amount before activating subscription state.
+
+Browser return URLs are informational only. BSMP treats a verified PayFast ITN, not the browser redirect, as the authoritative payment confirmation.
+
+PayFast's sandbox is intended for testing without moving real funds and supports recurring-payment testing. A public `notify_url` is required for end-to-end ITN testing; local development therefore needs a publicly reachable development URL/tunnel. 
 
