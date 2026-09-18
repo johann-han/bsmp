@@ -19,6 +19,17 @@ interface Subscription {
     created_at: string;
     updated_at: string;
 }
+interface SubscriptionEvent {
+    id: string;
+    user_id: string;
+    subscription_id: string | null;
+    actor_user_id: string | null;
+    event_type: string;
+    provider: string;
+    external_event_id: string | null;
+    effective_at: string;
+    created_at: string;
+}
 
 const emptyPlan = { code: "", name: "", description: "", displayOrder: 0, active: false };
 
@@ -30,11 +41,20 @@ function subscriptionStatusLabel(status: string): string {
     return status.replace(/[_-]+/g, " ");
 }
 
+function eventTypeLabel(eventType: string): string {
+    return eventType.replace(/[_-]+/g, " ");
+}
+
+function formatDateTime(value: string): string {
+    return new Date(value).toLocaleString();
+}
+
 export function SubscriptionAdminWorkspace() {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
     const [users, setUsers] = useState<UserAccount[]>([]);
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+    const [events, setEvents] = useState<SubscriptionEvent[]>([]);
     const [selectedPlanId, setSelectedPlanId] = useState("");
     const [plan, setPlan] = useState(emptyPlan);
     const [newPlan, setNewPlan] = useState(emptyPlan);
@@ -58,6 +78,7 @@ export function SubscriptionAdminWorkspace() {
                 entitlements?: Entitlement[];
                 users?: UserAccount[];
                 subscriptions?: Subscription[];
+                events?: SubscriptionEvent[];
                 error?: string;
             };
             if (!response.ok) throw new Error(payload.error ?? "Unable to load subscription administration.");
@@ -65,6 +86,7 @@ export function SubscriptionAdminWorkspace() {
             setEntitlements(payload.entitlements ?? []);
             setUsers(payload.users ?? []);
             setSubscriptions(payload.subscriptions ?? []);
+            setEvents(payload.events ?? []);
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Unable to load subscription administration.");
         } finally { setLoading(false); }
@@ -110,10 +132,6 @@ export function SubscriptionAdminWorkspace() {
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Subscription update failed.");
         } finally { setSaving(false); }
-    }
-
-    async function cancelSubscription(subscriptionId: string) {
-        await post({ action: "cancel_subscription", subscriptionId });
     }
 
     if (loading) {
@@ -166,8 +184,8 @@ export function SubscriptionAdminWorkspace() {
                                     const account = accountById.get(subscription.user_id);
                                     const currentPlan = planById.get(subscription.plan_id);
                                     const period = subscription.current_period_end
-                                        ? `${new Date(subscription.current_period_start ?? subscription.created_at).toLocaleDateString()} → ${new Date(subscription.current_period_end).toLocaleDateString()}`
-                                        : `${new Date(subscription.current_period_start ?? subscription.created_at).toLocaleDateString()} → open`;
+                                        ? new Date(subscription.current_period_start ?? subscription.created_at).toLocaleDateString() + " → " + new Date(subscription.current_period_end).toLocaleDateString()
+                                        : new Date(subscription.current_period_start ?? subscription.created_at).toLocaleDateString() + " → open";
                                     return (
                                         <tr key={subscription.id}>
                                             <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{account ? userLabel(account) : subscription.user_id}</td>
@@ -177,7 +195,7 @@ export function SubscriptionAdminWorkspace() {
                                             <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap" }}>{period}</td>
                                             <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>
                                                 {subscription.status === "active" || subscription.status === "trialing"
-                                                    ? <button type="button" disabled={saving} onClick={() => void cancelSubscription(subscription.id)}>End Subscription</button>
+                                                    ? <button type="button" disabled={saving} onClick={() => void post({ action: "cancel_subscription", subscriptionId: subscription.id })}>End Subscription</button>
                                                     : "—"}
                                             </td>
                                         </tr>
@@ -186,6 +204,33 @@ export function SubscriptionAdminWorkspace() {
                             </tbody>
                         </table>
                     ) : <p style={{ color: "#6b7280" }}>No subscription assignments have been recorded.</p>}
+                </div>
+            </section>
+
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                <h2 style={{ marginTop: 0 }}>Subscription Event History</h2>
+                <p style={{ color: "#6b7280", marginTop: 0 }}>Lifecycle events provide an audit trail for administrative assignments and future provider synchronization.</p>
+                <div style={{ overflowX: "auto" }}>
+                    {events.length ? (
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                            <thead>
+                                <tr>
+                                    {["Time", "Account", "Event", "Provider", "Subscription"].map((heading) => <th key={heading} style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #e5e7eb" }}>{heading}</th>)}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {events.map((event) => (
+                                    <tr key={event.id}>
+                                        <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap" }}>{formatDateTime(event.effective_at)}</td>
+                                        <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{accountById.get(event.user_id)?.email || event.user_id}</td>
+                                        <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{eventTypeLabel(event.event_type)}</td>
+                                        <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{event.provider}</td>
+                                        <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{event.subscription_id ?? "—"}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : <p style={{ color: "#6b7280" }}>No subscription lifecycle events have been recorded yet.</p>}
                 </div>
             </section>
 
