@@ -1,5 +1,3 @@
-import "server-only";
-
 import { getBillingProviderConfiguration } from "./billingProviderConfig";
 import type { BillingProvider } from "./billingProvider";
 import { StripeBillingProvider } from "./stripeBillingProvider";
