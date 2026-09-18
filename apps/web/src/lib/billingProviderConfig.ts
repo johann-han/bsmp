@@ -1,5 +1,3 @@
-import "server-only";
-
 import { normalizeBillingProviderId } from "./billingProvider";
 
 export interface BillingProviderConfiguration {
