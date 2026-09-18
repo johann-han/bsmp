@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { SubscriptionAdminError, requireSubscriptionAdmin } from "../../../../../../src/lib/subscriptionAdmin";
+import { SubscriptionAdminError, requireSubscriptionAdmin } from "../../../../../src/lib/subscriptionAdmin";
 
 function text(value: unknown, field: string, max = 200): string {
     if (typeof value !== "string" || !value.trim()) throw new Error(`${field} is required.`);
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
         if (subscriptionsResult.error) throw subscriptionsResult.error;
         if (usersResult.error) throw usersResult.error;
 
-        const users = (usersResult.data.users ?? []).map((user) => ({
+        const users = (usersResult.data.users ?? []).map((user: { id: string; email?: string | null }) => ({
             id: user.id,
             email: user.email ?? "",
         }));
@@ -73,10 +73,8 @@ export async function GET(request: Request) {
             users,
         });
     } catch (reason) {
-        return NextResponse.json(
-            { error: reason instanceof Error ? reason.message : "Unable to load subscription administration." },
-            { status: status(reason) },
-        );
+        const message = reason instanceof Error ? reason.message : "Unable to load subscription administration.";
+        return NextResponse.json({ error: message }, { status: status(reason) });
     }
 }
 
@@ -219,9 +217,7 @@ export async function POST(request: Request) {
 
         throw new Error("Unsupported subscription administration action.");
     } catch (reason) {
-        return NextResponse.json(
-            { error: reason instanceof Error ? reason.message : "Unable to update subscription configuration." },
-            { status: status(reason) },
-        );
+        const message = reason instanceof Error ? reason.message : "Unable to update subscription configuration.";
+        return NextResponse.json({ error: message }, { status: status(reason) });
     }
 }
