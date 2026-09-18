@@ -56,7 +56,7 @@ The current implementation is a lightweight preflight guard. It deliberately doe
 
 ## Deliberately deferred
 
-This phase does not connect a payment provider, publish pricing, create checkout sessions, process webhooks, or choose final plan values. Those decisions remain separate from the entitlement and metering infrastructure.
+Plan prices, live PayFast credentials, and production payment activation remain deployment configuration rather than repository data. Checkout and webhook code are now implemented, but real payments are not enabled until the merchant credentials, recurring plan configuration, and public notification URL are configured and tested.
 
 ## Billing provider boundary
 
@@ -67,3 +67,12 @@ The reserved provider-neutral billing contract lives in `apps/web/src/lib/billin
 Future checkout should create a provider session and allow the provider webhook to establish authoritative `user_subscriptions` state. The browser must not directly create or mutate subscription records.
 
 Provider synchronization now has a transactional server-side database boundary at `public.apply_subscription_billing_event(jsonb)`. The function is executable by the server service role only, uses the external provider event id for idempotency, updates `user_subscriptions`, and links the resulting state change to `subscription_events` in one transaction.
+
+## PayFast billing
+
+BSMP's intended payment provider is PayFast. The integration uses PayFast-hosted checkout for recurring subscriptions and keeps payment credentials and provider state on the server.
+
+The `billing_checkout_intents` table records the server-generated payment reference and expected amount used to validate PayFast ITNs before subscription activation.
+
+Once a verified PayFast notification is received, BSMP synchronizes the subscription through the transactional `apply_subscription_billing_event` database boundary and records the provider event in `subscription_events`.
+
