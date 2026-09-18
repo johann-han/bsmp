@@ -4,12 +4,37 @@ import { useEffect, useMemo, useState } from "react";
 
 interface Plan { id: string; code: string; name: string; description: string; active: boolean; display_order: number; }
 interface Entitlement { id: string; plan_id: string; entitlement_key: string; enabled: boolean; limit_value: number | null; limit_unit: string; }
+interface UserAccount { id: string; email: string; }
+interface Subscription {
+    id: string;
+    user_id: string;
+    plan_id: string;
+    status: string;
+    provider: string;
+    external_customer_id: string | null;
+    external_subscription_id: string | null;
+    current_period_start: string | null;
+    current_period_end: string | null;
+    cancel_at_period_end: boolean;
+    created_at: string;
+    updated_at: string;
+}
 
 const emptyPlan = { code: "", name: "", description: "", displayOrder: 0, active: false };
+
+function userLabel(user: UserAccount): string {
+    return user.email || user.id;
+}
+
+function subscriptionStatusLabel(status: string): string {
+    return status.replace(/[_-]+/g, " ");
+}
 
 export function SubscriptionAdminWorkspace() {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
+    const [users, setUsers] = useState<UserAccount[]>([]);
+    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [selectedPlanId, setSelectedPlanId] = useState("");
     const [plan, setPlan] = useState(emptyPlan);
     const [newPlan, setNewPlan] = useState(emptyPlan);
@@ -17,6 +42,8 @@ export function SubscriptionAdminWorkspace() {
     const [limitValue, setLimitValue] = useState("");
     const [limitUnit, setLimitUnit] = useState("count");
     const [enabled, setEnabled] = useState(true);
+    const [selectedUserId, setSelectedUserId] = useState("");
+    const [selectedAssignmentPlanId, setSelectedAssignmentPlanId] = useState("");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -26,9 +53,18 @@ export function SubscriptionAdminWorkspace() {
         setLoading(true); setError(null);
         try {
             const response = await fetch("/api/settings/subscription/admin", { cache: "no-store" });
-            const payload = await response.json() as { plans?: Plan[]; entitlements?: Entitlement[]; error?: string };
+            const payload = await response.json() as {
+                plans?: Plan[];
+                entitlements?: Entitlement[];
+                users?: UserAccount[];
+                subscriptions?: Subscription[];
+                error?: string;
+            };
             if (!response.ok) throw new Error(payload.error ?? "Unable to load subscription administration.");
-            setPlans(payload.plans ?? []); setEntitlements(payload.entitlements ?? []);
+            setPlans(payload.plans ?? []);
+            setEntitlements(payload.entitlements ?? []);
+            setUsers(payload.users ?? []);
+            setSubscriptions(payload.subscriptions ?? []);
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Unable to load subscription administration.");
         } finally { setLoading(false); }
@@ -36,31 +72,55 @@ export function SubscriptionAdminWorkspace() {
 
     useEffect(() => { void load(); }, []);
 
+    useEffect(() => {
+        if (!selectedAssignmentPlanId && plans.length) {
+            setSelectedAssignmentPlanId(plans.find((item) => item.active)?.id ?? "");
+        }
+    }, [plans, selectedAssignmentPlanId]);
+
     const selectedPlan = useMemo(() => plans.find((item) => item.id === selectedPlanId) ?? null, [plans, selectedPlanId]);
     const selectedEntitlements = useMemo(() => entitlements.filter((item) => item.plan_id === selectedPlanId), [entitlements, selectedPlanId]);
 
     useEffect(() => {
         if (!selectedPlan) return;
-        setPlan({ code: selectedPlan.code, name: selectedPlan.name, description: selectedPlan.description, displayOrder: selectedPlan.display_order, active: selectedPlan.active });
+        setPlan({
+            code: selectedPlan.code,
+            name: selectedPlan.name,
+            description: selectedPlan.description,
+            displayOrder: selectedPlan.display_order,
+            active: selectedPlan.active,
+        });
     }, [selectedPlan]);
+
+    const accountById = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
+    const planById = useMemo(() => new Map(plans.map((item) => [item.id, item])), [plans]);
 
     async function post(body: Record<string, unknown>) {
         setSaving(true); setError(null); setMessage(null);
         try {
-            const response = await fetch("/api/settings/subscription/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+            const response = await fetch("/api/settings/subscription/admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
             const payload = await response.json() as { error?: string };
             if (!response.ok) throw new Error(payload.error ?? "Subscription update failed.");
             setMessage("Saved.");
             await load();
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Subscription update failed.");
-            throw reason;
         } finally { setSaving(false); }
     }
 
-    if (loading) return <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}><p>Loading Subscription Administration...</p></main>;
+    async function cancelSubscription(subscriptionId: string) {
+        await post({ action: "cancel_subscription", subscriptionId });
+    }
 
-    if (error && !plans.length) {
+    if (loading) {
+        return <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}><p>Loading Subscription Administration...</p></main>;
+    }
+
+    if (error && !plans.length && !users.length) {
         return <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}><section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}><h1>Subscription Administration</h1><p style={{ color: "#b91c1c" }}>{error}</p><p style={{ color: "#6b7280" }}>Administration requires an authenticated platform administrator role.</p></section></main>;
     }
 
@@ -69,9 +129,64 @@ export function SubscriptionAdminWorkspace() {
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                 <div style={{ fontSize: 13, color: "#6b7280" }}>BSMP → Settings → Subscription Administration</div>
                 <h1 style={{ margin: "4px 0 8px" }}>Subscription Administration</h1>
-                <p style={{ margin: 0, color: "#6b7280" }}>Manage provider-neutral plans and entitlements. Pricing, checkout, and payment-provider state remain outside this screen.</p>
+                <p style={{ margin: 0, color: "#6b7280" }}>Manage provider-neutral plans, entitlements, and manual subscription assignments. Pricing, checkout, and payment-provider state remain outside this screen.</p>
                 {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
                 {message && <p style={{ color: "#166534" }}>{message}</p>}
+            </section>
+
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                <h2 style={{ marginTop: 0 }}>Account Subscriptions</h2>
+                <p style={{ color: "#6b7280", marginTop: 0 }}>Use a manual assignment to activate a plan for an account during administration or testing. An account cannot receive a second active/trialing subscription until its current one is ended.</p>
+                <div style={{ display: "grid", gap: 10, gridTemplateColumns: "minmax(220px, 1fr) minmax(220px, 1fr) auto", alignItems: "end" }}>
+                    <label style={{ display: "grid", gap: 5 }}>Account
+                        <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)}>
+                            <option value="">Select account</option>
+                            {users.map((user) => <option key={user.id} value={user.id}>{userLabel(user)}</option>)}
+                        </select>
+                    </label>
+                    <label style={{ display: "grid", gap: 5 }}>Active plan
+                        <select value={selectedAssignmentPlanId} onChange={(e) => setSelectedAssignmentPlanId(e.target.value)}>
+                            <option value="">Select plan</option>
+                            {plans.filter((item) => item.active).map((item) => <option key={item.id} value={item.id}>{item.name} ({item.code})</option>)}
+                        </select>
+                    </label>
+                    <button type="button" disabled={saving || !selectedUserId || !selectedAssignmentPlanId} onClick={() => void post({ action: "assign_manual_subscription", userId: selectedUserId, planId: selectedAssignmentPlanId })}>Assign Plan</button>
+                </div>
+
+                <div style={{ marginTop: 18, overflowX: "auto" }}>
+                    {subscriptions.length ? (
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                            <thead>
+                                <tr>
+                                    {["Account", "Plan", "Status", "Provider", "Period", "Actions"].map((heading) => <th key={heading} style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #e5e7eb" }}>{heading}</th>)}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {subscriptions.map((subscription) => {
+                                    const account = accountById.get(subscription.user_id);
+                                    const currentPlan = planById.get(subscription.plan_id);
+                                    const period = subscription.current_period_end
+                                        ? `${new Date(subscription.current_period_start ?? subscription.created_at).toLocaleDateString()} → ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                                        : `${new Date(subscription.current_period_start ?? subscription.created_at).toLocaleDateString()} → open`;
+                                    return (
+                                        <tr key={subscription.id}>
+                                            <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{account ? userLabel(account) : subscription.user_id}</td>
+                                            <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{currentPlan?.name ?? subscription.plan_id}</td>
+                                            <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{subscriptionStatusLabel(subscription.status)}</td>
+                                            <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>{subscription.provider}</td>
+                                            <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap" }}>{period}</td>
+                                            <td style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>
+                                                {subscription.status === "active" || subscription.status === "trialing"
+                                                    ? <button type="button" disabled={saving} onClick={() => void cancelSubscription(subscription.id)}>End Subscription</button>
+                                                    : "—"}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    ) : <p style={{ color: "#6b7280" }}>No subscription assignments have been recorded.</p>}
+                </div>
             </section>
 
             <section style={{ display: "grid", gridTemplateColumns: "minmax(220px, 0.8fr) minmax(320px, 1.2fr)", gap: 18 }}>
