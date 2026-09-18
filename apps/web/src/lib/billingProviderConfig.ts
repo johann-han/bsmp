@@ -6,7 +6,7 @@ export interface BillingProviderConfiguration {
 }
 
 export function getBillingProviderConfiguration(
-    environment: { BILLING_PROVIDER?: string } = process.env,
+    environment: Record<string, string | undefined> = process.env,
 ): BillingProviderConfiguration {
     const rawProvider = environment.BILLING_PROVIDER?.trim();
 
