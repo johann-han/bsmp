@@ -36,13 +36,21 @@ export async function POST(request: Request) {
             const grossAmount = metadata.amount_gross === null || metadata.amount_gross === undefined ? null : amount(metadata.amount_gross);
             const token = event.externalSubscriptionId ?? "";
             const subscription = await findPayFastSubscriptionByToken(token);
+            const attempt = merchantPaymentId ? await findBillingPaymentAttempt(merchantPaymentId) : null;
 
-            let attempt = merchantPaymentId ? await findBillingPaymentAttempt(merchantPaymentId) : null;
             if (!subscription && !attempt) throw new Error("PayFast ITN could not be matched to a pending payment or subscription.");
+
+            if (event.eventType === "canceled" && !subscription) {
+                throw new Error("PayFast subscription cancellation could not be matched to an existing subscription.");
+            }
 
             if (event.eventType === "activated") {
                 if (!attempt) throw new Error("PayFast initial payment could not be matched to a checkout attempt.");
-                if (attempt.user_id !== event.userId || attempt.plan_id === "") throw new Error("PayFast payment identity does not match the checkout attempt.");
+                if (attempt.user_id !== event.userId) throw new Error("PayFast payment identity does not match the checkout account.");
+                const expectedPlanCode = typeof attempt.metadata.plan_code === "string" ? attempt.metadata.plan_code : null;
+                if (expectedPlanCode && event.planCode && expectedPlanCode !== event.planCode) {
+                    throw new Error("PayFast payment plan does not match the checkout plan.");
+                }
                 if (grossAmount === null || !closeEnough(grossAmount, Number(attempt.amount))) {
                     throw new Error("PayFast payment amount does not match the recorded checkout amount.");
                 }
