@@ -110,7 +110,7 @@ function apiSignature(values: Record<string, string>): string {
 async function apiRequest<T>(path: string, method: "GET" | "PUT" | "PATCH", body: Record<string, string> = {}): Promise<T> {
     const merchantId = requiredEnvironment("PAYFAST_MERCHANT_ID");
     const version = "v1";
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
     const headersForSignature: Record<string, string> = {
         "merchant-id": merchantId,
         version,
@@ -191,7 +191,14 @@ export class PayFastBillingProvider implements BillingProvider {
 
     async cancelSubscription(input: BillingCancelSubscriptionInput): Promise<void> {
         if (input.cancelAtPeriodEnd) throw new Error("PayFast cancellation is immediate; end-of-period cancellation is not supported by this adapter.");
-        await apiRequest(`/subscriptions/${encodeURIComponent(input.externalSubscriptionId)}/cancel`, "PUT");
+        const response = await apiRequest<{
+            code?: number;
+            status?: string;
+            data?: { response?: boolean };
+        }>(`/subscriptions/${encodeURIComponent(input.externalSubscriptionId)}/cancel`, "PUT");
+        if (response.code !== 200 || response.status !== "success" || response.data?.response !== true) {
+            throw new Error("PayFast subscription cancellation was not confirmed by the provider.");
+        }
     }
 
     async verifyWebhook(input: BillingWebhookInput): Promise<NormalizedBillingEvent[]> {
