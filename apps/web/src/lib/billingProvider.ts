@@ -9,6 +9,7 @@ export type BillingSubscriptionStatus =
 export interface BillingCheckoutInput {
     userId: string;
     planCode: string;
+    merchantPaymentId: string;
     customerEmail?: string | null;
     successUrl: string;
     cancelUrl: string;
@@ -16,7 +17,11 @@ export interface BillingCheckoutInput {
 
 export interface BillingCheckoutSession {
     provider: string;
-    checkoutUrl: string;
+    checkoutUrl?: string;
+    formAction?: string;
+    formFields?: Record<string, string>;
+    amountZar?: number;
+    recurringAmountZar?: number;
     externalCustomerId?: string | null;
     externalSubscriptionId?: string | null;
     expiresAt?: string | null;
