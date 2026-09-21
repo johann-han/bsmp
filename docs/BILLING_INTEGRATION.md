@@ -1,85 +1,60 @@
-# BSMP Billing Integration Boundary
+# BSMP Billing Integration
 
-## Purpose
+## Current provider
 
-BSMP now has a provider-neutral billing contract for the eventual payment and subscription provider.
+BSMP uses PayFast as its first provider-specific payment integration. PayFast supports South African merchants and recurring subscriptions, including monthly, quarterly, biannual, and annual schedules. citeturn445863search1turn445863search10
 
-The boundary deliberately keeps provider-specific concerns outside the subscription tables, AI metering, and Study workflow.
+`apps/web/src/lib/payfastBillingProvider.ts` implements the PayFast custom integration using the hosted PayFast payment form, recurring subscription fields, PayFast API subscription cancellation, and server-side ITN validation.
 
-## Provider contract
+## Subscription buttons
 
-`apps/web/src/lib/billingProvider.ts` defines the contract a future provider adapter must implement:
+Each active BSMP plan is rendered with a **Subscribe with PayFast** button on the Subscription page. The browser asks the authenticated BSMP server for a signed PayFast checkout form, then submits that form directly to the PayFast hosted payment page. This keeps the PayFast merchant credentials and passphrase on the server.
 
-- create a checkout session for a BSMP plan;
-- cancel an external subscription;
-- verify provider webhooks and normalize them into BSMP subscription events.
+PayFast's official custom-integration documentation describes the same hosted form approach and supports subscription checkout through `subscription_type=1`, a recurring amount, frequency, and cycle count. citeturn436828search0
 
-A provider adapter returns normalized subscription events rather than allowing provider-specific payloads to flow through the rest of BSMP.
+## Required server configuration
 
-The normalized event includes the provider, optional external event id, affected user/account identifiers, optional plan code and external customer/subscription identifiers, subscription status, billing-period dates, cancellation timing, effective time, and metadata.
+```text
+BILLING_PROVIDER=payfast
+PAYFAST_SANDBOX=true
+PAYFAST_MERCHANT_ID=...
+PAYFAST_MERCHANT_KEY=...
+PAYFAST_PASSPHRASE=...
+PUBLIC_APP_URL=https://your-public-domain.example
+PAYFAST_PLAN_CONFIG={"starter-monthly":{"amount":99.00,"recurringAmount":99.00,"frequency":3,"cycles":0}}
+PAYFAST_ITN_ALLOWED_IPS=...
+```
 
-## Provider configuration
+`PAYFAST_PLAN_CONFIG` is keyed by the stable BSMP plan code. `frequency` values are 1 daily, 2 weekly, 3 monthly, 4 quarterly, 5 biannually, and 6 annually; `cycles=0` means an indefinite subscription. PayFast documents a minimum recurring amount of R5.00 for subscriptions. citeturn436828search0
 
-`BILLING_PROVIDER` is the reserved server-side configuration key for selecting the provider adapter.
+All PayFast credentials and the subscription passphrase are server-only. They must not use `NEXT_PUBLIC_` prefixes.
 
-At present no adapter is registered and no payment provider is connected. An unset `BILLING_PROVIDER` therefore means billing is not configured.
+## ITN security and synchronization
 
-The configuration helper exposes only whether a provider id is configured and its normalized id. Provider secrets and webhook signing material remain server-only.
+PayFast sends an Instant Transaction Notification to the `notify_url` before returning the buyer to the configured return URL. PayFast recommends verifying the signature, validating the source, confirming the merchant and payment data, and performing server-side validation of the notification. citeturn436828search0
 
-## Checkout boundary
+BSMP therefore:
 
-Future checkout flow should:
+1. checks the incoming PayFast source IP against the currently published PayFast ranges;
+2. checks the configured merchant ID;
+3. verifies the MD5 security signature with the merchant passphrase;
+4. POSTs the original notification back to the PayFast validation endpoint and requires `VALID`;
+5. matches the notification to the pending BSMP payment attempt or existing PayFast subscription;
+6. sends the normalized event through the atomic `apply_subscription_billing_event(jsonb)` synchronization path.
 
-1. authenticate the current Supabase user;
-2. resolve the requested active BSMP plan by its stable plan code;
-3. pass the user, plan code, email, and trusted return URLs to the provider adapter;
-4. redirect the browser to the provider's returned checkout URL;
-5. wait for the provider webhook to establish authoritative subscription state.
+PayFast currently publishes these IPv4 ranges for ITN/source validation: `197.97.145.144/28`, `41.74.179.192/27`, `102.216.36.0/28`, `102.216.36.128/28`, and `144.126.193.139`. citeturn123401search1
 
-The browser should not create or directly mutate `user_subscriptions`.
+## Subscription cancellation
 
-## Webhook boundary
+PayFast's recurring-billing API exposes `PUT /subscriptions/:token/cancel`. BSMP uses that API when an administrator ends a PayFast-backed subscription. citeturn278835search0
 
-Future provider webhooks should:
+## Sandbox
 
-1. receive the raw request body and signature headers;
-2. let the provider adapter verify the signature;
-3. normalize provider events into `NormalizedBillingEvent`;
-4. use `externalEventId` as the provider idempotency key;
-5. update `user_subscriptions` and append `subscription_events` using one server-side transactional path.
+PayFast provides a sandbox for testing one-off and recurring payments without transferring real money. Their documentation recommends using the sandbox before switching to live credentials. citeturn436828search0
 
-`subscription_events.external_event_id` already provides the database uniqueness boundary for provider/event pairs.
+## Deliberately not automated
 
-The webhook path must remain separate from AI usage records and Study content.
+BSMP does not store or process card details. PayFast hosts the payment page, and BSMP receives server-side ITNs rather than handling payment-card data directly. PayFast describes itself as a PCI DSS Level 1 service provider. citeturn445863search14
 
-## Current state
-
-No payment provider, checkout session, customer portal, webhook endpoint, product price, or public pricing value is configured by this phase.
-
-The next provider-specific phase can add an adapter without changing the core subscription entitlement model.
-
-## Atomic subscription synchronization
-
-`public.apply_subscription_billing_event(jsonb)` is the server-side database boundary for applying a normalized provider event.
-
-It requires an external event id and external subscription id, reserves the event idempotency key in `subscription_events`, resolves an existing provider subscription or creates one from a user and plan code, updates subscription state, and links the audit event to the resulting subscription within one database transaction.
-
-The function is executable by `service_role` only. Anonymous and authenticated client roles cannot execute it directly.
-
-`apps/web/src/lib/billingSubscriptionSync.ts` is the server-side application helper that validates the minimum event identity fields and calls this database function.
-
-This transactional path is deliberately provider-neutral. Provider-specific adapters remain responsible for signature verification and normalization; they do not receive authority to write raw provider payloads directly into BSMP tables.
-
-
-## Stripe adapter
-
-The first provider-specific adapter is Stripe. Stripe currently lists South Africa as a supported country/region, and its Checkout API supports subscription-mode sessions.
-
-`apps/web/src/lib/stripeBillingProvider.ts` calls Stripe server-side, creates hosted Checkout Sessions for recurring Prices, supports immediate or end-of-period cancellation, verifies `Stripe-Signature`, and normalizes subscription webhooks into the BSMP billing event contract. Stripe documents signature verification using the raw request body, the `Stripe-Signature` header, and the endpoint secret.
-
-Plan-to-Price mapping is intentionally outside the public plan table: `STRIPE_PRICE_MAP` is a server-side JSON object keyed by stable BSMP plan code. This keeps provider price identifiers out of browser-visible configuration and avoids duplicating environment variables as plans are added.
-
-Relevant server-only variables are `BILLING_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and the per-plan Stripe Price identifiers. They must not be prefixed with `NEXT_PUBLIC_`.
-
-Stripe is not connected to the live BSMP deployment by this phase. No live key, webhook secret, product, or Price has been added to the repository.
+No live PayFast credentials have been added to this repository, and no live customer payment has been initiated by this implementation phase.
 
