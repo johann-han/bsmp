@@ -13,10 +13,28 @@ function serviceClient() {
     return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-function valuesFromBody(rawBody: string): Record<string, string> {
+async function parsePayFastBody(request: Request): Promise<{
+    values: Record<string, string>;
+    normalizedBody: string;
+}> {
+    const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+
+    if (contentType.includes("multipart/form-data")) {
+        const form = await request.formData();
+        const values: Record<string, string> = {};
+        for (const [key, value] of form.entries()) {
+            if (typeof value === "string") values[key] = value;
+        }
+        return {
+            values,
+            normalizedBody: new URLSearchParams(values).toString(),
+        };
+    }
+
+    const rawBody = await request.text();
     const values: Record<string, string> = {};
     for (const [key, value] of new URLSearchParams(rawBody).entries()) values[key] = value;
-    return values;
+    return { values, normalizedBody: rawBody };
 }
 
 export async function POST(request: Request) {
@@ -26,8 +44,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "PayFast billing provider is not active." }, { status: 404 });
         }
 
-        const rawBody = await request.text();
-        const values = valuesFromBody(rawBody);
+        const { values, normalizedBody } = await parsePayFastBody(request);
 
         await verifyPayFastSourceIp(requestIp(request.headers));
 
@@ -35,7 +52,7 @@ export async function POST(request: Request) {
         if (!confirmed) throw new Error("PayFast server confirmation failed.");
 
         const events = await provider.verifyWebhook({
-            rawBody,
+            rawBody: normalizedBody,
             headers: { "user-agent": request.headers.get("user-agent") },
         });
 
