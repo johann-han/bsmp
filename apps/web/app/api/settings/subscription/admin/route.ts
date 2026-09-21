@@ -258,7 +258,7 @@ export async function POST(request: Request) {
                 throw new Error("Only active or trialing subscriptions can be ended.");
             }
 
-            if (before.provider !== "manual" && before.provider === "payfast") {
+            if (before.provider === "payfast") {
                 const provider = getBillingProvider();
                 if (provider.id !== before.provider) {
                     throw new Error(`Billing provider ${before.provider} is not the active provider.`);
