@@ -32,10 +32,10 @@ export async function findBillingPaymentAttempt(merchantPaymentId: string): Prom
     return (data ?? null) as BillingPaymentAttempt | null;
 }
 
-export async function findPayFastSubscriptionByToken(token: string): Promise<{ id: string; user_id: string; plan_id: string; status: string } | null> {
+export async function findPayFastSubscriptionByToken(token: string): Promise<{ id: string; user_id: string; plan_id: string; status: string; metadata: Record<string, unknown> } | null> {
     const { data, error } = await serverClient()
         .from("user_subscriptions")
-        .select("id, user_id, plan_id, status")
+        .select("id, user_id, plan_id, status, metadata")
         .eq("provider", "payfast")
         .eq("external_subscription_id", token)
         .maybeSingle();
