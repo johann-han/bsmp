@@ -258,7 +258,8 @@ export class PayFastBillingProvider implements BillingProvider {
         const token = params.get("token")?.trim();
         if (!pfPaymentId || !paymentStatus || !token) throw new Error("PayFast ITN is missing required transaction or subscription fields.");
 
-        const configuredPlan = planCode ? planConfig(planCode) : null;
+        const planCodeForEvent = params.get("custom_str2")?.trim() || null;
+        const configuredPlan = planCodeForEvent ? planConfig(planCodeForEvent) : null;
         const normalized = normalizeStatus(paymentStatus);
         return [{
             provider: "payfast",
