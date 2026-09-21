@@ -118,7 +118,7 @@ function apiUrl(): string {
 function normalizeStatus(paymentStatus: string): { eventType: NormalizedBillingEvent["eventType"]; status: NonNullable<NormalizedBillingEvent["status"]> } {
     if (paymentStatus === "COMPLETE") return { eventType: "activated", status: "active" };
     if (paymentStatus === "CANCELLED") return { eventType: "canceled", status: "canceled" };
-    return { eventType: "past_due", status: "past_due" };
+    throw new Error(`Unsupported PayFast payment status: ${paymentStatus}`);
 }
 
 function sourceIp(headers: Record<string, string | null>): string | null {
@@ -277,6 +277,7 @@ export class PayFastBillingProvider implements BillingProvider {
                 amount_gross: params.get("amount_gross")?.trim() || null,
                 amount_fee: params.get("amount_fee")?.trim() || null,
                 amount_net: params.get("amount_net")?.trim() || null,
+                recurring_amount_zar: plan?.recurringAmount ?? null,
                 payment_status: paymentStatus,
             },
         }];
