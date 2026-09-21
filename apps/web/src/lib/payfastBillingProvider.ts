@@ -165,7 +165,7 @@ async function serverValidate(rawBody: string): Promise<boolean> {
     return response.ok && /^VALID(?:\s|$)/.test(text);
 }
 
-async function apiRequest(path: string, method: "PUT" | "PATCH", body: Record<string, string> = {}): Promise<unknown> {
+async function apiRequest(path: string, method: "PUT" | "PATCH", body: Record<string, string> = {}): Promise<void> {
     const merchantId = env("PAYFAST_MERCHANT_ID");
     const passphrase = env("PAYFAST_PASSPHRASE");
     const timestamp = new Date().toISOString().replace(".000Z", "+00:00");
@@ -184,7 +184,7 @@ async function apiRequest(path: string, method: "PUT" | "PATCH", body: Record<st
     const response = await fetch(`${apiUrl()}${path}${query}`, {
         method,
         headers,
-        body: Object.keys(body).length ? new URLSearchParams(body).toString() : undefined,
+        ...(Object.keys(body).length ? { body: new URLSearchParams(body).toString() } : {}),
         cache: "no-store",
     });
     const payload = await response.text();
@@ -258,6 +258,7 @@ export class PayFastBillingProvider implements BillingProvider {
         const token = params.get("token")?.trim();
         if (!pfPaymentId || !paymentStatus || !token) throw new Error("PayFast ITN is missing required transaction or subscription fields.");
 
+        const configuredPlan = planCode ? planConfig(planCode) : null;
         const normalized = normalizeStatus(paymentStatus);
         return [{
             provider: "payfast",
@@ -277,7 +278,7 @@ export class PayFastBillingProvider implements BillingProvider {
                 amount_gross: params.get("amount_gross")?.trim() || null,
                 amount_fee: params.get("amount_fee")?.trim() || null,
                 amount_net: params.get("amount_net")?.trim() || null,
-                recurring_amount_zar: plan?.recurringAmount ?? null,
+                recurring_amount_zar: configuredPlan?.recurringAmount ?? null,
                 payment_status: paymentStatus,
             },
         }];
