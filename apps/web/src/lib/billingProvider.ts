@@ -17,7 +17,7 @@ export interface BillingCheckoutInput {
 
 export interface BillingCheckoutSession {
     provider: string;
-    checkoutUrl?: string;
+    checkoutUrl: string;
     formAction?: string;
     formFields?: Record<string, string>;
     amountZar?: number;
