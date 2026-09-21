@@ -57,6 +57,34 @@ describe("PayFastBillingProvider", () => {
         expect(result.formFields?.signature).toMatch(/^[a-f0-9]{32}$/);
     });
 
+    it("cancels a PayFast subscription through the recurring billing API", async () => {
+        process.env.PAYFAST_MERCHANT_ID = "10000100";
+        process.env.PAYFAST_PASSPHRASE = "passphrase";
+        process.env.PAYFAST_SANDBOX = "true";
+
+        const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+            new Response(JSON.stringify({ code: 200, status: "success", data: { response: true } }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+
+        await new PayFastBillingProvider().cancelSubscription({
+            externalSubscriptionId: "subscription-token",
+            cancelAtPeriodEnd: false,
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        const [url, init] = fetchMock.mock.calls[0]!;
+        expect(url).toBe("https://api.payfast.co.za/subscriptions/subscription-token/cancel?testing=true");
+        expect(init?.method).toBe("PUT");
+        expect(init?.headers).toMatchObject({
+            "merchant-id": "10000100",
+            version: "v1",
+            signature: expect.stringMatching(/^[a-f0-9]{32}$/),
+        });
+    });
+
     it("rejects recurring plans below PayFast minimum", async () => {
         process.env.PAYFAST_MERCHANT_ID = "10000100";
         process.env.PAYFAST_MERCHANT_KEY = "merchant_key";
