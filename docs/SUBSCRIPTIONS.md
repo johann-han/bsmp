@@ -2,7 +2,7 @@
 
 ## Purpose
 
-BSMP has a provider-neutral subscription data model that can support future paid plans, AI quotas, feature entitlements, and payment-provider integration without coupling billing logic to Study content or AI provider implementations.
+BSMP has a provider-neutral subscription data model that can support future paid plans, AI quotas, feature entitlements, and PayFast payment integration without coupling billing logic to Study content or AI provider implementations.
 
 ## Tables
 
@@ -54,9 +54,13 @@ The current implementation is a lightweight preflight guard. It deliberately doe
 
 `ai_usage_events` remains the usage ledger. Subscription entitlements read that ledger rather than copying prompts, generated content, or Study evidence into billing records. The AI Usage page displays both recorded activity and the current subscription allowance when one is configured.
 
-## Deliberately deferred
+## PayFast integration
 
-This phase does not connect a payment provider, publish pricing, create checkout sessions, process webhooks, or choose final plan values. Those decisions remain separate from the entitlement and metering infrastructure.
+BSMP now has a PayFast subscription checkout integration. Active plans display a **Subscribe with PayFast** button. The server creates the signed hosted payment form and the browser posts it to PayFast; PayFast then sends the ITN to BSMP for server-side validation and subscription synchronization.
+
+Payment credentials, the PayFast passphrase, and plan pricing configuration are server-only. No card data is stored in BSMP.
+
+The integration is designed to run against the PayFast Sandbox first. Live credentials and production activation remain an operational step after sandbox verification.
 
 ## Billing provider boundary
 
