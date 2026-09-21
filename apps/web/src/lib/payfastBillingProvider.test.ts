@@ -81,8 +81,27 @@ describe("PayFastBillingProvider", () => {
         expect(init?.headers).toMatchObject({
             "merchant-id": "10000100",
             version: "v1",
+            timestamp: expect.stringMatching(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/),
             signature: expect.stringMatching(/^[a-f0-9]{32}$/),
         });
+    });
+
+    it("does not treat an unsuccessful PayFast API response as a cancellation", async () => {
+        process.env.PAYFAST_MERCHANT_ID = "10000100";
+        process.env.PAYFAST_PASSPHRASE = "passphrase";
+        process.env.PAYFAST_SANDBOX = "true";
+
+        vi.spyOn(globalThis, "fetch").mockResolvedValue(
+            new Response(JSON.stringify({ code: 200, status: "success", data: { response: false } }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+
+        await expect(new PayFastBillingProvider().cancelSubscription({
+            externalSubscriptionId: "subscription-token",
+            cancelAtPeriodEnd: false,
+        })).rejects.toThrow("was not confirmed");
     });
 
     it("rejects recurring plans below PayFast minimum", async () => {
