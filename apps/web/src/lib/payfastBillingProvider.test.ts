@@ -11,7 +11,7 @@ describe("PayFast billing provider", () => {
             ["amount", "100.00"],
             ["item_name", "Test Product"],
         ];
-        const raw = fields.map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&") + "&passphrase=jt7NOE43FZPn";
+        const raw = fields.map(([key, value]) => `${key}=${encodeURIComponent(value).replace(/%20/g, "+")}`).join("&") + "&passphrase=jt7NOE43FZPn";
         const expected = createHash("md5").update(raw).digest("hex");
         expect(__test__.generateSignature(fields, "jt7NOE43FZPn")).toBe(expected);
     });
