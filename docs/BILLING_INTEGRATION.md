@@ -103,7 +103,8 @@ Server-only environment variables:
 - `PAYFAST_MERCHANT_KEY`
 - `PAYFAST_PASSPHRASE`
 - `PAYFAST_SANDBOX=true` while testing
-- `PAYFAST_PLAN_MAP` containing recurring amount/frequency/cycles for each BSMP plan code
+- `PUBLIC_APP_URL` for the public application origin used to construct the PayFast `notify_url` (use a public HTTPS development URL/tunnel for ITN testing)
+- `PAYFAST_PLAN_CONFIG` containing recurring amount/frequency/cycles for each BSMP plan code
 - `PAYFAST_ITN_ALLOWED_IPS` as an optional explicit allowlist in addition to DNS-based PayFast source validation
 
 Do not expose PayFast credentials through `NEXT_PUBLIC_*` variables.
