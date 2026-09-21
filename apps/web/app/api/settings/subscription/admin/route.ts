@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { SubscriptionAdminError, requireSubscriptionAdmin } from "../../../../../src/lib/subscriptionAdmin";
+import { getBillingProvider } from "../../../../../src/lib/billingProviderRegistry";
 
 function text(value: unknown, field: string, max = 200): string {
     if (typeof value !== "string" || !value.trim()) throw new Error(`${field} is required.`);
@@ -248,13 +249,24 @@ export async function POST(request: Request) {
             const subscriptionId = text(body.subscriptionId, "Subscription ID", 80);
             const { data: before, error: beforeError } = await adminClient
                 .from("user_subscriptions")
-                .select("id, user_id, plan_id, provider, status")
+                .select("id, user_id, plan_id, provider, external_subscription_id, status")
                 .eq("id", subscriptionId)
                 .maybeSingle();
             if (beforeError) throw beforeError;
             if (!before) throw new Error("The subscription could not be found.");
             if (![...ACTIVE_STATUSES].includes(before.status as (typeof ACTIVE_STATUSES)[number])) {
                 throw new Error("Only active or trialing subscriptions can be ended.");
+            }
+
+            if (before.provider !== "manual" && before.external_subscription_id) {
+                const provider = getBillingProvider();
+                if (provider.id !== before.provider) {
+                    throw new Error(`Configured billing provider does not match subscription provider ${before.provider}.`);
+                }
+                await provider.cancelSubscription({
+                    externalSubscriptionId: before.external_subscription_id,
+                    cancelAtPeriodEnd: false,
+                });
             }
 
             const { data: subscription, error } = await adminClient
@@ -277,7 +289,7 @@ export async function POST(request: Request) {
                 eventType: "canceled",
                 provider: subscription.provider,
                 metadata: {
-                    cancellation_source: "subscription_admin",
+                    cancellation_source: before.provider === "manual" ? "subscription_admin" : "subscription_admin_provider_requested",
                     previous_status: before.status,
                 },
             });
