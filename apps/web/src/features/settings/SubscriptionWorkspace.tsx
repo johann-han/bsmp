@@ -193,7 +193,7 @@ export function SubscriptionWorkspace() {
                     {isAdmin && <Link href="/settings/subscription/admin" style={{ color: "#334155", fontWeight: 700, textDecoration: "none" }}>Administration</Link>}
                 </div>
                 <p style={{ margin: 0, color: "#6b7280" }}>
-                    Subscription and entitlement information for your BSMP account. AI usage is metered separately so future quotas can be enforced without mixing billing data into Study content.
+                    Subscription and entitlement information for your BSMP account. PayFast handles payment securely, while BSMP keeps subscription state and AI entitlement records separate from Study content.
                 </p>
                 {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
                 {message && <p style={{ color: "#166534" }}>{message}</p>}
@@ -214,7 +214,7 @@ export function SubscriptionWorkspace() {
                     </div>
                 ) : (
                     <p style={{ margin: 0, color: "#6b7280" }}>
-                        No active subscription is assigned to this account yet. The billing provider and checkout flow will be connected in a later phase.
+                        No active subscription is assigned to this account yet. Choose an active plan below to begin PayFast checkout.
                     </p>
                 )}
             </section>
