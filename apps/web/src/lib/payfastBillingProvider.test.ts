@@ -10,6 +10,8 @@ describe("PayFastBillingProvider", () => {
         passphrase: process.env.PAYFAST_PASSPHRASE,
         sandbox: process.env.PAYFAST_SANDBOX,
         planMap: process.env.PAYFAST_PLAN_MAP,
+        planConfig: process.env.PAYFAST_PLAN_CONFIG,
+        publicAppUrl: process.env.PUBLIC_APP_URL,
     };
 
     afterEach(() => {
@@ -18,6 +20,8 @@ describe("PayFastBillingProvider", () => {
         if (saved.passphrase === undefined) delete process.env.PAYFAST_PASSPHRASE; else process.env.PAYFAST_PASSPHRASE = saved.passphrase;
         if (saved.sandbox === undefined) delete process.env.PAYFAST_SANDBOX; else process.env.PAYFAST_SANDBOX = saved.sandbox;
         if (saved.planMap === undefined) delete process.env.PAYFAST_PLAN_MAP; else process.env.PAYFAST_PLAN_MAP = saved.planMap;
+        if (saved.planConfig === undefined) delete process.env.PAYFAST_PLAN_CONFIG; else process.env.PAYFAST_PLAN_CONFIG = saved.planConfig;
+        if (saved.publicAppUrl === undefined) delete process.env.PUBLIC_APP_URL; else process.env.PUBLIC_APP_URL = saved.publicAppUrl;
         vi.restoreAllMocks();
     });
 
@@ -34,9 +38,10 @@ describe("PayFastBillingProvider", () => {
         process.env.PAYFAST_MERCHANT_ID = "10000100";
         process.env.PAYFAST_MERCHANT_KEY = "merchant_key";
         process.env.PAYFAST_PASSPHRASE = "passphrase";
-        process.env.PAYFAST_PLAN_MAP = JSON.stringify({
-            "starter-monthly": { amount: "99.00", recurringAmount: "99.00", frequency: 3, cycles: 0, itemName: "BSMP Starter" }
+        process.env.PAYFAST_PLAN_CONFIG = JSON.stringify({
+            "starter-monthly": { amount: 99.0, recurringAmount: 99.0, frequency: 3, cycles: 0, itemName: "BSMP Starter" }
         });
+        process.env.PUBLIC_APP_URL = "https://bsmp.example.com";
 
         const result = await new PayFastBillingProvider().createCheckoutSession({
             userId: "user-1",
@@ -54,6 +59,7 @@ describe("PayFastBillingProvider", () => {
         expect(result.formFields?.frequency).toBe("3");
         expect(result.formFields?.cycles).toBe("0");
         expect(result.formFields?.m_payment_id).toBe("payment-1");
+        expect(result.formFields?.notify_url).toBe("https://bsmp.example.com/api/billing/webhooks/payfast");
         expect(result.formFields?.signature).toMatch(/^[a-f0-9]{32}$/);
     });
 
