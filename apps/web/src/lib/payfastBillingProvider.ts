@@ -84,12 +84,26 @@ function generateSignature(values: Record<string, string>, passphrase: string, o
     return createHash("md5").update(salted, "utf8").digest("hex");
 }
 
+function itnParameterString(values: Record<string, string>, orderedKeys?: readonly string[]): string {
+    const keys = orderedKeys ?? Object.keys(values);
+    return keys
+        .filter((key) => key !== "signature")
+        .map((key) => `${key}=${phpUrlEncode(values[key]!.trim())}`)
+        .join("&");
+}
+
+function generateItnSignature(values: Record<string, string>, passphrase: string, orderedKeys?: readonly string[]): string {
+    const base = itnParameterString(values, orderedKeys);
+    const salted = passphrase.trim() ? `${base}&passphrase=${phpUrlEncode(passphrase.trim())}` : base;
+    return createHash("md5").update(salted, "utf8").digest("hex");
+}
+
 function verifySignature(values: Record<string, string>): void {
     const supplied = values.signature?.trim().toLowerCase();
     if (!supplied) throw new Error("PayFast ITN signature is missing.");
     const data: Record<string, string> = {};
     for (const [key, value] of Object.entries(values)) if (key !== "signature") data[key] = value;
-    const expected = generateSignature(data, requiredEnvironment("PAYFAST_PASSPHRASE"), Object.keys(data));
+    const expected = generateItnSignature(data, requiredEnvironment("PAYFAST_PASSPHRASE"), Object.keys(data));
     if (supplied !== expected) throw new Error("PayFast ITN signature verification failed.");
 }
 
@@ -237,7 +251,7 @@ export function payFastVerifyWebhookSignature(values: Record<string, string>): v
 export function payFastValidateServerConfirmation(rawValues: Record<string, string>): Promise<boolean> {
     const payload: Record<string, string> = {};
     for (const [key, value] of Object.entries(rawValues)) if (key !== "signature") payload[key] = value;
-    const body = parameterString(payload, Object.keys(payload));
+    const body = itnParameterString(payload, Object.keys(payload));
     return fetch(`${sandboxEnabled() ? "https://sandbox.payfast.co.za" : "https://www.payfast.co.za"}/eng/query/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -246,4 +260,4 @@ export function payFastValidateServerConfirmation(rawValues: Record<string, stri
     }).then(async (response) => response.ok && (await response.text()).trim() === "VALID");
 }
 
-export const __test__ = { phpUrlEncode, parameterString, generateSignature, amountMatches, planFor, signature: generateSignature };
+export const __test__ = { phpUrlEncode, parameterString, itnParameterString, generateSignature, generateItnSignature, amountMatches, planFor, signature: generateSignature };
