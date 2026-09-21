@@ -169,7 +169,7 @@ function formFields(input: BillingCheckoutInput, plan: PayFastPlanConfig, notify
         subscription_notify_buyer: "true",
         payment_method: "cc",
     };
-    data.signature = generateSignature(data, requiredEnvironment("PAYFAST_PASSPHRASE"));
+    data.signature = generateSignature(data, requiredEnvironment("PAYFAST_PASSPHRASE"), Object.keys(data));
     return data;
 }
 
