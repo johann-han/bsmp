@@ -35,7 +35,8 @@ function sandboxEnabled(): boolean {
 }
 
 function parsePlanMap(): Record<string, PayFastPlanConfig> {
-    const raw = requiredEnvironment("PAYFAST_PLAN_MAP");
+    const raw = process.env.PAYFAST_PLAN_CONFIG?.trim() || process.env.PAYFAST_PLAN_MAP?.trim();
+    if (!raw) throw new Error("PAYFAST_PLAN_CONFIG is not configured.");
     let parsed: unknown;
     try { parsed = JSON.parse(raw); } catch { throw new Error("PAYFAST_PLAN_MAP must contain valid JSON."); }
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
@@ -177,7 +178,7 @@ export class PayFastBillingProvider implements BillingProvider {
 
     async createCheckoutSession(input: BillingCheckoutInput): Promise<BillingCheckoutSession> {
         const plan = planFor(input.planCode);
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || new URL(input.successUrl).origin;
+        const baseUrl = process.env.PUBLIC_APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || new URL(input.successUrl).origin;
         const notifyUrl = `${baseUrl}/api/billing/webhooks/payfast`;
         return {
             provider: "payfast",
