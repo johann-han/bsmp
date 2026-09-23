@@ -134,7 +134,7 @@ function apiSignature(values: Record<string, string>): string {
 async function apiRequest<T>(path: string, method: "GET" | "PUT" | "PATCH", body: Record<string, string> = {}): Promise<T> {
     const merchantId = requiredEnvironment("PAYFAST_MERCHANT_ID");
     const version = "v1";
-    const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+    const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, "+00:00");
     const headersForSignature: Record<string, string> = {
         "merchant-id": merchantId,
         version,
