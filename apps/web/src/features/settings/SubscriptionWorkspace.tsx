@@ -33,8 +33,8 @@ interface Subscription {
 
 interface CheckoutResponse {
     checkoutUrl?: string;
-    checkoutMethod?: "GET" | "POST";
-    checkoutFields?: Record<string, string> | null;
+    formAction?: string;
+    formFields?: Record<string, string> | null;
     error?: string;
 }
 
@@ -157,13 +157,13 @@ export function SubscriptionWorkspace() {
             if (!response.ok) throw new Error(payload.error ?? "Unable to start PayFast checkout.");
             if (!payload.checkoutUrl) throw new Error("The billing provider did not return a checkout URL.");
 
-            if (payload.checkoutMethod === "POST" && payload.checkoutFields) {
+            if (payload.formAction && payload.formFields) {
                 const form = document.createElement("form");
                 form.method = "POST";
-                form.action = payload.checkoutUrl;
+                form.action = payload.formAction;
                 form.style.display = "none";
 
-                for (const [name, value] of Object.entries(payload.checkoutFields)) {
+                for (const [name, value] of Object.entries(payload.formFields)) {
                     const input = document.createElement("input");
                     input.type = "hidden";
                     input.name = name;
@@ -176,6 +176,7 @@ export function SubscriptionWorkspace() {
                 return;
             }
 
+            if (!payload.checkoutUrl) throw new Error("The billing provider did not return a checkout URL.");
             window.location.assign(payload.checkoutUrl);
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Unable to start PayFast checkout.");
