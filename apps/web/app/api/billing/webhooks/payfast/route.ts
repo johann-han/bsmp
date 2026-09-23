@@ -48,15 +48,17 @@ export async function POST(request: Request) {
 
         await verifyPayFastSourceIp(requestIp(request.headers));
 
-        const confirmed = await payFastValidateServerConfirmation(values);
-        if (!confirmed) throw new Error("PayFast server confirmation failed.");
-
+        // Verify the signed ITN before making the outbound PayFast confirmation request.
+        // This keeps the provider round-trip behind the local authenticity checks.
         const events = await provider.verifyWebhook({
             rawBody: normalizedBody,
             headers: { "user-agent": request.headers.get("user-agent") },
         });
 
         if (!events.length) return NextResponse.json({ received: true, processed: 0 });
+
+        const confirmed = await payFastValidateServerConfirmation(values);
+        if (!confirmed) throw new Error("PayFast server confirmation failed.");
 
         const client = serviceClient();
         const paymentReference = values.m_payment_id?.trim() || null;
@@ -156,6 +158,9 @@ export async function POST(request: Request) {
                 : "Unable to process PayFast ITN.";
 
         console.error("PayFast ITN processing failed:", reason);
-        return NextResponse.json({ error: message }, { status: 400 });
+        // A 4xx is appropriate for rejected/invalid provider input; processing or
+        // provider-confirmation failures must remain retryable by PayFast.
+        const retryable = /server confirmation|checkout intent|subscription synchronization|billing is not configured|database|returned an invalid result/i.test(message);
+        return NextResponse.json({ error: "Unable to process PayFast ITN." }, { status: retryable ? 500 : 400 });
     }
 }
