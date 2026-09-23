@@ -92,6 +92,86 @@ describe("PayFastBillingProvider", () => {
         });
     });
 
+    it("verifies a recurring ITN with blank optional fields in received order", async () => {
+        process.env.PAYFAST_MERCHANT_ID = "10000100";
+        process.env.PAYFAST_PASSPHRASE = "passphrase";
+
+        const values: Record<string, string> = {
+            m_payment_id: "payment-1",
+            pf_payment_id: "3401531",
+            payment_status: "COMPLETE",
+            item_name: "starter-monthly",
+            item_description: "BSMP starter-monthly subscription",
+            amount_gross: "99.00",
+            amount_fee: "-2.30",
+            amount_net: "96.70",
+            custom_str1: "",
+            custom_str2: "",
+            custom_str3: "",
+            custom_str4: "",
+            custom_str5: "",
+            custom_int1: "",
+            custom_int2: "",
+            custom_int3: "",
+            custom_int4: "",
+            custom_int5: "",
+            name_first: "johannhanekom",
+            name_last: "User",
+            email_address: "john@example.com",
+            merchant_id: "10000100",
+            token: "subscription-token",
+            billing_date: "2026-09-21",
+        };
+        values.signature = __test__.generateItnSignature(values, "passphrase", Object.keys(values));
+
+        const event = await new PayFastBillingProvider().verifyWebhook({
+            rawBody: new URLSearchParams(values).toString(),
+            headers: {},
+        });
+
+        expect(event).toHaveLength(1);
+        expect(event[0]).toMatchObject({
+            provider: "payfast",
+            externalEventId: "3401531",
+            externalSubscriptionId: "subscription-token",
+            eventType: "activated",
+            status: "active",
+        });
+    });
+
+    it("normalizes a cancellation ITN to a canceled subscription event", async () => {
+        process.env.PAYFAST_MERCHANT_ID = "10000100";
+        process.env.PAYFAST_PASSPHRASE = "passphrase";
+
+        const values: Record<string, string> = {
+            m_payment_id: "payment-1",
+            pf_payment_id: "3401532",
+            payment_status: "CANCELLED",
+            item_name: "starter-monthly",
+            item_description: "BSMP starter-monthly subscription",
+            amount_gross: "99.00",
+            amount_fee: "0.00",
+            amount_net: "99.00",
+            merchant_id: "10000100",
+            token: "subscription-token",
+            billing_date: "2026-09-21",
+        };
+        values.signature = __test__.generateItnSignature(values, "passphrase", Object.keys(values));
+
+        const event = await new PayFastBillingProvider().verifyWebhook({
+            rawBody: new URLSearchParams(values).toString(),
+            headers: {},
+        });
+
+        expect(event).toHaveLength(1);
+        expect(event[0]).toMatchObject({
+            externalEventId: "3401532",
+            externalSubscriptionId: "subscription-token",
+            eventType: "canceled",
+            status: "canceled",
+        });
+    });
+
     it("does not treat an unsuccessful PayFast API response as a cancellation", async () => {
         process.env.PAYFAST_MERCHANT_ID = "10000100";
         process.env.PAYFAST_PASSPHRASE = "passphrase";
