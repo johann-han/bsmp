@@ -153,9 +153,7 @@ export async function POST(request: Request) {
         const message =
             reason instanceof Error
                 ? reason.message
-                : reason && typeof reason === "object" && "message" in reason && typeof reason.message === "string"
-                    ? reason.message
-                    : "Unable to process PayFast ITN.";
+                : "Unable to process PayFast ITN.";
 
         console.error("PayFast ITN processing failed:", reason);
         return NextResponse.json({ error: message }, { status: 400 });
