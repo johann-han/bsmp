@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { __test__, PayFastBillingProvider } from "./payfastBillingProvider";
+import {
+    __test__,
+    payFastValidateServerConfirmation,
+    PayFastBillingProvider,
+} from "./payfastBillingProvider";
 import { __test__ as itnTest } from "./payfastItn";
 
 describe("PayFastBillingProvider", () => {
@@ -115,12 +119,11 @@ describe("PayFastBillingProvider", () => {
         const [url, init] = fetchMock.mock.calls[0]!;
         expect(url).toBe("https://api.payfast.co.za/subscriptions/subscription-token/cancel?testing=true");
         expect(init?.method).toBe("PUT");
-        expect(init?.headers).toMatchObject({
-            "merchant-id": "10000100",
-            version: "v1",
-            timestamp: expect.stringMatching(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+00:00$/),
-            signature: expect.stringMatching(/^[a-f0-9]{32}$/),
-        });
+        const headers = init?.headers as Headers;
+        expect(headers.get("merchant-id")).toBe("10000100");
+        expect(headers.get("version")).toBe("v1");
+        expect(headers.get("timestamp")).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/);
+        expect(headers.get("signature")).toMatch(/^[a-f0-9]{32}$/);
     });
 
     it("verifies a recurring ITN with blank optional fields in received order", async () => {
