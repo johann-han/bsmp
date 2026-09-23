@@ -76,3 +76,8 @@ The `billing_checkout_intents` table records the server-generated payment refere
 
 Once a verified PayFast notification is received, BSMP synchronizes the subscription through the transactional `apply_subscription_billing_event` database boundary and records the provider event in `subscription_events`.
 
+
+
+## Subscriber cancellation
+
+Signed-in users can cancel their own PayFast subscription from Settings → Subscription. BSMP sends the cancellation request to PayFast and waits for the verified PayFast CANCELLED ITN before treating the BSMP subscription record as canceled. PayFast cancellation is immediate; end-of-period cancellation is not currently exposed by the PayFast adapter.
