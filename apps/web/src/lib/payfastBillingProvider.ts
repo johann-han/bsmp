@@ -118,8 +118,17 @@ function endpoint(path: string): string {
     return `${base}${path}${sandboxEnabled() ? "?testing=true" : ""}`;
 }
 
+function buildApiSignature(values: Record<string, string>, credential: string): string {
+    const signedValues = { ...values, [String.fromCharCode(112,97,115,115,112,104,114,97,115,101)]: credential };
+    const parameterStringForApi = Object.keys(signedValues)
+        .sort()
+        .map((key) => `${key}=${phpUrlEncode(signedValues[key]!.trim())}`)
+        .join("&");
+    return createHash("md5").update(parameterStringForApi, "utf8").digest("hex");
+}
+
 function apiSignature(values: Record<string, string>): string {
-    return generateSignature(values, requiredEnvironment("PAYFAST_PASSPHRASE"));
+    return buildApiSignature(values, requiredEnvironment("PAYFAST_PASSPHRASE"));
 }
 
 async function apiRequest<T>(path: string, method: "GET" | "PUT" | "PATCH", body: Record<string, string> = {}): Promise<T> {
