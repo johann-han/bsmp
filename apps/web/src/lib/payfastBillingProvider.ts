@@ -223,7 +223,15 @@ export class PayFastBillingProvider implements BillingProvider {
             data?: { response?: boolean };
         }>(`/subscriptions/${encodeURIComponent(input.externalSubscriptionId)}/cancel`, "PUT");
         if (response.code !== 200 || response.status !== "success" || response.data?.response !== true) {
-            throw new Error("PayFast subscription cancellation was not confirmed by the provider.");
+            console.error("PayFast subscription cancellation rejected:", {
+                code: response.code,
+                status: response.status,
+                data: response.data ?? null,
+            });
+            const detail = response.data?.response === false
+                ? JSON.stringify(response.data)
+                : "unexpected provider response";
+            throw new Error(`PayFast subscription cancellation was not confirmed by the provider: ${detail}`);
         }
     }
 
