@@ -161,7 +161,7 @@ begin
 
     return jsonb_build_object('duplicate', false, 'eventId', v_event_id, 'subscriptionId', v_subscription_id);
 end;
-$;
+$$;
 
 revoke execute on function public.apply_subscription_billing_event(jsonb) from public, anon, authenticated;
 grant execute on function public.apply_subscription_billing_event(jsonb) to service_role;
