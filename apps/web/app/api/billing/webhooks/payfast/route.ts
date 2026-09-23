@@ -3,6 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 
 import { applyNormalizedBillingEvent } from "../../../../../src/lib/billingSubscriptionSync";
 import { getBillingProvider } from "../../../../../src/lib/billingProviderRegistry";
+import {
+    findBillingPaymentAttempt,
+    findPayFastSubscriptionByToken,
+    markBillingPaymentAttempt,
+} from "../../../../../src/lib/payfastPaymentAttempts";
 import { payFastValidateServerConfirmation } from "../../../../../src/lib/payfastBillingProvider";
 import { requestIp, verifyPayFastSourceIp } from "../../../../../src/lib/payfastItn";
 
@@ -37,6 +42,16 @@ async function parsePayFastBody(request: Request): Promise<{
     return { values, normalizedBody: rawBody };
 }
 
+function amount(value: unknown): number {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) throw new Error("PayFast amount is invalid.");
+    return Number(parsed.toFixed(2));
+}
+
+function closeEnough(a: number, b: number): boolean {
+    return Math.abs(a - b) <= 0.01;
+}
+
 export async function POST(request: Request) {
     try {
         const provider = getBillingProvider();
@@ -48,8 +63,6 @@ export async function POST(request: Request) {
 
         await verifyPayFastSourceIp(requestIp(request.headers));
 
-        // Verify the signed ITN before making the outbound PayFast confirmation request.
-        // This keeps the provider round-trip behind the local authenticity checks.
         const events = await provider.verifyWebhook({
             rawBody: normalizedBody,
             headers: { "user-agent": request.headers.get("user-agent") },
@@ -60,140 +73,203 @@ export async function POST(request: Request) {
         const confirmed = await payFastValidateServerConfirmation(values);
         if (!confirmed) throw new Error("PayFast server confirmation failed.");
 
-        const client = serviceClient();
-        const paymentReference = values.m_payment_id?.trim() || null;
-        const token = values.token?.trim() || null;
+        const results = [];
+        for (const event of events) {
+            const metadata = event.metadata ?? {};
+            const merchantPaymentId =
+                typeof metadata.m_payment_id === "string" && metadata.m_payment_id.trim()
+                    ? metadata.m_payment_id.trim()
+                    : null;
+            const grossAmount =
+                metadata.amount_gross === null || metadata.amount_gross === undefined
+                    ? null
+                    : amount(metadata.amount_gross);
+            const token = event.externalSubscriptionId?.trim() || null;
 
-        let intent: {
-            id: string;
-            user_id: string;
-            plan_id: string;
-            amount: string | number;
-            payment_reference: string;
-        } | null = null;
+            const subscription = token
+                ? await findPayFastSubscriptionByToken(token)
+                : null;
+            const attempt = merchantPaymentId
+                ? await findBillingPaymentAttempt(merchantPaymentId)
+                : null;
 
-        if (paymentReference) {
-            const { data, error } = await client
-                .from("billing_checkout_intents")
-                .select("id, user_id, plan_id, amount, payment_reference")
-                .eq("provider", "payfast")
-                .eq("payment_reference", paymentReference)
-                .maybeSingle();
+            if (!subscription && !attempt) {
+                throw new Error("PayFast ITN could not be matched to a pending payment attempt or existing subscription.");
+            }
 
-            if (error) throw error;
-            intent = data;
-        }
+            if (event.eventType === "canceled") {
+                if (subscription) {
+                    if (event.userId && subscription.user_id !== event.userId) {
+                        throw new Error("PayFast ITN user identity does not match the existing subscription.");
+                    }
 
-        if (!intent && token) {
-            const { data, error } = await client
-                .from("billing_checkout_intents")
-                .select("id, user_id, plan_id, amount, payment_reference")
-                .eq("provider", "payfast")
-                .eq("external_subscription_id", token)
-                .order("created_at", { ascending: false })
-                .limit(1)
-                .maybeSingle();
+                    const normalizedEvent = {
+                        ...event,
+                        userId: subscription.user_id,
+                    };
+                    results.push(await applyNormalizedBillingEvent(normalizedEvent));
+                }
 
-            if (error) throw error;
-            intent = data;
-        }
+                if (attempt) {
+                    await markBillingPaymentAttempt(attempt.id, {
+                        status: "cancelled",
+                        externalPaymentId:
+                            typeof metadata.pf_payment_id === "string"
+                                ? metadata.pf_payment_id
+                                : null,
+                        externalSubscriptionId: token,
+                        metadata: {
+                            ...attempt.metadata,
+                            last_payment_status: metadata.payment_status ?? null,
+                            amount_gross: grossAmount,
+                        },
+                    });
+                }
 
-        if (!intent) {
-            throw new Error("The PayFast payment could not be matched to a BSMP checkout intent.");
-        }
+                continue;
+            }
 
-        if (
-            !values.amount_gross ||
-            Math.abs(Number(intent.amount) - Number(values.amount_gross)) > 0.01
-        ) {
-            throw new Error("PayFast payment amount does not match the expected BSMP subscription amount.");
-        }
+            if (event.eventType !== "activated") {
+                throw new Error("Unsupported PayFast billing event.");
+            }
 
-        const { data: existingSubscriptions, error: existingSubscriptionError } = await client
-            .from("user_subscriptions")
-            .select("id, provider, external_subscription_id, status")
-            .eq("user_id", intent.user_id)
-            .in("status", ["trialing", "active", "past_due", "paused", "incomplete"]);
+            if (subscription) {
+                if (event.userId && subscription.user_id !== event.userId) {
+                    throw new Error("PayFast ITN user identity does not match the existing subscription.");
+                }
 
-        if (existingSubscriptionError) throw existingSubscriptionError;
+                if (grossAmount !== null) {
+                    const recurringAmount = Number(
+                        subscription.metadata.recurring_amount_zar ??
+                        attempt?.metadata.recurring_amount ??
+                        0,
+                    );
+                    if (recurringAmount > 0 && !closeEnough(grossAmount, recurringAmount)) {
+                        throw new Error("PayFast recurring payment amount does not match the recorded subscription amount.");
+                    }
+                }
 
-        const conflictingSubscription = (existingSubscriptions ?? []).find(
-            (subscription) =>
-                subscription.provider === "payfast" &&
-                subscription.external_subscription_id &&
-                subscription.external_subscription_id !== token,
-        );
+                results.push(await applyNormalizedBillingEvent({
+                    ...event,
+                    eventType: "provider_synced",
+                    userId: subscription.user_id,
+                    planCode: event.planCode ?? null,
+                }));
 
-        if (conflictingSubscription && token) {
-            // A second PayFast subscription can be created if a buyer retries checkout
-            // while BSMP still has an active subscription. Do not create a second
-            // entitlement-bearing subscription; cancel the newly-created provider
-            // subscription and close the orphaned checkout intent.
-            await provider.cancelSubscription({
-                externalSubscriptionId: token,
-                cancelAtPeriodEnd: false,
-            });
+                if (attempt) {
+                    await markBillingPaymentAttempt(attempt.id, {
+                        status: "complete",
+                        externalPaymentId:
+                            typeof metadata.pf_payment_id === "string"
+                                ? metadata.pf_payment_id
+                                : null,
+                        externalSubscriptionId: token,
+                        metadata: {
+                            ...attempt.metadata,
+                            last_payment_status: metadata.payment_status ?? null,
+                            amount_gross: grossAmount,
+                        },
+                    });
+                }
 
-            const { error: reconcileError } = await client
-                .from("billing_checkout_intents")
-                .update({
+                continue;
+            }
+
+            if (!attempt) {
+                throw new Error("PayFast initial payment could not be matched to a checkout attempt.");
+            }
+
+            if (event.userId && attempt.user_id !== event.userId) {
+                throw new Error("PayFast payment identity does not match the checkout account.");
+            }
+
+            if (grossAmount === null || !closeEnough(grossAmount, Number(attempt.amount))) {
+                throw new Error("PayFast payment amount does not match the recorded checkout amount.");
+            }
+
+            const client = serviceClient();
+            const { data: existingSubscriptions, error: existingSubscriptionError } = await client
+                .from("user_subscriptions")
+                .select("id, provider, external_subscription_id, status")
+                .eq("user_id", attempt.user_id)
+                .in("status", ["trialing", "active", "past_due", "paused", "incomplete"]);
+
+            if (existingSubscriptionError) throw existingSubscriptionError;
+
+            const conflictingSubscription = (existingSubscriptions ?? []).find(
+                (item) =>
+                    !(
+                        item.provider === "payfast" &&
+                        item.external_subscription_id &&
+                        item.external_subscription_id === token
+                    ),
+            );
+
+            if (conflictingSubscription && token) {
+                await provider.cancelSubscription({
+                    externalSubscriptionId: token,
+                    cancelAtPeriodEnd: false,
+                });
+
+                await markBillingPaymentAttempt(attempt.id, {
                     status: "failed",
-                    external_subscription_id: token,
-                    completed_at: new Date().toISOString(),
+                    externalPaymentId:
+                        typeof metadata.pf_payment_id === "string"
+                            ? metadata.pf_payment_id
+                            : null,
+                    externalSubscriptionId: token,
                     metadata: {
+                        ...attempt.metadata,
                         reconciliation: "duplicate_active_subscription",
                         existing_subscription_id: conflictingSubscription.id,
                         existing_provider: conflictingSubscription.provider,
-                        existing_external_subscription_id: conflictingSubscription.external_subscription_id,
+                        existing_external_subscription_id:
+                            conflictingSubscription.external_subscription_id,
+                        last_payment_status: metadata.payment_status ?? null,
+                        amount_gross: grossAmount,
                     },
-                })
-                .eq("id", intent.id);
+                });
 
-            if (reconcileError) throw reconcileError;
+                return NextResponse.json({
+                    received: true,
+                    processed: 0,
+                    reconciled: "duplicate_subscription_canceled",
+                });
+            }
 
-            return NextResponse.json({
-                received: true,
-                processed: 0,
-                reconciled: "duplicate_subscription_canceled",
-            });
-        }
+            const { data: plan, error: planError } = await client
+                .from("subscription_plans")
+                .select("code")
+                .eq("id", attempt.plan_id)
+                .single();
 
-        const { data: plan, error: planError } = await client
-            .from("subscription_plans")
-            .select("code")
-            .eq("id", intent.plan_id)
-            .single();
+            if (planError) throw planError;
 
-        if (planError) throw planError;
-
-        const results = [];
-        for (const event of events) {
-            const enriched = {
+            results.push(await applyNormalizedBillingEvent({
                 ...event,
-                userId: event.userId ?? intent.user_id,
+                userId: attempt.user_id,
                 planCode: event.planCode ?? plan.code,
                 metadata: {
                     ...(event.metadata ?? {}),
-                    payment_reference: intent.payment_reference,
-                    expected_amount: String(intent.amount),
+                    payment_reference: attempt.merchant_payment_id,
+                    expected_amount: String(attempt.amount),
                 },
-            };
-            results.push(await applyNormalizedBillingEvent(enriched));
+            }));
+
+            await markBillingPaymentAttempt(attempt.id, {
+                status: "complete",
+                externalPaymentId:
+                    typeof metadata.pf_payment_id === "string"
+                        ? metadata.pf_payment_id
+                        : null,
+                externalSubscriptionId: token,
+                metadata: {
+                    ...attempt.metadata,
+                    last_payment_status: metadata.payment_status ?? null,
+                    amount_gross: grossAmount,
+                },
+            });
         }
-
-        const terminalStatus =
-            values.payment_status === "CANCELLED" ? "canceled" : "completed";
-
-        const { error: updateError } = await client
-            .from("billing_checkout_intents")
-            .update({
-                status: terminalStatus,
-                external_subscription_id: token,
-                completed_at: new Date().toISOString(),
-            })
-            .eq("id", intent.id);
-
-        if (updateError) throw updateError;
 
         return NextResponse.json({
             received: true,
@@ -207,9 +283,15 @@ export async function POST(request: Request) {
                 : "Unable to process PayFast ITN.";
 
         console.error("PayFast ITN processing failed:", reason);
-        // A 4xx is appropriate for rejected/invalid provider input; processing or
-        // provider-confirmation failures must remain retryable by PayFast.
-        const retryable = /server confirmation|subscription cancellation|checkout intent|subscription synchronization|billing is not configured|database|returned an invalid result|PayFast API request failed/i.test(message);
-        return NextResponse.json({ error: "Unable to process PayFast ITN." }, { status: retryable ? 500 : 400 });
+
+        const retryable =
+            /server confirmation|subscription cancellation|payment attempt|subscription synchronization|billing is not configured|database|PayFast API request failed/i.test(
+                message,
+            );
+
+        return NextResponse.json(
+            { error: "Unable to process PayFast ITN." },
+            { status: retryable ? 500 : 400 },
+        );
     }
 }
