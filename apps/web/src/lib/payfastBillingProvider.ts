@@ -272,4 +272,4 @@ export function payFastValidateServerConfirmation(rawValues: Record<string, stri
     }).then(async (response) => response.ok && (await response.text()).trim() === "VALID");
 }
 
-export const __test__ = { phpUrlEncode, parameterString, itnParameterString, generateSignature, generateItnSignature, amountMatches, planFor, signature: generateSignature };
+export const __test__ = { phpUrlEncode, parameterString, itnParameterString, generateSignature, generateItnSignature, amountMatches, planFor, apiSignature: buildApiSignature, signature: generateSignature };

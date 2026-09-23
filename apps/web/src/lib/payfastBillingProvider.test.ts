@@ -63,6 +63,16 @@ describe("PayFastBillingProvider", () => {
         expect(result.formFields?.signature).toMatch(/^[a-f0-9]{32}$/);
     });
 
+    it("builds the PayFast API signature with the authentication credential in sorted order", () => {
+        const values = {
+            "merchant-id": "10000100",
+            timestamp: "2026-09-23T15:00:00+00:00",
+            version: "v1",
+        };
+
+        expect(__test__.apiSignature(values, "unit-value")).toBe("TEST");
+    });
+
     it("cancels a PayFast subscription through the recurring billing API", async () => {
         process.env.PAYFAST_MERCHANT_ID = "10000100";
         process.env.PAYFAST_PASSPHRASE = "passphrase";
