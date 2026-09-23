@@ -260,16 +260,27 @@ export function payFastVerifyWebhookSignature(values: Record<string, string>): v
     verifySignature(values);
 }
 
-export function payFastValidateServerConfirmation(rawValues: Record<string, string>): Promise<boolean> {
+export async function payFastValidateServerConfirmation(rawValues: Record<string, string>): Promise<boolean> {
     const payload: Record<string, string> = {};
     for (const [key, value] of Object.entries(rawValues)) if (key !== "signature") payload[key] = value;
     const body = itnParameterString(payload, Object.keys(payload));
-    return fetch(`${sandboxEnabled() ? "https://sandbox.payfast.co.za" : "https://www.payfast.co.za"}/eng/query/validate`, {
+    const url = `${sandboxEnabled() ? "https://sandbox.payfast.co.za" : "https://www.payfast.co.za"}/eng/query/validate`;
+    const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "BSMP-PayFast-ITN/1.0",
+        },
         body,
         cache: "no-store",
-    }).then(async (response) => response.ok && (await response.text()).trim() === "VALID");
+    });
+    const responseText = (await response.text()).trim();
+    console.info("PayFast server confirmation:", {
+        status: response.status,
+        response: responseText,
+        url,
+    });
+    return response.ok && responseText === "VALID";
 }
 
 export const __test__ = { phpUrlEncode, parameterString, itnParameterString, generateSignature, generateItnSignature, amountMatches, planFor, apiSignature: buildApiSignature, signature: generateSignature };
