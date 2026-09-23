@@ -220,8 +220,17 @@ export class PayFastBillingProvider implements BillingProvider {
         const response = await apiRequest<{
             code?: number;
             status?: string;
-            data?: { response?: boolean };
+            data?: { response?: boolean; message?: string };
         }>(`/subscriptions/${encodeURIComponent(input.externalSubscriptionId)}/cancel`, "PUT");
+        // PayFast returns HTTP 400 when a cancellation is retried after the
+        // subscription has already been cancelled. Treat that response as an
+        // idempotent success so ITN retries can safely finish reconciliation.
+        const alreadyCancelled =
+            response.data?.response === false &&
+            /subscription status is cancelled/i.test(response.data.message ?? "");
+
+        if (alreadyCancelled) return;
+
         if (response.code !== 200 || response.status !== "success" || response.data?.response !== true) {
             console.error("PayFast subscription cancellation rejected:", {
                 code: response.code,

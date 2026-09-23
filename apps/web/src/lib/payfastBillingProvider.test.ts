@@ -182,6 +182,31 @@ describe("PayFastBillingProvider", () => {
         });
     });
 
+    it("treats an already-cancelled PayFast subscription as an idempotent success", async () => {
+        process.env.PAYFAST_MERCHANT_ID = "10000100";
+        process.env.PAYFAST_PASSPHRASE = "passphrase";
+        process.env.PAYFAST_SANDBOX = "true";
+
+        vi.spyOn(globalThis, "fetch").mockResolvedValue(
+            new Response(JSON.stringify({
+                code: 400,
+                status: "failed",
+                data: {
+                    response: false,
+                    message: "Failure - The subscription status is cancelled",
+                },
+            }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }),
+        );
+
+        await expect(new PayFastBillingProvider().cancelSubscription({
+            externalSubscriptionId: "subscription-token",
+            cancelAtPeriodEnd: false,
+        })).resolves.toBeUndefined();
+    });
+
     it("does not treat an unsuccessful PayFast API response as a cancellation", async () => {
         process.env.PAYFAST_MERCHANT_ID = "10000100";
         process.env.PAYFAST_PASSPHRASE = "passphrase";
