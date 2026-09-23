@@ -54,9 +54,9 @@ The webhook path must remain separate from AI usage records and Study content.
 
 ## Current state
 
-No payment provider, checkout session, customer portal, webhook endpoint, product price, or public pricing value is configured by this phase.
+PayFast is the configured provider for the active billing integration branch. Checkout, recurring subscriptions, ITN verification, server confirmation, checkout-intent binding, and transactional subscription synchronization are implemented.
 
-The provider-neutral contract remains available for another adapter in the future without changing the core subscription entitlement model.
+The provider-neutral contract remains available for another adapter in the future without changing the core subscription entitlement model. Stripe remains isolated and inactive.
 
 ## Atomic subscription synchronization
 
@@ -90,7 +90,7 @@ PayFast is the payment provider intended for BSMP. PayFast's current developer d
 
 The BSMP PayFast adapter posts a signed subscription form to PayFast's hosted payment page. It uses the merchant ID, merchant key, passphrase, plan billing configuration, a server-generated `m_payment_id`, and a server-controlled `notify_url`. PayFast documents that the customer is redirected to its secure payment page and that the notification sent to the `notify_url` is the source used to confirm payment. 
 
-PayFast ITNs are verified with the documented security checks: signature verification, source validation, expected amount comparison, and server confirmation against PayFast's `/eng/query/validate` endpoint. 
+PayFast ITNs are verified with the documented security checks: signature verification, source validation, expected amount comparison, and server confirmation against PayFast's `/eng/query/validate` endpoint. The ITN handler accepts both URL-encoded and multipart form submissions, including blank optional fields required for correct ITN signature reconstruction.
 
 PayFast recurring-billing API operations use the subscription token returned in notifications. The current adapter supports cancellation; PayFast also exposes fetch, pause, unpause, update, and ad-hoc token operations for future management features. 
 
@@ -111,7 +111,7 @@ Do not expose PayFast credentials through `NEXT_PUBLIC_*` variables.
 
 `billing_checkout_intents` records a server-generated payment reference and the expected initial amount. This lets the ITN handler bind PayFast's notification to the correct signed-in BSMP account and compare the received payment amount before activating subscription state.
 
-Browser return URLs are informational only. BSMP treats a verified PayFast ITN, not the browser redirect, as the authoritative payment confirmation.
+Browser return URLs are informational only. BSMP treats a verified PayFast ITN, not the browser redirect, as the authoritative payment confirmation. Recurring COMPLETE notifications reactivate/update the existing PayFast subscription identified by its token; CANCELLED notifications move it to the canceled state. Provider event ids are persisted uniquely so a repeated ITN does not create a duplicate lifecycle event.
 
 PayFast's sandbox is intended for testing without moving real funds and supports recurring-payment testing. A public `notify_url` is required for end-to-end ITN testing; local development therefore needs a publicly reachable development URL/tunnel. 
 
