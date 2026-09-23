@@ -14,7 +14,7 @@ The boundary deliberately keeps provider-specific concerns outside the subscript
 - cancel an external subscription;
 - verify provider webhooks and normalize them into BSMP subscription events.
 
-A provider adapter returns normalized subscription events rather than allowing provider-specific payloads to flow through the rest of BSMP.
+A provider adapter returns normalized subscription events rather than allowing provider-specific payloads to flow through the rest of BSMP. Browser redirects are informational; verified provider notifications remain authoritative.
 
 The normalized event includes the provider, optional external event id, affected user/account identifiers, optional plan code and external customer/subscription identifiers, subscription status, billing-period dates, cancellation timing, effective time, and metadata.
 
@@ -28,13 +28,14 @@ The configuration helper exposes only whether a provider id is configured and it
 
 ## Checkout boundary
 
-Future checkout flow should:
+The current checkout flow:
 
-1. authenticate the current Supabase user;
-2. resolve the requested active BSMP plan by its stable plan code;
-3. pass the user, plan code, email, and trusted return URLs to the provider adapter;
-4. redirect the browser to the provider's returned checkout URL;
-5. wait for the provider webhook to establish authoritative subscription state.
+1. authenticates the current Supabase user;
+2. resolves the requested active BSMP plan by its stable plan code;
+3. passes the user, plan code, email, and trusted return URLs to the provider adapter;
+4. creates a server-side checkout intent before returning the provider checkout session;
+5. redirects the browser to the provider's returned checkout URL;
+6. waits for the provider webhook to establish authoritative subscription state.
 
 The browser should not create or directly mutate `user_subscriptions`.
 
