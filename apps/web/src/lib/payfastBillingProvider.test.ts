@@ -87,7 +87,7 @@ describe("PayFastBillingProvider", () => {
         expect(init?.headers).toMatchObject({
             "merchant-id": "10000100",
             version: "v1",
-            timestamp: expect.stringMatching(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/),
+            timestamp: expect.stringMatching(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+00:00$/),
             signature: expect.stringMatching(/^[a-f0-9]{32}$/),
         });
     });
