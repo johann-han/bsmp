@@ -13,17 +13,21 @@ const items = [
     ["Workspace", "/workspace"],
     ["Biblical Theology", "/biblical-theology"],
     ["Research", "/research"],
+    ["Research History", "/research/history"],
     ["Teaching", "/teaching"],
     ["Sermon Preparation", "/preaching"],
     ["Sermon Overview", "/preaching/overview"],
     ["Preaching History", "/preaching/history"],
     ["Settings", "/settings"],
+    ["Subscription", "/settings/subscription"],
+    ["AI Usage", "/settings/ai-usage"],
 ] as const;
 
 const studyScopedPaths = new Set([
     "/workspace",
     "/biblical-theology",
     "/research",
+    "/research/history",
     "/teaching",
     "/preaching",
     "/preaching/overview",

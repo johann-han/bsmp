@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
 import { createObservationMentorProvider } from "../../../../src/lib/aiMentorProvider";
 import type { ObservationMentorContextItem } from "../../../../src/lib/aiMentorProvider";
+import { runMeteredAiOperation } from "../../../../src/lib/aiUsage";
 
 interface MentorRequest {
     readonly passageReference?: unknown;
@@ -26,7 +27,7 @@ function requireBearerToken(request: Request): string {
     return token;
 }
 
-async function assertSignedIn(accessToken: string): Promise<void> {
+async function getSignedInUser(accessToken: string): Promise<string> {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -41,6 +42,7 @@ async function assertSignedIn(accessToken: string): Promise<void> {
 
     const { data, error } = await client.auth.getUser(accessToken);
     if (error || !data.user) throw new Error("A valid signed-in Supabase session is required.");
+    return data.user.id;
 }
 
 function requiredText(value: unknown, field: string): string {
@@ -72,9 +74,11 @@ function parseOptionalText(value: unknown): string | null {
 }
 
 export async function POST(request: Request) {
+    let userId: string | null = null;
+
     try {
         const accessToken = requireBearerToken(request);
-        await assertSignedIn(accessToken);
+        userId = await getSignedInUser(accessToken);
 
         const body = await request.json() as MentorRequest;
         const passageReference = requiredText(body.passageReference, "Passage reference");
@@ -85,15 +89,19 @@ export async function POST(request: Request) {
         const existingObservations = parseObservationContext(body.existingObservations);
         const previousMentorCoaching = parseOptionalText(body.previousMentorCoaching);
 
-        const provider = createObservationMentorProvider();
-        const result = await provider.coach({
-            passageReference,
-            passageText,
-            question,
-            purpose,
-            studentObservation,
-            existingObservations,
-            previousMentorCoaching,
+        const result = await runMeteredAiOperation({
+            userId,
+            feature: "observation_mentor",
+            operation: "coach",
+            run: () => createObservationMentorProvider().coach({
+                passageReference,
+                passageText,
+                question,
+                purpose,
+                studentObservation,
+                existingObservations,
+                previousMentorCoaching,
+            }),
         });
 
         return NextResponse.json(result);

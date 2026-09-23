@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "../../../../src/lib/database.types";
 import { createBiblicalTheologyMentorProvider } from "../../../../src/lib/biblicalTheologyMentorProvider";
+import { runMeteredAiOperation } from "../../../../src/lib/aiUsage";
 
 interface MentorRequest {
     readonly studyId?: unknown;
@@ -72,10 +73,16 @@ export async function POST(request: Request) {
             interpretations = interpretationIds.map((id) => ordered.get(id)).filter((value): value is string => Boolean(value?.trim()));
         }
 
-        const result = await createBiblicalTheologyMentorProvider().assess({
-            interpretations,
-            theme: requiredText(body.theme, "Theme"),
-            synthesis: requiredText(body.synthesis, "Biblical Theology synthesis"),
+        const result = await runMeteredAiOperation({
+            userId: user.id,
+            studyId,
+            feature: "biblical_theology_mentor",
+            operation: "assess",
+            run: () => createBiblicalTheologyMentorProvider().assess({
+                interpretations,
+                theme: requiredText(body.theme, "Theme"),
+                synthesis: requiredText(body.synthesis, "Biblical Theology synthesis"),
+            }),
         });
         return NextResponse.json(result);
     } catch (reason: unknown) {
