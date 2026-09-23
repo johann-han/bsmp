@@ -209,7 +209,7 @@ export async function POST(request: Request) {
         console.error("PayFast ITN processing failed:", reason);
         // A 4xx is appropriate for rejected/invalid provider input; processing or
         // provider-confirmation failures must remain retryable by PayFast.
-        const retryable = /server confirmation|checkout intent|subscription synchronization|billing is not configured|database|returned an invalid result/i.test(message);
+        const retryable = /server confirmation|subscription cancellation|checkout intent|subscription synchronization|billing is not configured|database|returned an invalid result|PayFast API request failed/i.test(message);
         return NextResponse.json({ error: "Unable to process PayFast ITN." }, { status: retryable ? 500 : 400 });
     }
 }
