@@ -13,8 +13,7 @@ describe("PayFastBillingProvider", () => {
         merchantKey: process.env.PAYFAST_MERCHANT_KEY,
         passphrase: process.env.PAYFAST_PASSPHRASE,
         sandbox: process.env.PAYFAST_SANDBOX,
-        planMap: process.env.PAYFAST_PLAN_MAP,
-        planConfig: process.env.PAYFAST_PLAN_CONFIG,
+         planConfig: process.env.PAYFAST_PLAN_CONFIG,
         publicAppUrl: process.env.PUBLIC_APP_URL,
     };
 
@@ -23,8 +22,7 @@ describe("PayFastBillingProvider", () => {
         if (saved.merchantKey === undefined) delete process.env.PAYFAST_MERCHANT_KEY; else process.env.PAYFAST_MERCHANT_KEY = saved.merchantKey;
         if (saved.passphrase === undefined) delete process.env.PAYFAST_PASSPHRASE; else process.env.PAYFAST_PASSPHRASE = saved.passphrase;
         if (saved.sandbox === undefined) delete process.env.PAYFAST_SANDBOX; else process.env.PAYFAST_SANDBOX = saved.sandbox;
-        if (saved.planMap === undefined) delete process.env.PAYFAST_PLAN_MAP; else process.env.PAYFAST_PLAN_MAP = saved.planMap;
-        if (saved.planConfig === undefined) delete process.env.PAYFAST_PLAN_CONFIG; else process.env.PAYFAST_PLAN_CONFIG = saved.planConfig;
+         if (saved.planConfig === undefined) delete process.env.PAYFAST_PLAN_CONFIG; else process.env.PAYFAST_PLAN_CONFIG = saved.planConfig;
         if (saved.publicAppUrl === undefined) delete process.env.PUBLIC_APP_URL; else process.env.PUBLIC_APP_URL = saved.publicAppUrl;
         vi.restoreAllMocks();
     });
@@ -50,15 +48,14 @@ describe("PayFastBillingProvider", () => {
         const result = await new PayFastBillingProvider().createCheckoutSession({
             userId: "user-1",
             planCode: "starter-monthly",
-            paymentReference: "payment-1",
+            merchantPaymentId: "payment-1",
             customerEmail: "john.doe@example.com",
             successUrl: "https://example.com/success",
             cancelUrl: "https://example.com/cancel",
         });
 
-        expect(result.checkoutMethod).toBe("POST");
-        expect(result.currency).toBe("ZAR");
-        expect(result.amount).toBe("99.00");
+        expect(result.formAction).toBe("https://www.payfast.co.za/eng/process");
+        expect(result.amountZar).toBe(99);
         expect(result.formFields?.subscription_type).toBe("1");
         expect(result.formFields?.frequency).toBe("3");
         expect(result.formFields?.cycles).toBe("0");
@@ -253,14 +250,14 @@ describe("PayFastBillingProvider", () => {
         process.env.PAYFAST_MERCHANT_ID = "10000100";
         process.env.PAYFAST_MERCHANT_KEY = "merchant_key";
         process.env.PAYFAST_PASSPHRASE = "passphrase";
-        process.env.PAYFAST_PLAN_MAP = JSON.stringify({
+        process.env.PAYFAST_PLAN_CONFIG = JSON.stringify({
             "starter-monthly": { amount: "4.99", recurringAmount: "4.99", frequency: 3, cycles: 0 }
         });
 
         await expect(new PayFastBillingProvider().createCheckoutSession({
             userId: "user-1",
             planCode: "starter-monthly",
-            paymentReference: "payment-1",
+            merchantPaymentId: "payment-1",
             customerEmail: "john@example.com",
             successUrl: "https://example.com/success",
             cancelUrl: "https://example.com/cancel",

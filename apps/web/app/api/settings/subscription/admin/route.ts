@@ -249,7 +249,7 @@ export async function POST(request: Request) {
             const subscriptionId = text(body.subscriptionId, "Subscription ID", 80);
             const { data: before, error: beforeError } = await adminClient
                 .from("user_subscriptions")
-                .select("id, user_id, plan_id, provider, status, external_subscription_id")
+                .select("id, user_id, plan_id, provider, external_subscription_id, status")
                 .eq("id", subscriptionId)
                 .maybeSingle();
             if (beforeError) throw beforeError;
@@ -258,17 +258,13 @@ export async function POST(request: Request) {
                 throw new Error("Only active or trialing subscriptions can be ended.");
             }
 
-            if (before.provider === "payfast") {
+            if (before.provider !== "manual" && before.external_subscription_id) {
                 const provider = getBillingProvider();
                 if (provider.id !== before.provider) {
-                    throw new Error(`Billing provider ${before.provider} is not the active provider.`);
-                }
-                const externalSubscriptionId = (before as { external_subscription_id?: string | null }).external_subscription_id;
-                if (!externalSubscriptionId) {
-                    throw new Error("The external PayFast subscription identifier is missing.");
+                    throw new Error(`Configured billing provider does not match subscription provider ${before.provider}.`);
                 }
                 await provider.cancelSubscription({
-                    externalSubscriptionId,
+                    externalSubscriptionId: before.external_subscription_id,
                     cancelAtPeriodEnd: false,
                 });
             }
@@ -293,7 +289,7 @@ export async function POST(request: Request) {
                 eventType: "canceled",
                 provider: subscription.provider,
                 metadata: {
-                    cancellation_source: "subscription_admin",
+                    cancellation_source: before.provider === "manual" ? "subscription_admin" : "subscription_admin_provider_requested",
                     previous_status: before.status,
                 },
             });

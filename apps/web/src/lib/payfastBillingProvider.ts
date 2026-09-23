@@ -35,12 +35,12 @@ function sandboxEnabled(): boolean {
 }
 
 function parsePlanMap(): Record<string, PayFastPlanConfig> {
-    const raw = process.env.PAYFAST_PLAN_CONFIG?.trim() || process.env.PAYFAST_PLAN_MAP?.trim();
+    const raw = process.env.PAYFAST_PLAN_CONFIG?.trim();
     if (!raw) throw new Error("PAYFAST_PLAN_CONFIG is not configured.");
     let parsed: unknown;
-    try { parsed = JSON.parse(raw); } catch { throw new Error("PAYFAST_PLAN_MAP must contain valid JSON."); }
+    try { parsed = JSON.parse(raw); } catch { throw new Error("PAYFAST_PLAN_CONFIG must contain valid JSON."); }
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-        throw new Error("PAYFAST_PLAN_MAP must be a JSON object.");
+        throw new Error("PAYFAST_PLAN_CONFIG must be a JSON object.");
     }
     return parsed as Record<string, PayFastPlanConfig>;
 }
@@ -181,7 +181,7 @@ function formFields(input: BillingCheckoutInput, plan: PayFastPlanConfig, notify
         name_first: name.first,
         name_last: name.last,
         email_address: input.customerEmail ?? "",
-        m_payment_id: input.paymentReference,
+        m_payment_id: input.merchantPaymentId,
         amount: plan.amount,
         item_name: plan.itemName ?? input.planCode,
         item_description: plan.itemDescription ?? `BSMP ${input.planCode} subscription`,
@@ -193,6 +193,8 @@ function formFields(input: BillingCheckoutInput, plan: PayFastPlanConfig, notify
         subscription_notify_email: "true",
         subscription_notify_webhook: "true",
         subscription_notify_buyer: "true",
+        custom_str1: input.userId,
+        custom_str2: input.planCode,
     };
     data.signature = generateSignature(data, requiredEnvironment("PAYFAST_PASSPHRASE"), Object.keys(data));
     return data;
@@ -208,10 +210,10 @@ export class PayFastBillingProvider implements BillingProvider {
         return {
             provider: "payfast",
             checkoutUrl: sandboxEnabled() ? SANDBOX_CHECKOUT_URL : LIVE_CHECKOUT_URL,
-            checkoutMethod: "POST",
+            formAction: sandboxEnabled() ? SANDBOX_CHECKOUT_URL : LIVE_CHECKOUT_URL,
             formFields: formFields(input, plan, notifyUrl),
-            amount: plan.amount,
-            currency: "ZAR",
+            amountZar: Number(plan.amount),
+            recurringAmountZar: Number(plan.recurringAmount),
         };
     }
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-BSMP has a provider-neutral subscription data model that can support future paid plans, AI quotas, feature entitlements, and payment-provider integration without coupling billing logic to Study content or AI provider implementations.
+BSMP has a provider-neutral subscription data model that can support future paid plans, AI quotas, feature entitlements, and PayFast payment integration without coupling billing logic to Study content or AI provider implementations.
 
 ## Tables
 
@@ -34,9 +34,9 @@ These manual controls are intended for administration and development/testing. T
 
 `subscription_events` is the lifecycle audit ledger for subscription changes. It records the affected account, subscription, acting administrator when applicable, event type, provider, effective time, and non-sensitive metadata.
 
-Manual plan assignments currently create `manual_assigned` events, and administrators ending a subscription create `canceled` events. PayFast COMPLETE and CANCELLED notifications are normalized into the same lifecycle ledger. Client applications can read only events belonging to the signed-in account. Administrative reads and writes use the server-side service role.
+Manual plan assignments currently create `manual_assigned` events, and administrators ending a subscription create `canceled` events. Client applications can read only events belonging to the signed-in account. Administrative reads and writes use the server-side service role.
 
-The `external_event_id` plus unique provider/event index is the idempotency boundary for provider webhook processing. A repeated PayFast ITN therefore returns the existing event instead of creating a second lifecycle record.
+An optional `external_event_id` plus a unique provider/event index provides an idempotency boundary for future payment-provider webhook processing. Provider synchronization is reserved as an event type but is not connected yet.
 
 The audit ledger is deliberately separate from `ai_usage_events`: subscription lifecycle records do not contain prompts, generated content, or Study evidence.
 
@@ -54,30 +54,20 @@ The current implementation is a lightweight preflight guard. It deliberately doe
 
 `ai_usage_events` remains the usage ledger. Subscription entitlements read that ledger rather than copying prompts, generated content, or Study evidence into billing records. The AI Usage page displays both recorded activity and the current subscription allowance when one is configured.
 
-## Deliberately deferred
+## PayFast integration
 
-Plan prices, live PayFast credentials, and production payment activation remain deployment configuration rather than repository data. Checkout and webhook code are implemented. PayFast sandbox billing has been exercised end-to-end; production activation remains deployment-controlled and requires live merchant credentials, recurring plan configuration, a public HTTPS notification URL, and final security/operational checks.
+BSMP now has a PayFast subscription checkout integration. Active plans display a **Subscribe with PayFast** button. The server creates the signed hosted payment form and the browser posts it to PayFast; PayFast then sends the ITN to BSMP for server-side validation and subscription synchronization.
+
+Payment credentials, the PayFast passphrase, and plan pricing configuration are server-only. No card data is stored in BSMP.
+
+The integration is designed to run against the PayFast Sandbox first. Live credentials and production activation remain an operational step after sandbox verification.
 
 ## Billing provider boundary
 
-The provider-neutral billing contract lives in `apps/web/src/lib/billingProvider.ts`. It defines checkout-session creation, external-subscription cancellation, and verified webhook normalization without coupling the core entitlement model to one payment provider.
+The reserved provider-neutral billing contract lives in `apps/web/src/lib/billingProvider.ts`. It defines future checkout-session creation, external-subscription cancellation, and verified webhook normalization without selecting a payment provider.
 
-`BILLING_PROVIDER` selects the active provider adapter on the server. PayFast is the active provider for the current billing integration branch; no provider secret belongs in client-exposed environment variables.
+`BILLING_PROVIDER` is reserved for the future provider adapter selection. It is intentionally unset until a provider is chosen and connected. No provider secret belongs in client-exposed environment variables.
 
-PayFast checkout creates a server-side checkout intent and provider session, while the verified PayFast webhook establishes authoritative `user_subscriptions` state. The browser must not directly create or mutate subscription records.
+Future checkout should create a provider session and allow the provider webhook to establish authoritative `user_subscriptions` state. The browser must not directly create or mutate subscription records.
 
 Provider synchronization now has a transactional server-side database boundary at `public.apply_subscription_billing_event(jsonb)`. The function is executable by the server service role only, uses the external provider event id for idempotency, updates `user_subscriptions`, and links the resulting state change to `subscription_events` in one transaction.
-
-## PayFast billing
-
-BSMP's intended payment provider is PayFast. The integration uses PayFast-hosted checkout for recurring subscriptions and keeps payment credentials and provider state on the server.
-
-The `billing_checkout_intents` table records the server-generated payment reference and expected amount used to validate PayFast ITNs before subscription activation.
-
-Once a verified PayFast notification is received, BSMP synchronizes the subscription through the transactional `apply_subscription_billing_event` database boundary and records the provider event in `subscription_events`.
-
-
-
-## Subscriber cancellation
-
-Signed-in users can cancel their own PayFast subscription from Settings → Subscription. BSMP sends the cancellation request to PayFast and waits for the verified PayFast CANCELLED ITN before treating the BSMP subscription record as canceled. PayFast cancellation is immediate; end-of-period cancellation is not currently exposed by the PayFast adapter.
