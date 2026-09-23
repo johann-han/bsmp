@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 import type {
     BillingCancelSubscriptionInput,
@@ -98,13 +98,19 @@ function generateItnSignature(values: Record<string, string>, passphrase: string
     return createHash("md5").update(salted, "utf8").digest("hex");
 }
 
+function safeEqual(left: string, right: string): boolean {
+    const a = Buffer.from(left.toLowerCase(), "utf8");
+    const b = Buffer.from(right.toLowerCase(), "utf8");
+    return a.length === b.length && timingSafeEqual(a, b);
+}
+
 function verifySignature(values: Record<string, string>): void {
     const supplied = values.signature?.trim().toLowerCase();
     if (!supplied) throw new Error("PayFast ITN signature is missing.");
     const data: Record<string, string> = {};
     for (const [key, value] of Object.entries(values)) if (key !== "signature") data[key] = value;
     const expected = generateItnSignature(data, requiredEnvironment("PAYFAST_PASSPHRASE"), Object.keys(data));
-    if (supplied !== expected) throw new Error("PayFast ITN signature verification failed.");
+    if (!safeEqual(supplied, expected)) throw new Error("PayFast ITN signature verification failed.");
 }
 
 function amountMatches(expected: string, received: string): boolean {
@@ -258,14 +264,23 @@ export class PayFastBillingProvider implements BillingProvider {
             provider: "payfast",
             externalEventId: values.pf_payment_id,
             eventType: values.payment_status === "CANCELLED" ? "canceled" : "activated",
+            userId: values.custom_str1?.trim() || null,
+            planCode: values.custom_str2?.trim() || null,
             externalSubscriptionId: values.token,
             status: values.payment_status === "CANCELLED" ? "canceled" : "active",
             effectiveAt: new Date().toISOString(),
             metadata: {
                 source: "payfast_itn",
                 m_payment_id: values.m_payment_id ?? null,
+                pf_payment_id: values.pf_payment_id,
                 amount_gross: values.amount_gross ?? null,
+                amount_fee: values.amount_fee ?? null,
+                amount_net: values.amount_net ?? null,
                 email_address: values.email_address ?? null,
+                custom_str1: values.custom_str1 ?? null,
+                custom_str2: values.custom_str2 ?? null,
+                recurring_amount_zar: values.custom_str2 ? planFor(values.custom_str2).recurringAmount : null,
+                payment_status: values.payment_status,
             },
         }];
     }
