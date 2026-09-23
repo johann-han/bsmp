@@ -34,9 +34,9 @@ These manual controls are intended for administration and development/testing. T
 
 `subscription_events` is the lifecycle audit ledger for subscription changes. It records the affected account, subscription, acting administrator when applicable, event type, provider, effective time, and non-sensitive metadata.
 
-Manual plan assignments currently create `manual_assigned` events, and administrators ending a subscription create `canceled` events. Client applications can read only events belonging to the signed-in account. Administrative reads and writes use the server-side service role.
+Manual plan assignments currently create `manual_assigned` events, and administrators ending a subscription create `canceled` events. PayFast COMPLETE and CANCELLED notifications are normalized into the same lifecycle ledger. Client applications can read only events belonging to the signed-in account. Administrative reads and writes use the server-side service role.
 
-An optional `external_event_id` plus a unique provider/event index provides an idempotency boundary for future payment-provider webhook processing. Provider synchronization is reserved as an event type but is not connected yet.
+The `external_event_id` plus unique provider/event index is the idempotency boundary for provider webhook processing. A repeated PayFast ITN therefore returns the existing event instead of creating a second lifecycle record.
 
 The audit ledger is deliberately separate from `ai_usage_events`: subscription lifecycle records do not contain prompts, generated content, or Study evidence.
 
@@ -56,7 +56,7 @@ The current implementation is a lightweight preflight guard. It deliberately doe
 
 ## Deliberately deferred
 
-Plan prices, live PayFast credentials, and production payment activation remain deployment configuration rather than repository data. Checkout and webhook code are now implemented, but real payments are not enabled until the merchant credentials, recurring plan configuration, and public notification URL are configured and tested.
+Plan prices, live PayFast credentials, and production payment activation remain deployment configuration rather than repository data. Checkout and webhook code are implemented. PayFast sandbox billing has been exercised end-to-end; production activation remains deployment-controlled and requires live merchant credentials, recurring plan configuration, a public HTTPS notification URL, and final security/operational checks.
 
 ## Billing provider boundary
 
