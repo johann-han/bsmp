@@ -65,6 +65,7 @@ export function SubscriptionWorkspace() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
+    const [canceling, setCanceling] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
 
@@ -183,6 +184,34 @@ export function SubscriptionWorkspace() {
         }
     }
 
+    async function cancelSubscription() {
+        if (!subscription || subscription.provider !== "payfast") return;
+        if (!window.confirm("Cancel your PayFast subscription now? PayFast cancellation is immediate.")) return;
+
+        setCanceling(true);
+        setError(null);
+        setMessage(null);
+
+        try {
+            const supabase = client();
+            const session = (await supabase.auth.getSession()).data.session;
+            if (!session) throw new Error("A signed-in account is required.");
+
+            const response = await fetch("/api/billing/subscription/cancel", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${session.access_token}` },
+            });
+            const payload = (await response.json()) as { message?: string; error?: string };
+            if (!response.ok) throw new Error(payload.error ?? "Unable to cancel the subscription.");
+
+            setMessage(payload.message ?? "Cancellation accepted by PayFast. BSMP will update after the verified cancellation notification.");
+        } catch (reason) {
+            setError(reason instanceof Error ? reason.message : "Unable to cancel the subscription.");
+        } finally {
+            setCanceling(false);
+        }
+    }
+
     if (loading) {
         return <main style={{ maxWidth: 1000, margin: "0 auto", padding: 24 }}><p>Loading Subscription...</p></main>;
     }
@@ -216,6 +245,18 @@ export function SubscriptionWorkspace() {
                             </span>
                         )}
                         {subscription.cancel_at_period_end && <span style={{ color: "#92400e" }}>Cancellation is scheduled for the end of the current period.</span>}
+                        {subscription.provider === "payfast" && ["trialing", "active", "past_due", "paused", "incomplete"].includes(subscription.status) && (
+                            <div style={{ marginTop: 8 }}>
+                                <button
+                                    type="button"
+                                    disabled={canceling}
+                                    onClick={() => void cancelSubscription()}
+                                    style={{ padding: "9px 14px", fontWeight: 700 }}
+                                >
+                                    {canceling ? "Canceling..." : "Cancel PayFast Subscription"}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <p style={{ margin: 0, color: "#6b7280" }}>
