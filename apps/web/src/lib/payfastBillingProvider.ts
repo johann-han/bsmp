@@ -148,7 +148,10 @@ async function apiRequest<T>(path: string, method: "GET" | "PUT" | "PATCH", body
     const text = await response.text();
     let payload: unknown;
     try { payload = JSON.parse(text); } catch { payload = text; }
-    if (!response.ok) throw new Error(`PayFast API request failed with HTTP ${response.status}.`);
+    if (!response.ok) {
+        const detail = typeof payload === "string" ? payload.slice(0, 500) : JSON.stringify(payload).slice(0, 500);
+        throw new Error(`PayFast API request failed with HTTP ${response.status}: ${detail}`);
+    }
     return payload as T;
 }
 
