@@ -63,6 +63,27 @@ describe("PayFastBillingProvider", () => {
         expect(result.formFields?.signature).toMatch(/^[a-f0-9]{32}$/);
     });
 
+    it("accepts only VALID from the PayFast server confirmation endpoint", async () => {
+        process.env.PAYFAST_PASSPHRASE = "passphrase";
+        process.env.PAYFAST_SANDBOX = "true";
+
+        const fetchMock = vi.spyOn(globalThis, "fetch");
+
+        fetchMock.mockResolvedValueOnce(new Response("VALID", { status: 200 }));
+        await expect(payFastValidateServerConfirmation({
+            m_payment_id: "payment-1",
+            pf_payment_id: "3401531",
+            payment_status: "COMPLETE",
+        })).resolves.toBe(true);
+
+        fetchMock.mockResolvedValueOnce(new Response("INVALID", { status: 200 }));
+        await expect(payFastValidateServerConfirmation({
+            m_payment_id: "payment-1",
+            pf_payment_id: "3401531",
+            payment_status: "COMPLETE",
+        })).resolves.toBe(false);
+    });
+
     it("builds the PayFast API signature with the authentication credential in sorted order", () => {
         const values = {
             "merchant-id": "10000100",

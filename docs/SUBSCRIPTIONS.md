@@ -60,11 +60,11 @@ Plan prices, live PayFast credentials, and production payment activation remain 
 
 ## Billing provider boundary
 
-The reserved provider-neutral billing contract lives in `apps/web/src/lib/billingProvider.ts`. It defines future checkout-session creation, external-subscription cancellation, and verified webhook normalization without selecting a payment provider.
+The provider-neutral billing contract lives in `apps/web/src/lib/billingProvider.ts`. It defines checkout-session creation, external-subscription cancellation, and verified webhook normalization without coupling the core entitlement model to one payment provider.
 
-`BILLING_PROVIDER` is reserved for the future provider adapter selection. It is intentionally unset until a provider is chosen and connected. No provider secret belongs in client-exposed environment variables.
+`BILLING_PROVIDER` selects the active provider adapter on the server. PayFast is the active provider for the current billing integration branch; no provider secret belongs in client-exposed environment variables.
 
-Future checkout should create a provider session and allow the provider webhook to establish authoritative `user_subscriptions` state. The browser must not directly create or mutate subscription records.
+PayFast checkout creates a server-side checkout intent and provider session, while the verified PayFast webhook establishes authoritative `user_subscriptions` state. The browser must not directly create or mutate subscription records.
 
 Provider synchronization now has a transactional server-side database boundary at `public.apply_subscription_billing_event(jsonb)`. The function is executable by the server service role only, uses the external provider event id for idempotency, updates `user_subscriptions`, and links the resulting state change to `subscription_events` in one transaction.
 
