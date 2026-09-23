@@ -32,11 +32,10 @@ interface Subscription {
 }
 
 interface CheckoutResponse {
-    error?: string;
+    checkoutUrl?: string;
     formAction?: string;
-    formFields?: Record<string, string>;
-    provider?: string;
-    planName?: string;
+    formFields?: Record<string, string> | null;
+    error?: string;
 }
 
 function client() {
@@ -65,8 +64,9 @@ export function SubscriptionWorkspace() {
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
+    const [canceling, setCanceling] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [checkoutPlanCode, setCheckoutPlanCode] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
 
     useEffect(() => {
@@ -114,6 +114,13 @@ export function SubscriptionWorkspace() {
                 setPlans((plansResult.data ?? []) as Plan[]);
                 setEntitlements((entitlementsResult.data ?? []) as Entitlement[]);
                 setSubscription(((subscriptionResult.data ?? [])[0] ?? null) as Subscription | null);
+
+                const query = new URLSearchParams(window.location.search);
+                if (query.get("checkout") === "success") {
+                    setMessage("Payment completed at PayFast. BSMP will activate the subscription when the verified PayFast notification is processed.");
+                } else if (query.get("checkout") === "canceled") {
+                    setMessage("The PayFast checkout was canceled.");
+                }
             } catch (reason) {
                 if (!active) return;
                 setError(reason instanceof Error ? reason.message : "Unable to load subscription information.");
@@ -123,20 +130,14 @@ export function SubscriptionWorkspace() {
         }
 
         void load();
-        const params = new URLSearchParams(window.location.search);
-        const checkout = params.get("checkout");
-        if (active && checkout === "success") {
-            setMessage("PayFast returned from checkout. BSMP will activate the subscription from the verified PayFast notification.");
-        } else if (active && checkout === "canceled") {
-            setMessage("PayFast checkout was canceled. No BSMP subscription was activated.");
-        }
         return () => { active = false; };
     }, []);
 
+
     async function startCheckout(planCode: string) {
+        setCheckoutPlan(planCode);
         setError(null);
         setMessage(null);
-        setCheckoutPlanCode(planCode);
 
         try {
             const supabase = client();
@@ -151,30 +152,64 @@ export function SubscriptionWorkspace() {
                 },
                 body: JSON.stringify({ planCode }),
             });
-            const payload = await response.json() as CheckoutResponse;
+
+            const payload = (await response.json()) as CheckoutResponse;
             if (!response.ok) throw new Error(payload.error ?? "Unable to start PayFast checkout.");
-            if (!payload.formAction || !payload.formFields) {
-                throw new Error("PayFast checkout form was not returned.");
+            if (!payload.checkoutUrl) throw new Error("The billing provider did not return a checkout URL.");
+
+            if (payload.formAction && payload.formFields) {
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = payload.formAction;
+                form.style.display = "none";
+
+                for (const [name, value] of Object.entries(payload.formFields)) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = name;
+                    input.value = value;
+                    form.appendChild(input);
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+                return;
             }
 
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = payload.formAction;
-            form.style.display = "none";
-
-            for (const [name, value] of Object.entries(payload.formFields)) {
-                const field = document.createElement("input");
-                field.type = "hidden";
-                field.name = name;
-                field.value = value;
-                form.appendChild(field);
-            }
-
-            document.body.appendChild(form);
-            form.submit();
+            if (!payload.checkoutUrl) throw new Error("The billing provider did not return a checkout URL.");
+            window.location.assign(payload.checkoutUrl);
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : "Unable to start PayFast checkout.");
-            setCheckoutPlanCode(null);
+        } finally {
+            setCheckoutPlan(null);
+        }
+    }
+
+    async function cancelSubscription() {
+        if (!subscription || subscription.provider !== "payfast") return;
+        if (!window.confirm("Cancel your PayFast subscription now? PayFast cancellation is immediate.")) return;
+
+        setCanceling(true);
+        setError(null);
+        setMessage(null);
+
+        try {
+            const supabase = client();
+            const session = (await supabase.auth.getSession()).data.session;
+            if (!session) throw new Error("A signed-in account is required.");
+
+            const response = await fetch("/api/billing/subscription/cancel", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${session.access_token}` },
+            });
+            const payload = (await response.json()) as { message?: string; error?: string };
+            if (!response.ok) throw new Error(payload.error ?? "Unable to cancel the subscription.");
+
+            setMessage(payload.message ?? "Cancellation accepted by PayFast. BSMP will update after the verified cancellation notification.");
+        } catch (reason) {
+            setError(reason instanceof Error ? reason.message : "Unable to cancel the subscription.");
+        } finally {
+            setCanceling(false);
         }
     }
 
@@ -193,7 +228,7 @@ export function SubscriptionWorkspace() {
                     {isAdmin && <Link href="/settings/subscription/admin" style={{ color: "#334155", fontWeight: 700, textDecoration: "none" }}>Administration</Link>}
                 </div>
                 <p style={{ margin: 0, color: "#6b7280" }}>
-                    Subscription and entitlement information for your BSMP account. PayFast handles payment securely, while BSMP keeps subscription state and AI entitlement records separate from Study content.
+                    Subscription and entitlement information for your BSMP account. Payments are processed by PayFast; BSMP records the verified subscription state separately from Study and AI content.
                 </p>
                 {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
                 {message && <p style={{ color: "#166534" }}>{message}</p>}
@@ -211,10 +246,22 @@ export function SubscriptionWorkspace() {
                             </span>
                         )}
                         {subscription.cancel_at_period_end && <span style={{ color: "#92400e" }}>Cancellation is scheduled for the end of the current period.</span>}
+                        {subscription.provider === "payfast" && ["trialing", "active", "past_due", "paused", "incomplete"].includes(subscription.status) && (
+                            <div style={{ marginTop: 8 }}>
+                                <button
+                                    type="button"
+                                    disabled={canceling}
+                                    onClick={() => void cancelSubscription()}
+                                    style={{ padding: "9px 14px", fontWeight: 700 }}
+                                >
+                                    {canceling ? "Canceling..." : "Cancel PayFast Subscription"}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <p style={{ margin: 0, color: "#6b7280" }}>
-                        No active subscription is assigned to this account yet. Choose an active plan below to begin PayFast checkout.
+                        No active subscription is assigned to this account yet. Select a plan below to start PayFast checkout.
                     </p>
                 )}
             </section>
@@ -229,14 +276,6 @@ export function SubscriptionWorkspace() {
                                 <article key={plan.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}>
                                     <strong>{plan.name}</strong>
                                     <p style={{ margin: "6px 0 10px", color: "#6b7280" }}>{plan.description || "No description published."}</p>
-                                    <button
-                                        type="button"
-                                        disabled={Boolean(subscription) || checkoutPlanCode === plan.code}
-                                        onClick={() => void startCheckout(plan.code)}
-                                        style={{ marginTop: 12 }}
-                                    >
-                                        {checkoutPlanCode === plan.code ? "Opening PayFast..." : subscription ? "Subscription already active" : "Subscribe with PayFast"}
-                                    </button>
                                     {planEntitlements.length ? (
                                         <div style={{ display: "grid", gap: 4, fontSize: 13 }}>
                                             {planEntitlements.map((item) => (
@@ -246,13 +285,23 @@ export function SubscriptionWorkspace() {
                                     ) : (
                                         <span style={{ fontSize: 13, color: "#6b7280" }}>No entitlements published yet.</span>
                                     )}
+                                    {!subscription && (
+                                        <button
+                                            type="button"
+                                            disabled={checkoutPlan !== null}
+                                            onClick={() => void startCheckout(plan.code)}
+                                            style={{ justifySelf: "start", padding: "9px 14px", fontWeight: 700 }}
+                                        >
+                                            {checkoutPlan === plan.code ? "Opening PayFast..." : "Subscribe with PayFast"}
+                                        </button>
+                                    )}
                                 </article>
                             );
                         })}
                     </div>
                 ) : (
                     <p style={{ margin: 0, color: "#6b7280" }}>
-                        No public subscription plans have been published yet. Add active plans and PayFast billing configuration before customers can start checkout.
+                        No public subscription plans have been published yet. Publish a plan and configure its PayFast billing amount before checkout is available.
                     </p>
                 )}
             </section>

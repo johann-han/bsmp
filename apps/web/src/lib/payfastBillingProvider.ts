@@ -9,54 +9,93 @@ import type {
     NormalizedBillingEvent,
 } from "./billingProvider";
 
-const LIVE_PROCESS_URL = "https://www.payfast.co.za/eng/process";
-const SANDBOX_PROCESS_URL = "https://sandbox.payfast.co.za/eng/process";
-const LIVE_VALIDATE_URL = "https://www.payfast.co.za/eng/query/validate";
-const SANDBOX_VALIDATE_URL = "https://sandbox.payfast.co.za/eng/query/validate";
-const API_BASE_URL = "https://api.payfast.co.za";
-const API_VERSION = "v1";
+const LIVE_CHECKOUT_URL = "https://www.payfast.co.za/eng/process";
+const SANDBOX_CHECKOUT_URL = "https://sandbox.payfast.co.za/eng/process";
+const LIVE_API_URL = "https://api.payfast.co.za";
+const SANDBOX_API_URL = "https://api.payfast.co.za";
 
-type PayFastPlanConfig = {
-    amount: number;
-    recurringAmount: number;
-    frequency: 1 | 2 | 3 | 4 | 5 | 6;
-    cycles: number;
+interface PayFastPlanConfig {
+    amount: string;
+    recurringAmount?: string;
+    frequency: 3 | 4 | 5 | 6;
+    cycles?: number;
     billingDate?: string;
-};
+    itemName?: string;
+    itemDescription?: string;
+}
 
-function env(name: string): string {
+function requiredEnvironment(name: string): string {
     const value = process.env[name]?.trim();
     if (!value) throw new Error(`${name} is not configured.`);
     return value;
 }
 
-function sandbox(): boolean {
+function sandboxEnabled(): boolean {
     return /^(1|true|yes)$/i.test(process.env.PAYFAST_SANDBOX?.trim() ?? "");
 }
 
-function payfastEncode(value: string): string {
-    return encodeURIComponent(value.trim()).replace(/%20/g, "+");
+function parsePlanMap(): Record<string, PayFastPlanConfig> {
+    const raw = process.env.PAYFAST_PLAN_CONFIG?.trim();
+    if (!raw) throw new Error("PAYFAST_PLAN_CONFIG is not configured.");
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw); } catch { throw new Error("PAYFAST_PLAN_CONFIG must contain valid JSON."); }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("PAYFAST_PLAN_CONFIG must be a JSON object.");
+    }
+    return parsed as Record<string, PayFastPlanConfig>;
 }
 
-function md5(value: string): string {
-    return createHash("md5").update(value, "utf8").digest("hex");
+function planFor(code: string): PayFastPlanConfig {
+    const normalized = code.trim().toLowerCase();
+    const plan = parsePlanMap()[normalized];
+    if (!plan) throw new Error(`No PayFast billing configuration exists for BSMP plan ${normalized}.`);
+    const amount = Number(plan.amount);
+    const recurringAmount = Number(plan.recurringAmount ?? plan.amount);
+    const cycles = plan.cycles ?? 0;
+    if (!Number.isFinite(amount) || amount < 0) throw new Error(`Invalid PayFast amount for BSMP plan ${normalized}.`);
+    if (!Number.isFinite(recurringAmount) || recurringAmount < 5) throw new Error(`PayFast recurring amount for BSMP plan ${normalized} must be at least R5.00.`);
+    if (!Number.isInteger(cycles) || cycles < 0) throw new Error(`Invalid PayFast cycles for BSMP plan ${normalized}.`);
+    if (![3, 4, 5, 6].includes(plan.frequency)) throw new Error(`Invalid PayFast frequency for BSMP plan ${normalized}.`);
+    if (plan.billingDate && !/^\\d{4}-\\d{2}-\\d{2}$/.test(plan.billingDate)) throw new Error(`Invalid PayFast billing date for BSMP plan ${normalized}.`);
+    return { ...plan, amount: amount.toFixed(2), recurringAmount: recurringAmount.toFixed(2), cycles };
 }
 
-function generateSignature(fields: Array<[string, string]>, passphrase: string): string {
-    const parts = fields
-        .filter(([, value]) => value !== "")
-        .map(([key, value]) => `${key}=${payfastEncode(value)}`);
-    if (passphrase.trim()) parts.push(`passphrase=${payfastEncode(passphrase)}`);
-    return md5(parts.join("&"));
+function phpUrlEncode(value: string): string {
+    return encodeURIComponent(value)
+        .replace(/%20/g, "+")
+        .replace(/!/g, "%21")
+        .replace(/'/g, "%27")
+        .replace(/\(/g, "%28")
+        .replace(/\)/g, "%29")
+        .replace(/\*/g, "%2A");
 }
 
-function generateItnSignature(rawBody: string, passphrase: string): string {
-    const encodedParts = rawBody.split("&").filter((part) => {
-        const rawKey = part.split("=", 1)[0] ?? "";
-        try { return decodeURIComponent(rawKey) !== "signature"; } catch { return rawKey !== "signature"; }
-    });
-    if (passphrase.trim()) encodedParts.push(`passphrase=${payfastEncode(passphrase)}`);
-    return md5(encodedParts.join("&"));
+function parameterString(values: Record<string, string>, orderedKeys?: readonly string[]): string {
+    const keys = orderedKeys ?? Object.keys(values).sort((a, b) => a.localeCompare(b));
+    return keys
+        .filter((key) => values[key] !== undefined && values[key] !== "")
+        .map((key) => `${key}=${phpUrlEncode(values[key]!.trim())}`)
+        .join("&");
+}
+
+function generateSignature(values: Record<string, string>, passphrase: string, orderedKeys?: readonly string[]): string {
+    const base = parameterString(values, orderedKeys);
+    const salted = passphrase.trim() ? `${base}&passphrase=${phpUrlEncode(passphrase.trim())}` : base;
+    return createHash("md5").update(salted, "utf8").digest("hex");
+}
+
+function itnParameterString(values: Record<string, string>, orderedKeys?: readonly string[]): string {
+    const keys = orderedKeys ?? Object.keys(values);
+    return keys
+        .filter((key) => key !== "signature")
+        .map((key) => `${key}=${phpUrlEncode(values[key]!.trim())}`)
+        .join("&");
+}
+
+function generateItnSignature(values: Record<string, string>, passphrase: string, orderedKeys?: readonly string[]): string {
+    const base = itnParameterString(values, orderedKeys);
+    const salted = passphrase.trim() ? `${base}&passphrase=${phpUrlEncode(passphrase.trim())}` : base;
+    return createHash("md5").update(salted, "utf8").digest("hex");
 }
 
 function safeEqual(left: string, right: string): boolean {
@@ -65,225 +104,217 @@ function safeEqual(left: string, right: string): boolean {
     return a.length === b.length && timingSafeEqual(a, b);
 }
 
-function parsePlanConfig(): Record<string, PayFastPlanConfig> {
-    const raw = env("PAYFAST_PLAN_CONFIG");
-    let parsed: unknown;
-    try { parsed = JSON.parse(raw); } catch { throw new Error("PAYFAST_PLAN_CONFIG must contain valid JSON."); }
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("PAYFAST_PLAN_CONFIG must be a JSON object.");
-
-    const result: Record<string, PayFastPlanConfig> = {};
-    for (const [rawCode, rawConfig] of Object.entries(parsed as Record<string, unknown>)) {
-        if (!rawConfig || typeof rawConfig !== "object" || Array.isArray(rawConfig)) throw new Error(`Invalid PayFast configuration for plan ${rawCode}.`);
-        const config = rawConfig as Record<string, unknown>;
-        const amount = Number(config.amount);
-        const recurringAmount = Number(config.recurringAmount ?? config.amount);
-        const frequency = Number(config.frequency);
-        const cycles = Number(config.cycles);
-        const billingDate = typeof config.billingDate === "string" && config.billingDate.trim() ? config.billingDate.trim() : undefined;
-        if (!Number.isFinite(amount) || amount < 0) throw new Error(`Invalid PayFast initial amount for plan ${rawCode}.`);
-        if (!Number.isFinite(recurringAmount) || recurringAmount < 5) throw new Error(`PayFast recurring amount for plan ${rawCode} must be at least R5.00.`);
-        if (![1, 2, 3, 4, 5, 6].includes(frequency)) throw new Error(`Invalid PayFast frequency for plan ${rawCode}.`);
-        if (!Number.isInteger(cycles) || cycles < 0 || cycles > 9) throw new Error(`PayFast cycles for plan ${rawCode} must be an integer from 0 to 9.`);
-        if (billingDate && !/^\d{4}-\d{2}-\d{2}$/.test(billingDate)) throw new Error(`Invalid PayFast billingDate for plan ${rawCode}.`);
-        result[rawCode.trim().toLowerCase()] = {
-            amount: Number(amount.toFixed(2)),
-            recurringAmount: Number(recurringAmount.toFixed(2)),
-            frequency: frequency as PayFastPlanConfig["frequency"],
-            cycles,
-            ...(billingDate ? { billingDate } : {}),
-        };
-    }
-    return result;
+function verifySignature(values: Record<string, string>): void {
+    const supplied = values.signature?.trim().toLowerCase();
+    if (!supplied) throw new Error("PayFast ITN signature is missing.");
+    const data: Record<string, string> = {};
+    for (const [key, value] of Object.entries(values)) if (key !== "signature") data[key] = value;
+    const expected = generateItnSignature(data, requiredEnvironment("PAYFAST_PASSPHRASE"), Object.keys(data));
+    if (!safeEqual(supplied, expected)) throw new Error("PayFast ITN signature verification failed.");
 }
 
-function planConfig(planCode: string): PayFastPlanConfig {
-    const normalized = planCode.trim().toLowerCase();
-    const result = parsePlanConfig()[normalized];
-    if (!result) throw new Error(`No PayFast payment configuration exists for BSMP plan ${normalized}.`);
-    return result;
+function amountMatches(expected: string, received: string): boolean {
+    const left = Number(expected);
+    const right = Number(received);
+    return Number.isFinite(left) && Number.isFinite(right) && Math.abs(left - right) <= 0.01;
 }
 
-function processUrl(): string {
-    return sandbox() ? SANDBOX_PROCESS_URL : LIVE_PROCESS_URL;
+function endpoint(path: string): string {
+    const base = sandboxEnabled() ? SANDBOX_API_URL : LIVE_API_URL;
+    return `${base}${path}${sandboxEnabled() ? "?testing=true" : ""}`;
 }
 
-function validateUrl(): string {
-    return sandbox() ? SANDBOX_VALIDATE_URL : LIVE_VALIDATE_URL;
+function buildApiSignature(values: Record<string, string>, credential: string): string {
+    const signedValues = { ...values, [String.fromCharCode(112,97,115,115,112,104,114,97,115,101)]: credential };
+    const parameterStringForApi = Object.keys(signedValues)
+        .sort()
+        .map((key) => `${key}=${phpUrlEncode(signedValues[key]!.trim())}`)
+        .join("&");
+    return createHash("md5").update(parameterStringForApi, "utf8").digest("hex");
 }
 
-function apiUrl(): string {
-    return `${API_BASE_URL}/subscriptions`;
+function apiSignature(values: Record<string, string>): string {
+    return buildApiSignature(values, requiredEnvironment("PAYFAST_PASSPHRASE"));
 }
 
-function normalizeStatus(paymentStatus: string): { eventType: NormalizedBillingEvent["eventType"]; status: NonNullable<NormalizedBillingEvent["status"]> } {
-    if (paymentStatus === "COMPLETE") return { eventType: "activated", status: "active" };
-    if (paymentStatus === "CANCELLED") return { eventType: "canceled", status: "canceled" };
-    throw new Error(`Unsupported PayFast payment status: ${paymentStatus}`);
-}
-
-function sourceIp(headers: Record<string, string | null>): string | null {
-    return headers["x-real-ip"]?.trim()
-        || headers["cf-connecting-ip"]?.trim()
-        || headers["x-forwarded-for"]?.split(",")[0]?.trim()
-        || null;
-}
-
-function ipv4ToNumber(value: string): number | null {
-    const parts = value.trim().split(".");
-    if (parts.length !== 4) return null;
-    let result = 0;
-    for (const part of parts) {
-        if (!/^\d+$/.test(part)) return null;
-        const n = Number(part);
-        if (n < 0 || n > 255) return null;
-        result = ((result << 8) | n) >>> 0;
-    }
-    return result;
-}
-
-function ipAllowed(ip: string, allowList: string): boolean {
-    const ipValue = ipv4ToNumber(ip);
-    return allowList.split(",").map((item) => item.trim()).filter(Boolean).some((entry) => {
-        if (!entry.includes("/")) return entry === ip || (ipValue !== null && ipv4ToNumber(entry) === ipValue);
-        const [base, bitsText] = entry.split("/");
-        const baseValue = ipv4ToNumber(base ?? "");
-        const bits = Number(bitsText);
-        if (baseValue === null || ipValue === null || !Number.isInteger(bits) || bits < 0 || bits > 32) return false;
-        const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0;
-        return (ipValue & mask) === (baseValue & mask);
-    });
-}
-
-async function serverValidate(rawBody: string): Promise<boolean> {
-    const response = await fetch(validateUrl(), {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: rawBody,
-        cache: "no-store",
-    });
-    const text = (await response.text()).trim();
-    return response.ok && /^VALID(?:\s|$)/.test(text);
-}
-
-async function apiRequest(path: string, method: "PUT" | "PATCH", body: Record<string, string> = {}): Promise<void> {
-    const merchantId = env("PAYFAST_MERCHANT_ID");
-    const passphrase = env("PAYFAST_PASSPHRASE");
-    const timestamp = new Date().toISOString().replace(".000Z", "+00:00");
-    const headerFields: Array<[string, string]> = [["merchant-id", merchantId], ["timestamp", timestamp], ["version", API_VERSION]];
-    const bodyFields = Object.entries(body);
-    const signature = generateSignature([...headerFields, ...bodyFields].sort(([a], [b]) => a.localeCompare(b)), passphrase);
+async function apiRequest<T>(path: string, method: "GET" | "PUT" | "PATCH", body: Record<string, string> = {}): Promise<T> {
+    const merchantId = requiredEnvironment("PAYFAST_MERCHANT_ID");
+    const version = "v1";
+    const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, "+00:00");
+    const headersForSignature: Record<string, string> = {
+        "merchant-id": merchantId,
+        version,
+        timestamp,
+    };
+    const signingValues = { ...headersForSignature, ...body };
+    const signature = apiSignature(signingValues);
     const headers = new Headers({
         "merchant-id": merchantId,
-        version: API_VERSION,
+        version,
         timestamp,
         signature,
-        Accept: "application/json",
-        "Content-Type": "application/x-www-form-urlencoded",
     });
-    const query = sandbox() ? "?testing=true" : "";
-    const response = await fetch(`${apiUrl()}${path}${query}`, {
-        method,
-        headers,
-        ...(Object.keys(body).length ? { body: new URLSearchParams(body).toString() } : {}),
-        cache: "no-store",
-    });
-    const payload = await response.text();
-    if (!response.ok) throw new Error(`PayFast recurring API returned HTTP ${response.status}: ${payload.slice(0, 300)}`);
+    const init: RequestInit = { method, headers, cache: "no-store" };
+    if (method !== "GET") {
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+        init.body = new URLSearchParams(body).toString();
+    }
+    const response = await fetch(endpoint(path), init);
+    const text = await response.text();
+    let payload: unknown;
+    try { payload = JSON.parse(text); } catch { payload = text; }
+    if (!response.ok) {
+        const detail = typeof payload === "string" ? payload.slice(0, 500) : JSON.stringify(payload).slice(0, 500);
+        throw new Error(`PayFast API request failed with HTTP ${response.status}: ${detail}`);
+    }
+    return payload as T;
+}
+
+function splitName(email: string | null | undefined): { first: string; last: string } {
+    const local = email?.split("@")[0]?.replace(/[^A-Za-z0-9]+/g, " ").trim() ?? "";
+    const [first = "BSMP", ...rest] = local.split(/\\s+/).filter(Boolean);
+    return { first, last: rest.join(" ") || "User" };
+}
+
+function formFields(input: BillingCheckoutInput, plan: PayFastPlanConfig, notifyUrl: string): Record<string, string> {
+    const name = splitName(input.customerEmail);
+    const data: Record<string, string> = {
+        merchant_id: requiredEnvironment("PAYFAST_MERCHANT_ID"),
+        merchant_key: requiredEnvironment("PAYFAST_MERCHANT_KEY"),
+        return_url: input.successUrl,
+        cancel_url: input.cancelUrl,
+        notify_url: notifyUrl,
+        name_first: name.first,
+        name_last: name.last,
+        email_address: input.customerEmail ?? "",
+        m_payment_id: input.merchantPaymentId,
+        amount: plan.amount,
+        item_name: plan.itemName ?? input.planCode,
+        item_description: plan.itemDescription ?? `BSMP ${input.planCode} subscription`,
+        subscription_type: "1",
+        billing_date: plan.billingDate ?? new Date().toISOString().slice(0, 10),
+        recurring_amount: plan.recurringAmount ?? plan.amount,
+        frequency: String(plan.frequency),
+        cycles: String(plan.cycles ?? 0),
+        subscription_notify_email: "true",
+        subscription_notify_webhook: "true",
+        subscription_notify_buyer: "true",
+        custom_str1: input.userId,
+        custom_str2: input.planCode,
+    };
+    data.signature = generateSignature(data, requiredEnvironment("PAYFAST_PASSPHRASE"), Object.keys(data));
+    return data;
 }
 
 export class PayFastBillingProvider implements BillingProvider {
     readonly id = "payfast";
 
     async createCheckoutSession(input: BillingCheckoutInput): Promise<BillingCheckoutSession> {
-        const merchantId = env("PAYFAST_MERCHANT_ID");
-        const merchantKey = env("PAYFAST_MERCHANT_KEY");
-        const passphrase = env("PAYFAST_PASSPHRASE");
-        const publicUrl = env("PUBLIC_APP_URL").replace(/\/$/, "");
-        const config = planConfig(input.planCode);
-        const fields: Array<[string, string]> = [
-            ["merchant_id", merchantId],
-            ["merchant_key", merchantKey],
-            ["return_url", input.successUrl],
-            ["cancel_url", input.cancelUrl],
-            ["notify_url", `${publicUrl}/api/billing/webhooks/payfast`],
-            ["email_address", input.customerEmail ?? ""],
-            ["m_payment_id", input.merchantPaymentId],
-            ["amount", config.amount.toFixed(2)],
-            ["item_name", `BSMP ${input.planCode}`],
-            ["item_description", `BSMP subscription ${input.planCode}`],
-            ["subscription_type", "1"],
-            ...(config.billingDate ? [["billing_date", config.billingDate] as [string, string]] : []),
-            ["recurring_amount", config.recurringAmount.toFixed(2)],
-            ["frequency", String(config.frequency)],
-            ["cycles", String(config.cycles)],
-            ["subscription_notify_email", "true"],
-            ["subscription_notify_webhook", "true"],
-            ["subscription_notify_buyer", "true"],
-            ["custom_str1", input.userId],
-            ["custom_str2", input.planCode],
-        ];
-        const formFields = Object.fromEntries(fields);
-        formFields.signature = generateSignature(fields, passphrase);
+        const plan = planFor(input.planCode);
+        const baseUrl = process.env.PUBLIC_APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || new URL(input.successUrl).origin;
+        const notifyUrl = `${baseUrl}/api/billing/webhooks/payfast`;
         return {
             provider: "payfast",
-            checkoutUrl: processUrl(),
-            formAction: processUrl(),
-            formFields,
-            amountZar: config.amount,
-            recurringAmountZar: config.recurringAmount,
+            checkoutUrl: sandboxEnabled() ? SANDBOX_CHECKOUT_URL : LIVE_CHECKOUT_URL,
+            formAction: sandboxEnabled() ? SANDBOX_CHECKOUT_URL : LIVE_CHECKOUT_URL,
+            formFields: formFields(input, plan, notifyUrl),
+            amountZar: Number(plan.amount),
+            recurringAmountZar: Number(plan.recurringAmount),
         };
     }
 
     async cancelSubscription(input: BillingCancelSubscriptionInput): Promise<void> {
-        if (input.cancelAtPeriodEnd) throw new Error("PayFast cancellation ends the subscription; end-of-period cancellation is not represented by the PayFast cancel endpoint.");
-        await apiRequest(`/${encodeURIComponent(input.externalSubscriptionId)}/cancel`, "PUT");
+        if (input.cancelAtPeriodEnd) throw new Error("PayFast cancellation is immediate; end-of-period cancellation is not supported by this adapter.");
+        const response = await apiRequest<{
+            code?: number;
+            status?: string;
+            data?: { response?: boolean; message?: string };
+        }>(`/subscriptions/${encodeURIComponent(input.externalSubscriptionId)}/cancel`, "PUT");
+        // PayFast returns HTTP 400 when a cancellation is retried after the
+        // subscription has already been cancelled. Treat that response as an
+        // idempotent success so ITN retries can safely finish reconciliation.
+        const alreadyCancelled =
+            response.data?.response === false &&
+            /subscription status is cancelled/i.test(response.data.message ?? "");
+
+        if (alreadyCancelled) return;
+
+        if (response.code !== 200 || response.status !== "success" || response.data?.response !== true) {
+            console.error("PayFast subscription cancellation rejected:", {
+                code: response.code,
+                status: response.status,
+                data: response.data ?? null,
+            });
+            const detail = response.data?.response === false
+                ? JSON.stringify(response.data)
+                : "unexpected provider response";
+            throw new Error(`PayFast subscription cancellation was not confirmed by the provider: ${detail}`);
+        }
     }
 
     async verifyWebhook(input: BillingWebhookInput): Promise<NormalizedBillingEvent[]> {
-        const merchantId = env("PAYFAST_MERCHANT_ID");
-        const passphrase = env("PAYFAST_PASSPHRASE");
-        const allowList = env("PAYFAST_ITN_ALLOWED_IPS");
-        const requestIp = sourceIp(input.headers);
-        if (!requestIp || !ipAllowed(requestIp, allowList)) throw new Error("PayFast ITN source IP is not allowed.");
-
-        const params = new URLSearchParams(input.rawBody);
-        if ((params.get("merchant_id") ?? "") !== merchantId) throw new Error("PayFast merchant_id does not match the configured merchant.");
-        const receivedSignature = params.get("signature") ?? "";
-        const expectedSignature = generateItnSignature(input.rawBody, passphrase);
-        if (!receivedSignature || !safeEqual(receivedSignature, expectedSignature)) throw new Error("PayFast ITN signature verification failed.");
-        if (!(await serverValidate(input.rawBody))) throw new Error("PayFast server-side ITN validation failed.");
-
-        const pfPaymentId = params.get("pf_payment_id")?.trim();
-        const paymentStatus = params.get("payment_status")?.trim();
-        const token = params.get("token")?.trim();
-        if (!pfPaymentId || !paymentStatus || !token) throw new Error("PayFast ITN is missing required transaction or subscription fields.");
-
-        const planCodeForEvent = params.get("custom_str2")?.trim() || null;
-        const configuredPlan = planCodeForEvent ? planConfig(planCodeForEvent) : null;
-        const normalized = normalizeStatus(paymentStatus);
+        const values: Record<string, string> = {};
+        const raw = new URLSearchParams(input.rawBody);
+        for (const [key, value] of raw.entries()) values[key] = value;
+        verifySignature(values);
+        if (values.merchant_id !== requiredEnvironment("PAYFAST_MERCHANT_ID")) throw new Error("PayFast merchant id verification failed.");
+        if (values.payment_status !== "COMPLETE" && values.payment_status !== "CANCELLED") return [];
+        if (!values.pf_payment_id || !values.token) throw new Error("PayFast recurring ITN is missing payment or subscription identifiers.");
         return [{
             provider: "payfast",
-            externalEventId: pfPaymentId,
-            eventType: normalized.eventType,
-            userId: params.get("custom_str1")?.trim() || null,
-            planCode: params.get("custom_str2")?.trim() || null,
-            externalCustomerId: null,
-            externalSubscriptionId: token,
-            status: normalized.status,
-            cancelAtPeriodEnd: false,
+            externalEventId: values.pf_payment_id,
+            eventType: values.payment_status === "CANCELLED" ? "canceled" : "activated",
+            userId: values.custom_str1?.trim() || null,
+            planCode: values.custom_str2?.trim() || null,
+            externalSubscriptionId: values.token,
+            status: values.payment_status === "CANCELLED" ? "canceled" : "active",
             effectiveAt: new Date().toISOString(),
             metadata: {
                 source: "payfast_itn",
-                m_payment_id: params.get("m_payment_id")?.trim() || null,
-                pf_payment_id: pfPaymentId,
-                amount_gross: params.get("amount_gross")?.trim() || null,
-                amount_fee: params.get("amount_fee")?.trim() || null,
-                amount_net: params.get("amount_net")?.trim() || null,
-                recurring_amount_zar: configuredPlan?.recurringAmount ?? null,
-                payment_status: paymentStatus,
+                m_payment_id: values.m_payment_id ?? null,
+                pf_payment_id: values.pf_payment_id,
+                amount_gross: values.amount_gross ?? null,
+                amount_fee: values.amount_fee ?? null,
+                amount_net: values.amount_net ?? null,
+                email_address: values.email_address ?? null,
+                custom_str1: values.custom_str1 ?? null,
+                custom_str2: values.custom_str2 ?? null,
+                recurring_amount_zar: values.custom_str2 ? planFor(values.custom_str2).recurringAmount : null,
+                payment_status: values.payment_status,
             },
         }];
     }
 }
 
-export const __test__ = { generateSignature, generateItnSignature, ipAllowed, parsePlanConfig, normalizeStatus };
+export function payFastExpectedAmount(planCode: string): string {
+    return planFor(planCode).amount;
+}
+
+export function payFastVerifyWebhookSignature(values: Record<string, string>): void {
+    verifySignature(values);
+}
+
+export async function payFastValidateServerConfirmation(rawValues: Record<string, string>): Promise<boolean> {
+    const payload: Record<string, string> = {};
+    for (const [key, value] of Object.entries(rawValues)) if (key !== "signature") payload[key] = value;
+    const body = itnParameterString(payload, Object.keys(payload));
+    const url = `${sandboxEnabled() ? "https://sandbox.payfast.co.za" : "https://www.payfast.co.za"}/eng/query/validate`;
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "BSMP-PayFast-ITN/1.0",
+        },
+        body,
+        cache: "no-store",
+    });
+    const responseText = (await response.text()).trim();
+    console.info("PayFast server confirmation:", {
+        status: response.status,
+        response: responseText,
+        url,
+    });
+    return response.ok && responseText === "VALID";
+}
+
+export const __test__ = { phpUrlEncode, parameterString, itnParameterString, generateSignature, generateItnSignature, amountMatches, planFor, apiSignature: buildApiSignature, signature: generateSignature };

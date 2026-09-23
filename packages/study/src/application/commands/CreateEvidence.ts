@@ -1,5 +1,4 @@
 import { Evidence } from "../../domain/entities/Evidence.js";
-import { Interpretation } from "../../domain/entities/Interpretation.js";
 import {
     EvidenceDescription,
     EvidenceId,
