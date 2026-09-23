@@ -109,6 +109,55 @@ export async function POST(request: Request) {
             throw new Error("PayFast payment amount does not match the expected BSMP subscription amount.");
         }
 
+        const { data: existingSubscriptions, error: existingSubscriptionError } = await client
+            .from("user_subscriptions")
+            .select("id, provider, external_subscription_id, status")
+            .eq("user_id", intent.user_id)
+            .in("status", ["trialing", "active", "past_due", "paused", "incomplete"]);
+
+        if (existingSubscriptionError) throw existingSubscriptionError;
+
+        const conflictingSubscription = (existingSubscriptions ?? []).find(
+            (subscription) =>
+                subscription.provider === "payfast" &&
+                subscription.external_subscription_id &&
+                subscription.external_subscription_id !== token,
+        );
+
+        if (conflictingSubscription && token) {
+            // A second PayFast subscription can be created if a buyer retries checkout
+            // while BSMP still has an active subscription. Do not create a second
+            // entitlement-bearing subscription; cancel the newly-created provider
+            // subscription and close the orphaned checkout intent.
+            await provider.cancelSubscription({
+                externalSubscriptionId: token,
+                cancelAtPeriodEnd: false,
+            });
+
+            const { error: reconcileError } = await client
+                .from("billing_checkout_intents")
+                .update({
+                    status: "failed",
+                    external_subscription_id: token,
+                    completed_at: new Date().toISOString(),
+                    metadata: {
+                        reconciliation: "duplicate_active_subscription",
+                        existing_subscription_id: conflictingSubscription.id,
+                        existing_provider: conflictingSubscription.provider,
+                        existing_external_subscription_id: conflictingSubscription.external_subscription_id,
+                    },
+                })
+                .eq("id", intent.id);
+
+            if (reconcileError) throw reconcileError;
+
+            return NextResponse.json({
+                received: true,
+                processed: 0,
+                reconciled: "duplicate_subscription_canceled",
+            });
+        }
+
         const { data: plan, error: planError } = await client
             .from("subscription_plans")
             .select("code")
