@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { ExpositorySermon } from "@bsmp/preaching";
+import { evaluateFinalSermonReadiness, type ExpositorySermon, type FinalSermonReadinessCheck } from "@bsmp/preaching";
 import { SupabaseExpositorySermonRepository } from "../../lib/SupabaseExpositorySermonRepository";
 
 interface Props {
@@ -11,12 +11,19 @@ interface Props {
 
 const linkStyle = { color: "#1d4ed8", textDecoration: "none", fontWeight: 600 } as const;
 
-type Check = {
-    label: string;
-    description: string;
-    complete: boolean;
-    href: string;
+type Check = FinalSermonReadinessCheck & {
+    readonly href: string;
 };
+
+function readinessHref(studyId: string, id: FinalSermonReadinessCheck["id"]): string {
+    if (id === "big-idea" || id === "purpose") {
+        return `/preaching/overview?studyId=${encodeURIComponent(studyId)}`;
+    }
+    if (id === "outline" || id === "exposition") {
+        return `/preaching/exposition?studyId=${encodeURIComponent(studyId)}`;
+    }
+    return `/preaching/final?studyId=${encodeURIComponent(studyId)}`;
+}
 
 export function FinalSermonDraftReadiness({ studyId }: Props) {
     const [sermon, setSermon] = useState<ExpositorySermon | null>(null);
@@ -46,49 +53,12 @@ export function FinalSermonDraftReadiness({ studyId }: Props) {
         };
     }, [studyId]);
 
-    const checks = useMemo<Check[]>(() => {
-        if (!sermon) return [];
-        const manuscript = sermon.manuscript?.value?.trim() ?? "";
-        const hasExposition = sermon.outline.some((point) => Boolean(point.text || point.explanation || point.illustration || point.application));
-        return [
-            {
-                label: "Big Idea",
-                description: "The governing truth of the sermon is defined.",
-                complete: Boolean(sermon.bigIdea?.value.trim()),
-                href: `/preaching/overview?studyId=${encodeURIComponent(studyId)}`,
-            },
-            {
-                label: "Purpose",
-                description: "The intended response of the congregation is defined.",
-                complete: Boolean(sermon.purpose?.value.trim()),
-                href: `/preaching/overview?studyId=${encodeURIComponent(studyId)}`,
-            },
-            {
-                label: "Outline",
-                description: "The sermon has at least one prepared outline point.",
-                complete: sermon.outline.length > 0,
-                href: `/preaching/exposition?studyId=${encodeURIComponent(studyId)}`,
-            },
-            {
-                label: "Exposition",
-                description: "At least one outline point has developed exposition material.",
-                complete: hasExposition,
-                href: `/preaching/exposition?studyId=${encodeURIComponent(studyId)}`,
-            },
-            {
-                label: "Final Manuscript",
-                description: "A saved manuscript is ready for preaching review.",
-                complete: manuscript.length > 0,
-                href: `/preaching/final?studyId=${encodeURIComponent(studyId)}`,
-            },
-            {
-                label: "Delivery Preparation",
-                description: "Delivery notes are prepared for the preaching setting.",
-                complete: Boolean(sermon.deliveryNotes?.value.trim()),
-                href: `/preaching/final?studyId=${encodeURIComponent(studyId)}`,
-            },
-        ];
-    }, [sermon, studyId]);
+    const checks: Check[] = sermon
+        ? evaluateFinalSermonReadiness(sermon).map((check) => ({
+            ...check,
+            href: readinessHref(studyId, check.id),
+        }))
+        : [];
 
     if (loading) {
         return (
