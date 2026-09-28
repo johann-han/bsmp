@@ -38,6 +38,21 @@ type RawDictionary = Record<string, RawLexiconEntry>;
 const KJV_DATA_COMMIT = "323f79bc6f4c2749e77a23a71b7ca7772fad81a7";
 const STRONGS_DATA_COMMIT = "0acd2f251c2d35ff8db2dece4e0593979d3ac223";
 
+const KJV_BOOK_FILES: Record<string, string> = {
+    GEN: "Gen", EXO: "Exod", LEV: "Lev", NUM: "Num", DEU: "Deut",
+    JOS: "Josh", JDG: "Judg", RUT: "Ruth", "1SA": "1Sam", "2SA": "2Sam",
+    "1KI": "1Kgs", "2KI": "2Kgs", "1CH": "1Chr", "2CH": "2Chr", EZR: "Ezra",
+    NEH: "Neh", EST: "Esth", JOB: "Job", PSA: "Ps", PRO: "Prov", ECC: "Eccl",
+    SNG: "Song", ISA: "Isa", JER: "Jer", LAM: "Lam", EZK: "Ezek", DAN: "Dan",
+    HOS: "Hos", JOL: "Joel", AMO: "Amos", OBA: "Obad", JON: "Jonah", MIC: "Mic",
+    NAM: "Nah", HAB: "Hab", ZEP: "Zeph", HAG: "Hag", ZEC: "Zech", MAL: "Mal",
+    MAT: "Matt", MRK: "Mark", LUK: "Luke", JHN: "John", ACT: "Acts", ROM: "Rom",
+    "1CO": "1Cor", "2CO": "2Cor", GAL: "Gal", EPH: "Eph", PHP: "Phil", COL: "Col",
+    "1TH": "1Thess", "2TH": "2Thess", "1TI": "1Tim", "2TI": "2Tim", TIT: "Titus",
+    PHM: "Phlm", HEB: "Heb", JAS: "Jas", "1PE": "1Pet", "2PE": "2Pet",
+    "1JN": "1John", "2JN": "2John", "3JN": "3John", JUD: "Jude", REV: "Rev",
+};
+
 const GREEK_DICTIONARY_URL =
     "https://raw.githubusercontent.com/openscriptures/strongs/" +
     STRONGS_DATA_COMMIT +
@@ -185,11 +200,16 @@ function selectTaggedWord(
 }
 
 async function fetchTaggedVerse(bookId: string, chapter: number, verse: number): Promise<string> {
+    const sourceBookId = KJV_BOOK_FILES[bookId.toUpperCase()];
+    if (!sourceBookId) {
+        throw new Error("KJV word data does not support the requested book.");
+    }
+
     const response = await fetch(
         "https://raw.githubusercontent.com/kaiserlik/kjv/" +
             KJV_DATA_COMMIT +
             "/" +
-            encodeURIComponent(bookId) +
+            encodeURIComponent(sourceBookId) +
             ".json",
         { next: { revalidate: 86400 } },
     );
@@ -202,8 +222,8 @@ async function fetchTaggedVerse(bookId: string, chapter: number, verse: number):
         Record<string, Record<string, { en?: unknown }>>
     >;
 
-    const verseKey = bookId + "|" + chapter + "|" + verse;
-    const tagged = payload[bookId]?.[bookId + "|" + chapter]?.[verseKey]?.en;
+    const verseKey = sourceBookId + "|" + chapter + "|" + verse;
+    const tagged = payload[sourceBookId]?.[sourceBookId + "|" + chapter]?.[verseKey]?.en;
 
     if (typeof tagged !== "string" || !tagged.trim()) {
         throw new Error("KJV word data does not contain the requested verse.");
