@@ -29,6 +29,9 @@ interface WordStudyPopoverProps {
     readonly translation: string;
     readonly open: boolean;
     readonly onOpenChange: (open: boolean) => void;
+    readonly hasPrevious: boolean;
+    readonly hasNext: boolean;
+    readonly onNavigate: (direction: -1 | 1) => void;
 }
 
 function displayDefinition(entry: StrongsEntry): string {
@@ -43,6 +46,9 @@ export function WordStudyPopover({
     translation,
     open,
     onOpenChange,
+    hasPrevious,
+    hasNext,
+    onNavigate,
 }: WordStudyPopoverProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -120,12 +126,20 @@ export function WordStudyPopover({
         if (!open) return;
 
         const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "Escape") onOpenChange(false);
+            if (event.key === "Escape") {
+                onOpenChange(false);
+            } else if (event.key === "ArrowLeft" && hasPrevious) {
+                event.preventDefault();
+                onNavigate(-1);
+            } else if (event.key === "ArrowRight" && hasNext) {
+                event.preventDefault();
+                onNavigate(1);
+            }
         };
 
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [open, onOpenChange]);
+    }, [hasNext, hasPrevious, onNavigate, onOpenChange, open]);
 
     return (
         <span style={{ position: "relative", display: "inline-block" }}>
@@ -332,6 +346,54 @@ export function WordStudyPopover({
                             </p>
                         )
                     )}
+
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            marginTop: 12,
+                            paddingTop: 10,
+                            borderTop: "1px solid #e2e8f0",
+                        }}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => onNavigate(-1)}
+                            disabled={!hasPrevious}
+                            aria-label="Previous word in passage"
+                            style={{
+                                flex: 1,
+                                border: "1px solid #cbd5e1",
+                                borderRadius: 8,
+                                background: "#fff",
+                                padding: "7px 9px",
+                                color: "#334155",
+                                fontSize: 12,
+                                fontWeight: 700,
+                            }}
+                        >
+                            ← Previous
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => onNavigate(1)}
+                            disabled={!hasNext}
+                            aria-label="Next word in passage"
+                            style={{
+                                flex: 1,
+                                border: "1px solid #cbd5e1",
+                                borderRadius: 8,
+                                background: "#fff",
+                                padding: "7px 9px",
+                                color: "#334155",
+                                fontSize: 12,
+                                fontWeight: 700,
+                            }}
+                        >
+                            Next →
+                        </button>
+                    </div>
 
                     <p
                         style={{
