@@ -366,7 +366,13 @@ export function StudyPassage({
             </div>
 
             <p style={{ margin: "16px 0 0", fontSize: 13, color: "#6b7280" }}>
-                {selectedVerses.length === 0 ? "Click a verse to focus it. Click another verse to select a range." : selectedVerses.length === 1 ? `Focused verse: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}` : `Focused range: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}–${selectedVerses[selectedVerses.length - 1]}`}
+                {wordStudyTarget ? (
+                    <>
+                        Focused verse: {verses.find((verse) => verse.number === wordStudyTarget.verseNumber)?.reference ?? wordStudyTarget.verseNumber}
+                        {" · "}
+                        Word study: <strong>{verses.find((verse) => verse.number === wordStudyTarget.verseNumber)?.text.split(/\s+/)[wordStudyTarget.wordIndex] ?? ""}</strong>
+                    </>
+                ) : selectedVerses.length === 0 ? "Click a verse to focus it. Click another verse to select a range." : selectedVerses.length === 1 ? `Focused verse: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}` : `Focused range: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}–${selectedVerses[selectedVerses.length - 1]}`}
             </p>
 
             {wordMarkups.length > 0 && (
