@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { ExpositorySermon } from "@bsmp/preaching";
+import { evaluateFinalSermonReadiness, type ExpositorySermon } from "@bsmp/preaching";
 import { StudyId } from "@bsmp/study";
 import { AppShell } from "@repo/ui";
 import { SupabaseStudyRepository } from "../../lib/SupabaseStudyRepository";
@@ -87,6 +87,12 @@ export function SermonDeliveryWorkspace({ studyId }: Props) {
                 if (cancelled) return;
                 if (!study) throw new Error("The selected study could not be found.");
                 if (!nextSermon) throw new Error("Complete Sermon Preparation before opening delivery mode.");
+                const manuscriptReady = evaluateFinalSermonReadiness(nextSermon).some(
+                    (check) => check.id === "final-manuscript" && check.complete,
+                );
+                if (!manuscriptReady) {
+                    throw new Error("Complete and save the Final Sermon Draft before opening delivery mode.");
+                }
                 setSermon(nextSermon);
             } catch (reason: unknown) {
                 if (!cancelled) setError(reason instanceof Error ? reason.message : "Unable to load sermon delivery.");
