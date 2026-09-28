@@ -1,224 +1,168 @@
-SECTION 1 — Project Status
-Project
+# BSMP Master Development Plan
 
-Bible Study Ministry Platform (BSMP)
+## 1. Current Project State
 
-Current Version
+**Project:** Bible Study & Ministry Platform (BSMP)
 
-0.1.0-alpha
+**Version:** 0.1.0 – Foundation
 
-Current Phase
+**Phase:** Active Engineering / Integrated Foundation
 
-Engineering Phase
+**Current integration branch:** `feat/observation-workspace-route`
 
-Current Milestone
+**Current integration head:** `faebabda8aa0f6a8c258cbe2f5c60e9bfd62b18a`
 
-M1.1
+`main` remains untouched by the active development workflow.
 
-Current Sprint
+The platform now has an integrated preparation path:
 
-Sprint 16
-SECTION 2 — Active Milestone
-M1.1
-Objective
+**Inductive Study → Biblical Theology → Teaching → Sermon Framework → Exposition → Final Manuscript → Delivery → Preaching History**
 
-Create the @bsmp/inductive package.
+The platform also includes focused Biblical Research, reusable research sources, AI mentor layers, authentication, subscription/entitlement foundations, and PayFast billing integration.
 
-Deliverables
+## 2. Integrated Capabilities
 
-Package
+### Study / Inductive Study
 
-README
+The Study Workspace provides passage-centered observation, interpretation, evidence, application, history, persistence, verse targeting, and KJV word study.
 
-CHANGELOG
+Strong's Word Study currently supports KJV word tagging, lexical lookup, word-by-word navigation, Greek New Testament token morphology, and reference-only lexical data boundaries.
 
-Build
+### Biblical Theology
 
-Turbo
+Students can record theological syntheses linked to supporting interpretations. Biblical Theology entries are user-scoped, persisted in Supabase, and surfaced as support within sermon preparation.
 
-Tests
+### Teaching
 
-Status
+The Teaching stage records audience, central truth, teaching aim, explanation, teaching points, discussion questions, response prompts, and explicit interpretation/Biblical Theology support.
 
-Not Started
-M1.2
+Completed Teaching Plans can be linked to Sermon Preparation, preserving the Study → Biblical Theology → Teaching → Sermon chain.
 
-Objective
+### Sermon Preparation
 
-Knowledge Domain
+Sermon Preparation creates expository sermon records from a Study and supports title, Big Idea, Purpose, framework, outline construction, exposition, source traceability, and Biblical Theology support.
 
-Deliverables
+### Final Sermon Draft
 
-KnowledgeObject
+The Final Sermon Draft workspace supports preacher-authored manuscript editing, traceable manuscript sections, delivery notes, word count, estimated duration, source traceability, print/PDF output, and readiness checking.
 
-ObservationQuestion
+Final Sermon Readiness rules are centralized in the preaching application layer and covered by automated tests.
 
-RuleId
+### Sermon Delivery
 
-Tests
-M1.3
+Delivery Mode provides read-focused manuscript presentation, section navigation, adjustable reading size, Focus Mode, recovery state, My Place, screen wake-lock support, and print/PDF output.
 
-Repository Layer
+Delivery now requires a saved Final Sermon Draft before the delivery workspace opens.
 
-Deliverables
+### Preaching History
 
-Repository<T,TId>
+A sermon may have multiple preaching occurrences with scheduled/completed/cancelled state, service, venue, notes, and actual preached time. Occurrences are user-scoped and persisted independently of the sermon manuscript.
 
-ObservationRepository
+### Biblical Research
 
-InMemoryObservationRepository
-M1.4
+The Research workspace provides Study-grounded research and external contextual research modes with a provider abstraction, Gemini primary retrieval, OpenRouter fallback, citations, source verification boundaries, Research Questions helper, Research History, and a reusable Research Source Library.
 
-Knowledge Records
+External research remains separate from Study observations, interpretations, Biblical Theology, Teaching, and sermons unless the student deliberately uses the information in later stages.
 
-Deliverables
+### AI Mentors
 
-Who
+AI mentor layers exist for Observation, Interpretation, Application, Biblical Theology, Teaching, Sermon Exposition, Final Sermon Draft, Sermon Delivery, and Biblical Research.
 
-What
+The intended boundary is coaching rather than replacement: AI reviews or focuses the student's work without silently writing the student's study, interpretation, application, or sermon.
 
-Where
+### Authentication
 
-When
+Authenticated routes, sign-in/out, password change, password recovery, protected Supabase data access, and user-scoped row-level security are implemented.
 
-Why
+### AI Usage and Subscriptions
 
-How
-M1.5
+AI usage metering, quota enforcement foundations, subscription entitlements, subscription administration, lifecycle audit events, provider-neutral billing boundaries, and transactional provider-event synchronization are implemented.
 
-Workspace Integration
+PayFast is the current provider-specific billing integration. The hosted checkout, recurring subscriptions, ITN validation, amount verification, and cancellation handling are covered by automated tests and sandbox-oriented configuration.
 
-Deliverables
+## 3. Engineering Standards
 
-Observation Panel
+Every feature branch must satisfy:
 
-Repository
+- typecheck passes
+- tests pass
+- lint passes
+- production build passes
+- documentation is updated when behavior or architecture changes
+- public APIs remain intentional
+- no TODO placeholder is introduced as a substitute for implementation
+- authenticated browser verification is performed for meaningful user-facing workflow changes
+- source, tests, documentation, and browser verification remain aligned
 
-Questions Display
-SECTION 3 — Engineering Rules
+## 4. Development Order
 
-Every milestone must satisfy:
+The original package order remains the architectural dependency order:
 
-✓ Compiles
+**shared → bible → study → inductive → learning → resources → workflow → preaching → ai → web**
 
-✓ Turbo passes
+Later implementation has expanded the web application while preserving those domain boundaries.
 
-✓ Tests pass
+## 5. Current Work Strategy
 
-✓ Documentation updated
+The project is now beyond the original foundation-only milestone plan. Development should proceed as focused vertical slices on top of the integrated branch rather than reopening earlier milestones.
 
-✓ Public API reviewed
+Priority order for future work:
 
-✓ No TODO placeholders
-SECTION 4 — Package Order
+1. Complete any remaining runtime verification gaps in existing integrated workflows.
+2. Strengthen domain/application contracts where rules are still duplicated in UI code.
+3. Extend Biblical Research provenance/history without collapsing the boundary between external research and Study evidence.
+4. Harden production billing and subscription operations using the provider-neutral boundary.
+5. Expand lexical reference capability incrementally, keeping lexical data separate from Study interpretation.
+6. Continue improving the integrated Study → Sermon → Delivery experience without redesigning completed workflows.
 
-We now know the order.
+## 6. Definition of Ready
 
-shared
+Before implementation:
 
-↓
+- problem is understood
+- existing functionality and branches are checked
+- domain/package ownership is identified
+- public API impact is understood
+- acceptance criteria are explicit
+- current integration branch is the base
 
-bible
+## 7. Definition of Done
 
-↓
+Before a feature is marked complete:
 
-study
+- code implemented
+- tests written and passing
+- typecheck/lint/build passing
+- documentation updated
+- browser workflow verified when applicable
+- persistence and RLS verified when applicable
+- PR merged into the current integration branch
+- `main` remains unchanged unless deliberately released later
 
-↓
+## 8. Permanent Engineering Principles
 
-inductive
+**Scripture First**
 
-↓
+**Method Before Automation**
 
-learning
+**Knowledge Before AI**
 
-↓
+**Domain Before UI**
 
-resources
+**Quality Before Speed**
 
-↓
+**Everything Must Be Explainable**
 
-workflow
+**Every Feature Must Be Testable**
 
-↓
+**Every Knowledge Object Must Be Versioned**
 
-preaching
+**Student-authored work remains distinct from AI-generated assistance**
 
-↓
+## 9. Recent Integrated PRs
 
-ai
+- PR #23 — Strong's word-study morphology — merged
+- PR #24 — centralized Final Sermon Readiness — merged
+- PR #25 — require saved Final Sermon Draft before Delivery — merged
 
-↓
-
-web
-
-Nothing jumps ahead.
-
-SECTION 5 — Version Roadmap
-0.1
-
-Foundation
-
-0.2
-
-Study Platform
-
-0.3
-
-Knowledge Platform
-
-0.4
-
-Observation Engine
-
-0.5
-
-Bible Reader
-
-0.6
-
-AI Observation Mentor
-
-0.7
-
-Learning Platform
-
-0.8
-
-Expository Workspace
-
-1.0
-
-Production Release
-SECTION 6 — Definition of Ready
-
-Before we implement anything:
-
-Problem understood
-Domain identified
-Package identified
-Public API designed
-Acceptance criteria written
-SECTION 7 — Definition of Done
-
-Before we mark a feature complete:
-
-Code implemented
-Tests written
-Tests passing
-Documentation updated
-Changelog updated
-Build successful
-Code reviewed
-SECTION 8 — Engineering Principles
-
-These become permanent.
-
-Scripture First
-Method Before Automation
-Knowledge Before AI
-Domain Before UI
-Quality Before Speed
-Everything Must Be Explainable
-Every Feature Must Be Testable
-Every Knowledge Object Must Be Versioned
+These changes are now part of the integrated development branch.
