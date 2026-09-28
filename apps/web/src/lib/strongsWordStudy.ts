@@ -93,13 +93,15 @@ export function parseTaggedVerse(value: string): TaggedWord[] {
 }
 
 export function parseStrongsDictionary(source: string): RawDictionary {
-    const assignmentIndex = source.indexOf("=");
+    const assignmentMatch = source.match(/var\s+strongs(?:Greek|Hebrew)Dictionary\s*=\s/);
     const exportMarker = source.lastIndexOf("; module.exports");
-    if (assignmentIndex < 0 || exportMarker < 0 || exportMarker <= assignmentIndex) {
+    if (!assignmentMatch || assignmentMatch.index === undefined || exportMarker < 0) {
         throw new Error("Strong's dictionary source has an unsupported format.");
     }
 
-    const json = source.slice(assignmentIndex + 1, exportMarker).trim();
+    const json = source
+        .slice(assignmentMatch.index + assignmentMatch[0].length, exportMarker)
+        .trim();
     const parsed = JSON.parse(json) as unknown;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
         throw new Error("Strong's dictionary source did not contain an object.");
