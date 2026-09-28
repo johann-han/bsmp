@@ -20,8 +20,8 @@ export interface Database {
                 Relationships: [];
             };
             research_runs: {
-                Row: { id: string; user_id: string; study_id: string; question: string; focus: string; answer: string; textual_basis: unknown; further_questions: unknown; cautions: unknown; sources: unknown; source_urls: unknown; provider: string; model: string; created_at: string; };
-                Insert: { id?: string; user_id: string; study_id: string; question: string; focus?: string; answer: string; textual_basis?: unknown; further_questions?: unknown; cautions?: unknown; sources?: unknown; source_urls?: unknown; provider: string; model: string; created_at?: string; };
+                Row: { id: string; user_id: string; study_id: string; question: string; focus: string; answer: string; textual_basis: unknown; further_questions: unknown; cautions: unknown; sources: unknown; source_urls: unknown; study_context_snapshot: { studyTitle: string; passage: string; observations: string[]; interpretations: string[]; biblicalTheology: Array<{ theme: string; synthesis: string }>; }; provider: string; model: string; created_at: string; };
+                Insert: { id?: string; user_id: string; study_id: string; question: string; focus?: string; answer: string; textual_basis?: unknown; further_questions?: unknown; cautions?: unknown; sources?: unknown; source_urls?: unknown; study_context_snapshot?: { studyTitle: string; passage: string; observations: string[]; interpretations: string[]; biblicalTheology: Array<{ theme: string; synthesis: string }>; }; provider: string; model: string; created_at?: string; };
                 Update: Partial<Database["public"]["Tables"]["research_runs"]["Insert"]>;
                 Relationships: [];
             };

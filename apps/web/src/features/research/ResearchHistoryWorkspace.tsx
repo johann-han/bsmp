@@ -17,6 +17,7 @@ interface ResearchRun {
     cautions: unknown;
     provider: string;
     model: string;
+    study_context_snapshot: unknown;
     created_at: string;
 }
 interface ResearchRunSource {
@@ -59,6 +60,36 @@ function provenanceLabel(value: string): string {
     return value === "provider_citation" ? "Provider citation" : "Supplied URL";
 }
 
+function contextSnapshot(value: unknown): {
+    studyTitle: string;
+    passage: string;
+    observations: string[];
+    interpretations: string[];
+    biblicalTheology: { theme: string; synthesis: string }[];
+} | null {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+    const raw = value as Record<string, unknown>;
+    const list = (item: unknown) => Array.isArray(item)
+        ? item.filter((entry): entry is string => typeof entry === "string").map((entry) => entry.trim()).filter(Boolean)
+        : [];
+    const biblicalTheology = Array.isArray(raw.biblicalTheology)
+        ? raw.biblicalTheology.flatMap((entry) => {
+            if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
+            const item = entry as Record<string, unknown>;
+            const theme = typeof item.theme === "string" ? item.theme.trim() : "";
+            const synthesis = typeof item.synthesis === "string" ? item.synthesis.trim() : "";
+            return theme || synthesis ? [{ theme, synthesis }] : [];
+        })
+        : [];
+    return {
+        studyTitle: typeof raw.studyTitle === "string" ? raw.studyTitle.trim() : "",
+        passage: typeof raw.passage === "string" ? raw.passage.trim() : "",
+        observations: list(raw.observations),
+        interpretations: list(raw.interpretations),
+        biblicalTheology,
+    };
+}
+
 export function ResearchHistoryWorkspace({ studyId = "" }: Props) {
     const [runs, setRuns] = useState<ResearchRun[]>([]);
     const [sources, setSources] = useState<ResearchRunSource[]>([]);
@@ -77,7 +108,7 @@ export function ResearchHistoryWorkspace({ studyId = "" }: Props) {
             setError(null);
             const runQuery = supabase
                 .from("research_runs")
-                .select("id, study_id, question, focus, answer, textual_basis, further_questions, cautions, provider, model, created_at")
+                .select("id, study_id, question, focus, answer, textual_basis, further_questions, cautions, provider, model, study_context_snapshot, created_at")
                 .order("created_at", { ascending: false })
                 .limit(100);
             const scopedRunQuery = studyId ? runQuery.eq("study_id", studyId) : runQuery;
@@ -222,6 +253,44 @@ export function ResearchHistoryWorkspace({ studyId = "" }: Props) {
                             </header>
 
                             <div><h3>Research Guidance</h3><p style={{ whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{selectedRun.answer}</p></div>
+                            <div>
+                                <h3>Study Context Snapshot</h3>
+                                {(() => {
+                                    const snapshot = contextSnapshot(selectedRun.study_context_snapshot);
+                                    if (!snapshot) return <p>No Study context snapshot is available for this run.</p>;
+                                    return (
+                                        <div style={{ display: "grid", gap: 10 }}>
+                                            <div style={{ fontSize: 13, color: "#6b7280" }}>
+                                                Captured when this research run was created; later Study edits do not change this record.
+                                            </div>
+                                            <div><strong>Study:</strong> {snapshot.studyTitle || "Not recorded"}</div>
+                                            <div><strong>Passage:</strong> {snapshot.passage || "Not recorded"}</div>
+                                            <div><strong>Observations used:</strong> {snapshot.observations.length}</div>
+                                            <div><strong>Interpretations used:</strong> {snapshot.interpretations.length}</div>
+                                            <div><strong>Biblical Theology syntheses used:</strong> {snapshot.biblicalTheology.length}</div>
+                                            {snapshot.observations.length > 0 && (
+                                                <details>
+                                                    <summary>View observations</summary>
+                                                    <ul>{snapshot.observations.map((item) => <li key={item}>{item}</li>)}</ul>
+                                                </details>
+                                            )}
+                                            {snapshot.interpretations.length > 0 && (
+                                                <details>
+                                                    <summary>View interpretations</summary>
+                                                    <ul>{snapshot.interpretations.map((item) => <li key={item}>{item}</li>)}</ul>
+                                                </details>
+                                            )}
+                                            {snapshot.biblicalTheology.length > 0 && (
+                                                <details>
+                                                    <summary>View Biblical Theology</summary>
+                                                    <ul>{snapshot.biblicalTheology.map((item) => <li key={`${item.theme}:${item.synthesis}`}><strong>{item.theme}</strong>{item.synthesis ? ` — ${item.synthesis}` : ""}</li>)}</ul>
+                                                </details>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+
                             <div><h3>Textual Basis</h3>{stringList(selectedRun.textual_basis).length ? <ul>{stringList(selectedRun.textual_basis).map((item) => <li key={item}>{item}</li>)}</ul> : <p>No specific Study textual basis was returned.</p>}</div>
 
                             <div>
