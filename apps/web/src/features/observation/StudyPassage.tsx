@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../../lib/supabase";
 import { WordStudyPopover } from "./WordStudyPopover";
+import { getAdjacentWordStudyTarget, type WordStudyNavigationTarget } from "../../lib/wordStudyNavigation";
 
 export interface StudyVerse {
     readonly number: number;
@@ -91,7 +92,7 @@ export function StudyPassage({
     const [markupMode, setMarkupMode] = useState(false);
     const [markupError, setMarkupError] = useState<string | null>(null);
     const [wordStudyMode, setWordStudyMode] = useState(false);
-    const [wordStudyTarget, setWordStudyTarget] = useState<{ verseNumber: number; wordIndex: number } | null>(null);
+    const [wordStudyTarget, setWordStudyTarget] = useState<WordStudyNavigationTarget | null>(null);
 
     const strongsAvailable = translation.trim().toLowerCase() === "kjv";
 
@@ -348,6 +349,16 @@ export function StudyPassage({
                                             onOpenChange={(open) =>
                                                 setWordStudyTarget(open ? { verseNumber: verse.number, wordIndex: index } : null)
                                             }
+                                            hasPrevious={getAdjacentWordStudyTarget(verses, { verseNumber: verse.number, wordIndex: index }, -1) !== null}
+                                            hasNext={getAdjacentWordStudyTarget(verses, { verseNumber: verse.number, wordIndex: index }, 1) !== null}
+                                            onNavigate={(direction) => {
+                                                const nextTarget = getAdjacentWordStudyTarget(
+                                                    verses,
+                                                    { verseNumber: verse.number, wordIndex: index },
+                                                    direction,
+                                                );
+                                                if (nextTarget) setWordStudyTarget(nextTarget);
+                                            }}
                                         >
                                             {word}
                                         </WordStudyPopover>
