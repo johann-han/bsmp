@@ -5,6 +5,7 @@ import { runRoutedBiblicalResearch, runRoutedExternalBiblicalResearch } from "..
 import type { BiblicalResearchFocus } from "../../../../src/lib/biblicalResearchProvider";
 import { AiQuotaExceededError, assertAiQuotaAvailable } from "../../../../src/lib/aiQuota";
 import { recordAiUsageEvent } from "../../../../src/lib/aiUsage";
+import { buildResearchContextSnapshot } from "../../../../src/lib/researchRunProvenance";
 
 interface RequestBody { studyId?: unknown; question?: unknown; external?: unknown; sourceUrls?: unknown; focus?: unknown; }
 interface ResearchSource { url: string; title: string; }
@@ -96,6 +97,7 @@ async function persistResearch(
     question: string,
     focus: BiblicalResearchFocus,
     requestedUrls: readonly string[],
+    studyContextSnapshot: ReturnType<typeof buildResearchContextSnapshot>,
     result: ResearchResult,
 ): Promise<PersistedResearchRun> {
     const now = new Date().toISOString();
@@ -132,6 +134,7 @@ async function persistResearch(
         cautions: result.cautions,
         sources: formalSources,
         source_urls: requestedUrls,
+        study_context_snapshot: studyContextSnapshot,
         provider: result.provider,
         model: result.model,
     }).select("id").single();
@@ -192,6 +195,13 @@ export async function POST(request: Request) {
             ...(interpretations ?? []).map((item) => `Interpretation — ${item.statement}`),
             ...(theology ?? []).map((item) => `Biblical Theology — ${item.theme}: ${item.synthesis}`),
         ];
+        const studyContextSnapshot = buildResearchContextSnapshot({
+            studyTitle: study.title,
+            passage,
+            observations: (observations ?? []).map((item) => `Observation — ${item.verse_book} ${item.verse_chapter}:${item.verse_verse}: ${item.statement}`),
+            interpretations: (interpretations ?? []).map((item) => item.statement),
+            biblicalTheology: (theology ?? []).map((item) => ({ theme: item.theme, synthesis: item.synthesis })),
+        });
 
         let result: ResearchResult;
         if (useExternal) {
@@ -211,7 +221,7 @@ export async function POST(request: Request) {
 
         meteringProvider = result.provider;
         meteringModel = result.model;
-        const persistence = await persistResearch(client, userId, studyId, question, focus, requestedUrls, result);
+        const persistence = await persistResearch(client, userId, studyId, question, focus, requestedUrls, studyContextSnapshot, result);
         await recordAiUsageEvent({
             userId,
             studyId,
