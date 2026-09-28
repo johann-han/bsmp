@@ -1,9 +1,9 @@
 export interface ResearchContextSnapshot {
     readonly studyTitle: string;
     readonly passage: string;
-    readonly observations: readonly string[];
-    readonly interpretations: readonly string[];
-    readonly biblicalTheology: readonly {
+    readonly observations: string[];
+    readonly interpretations: string[];
+    readonly biblicalTheology: {
         theme: string;
         synthesis: string;
     }[];
