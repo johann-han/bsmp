@@ -72,7 +72,9 @@ export function AccountSettings() {
                 <div style={{ color: "#6b7280", fontSize: 13 }}>Account</div>
                 <h2 style={{ margin: "4px 0 8px" }}>Signed-in account</h2>
                 <p style={{ margin: 0 }}><strong>Email:</strong> {user.email ?? "Unknown"}</p>
-            </section>            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+            </section>
+
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                 <div style={{ color: "#6b7280", fontSize: 13 }}>Billing</div>
                 <h2 style={{ margin: "4px 0 8px" }}>Subscription</h2>
                 <p style={{ margin: "0 0 12px", color: "#6b7280" }}>
@@ -82,7 +84,6 @@ export function AccountSettings() {
                     Open Subscription Settings
                 </Link>
             </section>
-
 
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                 <h2>Change Password</h2>
