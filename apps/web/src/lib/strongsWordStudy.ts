@@ -320,7 +320,7 @@ function parseTagntVerse(source: string, reference: string): RawTagntWord[] {
                 wordType: match[2] ?? "",
                 originalForm: (fields[1] ?? "").split(" (")[0]!.trim(),
                 grammar: strongGrammar.slice(separator + 1).trim() || null,
-                sStrongInstance: fields[10]?.trim() || null,
+                sStrongInstance: fields[11]?.trim() || null,
                 editions: fields[5]?.trim() ?? "",
             };
         })
