@@ -12,6 +12,8 @@ The user can enable **Word Study**, select an English word, and open a popover c
 - original-language lemma
 - transliteration
 - pronunciation when supplied by the lexicon
+- the inflected original-language form when available
+- token-level Greek morphology for New Testament words
 - Strong's definition
 - KJV gloss
 - derivation when supplied
@@ -34,6 +36,8 @@ Open Scriptures documents its digital Strong's dictionaries as CC BY-SA, while J
 
 The KJV tagging repository README identifies its corpus as KJV JSON with embedded Strong's tags.
 
+The morphology slice currently covers Greek New Testament words. Hebrew morphology remains a separate future slice because its source and parsing scheme are different.
+
 ## Architecture
 
 - \`apps/web/src/lib/strongsWordStudy.ts\` loads and normalizes the external KJV word-tag data and Strong's dictionaries.
@@ -53,6 +57,12 @@ When Word Study is active, the selected word is treated as a lexical sub-focus i
 
 The left and right arrow keys perform the same navigation while the word-study popover is open. The verse remains the contextual focus; navigation changes only the lexical word target.
 
+## Greek morphology
+
+For Greek New Testament words, BSMP supplements the Strong's dictionary entry with the token's original-language form and morphology from STEPBible TAGNT. The display includes the published morphology code and a decoded summary such as part of speech, tense, voice, mood, person, case, number, and gender where those fields are present in the source code.
+
+The alignment is deliberately token-level rather than Strong's-number-only. Strong's numbers can occur multiple times in a verse, so BSMP uses the KJV tag position and STEPBible's `sStrong+Instance` convention to select the corresponding Greek token. When the source does not provide a defensible match, the Strong's lexical entry remains available without inventing morphology.
+
 ## Future lexical slices
 
-The next lexical slices can build on this boundary with morphology and richer original-language display without coupling lexical reference data to Study evidence.
+The next lexical slices can build on this boundary with Hebrew morphology, richer original-language display, and additional lexical/syntactic references without coupling lexical reference data to Study evidence.
