@@ -5,3 +5,4 @@ export * from "./domain/SermonOccurrenceRepository.js";
 export * from "./application/CreateExpositorySermonFromStudy.js";
 export * from "./application/CreateAndSaveExpositorySermonFromStudy.js";
 export * from "./application/BuildSermonManuscript.js";
+export * from "./application/EvaluateFinalSermonReadiness.js";
