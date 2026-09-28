@@ -39,7 +39,7 @@ describe("Strong's word-study data helpers", () => {
             index: 1,
         });
         expect(__test__.selectTaggedWord(words, "God", 2)).toMatchObject({
-            word: "God",
+            word: "God.",
             index: 2,
         });
     });
