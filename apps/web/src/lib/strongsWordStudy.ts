@@ -225,7 +225,14 @@ async function loadDictionary(language: StrongsLanguage): Promise<RawDictionary>
     return promise;
 }
 
-function toLexiconEntry(number: string, raw: RawLexiconEntry | undefined): StrongsLexiconEntry {
+function toLexiconEntry(
+    number: string,
+    raw: RawLexiconEntry | undefined,
+    lexicalContext: {
+        readonly originalForm: string | null;
+        readonly morphology: StrongsMorphology | null;
+    },
+): StrongsLexiconEntry {
     const language = number[0] as StrongsLanguage;
     if (!raw || typeof raw !== "object") {
         throw new Error("Strong's entry " + number + " was not found.");
