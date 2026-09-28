@@ -40,6 +40,19 @@ const UNINFLECTED: Record<string, string> = {
     COND: "Conditional conjunction",
 };
 
+const UNINFLECTED_QUALIFIER: Record<string, string> = {
+    I: "Interrogative",
+    N: "Negative",
+    T: "Title",
+    G: "Gentilic",
+    L: "Location",
+    LG: "Location Gentilic",
+    PG: "Person Gentilic",
+    TG: "Title Gentilic",
+    ARAM: "Transcribed from Aramaic",
+    K: "Particle combination",
+};
+
 const TENSE: Record<string, string> = {
     A: "Aorist",
     F: "Future",
@@ -166,12 +179,12 @@ export function parseGreekMorphology(code: string): StrongsMorphology {
     const normalized = code.trim();
     if (!normalized) throw new Error("A Greek morphology code is required.");
 
-    const uninflected = UNINFLECTED[normalized];
-    if (uninflected) {
+    const exactUninflected = UNINFLECTED[normalized];
+    if (exactUninflected) {
         return {
             language: "G",
             code: normalized,
-            partOfSpeech: uninflected,
+            partOfSpeech: exactUninflected,
             tense: null,
             voice: null,
             mood: null,
@@ -182,14 +195,15 @@ export function parseGreekMorphology(code: string): StrongsMorphology {
             gender: null,
             degree: null,
             qualifier: null,
-            summary: uninflected,
+            summary: exactUninflected,
         };
     }
 
     const segments = normalized.split("-");
     const functionCode = segments[0] ?? "";
     const pattern = segments[1] ?? "";
-    const partOfSpeech = PART_OF_SPEECH[functionCode] ?? null;
+    const uninflectedPartOfSpeech = UNINFLECTED[functionCode];
+    const partOfSpeech = uninflectedPartOfSpeech ?? PART_OF_SPEECH[functionCode] ?? null;
 
     let tense: string | null = null;
     let voice: string | null = null;
@@ -202,7 +216,21 @@ export function parseGreekMorphology(code: string): StrongsMorphology {
     let degree: string | null = null;
     let qualifier: string | null = null;
 
-    if (functionCode === "V") {
+    if (uninflectedPartOfSpeech) {
+        const variantSegments = segments.slice(1).filter(Boolean);
+        for (const variant of variantSegments) {
+            if (variant === "C" && (functionCode === "ADV" || functionCode === "PRT")) {
+                degree = "Comparative";
+            } else if (variant === "S" && functionCode === "ADV") {
+                degree = "Superlative";
+            } else if (variant === "C" && functionCode === "CONJ") {
+                qualifier = [qualifier, "Comparative"].filter(Boolean).join(" · ");
+            } else {
+                const label = UNINFLECTED_QUALIFIER[variant] ?? qualifierLabel(variant);
+                qualifier = [qualifier, label].filter(Boolean).join(" · ");
+            }
+        }
+    } else if (functionCode === "V") {
         const verbPattern = pattern.match(/^(2)?([A-Z])([A-Z])([A-Z])$/);
 
         if (verbPattern) {
