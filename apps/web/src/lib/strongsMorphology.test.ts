@@ -79,7 +79,7 @@ describe("Greek morphology", () => {
         });
     });
 
-    it("decodes a second-aorist passive participle", () => {
+    it("decodes a second-aorist active participle", () => {
         expect(parseGreekMorphology("V-2AAP-NSM")).toMatchObject({
             partOfSpeech: "Verb",
             tense: "Second Aorist",
