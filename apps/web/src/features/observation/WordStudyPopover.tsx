@@ -11,6 +11,12 @@ interface StrongsEntry {
     readonly derivation: string | null;
     readonly strongsDefinition: string | null;
     readonly kjvDefinition: string | null;
+    readonly originalForm: string | null;
+    readonly morphology: {
+        readonly language: "G";
+        readonly code: string;
+        readonly summary: string;
+    } | null;
 }
 
 interface WordStudyResponse {
@@ -286,6 +292,38 @@ export function WordStudyPopover({
                                                 }}
                                             >
                                                 {entry.transliteration}
+                                            </div>
+                                        )}
+
+                                        {entry.originalForm && (
+                                            <div
+                                                style={{
+                                                    marginTop: 6,
+                                                    fontSize: 15,
+                                                    fontWeight: 700,
+                                                }}
+                                            >
+                                                <span style={{ fontWeight: 800 }}>Original form:</span>{" "}
+                                                {entry.originalForm}
+                                            </div>
+                                        )}
+
+                                        {entry.morphology && (
+                                            <div
+                                                style={{
+                                                    marginTop: 6,
+                                                    padding: "7px 9px",
+                                                    borderRadius: 7,
+                                                    background: "#eef2ff",
+                                                    fontSize: 12,
+                                                    lineHeight: 1.5,
+                                                }}
+                                            >
+                                                <strong>Morphology:</strong>{" "}
+                                                {entry.morphology.summary}{" "}
+                                                <span style={{ color: "#64748b" }}>
+                                                    ({entry.morphology.code})
+                                                </span>
                                             </div>
                                         )}
 
