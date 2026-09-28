@@ -1,3 +1,5 @@
+import { parseGreekMorphology, type StrongsMorphology } from "./strongsMorphology";
+
 export type StrongsLanguage = "G" | "H";
 
 export interface StrongsLexiconEntry {
@@ -9,6 +11,8 @@ export interface StrongsLexiconEntry {
     readonly derivation: string | null;
     readonly strongsDefinition: string | null;
     readonly kjvDefinition: string | null;
+    readonly originalForm: string | null;
+    readonly morphology: StrongsMorphology | null;
 }
 
 export interface StrongsWordStudy {
@@ -24,6 +28,15 @@ interface TaggedWord {
     readonly strongs: readonly string[];
 }
 
+interface RawTagntWord {
+    readonly wordIndex: number;
+    readonly wordType: string;
+    readonly originalForm: string;
+    readonly grammar: string | null;
+    readonly sStrongInstance: string | null;
+    readonly editions: string;
+}
+
 interface RawLexiconEntry {
     readonly lemma?: unknown;
     readonly translit?: unknown;
@@ -37,6 +50,16 @@ type RawDictionary = Record<string, RawLexiconEntry>;
 
 const KJV_DATA_COMMIT = "323f79bc6f4c2749e77a23a71b7ca7772fad81a7";
 const STRONGS_DATA_COMMIT = "0acd2f251c2d35ff8db2dece4e0593979d3ac223";
+const TAGNT_DATA_COMMIT = "b99716b0cddb648ddb95cc786a197180f2f97d48";
+
+const TAGNT_MAT_JHN_URL =
+    "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/" +
+    TAGNT_DATA_COMMIT +
+    "/Translators%20Amalgamated%20OT%2BNT/TAGNT%20Mat-Jhn%20-%20Translators%20Amalgamated%20Greek%20NT%20-%20STEPBible.org%20CC-BY.txt";
+const TAGNT_ACT_REV_URL =
+    "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/" +
+    TAGNT_DATA_COMMIT +
+    "/Translators%20Amalgamated%20OT%2BNT/TAGNT%20Act-Rev%20-%20Translators%20Amalgamated%20Greek%20NT%20-%20STEPBible.org%20CC-BY.txt";
 
 const KJV_BOOK_FILES: Record<string, string> = {
     GEN: "Gen", EXO: "Exod", LEV: "Lev", NUM: "Num", DEU: "Deut",
@@ -63,9 +86,73 @@ const HEBREW_DICTIONARY_URL =
     "/hebrew/strongs-hebrew-dictionary.js";
 
 const dictionaryCache = new Map<StrongsLanguage, Promise<RawDictionary>>();
+const tagntCache = new Map<"mat-jhn" | "act-rev", Promise<string>>();
 
 function dictionaryUrl(language: StrongsLanguage): string {
     return language === "G" ? GREEK_DICTIONARY_URL : HEBREW_DICTIONARY_URL;
+}
+
+function tagntUrl(bookId: string): string | null {
+    const upper = bookId.toUpperCase();
+    if (["MAT", "MRK", "LUK", "JHN"].includes(upper)) return TAGNT_MAT_JHN_URL;
+    if ([
+        "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL", "1TH", "2TH",
+        "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN",
+        "3JN", "JUD", "REV",
+    ].includes(upper)) return TAGNT_ACT_REV_URL;
+    return null;
+}
+
+async function loadTagntSource(bookId: string): Promise<string | null> {
+    const url = tagntUrl(bookId);
+    if (!url) return null;
+    const key = url === TAGNT_MAT_JHN_URL ? "mat-jhn" : "act-rev";
+    const cached = tagntCache.get(key);
+    if (cached) return cached;
+
+    const promise = fetch(url, { next: { revalidate: 86400 } })
+        .then(async (response) => {
+            if (!response.ok) {
+                throw new Error(
+                    "Unable to load STEPBible Greek morphology data (HTTP " +
+                        response.status +
+                        ").",
+                );
+            }
+            return response.text();
+        })
+        .catch((error) => {
+            tagntCache.delete(key);
+            throw error;
+        });
+
+    tagntCache.set(key, promise);
+    return promise;
+}
+
+function baseStrongsNumber(value: string): string | null {
+    const match = value.trim().match(/^([GH]\d+)/i);
+    return match?.[1]?.toUpperCase() ?? null;
+}
+
+function splitStrongsInstance(value: string): { number: string; instance: string | null } | null {
+    const match = value.trim().match(/^([GH]\d+)(?:_([A-Za-z]))?$/i);
+    if (!match) return null;
+    return {
+        number: match[1]!.toUpperCase(),
+        instance: match[2]?.toUpperCase() ?? null,
+    };
+}
+
+function instanceSuffix(index: number): string {
+    let value = index;
+    let suffix = "";
+    while (value > 0) {
+        value -= 1;
+        suffix = String.fromCharCode(65 + (value % 26)) + suffix;
+        value = Math.floor(value / 26);
+    }
+    return suffix;
 }
 
 function cleanTaggedWord(value: string): string {
@@ -153,6 +240,8 @@ function toLexiconEntry(number: string, raw: RawLexiconEntry | undefined): Stron
         derivation: typeof raw.derivation === "string" ? raw.derivation : null,
         strongsDefinition: typeof raw.strongs_def === "string" ? raw.strongs_def : null,
         kjvDefinition: typeof raw.kjv_def === "string" ? raw.kjv_def : null,
+        originalForm: lexicalContext.originalForm,
+        morphology: lexicalContext.morphology,
     };
 }
 
@@ -199,6 +288,76 @@ function selectTaggedWord(
     return matches.sort(
         (a, b) => Math.abs(a.index - requestedIndex) - Math.abs(b.index - requestedIndex),
     )[0]!;
+}
+
+function parseTagntVerse(source: string, reference: string): RawTagntWord[] {
+    const prefix = reference.trim().replace(/\s+/g, ".") + "#";
+
+    return source
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith(prefix))
+        .map((line) => {
+            const fields = line.split("\t");
+            const location = fields[0] ?? "";
+            const match = location.match(/^.+#(\d+)=([A-Za-z]+)$/);
+            if (!match) return null;
+
+            const strongGrammar = fields[3] ?? "";
+            const separator = strongGrammar.indexOf("=");
+            const wordIndex = Number(match[1]);
+
+            if (!Number.isInteger(wordIndex) || separator < 0 || !fields[1]) return null;
+
+            return {
+                wordIndex,
+                wordType: match[2] ?? "",
+                originalForm: (fields[1] ?? "").split(" (")[0]!.trim(),
+                grammar: strongGrammar.slice(separator + 1).trim() || null,
+                sStrongInstance: fields[10]?.trim() || null,
+                editions: fields[5]?.trim() ?? "",
+            };
+        })
+        .filter((item): item is RawTagntWord => item !== null)
+        .sort((a, b) => a.wordIndex - b.wordIndex);
+}
+
+function traditionalTagntRow(word: RawTagntWord): boolean {
+    return /(?:^|\+)(?:TR|Byz)(?:$|\+)/.test(word.editions) || word.wordType.includes("K");
+}
+
+function selectedStrongOccurrence(
+    words: readonly TaggedWord[],
+    selectedIndex: number,
+    strongsNumber: string,
+): number {
+    const target = baseStrongsNumber(strongsNumber);
+    if (!target) return -1;
+
+    return words
+        .slice(0, selectedIndex + 1)
+        .filter((word) => word.strongs.some((value) => baseStrongsNumber(value) === target))
+        .length;
+}
+
+function findTagntWord(
+    words: readonly RawTagntWord[],
+    strongsNumber: string,
+    occurrence: number,
+): RawTagntWord | null {
+    const target = baseStrongsNumber(strongsNumber);
+    if (!target || occurrence < 1) return null;
+
+    const expectedInstance = occurrence === 1 ? null : instanceSuffix(occurrence);
+    const candidates = words.filter((word) => {
+        const parsed = word.sStrongInstance ? splitStrongsInstance(word.sStrongInstance) : null;
+        if (!parsed || parsed.number !== target) return false;
+        return expectedInstance === null
+            ? parsed.instance === null
+            : parsed.instance === expectedInstance;
+    });
+
+    const traditional = candidates.find(traditionalTagntRow);
+    return traditional ?? candidates[0] ?? null;
 }
 
 async function fetchTaggedVerse(bookId: string, chapter: number, verse: number): Promise<string> {
@@ -251,6 +410,10 @@ export async function lookupStrongsWordStudy(input: {
     const taggedVerse = await fetchTaggedVerse(bookId, chapter, verse);
     const taggedWords = parseTaggedVerse(taggedVerse);
     const selected = selectTaggedWord(taggedWords, word, wordIndex);
+    const tagntSource =
+        selected.strongs.some((number) => number.startsWith("G"))
+            ? await loadTagntSource(bookId)
+            : null;
 
     if (selected.strongs.length === 0) {
         return {
@@ -266,7 +429,32 @@ export async function lookupStrongsWordStudy(input: {
         selected.strongs.map(async (number) => {
             const language = number[0] as StrongsLanguage;
             const dictionary = await loadDictionary(language);
-            return toLexiconEntry(number, dictionary[number]);
+
+            let lexicalContext: {
+                readonly originalForm: string | null;
+                readonly morphology: StrongsMorphology | null;
+            } = { originalForm: null, morphology: null };
+
+            if (language === "G" && tagntSource) {
+                const occurrence = selectedStrongOccurrence(taggedWords, selected.index, number);
+                const referenceParts = KJV_BOOK_FILES[bookId.toUpperCase()];
+                if (referenceParts && occurrence > 0) {
+                    const tagntWords = parseTagntVerse(
+                        tagntSource,
+                        referenceParts + "." + chapter + "." + verse,
+                    );
+                    const tagntWord = findTagntWord(tagntWords, number, occurrence);
+
+                    if (tagntWord?.grammar) {
+                        lexicalContext = {
+                            originalForm: tagntWord.originalForm,
+                            morphology: parseGreekMorphology(tagntWord.grammar),
+                        };
+                    }
+                }
+            }
+
+            return toLexiconEntry(number, dictionary[number], lexicalContext);
         }),
     );
 
@@ -284,4 +472,8 @@ export const __test__ = {
     normalizeWord,
     splitReference,
     selectTaggedWord,
+    parseGreekMorphology,
+    parseTagntVerse,
+    findTagntWord,
+    selectedStrongOccurrence,
 };
