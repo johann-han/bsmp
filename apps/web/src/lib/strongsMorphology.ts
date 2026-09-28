@@ -18,11 +18,12 @@ export interface StrongsMorphology {
 const PART_OF_SPEECH: Record<string, string> = {
     A: "Adjective",
     C: "Conjunction",
-    D: "Adverb",
-    I: "Interjection",
+    D: "Demonstrative pronoun",
+    F: "Reflexive pronoun",
+    I: "Interrogative pronoun",
     N: "Noun",
     P: "Personal pronoun",
-    Q: "Correlative / interrogative",
+    Q: "Correlative / interrogative pronoun",
     R: "Relative pronoun",
     S: "Possessive pronoun",
     T: "Article",
@@ -30,14 +31,25 @@ const PART_OF_SPEECH: Record<string, string> = {
     X: "Indefinite pronoun",
 };
 
+const UNINFLECTED: Record<string, string> = {
+    ADV: "Adverb",
+    CONJ: "Conjunction",
+    PREP: "Preposition",
+    PRT: "Particle",
+    INJ: "Interjection",
+    COND: "Conditional conjunction",
+};
+
 const TENSE: Record<string, string> = {
     A: "Aorist",
     F: "Future",
     I: "Imperfect",
+    L: "Pluperfect",
     P: "Present",
     R: "Perfect",
     X: "Perfect",
-    Y: "Pluperfect",
+    "2A": "Second Aorist",
+    "2R": "Second Perfect",
 };
 
 const VOICE: Record<string, string> = {
@@ -85,44 +97,98 @@ const PERSON: Record<string, string> = {
 
 const QUALIFIER: Record<string, string> = {
     T: "Title",
-    L: "Indeclinable",
-    G: "Proper-name marker",
+    P: "Proper name/person",
+    G: "Gentilic",
+    L: "Location",
+    LG: "Location Gentilic",
+    PG: "Person Gentilic",
+    TG: "Title Gentilic",
+    K: "Special form",
+    NUI: "Numeral / indeclinable",
+    I: "Indeclinable",
+    ATT: "Attic form",
+    AP: "Attic/poetic form",
 };
 
-function parseDeclensionTail(tail: string) {
-    const result = {
-        person: null as string | null,
-        grammaticalCase: null as string | null,
-        number: null as string | null,
-        gender: null as string | null,
-        degree: null as string | null,
+interface ParsedGrammarTail {
+    readonly person: string | null;
+    readonly grammaticalCase: string | null;
+    readonly number: string | null;
+    readonly gender: string | null;
+}
+
+function parseGrammarTail(tail: string): ParsedGrammarTail {
+    const personCaseNumberGender = tail.match(/^([123])([NDGAV])([SP])([MFN])?$/);
+    if (personCaseNumberGender) {
+        return {
+            person: PERSON[personCaseNumberGender[1]!] ?? null,
+            grammaticalCase: CASE[personCaseNumberGender[2]!] ?? null,
+            number: NUMBER[personCaseNumberGender[3]!] ?? null,
+            gender: personCaseNumberGender[4]
+                ? GENDER[personCaseNumberGender[4]] ?? null
+                : null,
+        };
+    }
+
+    const caseNumberGender = tail.match(/^([NDGAV])([SP])([MFN])$/);
+    if (caseNumberGender) {
+        return {
+            person: null,
+            grammaticalCase: CASE[caseNumberGender[1]!] ?? null,
+            number: NUMBER[caseNumberGender[2]!] ?? null,
+            gender: GENDER[caseNumberGender[3]!] ?? null,
+        };
+    }
+
+    const caseNumber = tail.match(/^([NDGAV])([SP])$/);
+    if (caseNumber) {
+        return {
+            person: null,
+            grammaticalCase: CASE[caseNumber[1]!] ?? null,
+            number: NUMBER[caseNumber[2]!] ?? null,
+            gender: null,
+        };
+    }
+
+    return {
+        person: null,
+        grammaticalCase: null,
+        number: null,
+        gender: null,
     };
+}
 
-    if (/^[123][SP]$/.test(tail)) {
-        result.person = PERSON[tail[0]!] ?? null;
-        result.number = NUMBER[tail[1]!] ?? null;
-        return result;
-    }
-
-    if (/^[NDGAV][SP][MFN]$/.test(tail)) {
-        result.grammaticalCase = CASE[tail[0]!] ?? null;
-        result.number = NUMBER[tail[1]!] ?? null;
-        result.gender = GENDER[tail[2]!] ?? null;
-        return result;
-    }
-
-    if (/^[A-Z]-[CS]$/.test(tail)) {
-        result.degree = tail.endsWith("C") ? "Comparative" : "Superlative";
-    }
-
-    return result;
+function qualifierLabel(value: string): string {
+    return QUALIFIER[value] ?? value;
 }
 
 export function parseGreekMorphology(code: string): StrongsMorphology {
     const normalized = code.trim();
     if (!normalized) throw new Error("A Greek morphology code is required.");
 
-    const [functionCode = "", pattern = "", ...rest] = normalized.split("-");
+    const uninflected = UNINFLECTED[normalized];
+    if (uninflected) {
+        return {
+            language: "G",
+            code: normalized,
+            partOfSpeech: uninflected,
+            tense: null,
+            voice: null,
+            mood: null,
+            form: null,
+            person: null,
+            grammaticalCase: null,
+            number: null,
+            gender: null,
+            degree: null,
+            qualifier: null,
+            summary: uninflected,
+        };
+    }
+
+    const segments = normalized.split("-");
+    const functionCode = segments[0] ?? "";
+    const pattern = segments[1] ?? "";
     const partOfSpeech = PART_OF_SPEECH[functionCode] ?? null;
 
     let tense: string | null = null;
@@ -136,27 +202,60 @@ export function parseGreekMorphology(code: string): StrongsMorphology {
     let degree: string | null = null;
     let qualifier: string | null = null;
 
-    if (functionCode === "V" && pattern.length >= 3) {
-        tense = TENSE[pattern[0]!] ?? null;
-        voice = VOICE[pattern[1]!] ?? null;
-        mood = MOOD[pattern[2]!] ?? null;
-        form = mood === "Participle" || mood === "Infinitive" ? mood : null;
+    if (functionCode === "V") {
+        const verbPattern = pattern.match(/^(2)?([A-Z])([A-Z])([A-Z])$/);
 
-        const tail = rest[0] ?? "";
-        const parsedTail = parseDeclensionTail(tail);
+        if (verbPattern) {
+            const secondForm = verbPattern[1] === "2";
+            const tenseKey = secondForm
+                ? "2" + verbPattern[2]
+                : verbPattern[2]!;
+
+            tense = TENSE[tenseKey] ?? null;
+            voice = VOICE[verbPattern[3]!] ?? null;
+            mood = MOOD[verbPattern[4]!] ?? null;
+            form = mood === "Participle" || mood === "Infinitive" ? mood : null;
+
+            const tail = segments[2] ?? "";
+            const parsedTail = parseGrammarTail(tail);
+            person = parsedTail.person;
+            grammaticalCase = parsedTail.grammaticalCase;
+            number = parsedTail.number;
+            gender = parsedTail.gender;
+
+            const extraSegments = segments.slice(3).filter(Boolean);
+            if (extraSegments.length > 0) {
+                qualifier = extraSegments.map(qualifierLabel).join(" · ");
+            }
+        } else if (segments.length > 2) {
+            const extraSegments = segments.slice(2).filter(Boolean);
+            qualifier = extraSegments.length > 0
+                ? extraSegments.map(qualifierLabel).join(" · ")
+                : null;
+        }
+    } else {
+        const parsedTail = parseGrammarTail(pattern);
         person = parsedTail.person;
         grammaticalCase = parsedTail.grammaticalCase;
         number = parsedTail.number;
         gender = parsedTail.gender;
-        degree = parsedTail.degree;
-        qualifier = rest[1] ? QUALIFIER[rest[1]] ?? rest.slice(1).join("-") : null;
-    } else {
-        const parsedTail = parseDeclensionTail(pattern);
-        grammaticalCase = parsedTail.grammaticalCase;
-        number = parsedTail.number;
-        gender = parsedTail.gender;
-        degree = parsedTail.degree;
-        qualifier = rest[0] ? QUALIFIER[rest[0]!] ?? rest.join("-") : null;
+
+        const extraSegments = segments.slice(2).filter(Boolean);
+        for (const extra of extraSegments) {
+            if (extra === "C") {
+                degree = "Comparative";
+            } else if (extra === "S") {
+                degree = "Superlative";
+            } else {
+                qualifier = [qualifier, qualifierLabel(extra)].filter(Boolean).join(" · ");
+            }
+        }
+
+        if (functionCode === "N" && pattern === "PRI") {
+            qualifier = [qualifier, "Proper name", "Indeclinable"]
+                .filter(Boolean)
+                .join(" · ");
+        }
     }
 
     const parts = [
