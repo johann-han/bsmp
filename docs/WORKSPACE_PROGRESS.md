@@ -70,6 +70,8 @@ External sources are stored in a reusable `research_sources` library in Supabase
 
 The Research result also distinguishes formal provider-returned citations from URLs supplied to the request when formal citation annotations are unavailable. Supplied URLs are still saved for reuse, but BSMP displays a verification caution rather than implying a stronger citation relationship than the provider actually returned.
 
+Research History now also persists a Study-context snapshot with each research run. The snapshot captures the Study title, passage, observations, interpretations, and Biblical Theology syntheses supplied to the run, so later edits to the Study do not erase the context that produced the saved research result. The snapshot remains separate from reusable external source records and from Study evidence.
+
 ## Final Sermon Drafting
 
 The `/preaching/final` workspace provides:
@@ -215,6 +217,6 @@ OpenRouter fallback hardening is also included on `feat/research-source-library`
 
 ## Next Work
 
-1. Continue development from the current integrated branch rather than reopening completed feature branches or stale milestone notes.
-2. Strengthen the next highest-value domain contract or workflow boundary with focused tests, documentation, and browser verification where applicable.
-3. Continue extending Biblical Research provenance/history and production billing operations as separate vertical slices, without coupling external research or billing state into Study evidence.
+1. Verify the new Research History context snapshot in the authenticated browser and confirm it remains unchanged after editing the underlying Study.
+2. Continue strengthening Biblical Research provenance/history without coupling external research to Study evidence.
+3. Continue production billing hardening and operational verification through the existing provider-neutral boundary.
