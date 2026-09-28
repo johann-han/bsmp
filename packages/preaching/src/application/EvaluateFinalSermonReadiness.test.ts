@@ -6,6 +6,7 @@ import {
     ExpositorySermonId,
     SermonBigIdea,
     SermonDeliveryNotes,
+    SermonManuscript,
     SermonPurpose,
     SermonTitle,
 } from "../domain/ExpositorySermon.js";
@@ -48,11 +49,7 @@ describe("evaluateFinalSermonReadiness", () => {
             "point-1",
             { explanation: "Abiding describes dependent fellowship with Christ." },
         );
-        next.defineManuscript({
-            get value() {
-                return "Full sermon manuscript.";
-            },
-        } as never);
+        next.defineManuscript(SermonManuscript.from("Full sermon manuscript."));
         next.defineDeliveryNotes(
             SermonDeliveryNotes.from("Pause before the final appeal."),
         );
