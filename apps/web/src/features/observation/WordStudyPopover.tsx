@@ -140,14 +140,14 @@ export function WordStudyPopover({
                 }
                 style={{
                     border: 0,
-                    background: open ? "#eff6ff" : "transparent",
-                    padding: "1px 2px",
-                    margin: "0 1px",
+                    background: open ? "#eff6ff" : "rgba(37,99,235,.045)",
+                    padding: "1px 3px",
+                    margin: "1px 1px",
                     borderRadius: 4,
                     font: "inherit",
                     color: "inherit",
                     cursor: "pointer",
-                    boxShadow: open ? "inset 0 -2px 0 #2563eb" : "none",
+                    boxShadow: open ? "inset 0 -2px 0 #2563eb" : "inset 0 -1px 0 #bfdbfe",
                 }}
             >
                 {children}
