@@ -21,6 +21,14 @@ interface Entitlement {
     limit_unit: string;
 }
 
+interface SubscriptionEvent {
+    id: string;
+    event_type: "manual_assigned" | "activated" | "trial_started" | "past_due" | "paused" | "canceled" | "ended" | "provider_synced";
+    provider: string;
+    effective_at: string;
+    created_at: string;
+}
+
 interface Subscription {
     id: string;
     plan_id: string;
@@ -58,10 +66,25 @@ function formatLimit(value: number | null, unit: string): string {
     return `${value.toLocaleString()} ${unit}`;
 }
 
+function subscriptionEventLabel(value: SubscriptionEvent["event_type"]): string {
+    switch (value) {
+        case "manual_assigned": return "Subscription assigned";
+        case "activated": return "Subscription activated";
+        case "trial_started": return "Trial started";
+        case "past_due": return "Payment past due";
+        case "paused": return "Subscription paused";
+        case "canceled": return "Subscription canceled";
+        case "ended": return "Subscription ended";
+        case "provider_synced": return "Provider state synchronized";
+        default: return value;
+    }
+}
+
 export function SubscriptionWorkspace() {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
     const [subscription, setSubscription] = useState<Subscription | null>(null);
+    const [subscriptionEvents, setSubscriptionEvents] = useState<SubscriptionEvent[]>([]);
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null);
@@ -88,7 +111,7 @@ export function SubscriptionWorkspace() {
                     : null;
                 if (active) setIsAdmin(adminCheck?.ok === true);
 
-                const [plansResult, entitlementsResult, subscriptionResult] = await Promise.all([
+                const [plansResult, entitlementsResult, subscriptionResult, subscriptionEventsResult] = await Promise.all([
                     supabase
                         .from("subscription_plans")
                         .select("id, code, name, description, active")
@@ -104,16 +127,23 @@ export function SubscriptionWorkspace() {
                         .in("status", ["trialing", "active", "past_due", "paused", "incomplete"])
                         .order("created_at", { ascending: false })
                         .limit(1),
+                    supabase
+                        .from("subscription_events")
+                        .select("id, event_type, provider, effective_at, created_at")
+                        .order("created_at", { ascending: false })
+                        .limit(25),
                 ]);
 
                 if (plansResult.error) throw plansResult.error;
                 if (entitlementsResult.error) throw entitlementsResult.error;
                 if (subscriptionResult.error) throw subscriptionResult.error;
+                if (subscriptionEventsResult.error) throw subscriptionEventsResult.error;
 
                 if (!active) return;
                 setPlans((plansResult.data ?? []) as Plan[]);
                 setEntitlements((entitlementsResult.data ?? []) as Entitlement[]);
                 setSubscription(((subscriptionResult.data ?? [])[0] ?? null) as Subscription | null);
+                setSubscriptionEvents((subscriptionEventsResult.data ?? []) as SubscriptionEvent[]);
 
                 const query = new URLSearchParams(window.location.search);
                 if (query.get("checkout") === "success") {
@@ -264,7 +294,30 @@ export function SubscriptionWorkspace() {
                         No active subscription is assigned to this account yet. Select a plan below to start PayFast checkout.
                     </p>
                 )}
+            </section>            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                <h2 style={{ marginTop: 0 }}>Subscription History</h2>
+                {subscriptionEvents.length ? (
+                    <div style={{ display: "grid", gap: 8 }}>
+                        {subscriptionEvents.map((event) => (
+                            <div key={event.id} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", padding: 10, border: "1px solid #e5e7eb", borderRadius: 8 }}>
+                                <div>
+                                    <strong>{subscriptionEventLabel(event.event_type)}</strong>
+                                    <div style={{ fontSize: 13, color: "#6b7280", marginTop: 3 }}>
+                                        {event.provider} · {new Date(event.effective_at).toLocaleString()}
+                                    </div>
+                                </div>
+                                <span style={{ fontSize: 12, color: "#6b7280" }}>
+                                    Recorded {new Date(event.created_at).toLocaleDateString()}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p style={{ margin: 0, color: "#6b7280" }}>No subscription lifecycle events have been recorded yet.</p>
+                )}
             </section>
+
+
 
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
                 <h2 style={{ marginTop: 0 }}>Available Plans</h2>
