@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "../../../../src/lib/database.types";
 import { createApplicationMentorProvider } from "../../../../src/lib/applicationMentorProvider";
+import { runMeteredAiOperation } from "../../../../src/lib/aiUsage";
 
 interface MentorRequest {
     readonly interpretation?: unknown;
@@ -20,13 +21,14 @@ function requireBearerToken(request: Request): string {
     return token;
 }
 
-async function assertSignedIn(accessToken: string): Promise<void> {
+async function getSignedInUser(accessToken: string): Promise<string> {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
     if (!url || !publishableKey) throw new Error("Missing Supabase environment configuration.");
     const client = createClient<Database>(url, publishableKey, { global: { headers: { Authorization: `Bearer ${accessToken}` } }, auth: { persistSession: false, autoRefreshToken: false } });
     const { data, error } = await client.auth.getUser(accessToken);
     if (error || !data.user) throw new Error("A valid signed-in Supabase session is required.");
+    return data.user.id;
 }
 
 function requiredText(value: unknown, field: string): string {
@@ -37,16 +39,22 @@ function requiredText(value: unknown, field: string): string {
 export async function POST(request: Request) {
     try {
         const accessToken = requireBearerToken(request);
-        await assertSignedIn(accessToken);
+        const userId = await getSignedInUser(accessToken);
         const body = await request.json() as MentorRequest;
-        const provider = createApplicationMentorProvider();
-        const result = await provider.assess({
-            interpretation: requiredText(body.interpretation, "Interpretation"),
-            principle: requiredText(body.principle, "Principle"),
-            personal: requiredText(body.personal, "Personal application"),
-            ministry: requiredText(body.ministry, "Ministry application"),
-            action: requiredText(body.action, "Action"),
+
+        const result = await runMeteredAiOperation({
+            userId,
+            feature: "application_mentor",
+            operation: "assess",
+            run: () => createApplicationMentorProvider().assess({
+                interpretation: requiredText(body.interpretation, "Interpretation"),
+                principle: requiredText(body.principle, "Principle"),
+                personal: requiredText(body.personal, "Personal application"),
+                ministry: requiredText(body.ministry, "Ministry application"),
+                action: requiredText(body.action, "Action"),
+            }),
         });
+
         return NextResponse.json(result);
     } catch (reason: unknown) {
         const message = reason instanceof Error ? reason.message : "Unable to run the application mentor.";

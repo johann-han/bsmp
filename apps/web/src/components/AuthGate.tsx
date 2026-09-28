@@ -27,9 +27,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
         async function checkAuth() {
             setChecking(true);
-            const { data, error } = await supabase.auth.getUser();
+            const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
             if (!active) return;
-            if (error || !data.user) {
+            if (sessionError || !sessionData.session) {
                 const next = encodeURIComponent(returnUrl);
                 router.replace(`/login?next=${next}`);
                 return;

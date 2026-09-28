@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../../../src/lib/database.types";
 import { createSermonDeliveryMentorProvider } from "../../../../src/lib/sermonDeliveryMentorProvider";
+import { runMeteredAiOperation } from "../../../../src/lib/aiUsage";
 
 interface RequestBody { studyId?: unknown; }
 type OutlineRow = { heading: string; truth: string; };
@@ -16,7 +17,13 @@ export async function POST(request: Request) {
     const manuscript = requiredText(sermon.manuscript, "Saved manuscript"); const deliveryNotes = typeof sermon.delivery_notes === "string" ? sermon.delivery_notes.trim() : "";
     const { data: outlineRows, error: outlineError } = await client.from("sermon_outline_points").select("heading, truth").eq("sermon_id", sermon.id).order("position", { ascending: true }); if (outlineError) throw outlineError;
     const outline = ((outlineRows ?? []) as unknown as OutlineRow[]).map((point) => `${point.heading}\nTruth: ${point.truth}`);
-    const result = await createSermonDeliveryMentorProvider().assess({ bigIdea: sermon.big_idea ?? "", purpose: sermon.purpose ?? "", manuscript, deliveryNotes, outline });
+    const result = await runMeteredAiOperation({
+      userId,
+      studyId,
+      feature: "sermon_delivery_mentor",
+      operation: "assess",
+      run: () => createSermonDeliveryMentorProvider().assess({ bigIdea: sermon.big_idea ?? "", purpose: sermon.purpose ?? "", manuscript, deliveryNotes, outline }),
+    });
     return NextResponse.json(result);
   } catch (reason: unknown) { const message = reason instanceof Error ? reason.message : "Unable to run the sermon delivery mentor."; return NextResponse.json({ error: message }, { status: errorStatus(message) }); }
 }

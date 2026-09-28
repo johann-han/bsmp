@@ -24,13 +24,14 @@ describe("runBiblicalResearch", () => {
             question: "What is emphasized?",
             studyTitle: "Test Study",
             passage: "Romans 12:1-2",
+            focus: "general",
             observations: [],
             interpretations: [],
             biblicalTheology: [],
         })).rejects.toThrow("Gemini research is not configured");
     });
 
-    it("parses a structured Gemini result and preserves the supplied Study context in the prompt", async () => {
+    it("parses a structured Gemini result and preserves the supplied Study context and focus in the prompt", async () => {
         process.env.AI_PROVIDER = "gemini";
         process.env.GEMINI_API_KEY = "test-key";
         process.env.GEMINI_RESEARCH_MODEL = "gemini-research-test";
@@ -38,6 +39,8 @@ describe("runBiblicalResearch", () => {
         const fetchMock = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
             const body = JSON.parse(String(init?.body ?? "{}")) as { contents?: Array<{ parts?: Array<{ text?: string }> }> };
             const prompt = body.contents?.[0]?.parts?.[0]?.text ?? "";
+            expect(prompt).toContain("Research focus: geography");
+            expect(prompt).toContain("geographical setting");
             expect(prompt).toContain("Study: Test Study");
             expect(prompt).toContain("Research question:\nWhat does this Study emphasize?");
             expect(prompt).toContain("Romans 12:1: Present your bodies");
@@ -65,6 +68,7 @@ describe("runBiblicalResearch", () => {
             question: "What does this Study emphasize?",
             studyTitle: "Test Study",
             passage: "Romans 12:1-2",
+            focus: "geography",
             observations: ["Romans 12:1: Present your bodies"],
             interpretations: ["Believers should respond in worship."],
             biblicalTheology: [{ theme: "Mercy and response", synthesis: "Mercy produces transformed worship: grace is answered by renewed obedience." }],
@@ -99,6 +103,7 @@ describe("runBiblicalResearch", () => {
             question: "What should I investigate next?",
             studyTitle: "Test Study",
             passage: "Romans 12:1-2",
+            focus: "general",
             observations: [],
             interpretations: [],
             biblicalTheology: [],

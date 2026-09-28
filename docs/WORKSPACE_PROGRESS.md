@@ -56,6 +56,20 @@ Editing an outline point without changing its Biblical Theology foundation now p
 
 The Sermon Study Source panel exposes the source chain behind applications: application → interpretation → supporting observations and evidence, with links back into the Study Workspace. It also exposes Biblical Theology syntheses and their supporting interpretation chain.
 
+## Biblical Research
+
+The `/research?studyId=...` workspace provides study-grounded Biblical Research plus focused contextual research modes for geography, customs and culture, historical period, social and political setting, religious context, literary and historical setting, archaeology and material context, and language and terminology.
+
+Contextual research modes require external research so historical, geographical, cultural, archaeological, and linguistic claims can be checked against external material rather than being inferred solely from student-authored Study notes. A deterministic Research Questions helper supplies curated starting questions for every focus; suggestions are editable and are never submitted automatically.
+
+External Research uses a provider abstraction with Gemini as the primary provider and OpenRouter as a fallback when Gemini is unavailable because of quota or server errors. The OpenRouter fallback is intentionally constrained for external research to supplied public HTTPS URLs rather than claiming to provide unlimited free general web search.
+
+The fallback has defensive structured-output parsing, explicit exclusion of provider reasoning from the returned response, and tests preventing internal-work text from being shown to the student. Provider and model metadata are displayed separately from research content.
+
+External sources are stored in a reusable `research_sources` library in Supabase. Sources are user-owned and protected by row-level security, can be reused across future Studies, retain their original Study association, and record last-use timestamps. Saved external sources remain separate from Study observations, interpretations, Biblical Theology, Teaching, and sermons.
+
+The Research result also distinguishes formal provider-returned citations from URLs supplied to the request when formal citation annotations are unavailable. Supplied URLs are still saved for reuse, but BSMP displays a verification caution rather than implying a stronger citation relationship than the provider actually returned.
+
 ## Final Sermon Drafting
 
 The `/preaching/final` workspace provides:
@@ -141,6 +155,8 @@ Leaked-password protection remains deferred because the connected Supabase proje
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
 - `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, Study → Sermon traceability, the first Biblical Theology stage, and the first Teaching stage with Teaching → Sermon inheritance.
+- `feat/biblical-research-sources` contains the focused external Research capability and is the base for the reusable Research Source Library work.
+- `feat/research-source-library` contains the reusable external Research Source Library, OpenRouter fallback hardening, provenance improvements, and related CI-verified tests.
 
 ## Verification
 
@@ -162,7 +178,7 @@ The sermon manuscript sections migration has now been applied to the connected S
 
 The missing `@bsmp/inductive` workspace importer has now been synchronized into `pnpm-lock.yaml` so `pnpm install --frozen-lockfile` matches `apps/web/package.json` again.
 
-The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df60ba26f496c76b11daf9f`. Its UI provides per-outline-point navigation back to recorded Study foundations. Browser verification was not performed for that specific change in this environment.
+The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df60ba26f496c76b11daf9`. Its UI provides per-outline-point navigation back to recorded Study foundations. Browser verification was not performed for that specific change in this environment.
 
 The Biblical Theology index migration is committed as `2b0e825839ba574739ac5fdc096d50d452fbc02e` and has passed repository CI.
 
@@ -190,8 +206,14 @@ The `SermonDeliveryWorkspace` section property mismatch (`body` versus `content`
 
 Delivery recovery-state hardening is committed as `1d655b7ef42b0de9da2aa5aa9fb1bab1e9d03fdc`, and the follow-up lint localization is committed as `6ea4e5fa2a1bde4b401d706e5fa58af7ecfafe63`. CI run `34984262546` (run `890`) completed successfully through dependency installation, typecheck, tests, lint, and production build. The latest delivery hardening therefore has a green repository validation result.
 
+The study-grounded Biblical Research workspace is implemented and browser-verified on `feat/biblical-research-sources`, including authenticated navigation, contextual focus modes, the deterministic Research Questions helper, and separation of Study evidence from external research.
+
+The reusable Research Source Library is implemented on `feat/research-source-library`. Its Supabase migration is deployed with row-level security. Browser verification has confirmed successful external research, automatic source saving, reusable saved-source selection, source removal, and preservation of the Study evidence boundary. The branch's latest CI run `35137667334` (run `1060`) completed successfully through typecheck, tests, lint, and production build.
+
+OpenRouter fallback hardening is also included on `feat/research-source-library`. CI confirms the provider type contract, environment declarations, structured-output request shape, and regression coverage for hidden reasoning/internal-work responses. The latest verified provider commit is `86e80da6ded8d36a7c66c9ba7e97aa1114ed299a`.
+
 ## Next Work
 
-1. Complete authenticated browser verification of the full Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough, including refresh persistence and source-traceability navigation.
-2. Continue production hardening over permission boundaries, read-only behavior, and other recovery edge cases before changing branch history.
-3. Reconcile the final-drafting branch with any intentionally retained changes from `main` before merge, rather than blindly forcing the divergent histories together.
+1. Complete the final browser verification of saved-source reuse in a second Study and confirm source removal does not affect Study evidence.
+2. Mark the Research Source Library branch ready for review once the remaining browser reuse check is confirmed.
+3. Plan the next Research layer around richer provenance/history and, later, subscription and AI-usage metering without coupling billing logic to individual AI features.

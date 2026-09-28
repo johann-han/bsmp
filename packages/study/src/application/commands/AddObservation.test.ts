@@ -12,7 +12,6 @@ import { AddObservation } from "./AddObservation.js";
 import { InMemoryStudyRepository } from "../../infrastructure/repositories/InMemoryStudyRepository.js";
 import { StudySession } from "../../domain/aggregates/StudySession.js";
 import {
-    ObservationVerseReference,
     StudyId,
     StudyTitle,
 } from "../../domain/value-objects/index.js";

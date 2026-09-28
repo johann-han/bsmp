@@ -38,9 +38,19 @@ export function AuthForm() {
             return;
         }
 
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+            setError(sessionError.message);
+            return;
+        }
+        if (!sessionData.session) {
+            setError("Sign-in succeeded, but BSMP could not store the Supabase session in this browser. Check browser storage/cookies for this site and try again.");
+            return;
+        }
+
         const next = searchParams.get("next");
         const destination = next && next.startsWith("/") && !next.startsWith("//") ? next : "/workspace";
-        router.push(destination);
+        router.replace(destination);
         router.refresh();
     }
 
