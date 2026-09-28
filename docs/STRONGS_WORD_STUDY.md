@@ -47,4 +47,12 @@ External source files are fetched server-side and cached for 24 hours. Source UR
 
 Strong's numbers are an indexing and lexical-reference system. A Strong's entry should not be treated as a complete contextual definition or as a substitute for syntax, literary context, and the student's own interpretation.
 
-The next lexical slices can build on this boundary with morphology, original-language display, and richer word-study navigation without coupling lexical reference data to Study evidence.
+## Word-study navigation
+
+When Word Study is active, the selected word is treated as a lexical sub-focus inside the current passage context. The popover provides **Previous** and **Next** controls so the student can move through adjacent words without closing the study surface. Navigation crosses verse boundaries when the passage contains multiple verses.
+
+The left and right arrow keys perform the same navigation while the word-study popover is open. The verse remains the contextual focus; navigation changes only the lexical word target.
+
+## Future lexical slices
+
+The next lexical slices can build on this boundary with morphology and richer original-language display without coupling lexical reference data to Study evidence.
