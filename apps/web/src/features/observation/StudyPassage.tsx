@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../lib/supabase";
+import { WordStudyPopover } from "./WordStudyPopover";
 
 export interface StudyVerse {
     readonly number: number;
@@ -89,6 +90,10 @@ export function StudyPassage({
     const [markupSymbol, setMarkupSymbol] = useState("N");
     const [markupMode, setMarkupMode] = useState(false);
     const [markupError, setMarkupError] = useState<string | null>(null);
+    const [wordStudyMode, setWordStudyMode] = useState(false);
+    const [wordStudyTarget, setWordStudyTarget] = useState<{ verseNumber: number; wordIndex: number } | null>(null);
+
+    const strongsAvailable = translation.trim().toLowerCase() === "kjv";
 
     useEffect(() => {
         let cancelled = false;
@@ -272,6 +277,19 @@ export function StudyPassage({
                     <button type="button" onClick={() => setMarkupMode((current) => !current)} style={{ border: "1px solid #d1d5db", borderRadius: 8, background: markupMode ? "#f3f4f6" : "#fff", padding: "7px 10px", fontWeight: 600 }}>
                         {markupMode ? "Close Markup" : "Word Markup"}
                     </button>
+                    <button
+                        type="button"
+                        disabled={!strongsAvailable}
+                        onClick={() => {
+                            setMarkupMode(false);
+                            setWordStudyMode((current) => !current);
+                            setWordStudyTarget(null);
+                        }}
+                        title={strongsAvailable ? "Open Strong's word study mode" : "Strong's word study is currently available for KJV"}
+                        style={{ border: "1px solid #d1d5db", borderRadius: 8, background: wordStudyMode ? "#eff6ff" : "#fff", padding: "7px 10px", fontWeight: 600, opacity: strongsAvailable ? 1 : 0.55, cursor: strongsAvailable ? "pointer" : "not-allowed" }}
+                    >
+                        {wordStudyMode ? "Close Word Study" : "Word Study"}
+                    </button>
                     {markupMode && MARKUP_SYMBOLS.map((item) => (
                         <button key={item.symbol} type="button" onClick={() => setMarkupSymbol(item.symbol)} title={item.label} aria-label={`${item.symbol} — ${item.label}`} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 36, border: markupSymbol === item.symbol ? "2px solid #111827" : "1px solid #d1d5db", borderRadius: 8, background: markupSymbol === item.symbol ? "#f3f4f6" : "#fff", fontWeight: 700 }}>
                             {item.symbol}
@@ -279,6 +297,7 @@ export function StudyPassage({
                     ))}
                 </div>
                 {markupError && <p style={{ margin: 0, color: "#b91c1c", fontSize: 12 }}>{markupError}</p>}
+                {wordStudyMode && <p style={{ margin: 0, color: "#475569", fontSize: 12 }}>Word Study mode uses the KJV word-tag source to show Strong&apos;s references. Select a word to open its lexical entry.</p>}
             </div>
 
             {mentorFocus && (
@@ -316,6 +335,24 @@ export function StudyPassage({
                                         );
                                     })}
                                 </span>
+                            ) : wordStudyMode && strongsAvailable ? (
+                                <span>
+                                    {words.map((word, index) => (
+                                        <WordStudyPopover
+                                            key={String(verse.number) + "-" + String(index)}
+                                            reference={verse.reference}
+                                            word={word}
+                                            wordIndex={index}
+                                            translation={translation}
+                                            open={wordStudyTarget?.verseNumber === verse.number && wordStudyTarget.wordIndex === index}
+                                            onOpenChange={(open) =>
+                                                setWordStudyTarget(open ? { verseNumber: verse.number, wordIndex: index } : null)
+                                            }
+                                        >
+                                            {word}
+                                        </WordStudyPopover>
+                                    ))}
+                                </span>
                             ) : cueParts ? (
                                 <span>
                                     {cueParts.before}
@@ -329,7 +366,13 @@ export function StudyPassage({
             </div>
 
             <p style={{ margin: "16px 0 0", fontSize: 13, color: "#6b7280" }}>
-                {selectedVerses.length === 0 ? "Click a verse to focus it. Click another verse to select a range." : selectedVerses.length === 1 ? `Focused verse: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}` : `Focused range: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}–${selectedVerses[selectedVerses.length - 1]}`}
+                {wordStudyTarget ? (
+                    <>
+                        Focused verse: {verses.find((verse) => verse.number === wordStudyTarget.verseNumber)?.reference ?? wordStudyTarget.verseNumber}
+                        {" · "}
+                        Word study: <strong>{verses.find((verse) => verse.number === wordStudyTarget.verseNumber)?.text.split(/\s+/)[wordStudyTarget.wordIndex] ?? ""}</strong>
+                    </>
+                ) : selectedVerses.length === 0 ? "Click a verse to focus it. Click another verse to select a range." : selectedVerses.length === 1 ? `Focused verse: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}` : `Focused range: ${verses.find((verse) => verse.number === selectedVerses[0])?.reference ?? selectedVerses[0]}–${selectedVerses[selectedVerses.length - 1]}`}
             </p>
 
             {wordMarkups.length > 0 && (
