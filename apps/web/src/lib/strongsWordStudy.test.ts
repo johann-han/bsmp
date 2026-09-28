@@ -20,7 +20,12 @@ describe("Strong's word-study data helpers", () => {
 
     it("parses the Open Scriptures JavaScript dictionary wrapper", () => {
         const dictionary = parseStrongsDictionary(
-            'var strongsGreekDictionary = {"G25":{"lemma":"ἀγαπάω","translit":"agapaō","strongs_def":"to love","kjv_def":"love"}}; module.exports = strongsGreekDictionary;',
+            `/**
+ * JSON version
+ * ============
+ * Copyright 2009, Open Scriptures. CC-BY-SA. Derived from XML.
+ */
+var strongsGreekDictionary = {"G25":{"lemma":"ἀγαπάω","translit":"agapaō","strongs_def":"to love","kjv_def":"love"}}; module.exports = strongsGreekDictionary;`,
         );
 
         expect(dictionary.G25).toMatchObject({
