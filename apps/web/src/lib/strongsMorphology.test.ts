@@ -141,11 +141,18 @@ describe("Greek morphology", () => {
         });
     });
 
-    it("decodes uninflected morphology categories", () => {
+    it("decodes uninflected morphology categories and variants", () => {
         expect(parseGreekMorphology("CONJ").summary).toBe("Conjunction");
         expect(parseGreekMorphology("PREP").summary).toBe("Preposition");
         expect(parseGreekMorphology("ADV").summary).toBe("Adverb");
-        expect(parseGreekMorphology("PRT-N").summary).not.toBe("PRT-N");
+        expect(parseGreekMorphology("ADV-C")).toMatchObject({
+            partOfSpeech: "Adverb",
+            degree: "Comparative",
+        });
+        expect(parseGreekMorphology("PRT-N")).toMatchObject({
+            partOfSpeech: "Particle",
+            qualifier: "Negative",
+        });
     });
 
     it("decodes adjective degree and lexical qualifiers", () => {
