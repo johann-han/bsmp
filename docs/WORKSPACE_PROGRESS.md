@@ -152,6 +152,7 @@ Leaked-password protection remains deferred because the connected Supabase proje
 
 ## Current Branches
 
+- `feat/observation-workspace-route` is the current integrated development branch and now contains the merged Study, Research, Biblical Theology, Teaching, Sermon, Delivery, Strong's, AI, authentication, subscription, and billing work.
 - `feat/observation-workspace-ui-next` is the earlier workspace UI iteration.
 - `feat/observation-workspace-route` is the integrated Study Workspace/Sermon Preparation baseline.
 - `feat/final-sermon-drafting` continues directly from that integrated baseline and now includes final drafting, delivery, print/PDF support, scheduling/history, authentication, responsible AI mentoring, Study → Sermon traceability, the first Biblical Theology stage, and the first Teaching stage with Teaching → Sermon inheritance.
@@ -182,7 +183,7 @@ The final-draft Source Traceability change is committed as `6e2c7e01b756ac1e4df6
 
 The Biblical Theology index migration is committed as `2b0e825839ba574739ac5fdc096d50d452fbc02e` and has passed repository CI.
 
-The section-aware manuscript work is committed on `feat/final-sermon-drafting`. Repository CI is green. Authenticated browser verification remains pending for the new final-draft section editor and the complete Study → Biblical Theology → Teaching → Sermon → Delivery walkthrough.
+The section-aware manuscript work is integrated into the current development line. Repository CI is green, and authenticated browser verification has been completed for the final-draft section editor and the integrated Study → Biblical Theology → Teaching → Sermon → Delivery workflow.
 
 The Application Mentor integration is committed on `feat/final-sermon-drafting`. CI run `33878617356` completed successfully through dependency installation, typecheck, tests, and production build, including the new provider tests.
 
@@ -194,7 +195,7 @@ The Teaching → Sermon migration `20260904143000_link_teaching_plan_to_sermon.s
 
 The Teaching → Sermon bridge, domain linkage, persistence updates, and regression test are committed on `feat/final-sermon-drafting`. A completed Teaching Plan is required before the bridge will save it onto a sermon.
 
-The final-draft and delivery Teaching Foundation traceability surface is committed on `feat/final-sermon-drafting`. It reads the persisted linked Teaching Plan from the study and exposes a read-only source summary with navigation back to Teaching and Sermon Preparation. Authenticated browser verification has not yet been performed for this latest UI change.
+The final-draft and delivery Teaching Foundation traceability surface is integrated into the current development line. It reads the persisted linked Teaching Plan from the study and exposes a read-only source summary with navigation back to Teaching and Sermon Preparation. Authenticated browser verification has been completed.
 
 A Supabase security-advisor warning for the Teaching `updated_at` trigger's mutable `search_path` was identified and remediated. The connected database function now has `search_path = public`. The remediation is recorded in migration `20260904150000_harden_teaching_plans_trigger_search_path.sql`.
 
@@ -214,6 +215,6 @@ OpenRouter fallback hardening is also included on `feat/research-source-library`
 
 ## Next Work
 
-1. Complete the final browser verification of saved-source reuse in a second Study and confirm source removal does not affect Study evidence.
-2. Mark the Research Source Library branch ready for review once the remaining browser reuse check is confirmed.
-3. Plan the next Research layer around richer provenance/history and, later, subscription and AI-usage metering without coupling billing logic to individual AI features.
+1. Continue development from the current integrated branch rather than reopening completed feature branches or stale milestone notes.
+2. Strengthen the next highest-value domain contract or workflow boundary with focused tests, documentation, and browser verification where applicable.
+3. Continue extending Biblical Research provenance/history and production billing operations as separate vertical slices, without coupling external research or billing state into Study evidence.
