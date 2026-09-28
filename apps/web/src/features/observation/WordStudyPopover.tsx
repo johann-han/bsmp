@@ -74,13 +74,16 @@ export function WordStudyPopover({
             { signal: controller.signal },
         )
             .then(async (response) => {
-                const payload = (await response.json()) as WordStudyResponse | { error?: string };
+                const payload: unknown = await response.json();
                 if (!response.ok) {
-                    throw new Error(
+                    const message =
+                        typeof payload === "object" &&
+                        payload !== null &&
+                        "error" in payload &&
                         typeof payload.error === "string"
                             ? payload.error
-                            : "Unable to load Strong's word study.",
-                    );
+                            : "Unable to load Strong's word study.";
+                    throw new Error(message);
                 }
                 return payload as WordStudyResponse;
             })
