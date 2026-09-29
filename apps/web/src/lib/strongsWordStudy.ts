@@ -1,5 +1,8 @@
 import { parseGreekMorphology, type StrongsMorphology } from "./strongsMorphology";
-import { lookupHebrewWordStudy } from "./strongsHebrewData";
+import {
+    lookupHebrewWordStudy,
+    type HebrewMorphologySegment,
+} from "./strongsHebrewData";
 
 export type StrongsLanguage = "G" | "H";
 
@@ -14,6 +17,7 @@ export interface StrongsLexiconEntry {
     readonly kjvDefinition: string | null;
     readonly originalForm: string | null;
     readonly morphology: StrongsMorphology | null;
+    readonly morphemes: readonly HebrewMorphologySegment[] | null;
 }
 
 export interface StrongsWordStudy {
@@ -232,6 +236,7 @@ function toLexiconEntry(
     lexicalContext: {
         readonly originalForm: string | null;
         readonly morphology: StrongsMorphology | null;
+        readonly morphemes: readonly HebrewMorphologySegment[] | null;
     },
 ): StrongsLexiconEntry {
     const language = number[0] as StrongsLanguage;
@@ -250,6 +255,7 @@ function toLexiconEntry(
         kjvDefinition: typeof raw.kjv_def === "string" ? raw.kjv_def : null,
         originalForm: lexicalContext.originalForm,
         morphology: lexicalContext.morphology,
+        morphemes: lexicalContext.morphemes,
     };
 }
 
@@ -441,7 +447,8 @@ export async function lookupStrongsWordStudy(input: {
             let lexicalContext: {
                 readonly originalForm: string | null;
                 readonly morphology: StrongsMorphology | null;
-            } = { originalForm: null, morphology: null };
+                readonly morphemes: readonly HebrewMorphologySegment[] | null;
+            } = { originalForm: null, morphology: null, morphemes: null };
 
             if (language === "G" && tagntSource) {
                 const occurrence = selectedStrongOccurrence(taggedWords, selected.index, number);
@@ -457,6 +464,7 @@ export async function lookupStrongsWordStudy(input: {
                         lexicalContext = {
                             originalForm: tagntWord.originalForm,
                             morphology: parseGreekMorphology(tagntWord.grammar),
+                            morphemes: null,
                         };
                     }
                 }
@@ -472,7 +480,11 @@ export async function lookupStrongsWordStudy(input: {
                     );
 
                     if (hebrewWord) {
-                        lexicalContext = hebrewWord;
+                        lexicalContext = {
+                            originalForm: hebrewWord.originalForm,
+                            morphology: hebrewWord.morphology,
+                            morphemes: hebrewWord.morphemes,
+                        };
                     }
                 }
             }
