@@ -10,6 +10,7 @@ export interface StrongsMorphology {
     readonly grammaticalCase: string | null;
     readonly number: string | null;
     readonly gender: string | null;
+    readonly state: string | null;
     readonly degree: string | null;
     readonly qualifier: string | null;
     readonly summary: string;
@@ -194,6 +195,7 @@ export function parseGreekMorphology(code: string): StrongsMorphology {
             grammaticalCase: null,
             number: null,
             gender: null,
+            state: null,
             degree: null,
             qualifier: null,
             summary: exactUninflected,
@@ -214,6 +216,7 @@ export function parseGreekMorphology(code: string): StrongsMorphology {
     let grammaticalCase: string | null = null;
     let number: string | null = null;
     let gender: string | null = null;
+    const state: string | null = null;
     let degree: string | null = null;
     let qualifier: string | null = null;
 
@@ -313,6 +316,7 @@ export function parseGreekMorphology(code: string): StrongsMorphology {
         grammaticalCase,
         number,
         gender,
+        state,
         degree,
         qualifier,
         summary: parts.join(" · ") || normalized,

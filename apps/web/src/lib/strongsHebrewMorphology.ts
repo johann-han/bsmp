@@ -229,6 +229,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
             grammaticalCase: null,
             number: null,
             gender: null,
+            state: null,
             degree: null,
             qualifier: "Unsupported morphology code",
             summary: code,
@@ -243,6 +244,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
     const grammaticalCase: string | null = null;
     let number: string | null = null;
     let gender: string | null = null;
+    let state: string | null = null;
     const degree: string | null = null;
     let qualifier: string | null = null;
 
@@ -256,6 +258,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
             const tail = parseGenderNumberState(code, 2, true);
             gender = tail.gender;
             number = tail.number;
+            state = tail.state;
             qualifier = addQualifier(type ? [type] : [], tail.state);
             break;
         }
@@ -267,6 +270,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
                 const tail = parseGenderNumberState(code, 2, true);
                 gender = tail.gender;
                 number = tail.number;
+                state = tail.state;
                 qualifier = addQualifier(type ? [type] : [], tail.state);
             } else {
                 qualifier = type;
@@ -321,6 +325,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
                 const tail = parseGenderNumberState(code, 3, true);
                 gender = tail.gender;
                 number = tail.number;
+                state = tail.state;
                 qualifier = addQualifier(stem ? [stem] : [], tail.state);
             } else if (["a", "c"].includes(code[2] ?? "")) {
                 person = null;
@@ -364,6 +369,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
         grammaticalCase,
         number,
         gender,
+        state,
         degree,
         qualifier,
         summary: details || code,
