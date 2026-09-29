@@ -285,6 +285,7 @@ function parseTahotMorphemes(word: TahotWord): HebrewMorphologySegment[] | null 
             role,
             strongsNumbers: extractStrongTags(dStrongParts[index] ?? ""),
             sourceStrongSegment: (dStrongParts[index] ?? "").trim(),
+            matchedStrong: false,
         };
     });
 
