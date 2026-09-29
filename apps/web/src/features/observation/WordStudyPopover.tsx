@@ -19,6 +19,7 @@ interface StrongsEntry {
     } | null;
     readonly morphemes: readonly {
         readonly originalForm: string;
+        readonly role: "prefix" | "root" | "suffix" | "segment";
         readonly morphology: {
             readonly language: "G" | "H";
             readonly code: string;
@@ -388,11 +389,35 @@ export function WordStudyPopover({
                                                                 <div>
                                                                     <div
                                                                         style={{
-                                                                            fontSize: 17,
-                                                                            fontWeight: 800,
+                                                                            display: "flex",
+                                                                            alignItems: "center",
+                                                                            gap: 7,
+                                                                            flexWrap: "wrap",
                                                                         }}
                                                                     >
-                                                                        {morpheme.originalForm}
+                                                                        <span
+                                                                            style={{
+                                                                                fontSize: 17,
+                                                                                fontWeight: 800,
+                                                                            }}
+                                                                        >
+                                                                            {morpheme.originalForm}
+                                                                        </span>
+                                                                        <span
+                                                                            dir="ltr"
+                                                                            style={{
+                                                                                padding: "2px 5px",
+                                                                                borderRadius: 5,
+                                                                                background: "#e2e8f0",
+                                                                                color: "#475569",
+                                                                                fontSize: 9,
+                                                                                fontWeight: 800,
+                                                                                textTransform: "uppercase",
+                                                                                letterSpacing: ".05em",
+                                                                            }}
+                                                                        >
+                                                                            {morpheme.role}
+                                                                        </span>
                                                                     </div>
                                                                     <div
                                                                         dir="ltr"
