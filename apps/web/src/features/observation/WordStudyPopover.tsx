@@ -283,7 +283,11 @@ export function WordStudyPopover({
                                                 Strong&apos;s {entry.number}
                                             </strong>
                                             <span style={{ fontSize: 11, color: "#64748b" }}>
-                                                {entry.language === "G" ? "Greek" : "Hebrew"}
+                                                {entry.morphology?.language === "A"
+                                                    ? "Aramaic"
+                                                    : entry.language === "G"
+                                                      ? "Greek"
+                                                      : "Hebrew"}
                                             </span>
                                         </div>
 
