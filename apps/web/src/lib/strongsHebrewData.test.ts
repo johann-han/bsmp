@@ -83,6 +83,22 @@ describe("TAHOT Hebrew word alignment", () => {
         ]);
     });
 
+    it("marks the morpheme that matched the selected Strong's occurrence", () => {
+        const words = parseTahotVerse(GENESIS_1_1, "Gen.1.1");
+
+        const rootMatch = findTahotSegment(words, "H7225", 1);
+        const prefixMatch = findTahotSegment(words, "H9003", 1);
+
+        expect(rootMatch?.morphemes.map((morpheme) => morpheme.matchedStrong)).toEqual([
+            false,
+            true,
+        ]);
+        expect(prefixMatch?.morphemes.map((morpheme) => morpheme.matchedStrong)).toEqual([
+            true,
+            false,
+        ]);
+    });
+
     it("maps a prefix Strong's number to its own Hebrew segment", () => {
         const words = parseTahotVerse(GENESIS_1_1, "Gen.1.1");
 
