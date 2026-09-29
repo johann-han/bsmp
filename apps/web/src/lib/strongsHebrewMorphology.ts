@@ -403,5 +403,6 @@ export function parseHebrewMorphology(code: string): StrongsMorphology {
         summary: language === "A"
             ? "Aramaic · " + segmentSummary
             : segmentSummary,
+        segments: parsed,
     };
 }
