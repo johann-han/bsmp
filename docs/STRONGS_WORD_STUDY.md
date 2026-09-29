@@ -14,6 +14,7 @@ The user can enable **Word Study**, select an English word, and open a popover c
 - pronunciation when supplied by the lexicon
 - the inflected original-language form when available
 - token-level Greek morphology for New Testament words
+- token-level Hebrew morphology for Old Testament words
 - Strong's definition
 - KJV gloss
 - derivation when supplied
@@ -50,6 +51,8 @@ Greek New Testament morphology and Hebrew Old Testament morphology are now both 
 
 - `apps/web/src/lib/strongsWordStudy.ts` loads and normalizes the external KJV word-tag data and Strong's dictionaries.
 - `apps/web/src/lib/strongsMorphology.ts` decodes the published Greek morphology code into a small structured display model.
+- `apps/web/src/lib/strongsHebrewMorphology.ts` decodes the published Hebrew\/Aramaic morphology code into the same structured display model.
+- `apps/web/src/lib/strongsHebrewData.ts` loads pinned STEPBible TAHOT data and aligns the selected Hebrew\/Aramaic segment to the KJV Strong's occurrence.
 - `apps/web/app/api/bible/strongs/route.ts` exposes a server-side lookup boundary.
 - `apps/web/src/features/observation/WordStudyPopover.tsx` provides the user-facing popover.
 - `StudyPassage` activates the lexical mode without changing the existing Word Markup behavior.
@@ -82,11 +85,11 @@ For Hebrew Old Testament words, BSMP supplements the Strong's dictionary entry w
 
 The Hebrew decoder is based on the published Open Scriptures morphology scheme and the STEPBible TEHMC vocabulary. It covers common nouns, adjectives, pronouns, prefixes/articles, prepositions, particles, suffixes, and verb stem/aspect forms, while preserving the raw code for unsupported combinations. Hebrew and Aramaic source codes are both represented by the same UI model, with Aramaic identified in the decoded summary.
 
-TAHOT source data is pinned to commit `b99716b0cddb648ddb95cc786a197180f2f97d48`. STEPBible describes TAHOT as a Leningrad-based Hebrew OT with full morphological and semantic tags for words, prefixes, and suffixes, with morphology based on ETCBC converted to the Open Scriptures format. The source is CC BY 4.0 and requests attribution to STEP Bible. citeturn395373search1
+TAHOT source data is pinned to commit `b99716b0cddb648ddb95cc786a197180f2f97d48`. STEPBible publishes TAHOT under CC BY 4.0 and describes its Hebrew morphology as based on ETCBC and adapted to the Open Scriptures-style code system.
 
 The Hebrew slice preserves the same lexical-reference boundary as the Greek slice: morphology is reference information for word study and does not populate Study observations or interpretations.
 
 
 ## Future lexical slices
 
-The next lexical slices can build on this boundary with Hebrew morphology, richer original-language display, and additional lexical/syntactic references without coupling lexical reference data to Study evidence.
+Future lexical slices can build on this boundary with richer original-language display and additional lexical or syntactic references without coupling lexical reference data to Study evidence.
