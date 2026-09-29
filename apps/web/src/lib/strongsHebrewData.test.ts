@@ -41,12 +41,14 @@ describe("TAHOT Hebrew word alignment", () => {
             originalForm: "בְּ",
             role: "prefix",
             strongsNumbers: ["H9003"],
+            sourceStrongSegment: "H9003",
             morphology: { code: "HR", summary: "Preposition" },
         });
         expect(match?.morphemes[1]).toMatchObject({
             originalForm: "רֵאשִׁ֖ית",
             role: "root",
             strongsNumbers: ["H7225G"],
+            sourceStrongSegment: "{H7225G}",
             morphology: { code: "HNcfsa" },
         });
     });
@@ -61,6 +63,7 @@ describe("TAHOT Hebrew word alignment", () => {
         expect(match?.morphemes[2]).toMatchObject({
             originalForm: "־",
             strongsNumbers: [],
+            sourceStrongSegment: "",
         });
     });
 
