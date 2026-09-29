@@ -92,7 +92,7 @@ The Hebrew decoder is based on the published Open Scriptures morphology scheme a
 
 TAHOT source data is pinned to commit `b99716b0cddb648ddb95cc786a197180f2f97d48`. STEPBible describes TAHOT as a Leningrad-based Hebrew OT with full morphological and semantic tags for words, prefixes, and suffixes, with morphology based on ETCBC converted to the Open Scriptures format. The source is CC BY 4.0 and requests attribution to STEP Bible. citeturn395373search1
 
-The Hebrew slice preserves the same lexical-reference boundary as the Greek slice: morphology is reference information for word study and does not populate Study observations or interpretations.
+The Hebrew slice preserves the same lexical-reference boundary as the Greek slice: morphology is reference information for word study and does not populate Study observations or interpretations. Regression coverage also exercises Aramaic TAHOT alignment through the same Strong’s occurrence-matching path.
 
 
 ## Future lexical slices

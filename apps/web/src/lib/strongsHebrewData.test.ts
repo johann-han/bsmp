@@ -123,6 +123,34 @@ describe("TAHOT Hebrew word alignment", () => {
         );
     });
 
+    it("aligns an Aramaic composite TAHOT word and preserves its language", () => {
+        const fixture =
+            "Dan.2.4#01=L\tאֲ/מַר\t'a./mar\tsaid/ he said\tH9001/{H0559A}\tAC/AVqp3ms\t\t\tH0559A\t\t\t";
+        const words = parseTahotVerse(fixture, "Dan.2.4");
+
+        const match = findTahotSegment(words, "H0559", 1);
+
+        expect(match?.originalForm).toBe("מַר");
+        expect(match?.morphology.language).toBe("A");
+        expect(match?.morphology.code).toBe("AVqp3ms");
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "אֲ",
+                role: "prefix",
+                strongsNumbers: ["H9001"],
+                matchedStrong: false,
+                morphology: { language: "A", code: "AC" },
+            },
+            {
+                originalForm: "מַר",
+                role: "root",
+                strongsNumbers: ["H0559A"],
+                matchedStrong: true,
+                morphology: { language: "A", code: "AVqp3ms" },
+            },
+        ]);
+    });
+
     it("keeps Strong's disambiguation out of the base-number comparison", () => {
         expect(baseStrong("H7225G")).toBe("H7225");
         expect(baseStrong("H0430G")).toBe("H0430");
