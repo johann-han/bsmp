@@ -17,6 +17,7 @@ The user can enable **Word Study**, select an English word, and open a popover c
 - token-level Hebrew morphology for Old Testament words, including structured morphology details when supplied
 - morpheme-by-morpheme Hebrew breakdowns for composite words (prefix/root/suffix segments)
 - conservative prefix/root/suffix role labels derived from the TAHOT root marker and segment order
+- structured grammatical state on Hebrew morphemes when the source code supplies it
 - Strong's definition
 - KJV gloss
 - derivation when supplied

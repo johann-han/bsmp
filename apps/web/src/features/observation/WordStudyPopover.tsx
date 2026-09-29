@@ -36,6 +36,7 @@ interface StrongsEntry {
             readonly language: "G" | "H" | "A";
             readonly code: string;
             readonly summary: string;
+            readonly state: string | null;
         };
     }[] | null;
 }
@@ -533,6 +534,18 @@ export function WordStudyPopover({
                                                                     >
                                                                         {morpheme.morphology.summary}
                                                                     </div>
+                                                                    {morpheme.morphology.state && (
+                                                                        <div
+                                                                            dir="ltr"
+                                                                            style={{
+                                                                                marginTop: 2,
+                                                                                fontSize: 10,
+                                                                                color: "#64748b",
+                                                                            }}
+                                                                        >
+                                                                            State: {morpheme.morphology.state}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
 
                                                                 <code
