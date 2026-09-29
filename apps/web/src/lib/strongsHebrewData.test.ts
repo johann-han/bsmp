@@ -42,6 +42,7 @@ describe("TAHOT Hebrew word alignment", () => {
             role: "prefix",
             strongsNumbers: ["H9003"],
             sourceStrongSegment: "H9003",
+            matchedStrong: false,
             morphology: { code: "HR", summary: "Preposition" },
         });
         expect(match?.morphemes[1]).toMatchObject({
@@ -49,6 +50,7 @@ describe("TAHOT Hebrew word alignment", () => {
             role: "root",
             strongsNumbers: ["H7225G"],
             sourceStrongSegment: "{H7225G}",
+            matchedStrong: true,
             morphology: { code: "HNcfsa" },
         });
     });
@@ -78,6 +80,22 @@ describe("TAHOT Hebrew word alignment", () => {
             { role: "prefix", originalForm: "בְּ" },
             { role: "root", originalForm: "רֵאשִׁ֖ית" },
             { role: "suffix", originalForm: "וֹ" },
+        ]);
+    });
+
+    it("marks the morpheme that matched the selected Strong's occurrence", () => {
+        const words = parseTahotVerse(GENESIS_1_1, "Gen.1.1");
+
+        const rootMatch = findTahotSegment(words, "H7225", 1);
+        const prefixMatch = findTahotSegment(words, "H9003", 1);
+
+        expect(rootMatch?.morphemes.map((morpheme) => morpheme.matchedStrong)).toEqual([
+            false,
+            true,
+        ]);
+        expect(prefixMatch?.morphemes.map((morpheme) => morpheme.matchedStrong)).toEqual([
+            true,
+            false,
         ]);
     });
 

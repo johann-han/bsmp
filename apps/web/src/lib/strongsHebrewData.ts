@@ -114,6 +114,7 @@ export interface HebrewMorphologySegment {
     readonly role: HebrewMorphemeRole;
     readonly strongsNumbers: readonly string[];
     readonly sourceStrongSegment: string;
+    readonly matchedStrong: boolean;
 }
 
 export interface HebrewWordStudyData {
@@ -284,6 +285,7 @@ function parseTahotMorphemes(word: TahotWord): HebrewMorphologySegment[] | null 
             role,
             strongsNumbers: extractStrongTags(dStrongParts[index] ?? ""),
             sourceStrongSegment: (dStrongParts[index] ?? "").trim(),
+            matchedStrong: false,
         };
     });
 
@@ -320,10 +322,15 @@ function findTahotSegment(
             const selectedMorpheme = morphemes[index];
             if (!selectedMorpheme) return null;
 
+            const selectedMorphemes = morphemes.map((morpheme, morphemeIndex) => ({
+                ...morpheme,
+                matchedStrong: morphemeIndex === index,
+            }));
+
             return {
                 originalForm: selectedMorpheme.originalForm,
                 morphology: selectedMorpheme.morphology,
-                morphemes,
+                morphemes: selectedMorphemes,
             };
         }
     }
