@@ -13,7 +13,7 @@ interface StrongsEntry {
     readonly kjvDefinition: string | null;
     readonly originalForm: string | null;
     readonly morphology: {
-        readonly language: "G" | "H";
+        readonly language: "G" | "H" | "A";
         readonly code: string;
         readonly summary: string;
     } | null;
@@ -21,7 +21,7 @@ interface StrongsEntry {
         readonly originalForm: string;
         readonly role: "prefix" | "root" | "suffix" | "segment";
         readonly morphology: {
-            readonly language: "G" | "H";
+            readonly language: "G" | "H" | "A";
             readonly code: string;
             readonly summary: string;
         };
@@ -283,7 +283,11 @@ export function WordStudyPopover({
                                                 Strong&apos;s {entry.number}
                                             </strong>
                                             <span style={{ fontSize: 11, color: "#64748b" }}>
-                                                {entry.language === "G" ? "Greek" : "Hebrew"}
+                                                {entry.morphology?.language === "A"
+                                                    ? "Aramaic"
+                                                    : entry.language === "G"
+                                                      ? "Greek"
+                                                      : "Hebrew"}
                                             </span>
                                         </div>
 
@@ -328,7 +332,11 @@ export function WordStudyPopover({
                                                     lineHeight: 1.5,
                                                 }}
                                             >
-                                                <strong>Morphology:</strong>{" "}
+                                                <strong>
+                                                    {entry.morphology.language === "A"
+                                                        ? "Aramaic morphology:"
+                                                        : "Morphology:"}
+                                                </strong>{" "}
                                                 {entry.morphology.summary}{" "}
                                                 <span style={{ color: "#64748b" }}>
                                                     ({entry.morphology.code})

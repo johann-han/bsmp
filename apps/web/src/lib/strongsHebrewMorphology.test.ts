@@ -96,7 +96,7 @@ describe("Hebrew morphology", () => {
 
     it("decodes an Aramaic verb using the same Open Scriptures code structure", () => {
         expect(parseHebrewMorphology("AVqp3ms")).toMatchObject({
-            language: "H",
+            language: "A",
             partOfSpeech: "Verb",
             form: "Perfect",
             qualifier: "Peal",
@@ -104,6 +104,15 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("AVqp3ms").summary).toContain(
             "Aramaic · Verb · Peal · Perfect",
         );
+    });
+
+    it("preserves Aramaic on composite morphology codes", () => {
+        const parsed = parseHebrewMorphology("AC/AVqp3ms");
+
+        expect(parsed.language).toBe("A");
+        expect(parsed.segments?.[0]?.language).toBe("A");
+        expect(parsed.segments?.[1]?.language).toBe("A");
+        expect(parsed.summary).toContain("Aramaic");
     });
 
     it("rejects an empty code and an invalid language", () => {

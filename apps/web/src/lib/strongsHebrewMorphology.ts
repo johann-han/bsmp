@@ -218,7 +218,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
 
     if (!partOfSpeech) {
         return {
-            language: "H",
+            language,
             code,
             partOfSpeech: null,
             tense: null,
@@ -353,7 +353,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
     ]);
 
     return {
-        language: "H",
+        language,
         code,
         partOfSpeech,
         tense,
@@ -398,7 +398,7 @@ export function parseHebrewMorphology(code: string): StrongsMorphology {
 
     return {
         ...primary,
-        language: "H",
+        language,
         code: normalized,
         summary: language === "A"
             ? "Aramaic · " + segmentSummary

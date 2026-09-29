@@ -1,5 +1,5 @@
 export interface StrongsMorphology {
-    readonly language: "G" | "H";
+    readonly language: "G" | "H" | "A";
     readonly code: string;
     readonly partOfSpeech: string | null;
     readonly tense: string | null;
