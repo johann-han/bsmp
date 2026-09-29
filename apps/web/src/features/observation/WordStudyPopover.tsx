@@ -17,6 +17,14 @@ interface StrongsEntry {
         readonly code: string;
         readonly summary: string;
     } | null;
+    readonly morphemes: readonly {
+        readonly originalForm: string;
+        readonly morphology: {
+            readonly language: "G" | "H";
+            readonly code: string;
+            readonly summary: string;
+        };
+    }[] | null;
 }
 
 interface WordStudyResponse {
@@ -326,6 +334,94 @@ export function WordStudyPopover({
                                                 </span>
                                             </div>
                                         )}
+
+                                        {entry.language === "H" &&
+                                            entry.morphemes &&
+                                            entry.morphemes.length > 1 && (
+                                                <div
+                                                    style={{
+                                                        marginTop: 7,
+                                                        padding: "8px 9px",
+                                                        borderRadius: 7,
+                                                        background: "#f8fafc",
+                                                        border: "1px solid #e2e8f0",
+                                                    }}
+                                                >
+                                                    <div
+                                                        style={{
+                                                            fontSize: 11,
+                                                            fontWeight: 800,
+                                                            color: "#475569",
+                                                            textTransform: "uppercase",
+                                                            letterSpacing: ".06em",
+                                                        }}
+                                                    >
+                                                        Morpheme breakdown
+                                                    </div>
+
+                                                    <div
+                                                        dir="rtl"
+                                                        style={{
+                                                            display: "grid",
+                                                            gap: 7,
+                                                            marginTop: 7,
+                                                        }}
+                                                    >
+                                                        {entry.morphemes.map((morpheme, index) => (
+                                                            <div
+                                                                key={
+                                                                    morpheme.morphology.code +
+                                                                    "-" +
+                                                                    index
+                                                                }
+                                                                style={{
+                                                                    display: "grid",
+                                                                    gridTemplateColumns: "minmax(0, 1fr) auto",
+                                                                    gap: 10,
+                                                                    alignItems: "center",
+                                                                    padding: "7px 8px",
+                                                                    borderRadius: 6,
+                                                                    background: "#ffffff",
+                                                                    border: "1px solid #e5e7eb",
+                                                                }}
+                                                            >
+                                                                <div>
+                                                                    <div
+                                                                        style={{
+                                                                            fontSize: 17,
+                                                                            fontWeight: 800,
+                                                                        }}
+                                                                    >
+                                                                        {morpheme.originalForm}
+                                                                    </div>
+                                                                    <div
+                                                                        dir="ltr"
+                                                                        style={{
+                                                                            marginTop: 2,
+                                                                            fontSize: 11,
+                                                                            color: "#475569",
+                                                                            lineHeight: 1.45,
+                                                                        }}
+                                                                    >
+                                                                        {morpheme.morphology.summary}
+                                                                    </div>
+                                                                </div>
+
+                                                                <code
+                                                                    dir="ltr"
+                                                                    style={{
+                                                                        fontSize: 10,
+                                                                        color: "#64748b",
+                                                                        whiteSpace: "nowrap",
+                                                                    }}
+                                                                >
+                                                                    {morpheme.morphology.code}
+                                                                </code>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
 
                                         {entry.pronunciation && (
                                             <div
