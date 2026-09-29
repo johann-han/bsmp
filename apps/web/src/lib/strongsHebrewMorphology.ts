@@ -236,14 +236,14 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
     }
 
     let tense: string | null = null;
-    let voice: string | null = null;
+    const voice: string | null = null;
     let mood: string | null = null;
     let form: string | null = null;
     let person: string | null = null;
-    let grammaticalCase: string | null = null;
+    const grammaticalCase: string | null = null;
     let number: string | null = null;
     let gender: string | null = null;
-    let degree: string | null = null;
+    const degree: string | null = null;
     let qualifier: string | null = null;
 
     switch (posCode) {
