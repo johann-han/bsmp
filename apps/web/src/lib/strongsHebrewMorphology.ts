@@ -207,6 +207,18 @@ function addQualifier(values: readonly string[], extra: string | null): string |
     return filtered.length > 0 ? filtered.join(" · ") : null;
 }
 
+function parseParticipleTail(code: string, start: number): FeatureTail {
+    const tail = code.slice(start);
+    const offset = tail.startsWith("x") ? 1 : 0;
+
+    return {
+        person: null,
+        gender: GENDER[tail[offset] ?? ""] ?? null,
+        number: NUMBER[tail[offset + 1] ?? ""] ?? null,
+        state: STATE[tail[offset + 2] ?? ""] ?? null,
+    };
+}
+
 function summaryParts(values: readonly (string | null)[]): string {
     return values.filter((value): value is string => Boolean(value)).join(" · ");
 }
@@ -322,7 +334,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
             if (code[2] === "v") mood = "Imperative";
 
             if (["r", "s"].includes(code[2] ?? "")) {
-                const tail = parseGenderNumberState(code, 3, true);
+                const tail = parseParticipleTail(code, 3);
                 gender = tail.gender;
                 number = tail.number;
                 state = tail.state;
