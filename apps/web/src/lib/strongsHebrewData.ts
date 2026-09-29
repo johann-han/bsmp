@@ -106,9 +106,15 @@ interface TahotWord {
     readonly rootDStrongInstance: string;
 }
 
+export interface HebrewMorphologySegment {
+    readonly originalForm: string;
+    readonly morphology: StrongsMorphology;
+}
+
 export interface HebrewWordStudyData {
     readonly originalForm: string;
     readonly morphology: StrongsMorphology;
+    readonly morphemes: readonly HebrewMorphologySegment[];
 }
 
 const cache = new Map<TahotFile, { expiresAt: number; promise: Promise<string> }>();
@@ -218,29 +224,52 @@ function cleanHebrewPart(value: string): string {
     return value.split("\\")[0]?.trim() ?? value.trim();
 }
 
+function parseTahotMorphemes(word: TahotWord): HebrewMorphologySegment[] | null {
+    const hebrewParts = word.hebrew.split("/");
+    const grammarParts = word.grammar.split("/");
+
+    if (hebrewParts.length !== grammarParts.length) return null;
+
+    const firstLanguage = languagePrefix(grammarParts[0] ?? "");
+    if (!firstLanguage) return null;
+
+    const morphemes = hebrewParts.map((hebrewPart, index) => {
+        const grammar = normalizeGrammarPart(
+            grammarParts[index] ?? "",
+            index,
+            firstLanguage,
+        );
+
+        if (!grammar) return null;
+
+        return {
+            originalForm: cleanHebrewPart(hebrewPart),
+            morphology: parseHebrewMorphology(grammar),
+        };
+    });
+
+    return morphemes.every(Boolean)
+        ? (morphemes as HebrewMorphologySegment[])
+        : null;
+}
+
 function findTahotSegment(
     words: readonly TahotWord[],
     targetStrong: string,
     occurrence: number,
-): { readonly originalForm: string; readonly morphology: StrongsMorphology } | null {
+): HebrewWordStudyData | null {
     const target = baseStrong(targetStrong);
     if (!target || occurrence < 1) return null;
 
     let seen = 0;
 
     for (const word of words) {
-        const hebrewParts = word.hebrew.split("/");
         const dStrongParts = word.dStrongs.split("/");
-        const grammarParts = word.grammar.split("/");
+        const morphemes = parseTahotMorphemes(word);
 
-        if (
-            hebrewParts.length !== dStrongParts.length ||
-            hebrewParts.length !== grammarParts.length
-        ) {
+        if (!morphemes || dStrongParts.length !== morphemes.length) {
             continue;
         }
-
-        const firstLanguage = languagePrefix(grammarParts[0] ?? "");
 
         for (let index = 0; index < dStrongParts.length; index++) {
             const tags = extractStrongTags(dStrongParts[index] ?? "");
@@ -249,16 +278,13 @@ function findTahotSegment(
             seen += 1;
             if (seen !== occurrence) continue;
 
-            const grammar = normalizeGrammarPart(
-                grammarParts[index] ?? "",
-                index,
-                firstLanguage,
-            );
-            if (!grammar) return null;
+            const selectedMorpheme = morphemes[index];
+            if (!selectedMorpheme) return null;
 
             return {
-                originalForm: cleanHebrewPart(hebrewParts[index] ?? ""),
-                morphology: parseHebrewMorphology(grammar),
+                originalForm: selectedMorpheme.originalForm,
+                morphology: selectedMorpheme.morphology,
+                morphemes,
             };
         }
     }
@@ -270,6 +296,7 @@ export function __test__() {
     return {
         parseTahotVerse,
         findTahotSegment,
+        parseTahotMorphemes,
         baseStrong,
     };
 }
