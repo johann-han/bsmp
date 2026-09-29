@@ -3,6 +3,7 @@ import type { StrongsMorphology } from "./strongsMorphology";
 const PART_OF_SPEECH: Record<string, string> = {
     A: "Adjective",
     C: "Conjunction",
+    c: "Conjunction",
     D: "Adverb",
     N: "Noun",
     P: "Pronoun",
@@ -246,6 +247,10 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
     let qualifier: string | null = null;
 
     switch (posCode) {
+        case "c": {
+            qualifier = "Consecutive";
+            break;
+        }
         case "A": {
             const type = ADJECTIVE_TYPE[code[1] ?? ""] ?? null;
             const tail = parseGenderNumberState(code, 2, true);
