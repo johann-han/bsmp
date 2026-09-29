@@ -40,12 +40,27 @@ describe("TAHOT Hebrew word alignment", () => {
         expect(match?.morphemes[0]).toMatchObject({
             originalForm: "בְּ",
             role: "prefix",
+            strongsNumbers: ["H9003"],
             morphology: { code: "HR", summary: "Preposition" },
         });
         expect(match?.morphemes[1]).toMatchObject({
             originalForm: "רֵאשִׁ֖ית",
             role: "root",
+            strongsNumbers: ["H7225G"],
             morphology: { code: "HNcfsa" },
+        });
+    });
+
+    it("preserves a morpheme with no Strong's tag", () => {
+        const fixture =
+            "Gen.1.1#01=L\tבְּ/רֵאשִׁ֖ית/־\tbe./re.Shit/-\tin/ beginning/\tH9003/{H7225G}/\tHR/Ncfsa/Td\t\t\tH7225G\t\t\t";
+        const words = parseTahotVerse(fixture, "Gen.1.1");
+
+        const match = findTahotSegment(words, "H7225", 1);
+
+        expect(match?.morphemes[2]).toMatchObject({
+            originalForm: "־",
+            strongsNumbers: [],
         });
     });
 
