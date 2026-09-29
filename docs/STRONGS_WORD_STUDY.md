@@ -51,8 +51,8 @@ Greek New Testament morphology and Hebrew Old Testament morphology are now both 
 
 - `apps/web/src/lib/strongsWordStudy.ts` loads and normalizes the external KJV word-tag data and Strong's dictionaries.
 - `apps/web/src/lib/strongsMorphology.ts` decodes the published Greek morphology code into a small structured display model.
-- `apps/web/src/lib/strongsHebrewMorphology.ts` decodes the published Hebrew\/Aramaic morphology code into the same structured display model.
-- `apps/web/src/lib/strongsHebrewData.ts` loads pinned STEPBible TAHOT data and aligns the selected Hebrew\/Aramaic segment to the KJV Strong's occurrence.
+- `apps/web/src/lib/strongsHebrewMorphology.ts` decodes the published Hebrew/Aramaic morphology code into the same structured display model.
+- `apps/web/src/lib/strongsHebrewData.ts` loads pinned STEPBible TAHOT data and aligns the selected Hebrew/Aramaic segment to the KJV Strong's occurrence.
 - `apps/web/app/api/bible/strongs/route.ts` exposes a server-side lookup boundary.
 - `apps/web/src/features/observation/WordStudyPopover.tsx` provides the user-facing popover.
 - `StudyPassage` activates the lexical mode without changing the existing Word Markup behavior.
