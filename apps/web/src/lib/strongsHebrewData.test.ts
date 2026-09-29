@@ -39,12 +39,28 @@ describe("TAHOT Hebrew word alignment", () => {
         expect(match?.morphemes).toHaveLength(2);
         expect(match?.morphemes[0]).toMatchObject({
             originalForm: "בְּ",
+            role: "prefix",
             morphology: { code: "HR", summary: "Preposition" },
         });
         expect(match?.morphemes[1]).toMatchObject({
             originalForm: "רֵאשִׁ֖ית",
+            role: "root",
             morphology: { code: "HNcfsa" },
         });
+    });
+
+    it("classifies a trailing suffix as a suffix", () => {
+        const fixture =
+            "Gen.1.1#01=L\tבְּ/רֵאשִׁ֖ית/וֹ\tbe./re.Shit/o\tin/ beginning/his\tH9003/{H7225G}/H0001\tHR/Ncfsa/Sp3m\t\t\tH7225G\t\t\t";
+        const words = parseTahotVerse(fixture, "Gen.1.1");
+
+        const match = findTahotSegment(words, "H7225", 1);
+
+        expect(match?.morphemes).toMatchObject([
+            { role: "prefix", originalForm: "בְּ" },
+            { role: "root", originalForm: "רֵאשִׁ֖ית" },
+            { role: "suffix", originalForm: "וֹ" },
+        ]);
     });
 
     it("maps a prefix Strong's number to its own Hebrew segment", () => {
