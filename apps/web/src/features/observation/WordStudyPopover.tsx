@@ -16,6 +16,17 @@ interface StrongsEntry {
         readonly language: "G" | "H" | "A";
         readonly code: string;
         readonly summary: string;
+        readonly partOfSpeech: string | null;
+        readonly tense: string | null;
+        readonly voice: string | null;
+        readonly mood: string | null;
+        readonly form: string | null;
+        readonly person: string | null;
+        readonly grammaticalCase: string | null;
+        readonly number: string | null;
+        readonly gender: string | null;
+        readonly degree: string | null;
+        readonly qualifier: string | null;
     } | null;
     readonly morphemes: readonly {
         readonly originalForm: string;
@@ -51,6 +62,26 @@ interface WordStudyPopoverProps {
 
 function displayDefinition(entry: StrongsEntry): string {
     return entry.strongsDefinition ?? entry.kjvDefinition ?? "No definition was returned.";
+}
+
+function morphologyDetails(
+    morphology: NonNullable<StrongsEntry["morphology"]>,
+): readonly { label: string; value: string }[] {
+    return [
+        ["Part of speech", morphology.partOfSpeech],
+        ["Tense", morphology.tense],
+        ["Voice", morphology.voice],
+        ["Mood", morphology.mood],
+        ["Form / aspect", morphology.form],
+        ["Person", morphology.person ? morphology.person + " person" : null],
+        ["Case", morphology.grammaticalCase],
+        ["Number", morphology.number],
+        ["Gender", morphology.gender],
+        ["Degree", morphology.degree],
+        ["Qualifier", morphology.qualifier],
+    ]
+        .filter((item): item is [string, string] => Boolean(item[1]))
+        .map(([label, value]) => ({ label, value }));
 }
 
 export function WordStudyPopover({
@@ -343,6 +374,68 @@ export function WordStudyPopover({
                                                 </span>
                                             </div>
                                         )}
+
+                                        {entry.morphology &&
+                                            morphologyDetails(entry.morphology).length > 0 && (
+                                                <div
+                                                    style={{
+                                                        marginTop: 7,
+                                                        padding: "8px 9px",
+                                                        borderRadius: 7,
+                                                        background: "#ffffff",
+                                                        border: "1px solid #e2e8f0",
+                                                    }}
+                                                >
+                                                    <div
+                                                        style={{
+                                                            fontSize: 11,
+                                                            fontWeight: 800,
+                                                            color: "#475569",
+                                                            textTransform: "uppercase",
+                                                            letterSpacing: ".06em",
+                                                        }}
+                                                    >
+                                                        Morphology details
+                                                    </div>
+
+                                                    <dl
+                                                        style={{
+                                                            display: "grid",
+                                                            gridTemplateColumns: "auto minmax(0, 1fr)",
+                                                            gap: "4px 10px",
+                                                            margin: "7px 0 0",
+                                                            fontSize: 11,
+                                                            lineHeight: 1.45,
+                                                        }}
+                                                    >
+                                                        {morphologyDetails(entry.morphology).map((detail) => (
+                                                            <div
+                                                                key={detail.label}
+                                                                style={{
+                                                                    display: "contents",
+                                                                }}
+                                                            >
+                                                                <dt
+                                                                    style={{
+                                                                        color: "#64748b",
+                                                                        fontWeight: 700,
+                                                                    }}
+                                                                >
+                                                                    {detail.label}
+                                                                </dt>
+                                                                <dd
+                                                                    style={{
+                                                                        margin: 0,
+                                                                        color: "#0f172a",
+                                                                    }}
+                                                                >
+                                                                    {detail.value}
+                                                                </dd>
+                                                            </div>
+                                                        ))}
+                                                    </dl>
+                                                </div>
+                                            )}
 
                                         {entry.language === "H" &&
                                             entry.morphemes &&
