@@ -59,16 +59,39 @@ describe("Hebrew morphology", () => {
     });
 
     it("decodes a composite Hebrew word code", () => {
-        expect(parseHebrewMorphology("HC/Vqw3ms")).toMatchObject({
+        const parsed = parseHebrewMorphology("HC/Vqw3ms");
+
+        expect(parsed).toMatchObject({
             language: "H",
             code: "HC/Vqw3ms",
         });
-        expect(parseHebrewMorphology("HC/Vqw3ms").summary).toContain(
-            "Conjunction",
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Verb · Qal · Sequential imperfect");
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]?.summary).toBe("Conjunction · Consecutive");
+        expect(parsed.segments?.[1]?.summary).toContain(
+            "Verb · Qal · Sequential imperfect · 3rd person · Masculine · Singular",
         );
-        expect(parseHebrewMorphology("HC/Vqw3ms").summary).toContain(
-            "Verb · Qal · Sequential imperfect",
-        );
+    });
+
+    it("decodes Open Scriptures composite article/noun patterns", () => {
+        const parsed = parseHebrewMorphology("HTd/Ncmpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmpa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Plural",
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain("Noun · Common · Absolute · Plural · Masculine");
     });
 
     it("decodes an Aramaic verb using the same Open Scriptures code structure", () => {

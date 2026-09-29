@@ -14,6 +14,8 @@ The user can enable **Word Study**, select an English word, and open a popover c
 - pronunciation when supplied by the lexicon
 - the inflected original-language form when available
 - token-level Greek morphology for New Testament words
+- token-level Hebrew morphology for Old Testament words
+- morpheme-by-morpheme Hebrew breakdowns for composite words (prefix/root/suffix segments)
 - Strong's definition
 - KJV gloss
 - derivation when supplied
@@ -49,7 +51,9 @@ Greek New Testament morphology and Hebrew Old Testament morphology are now both 
 ## Architecture
 
 - `apps/web/src/lib/strongsWordStudy.ts` loads and normalizes the external KJV word-tag data and Strong's dictionaries.
-- `apps/web/src/lib/strongsMorphology.ts` decodes the published Greek morphology code into a small structured display model.
+- `apps/web/src/lib/strongsMorphology.ts` decodes the published Greek morphology code into a small structured display model and permits composite segment metadata.
+- `apps/web/src/lib/strongsHebrewMorphology.ts` decodes the published Hebrew/Aramaic morphology code into the same structured display model, retaining each composite segment.
+- `apps/web/src/lib/strongsHebrewData.ts` loads pinned STEPBible TAHOT data, aligns the selected Hebrew/Aramaic segment to the KJV Strong's occurrence, and returns the complete morpheme sequence for that TAHOT word.
 - `apps/web/app/api/bible/strongs/route.ts` exposes a server-side lookup boundary.
 - `apps/web/src/features/observation/WordStudyPopover.tsx` provides the user-facing popover.
 - `StudyPassage` activates the lexical mode without changing the existing Word Markup behavior.
@@ -80,7 +84,7 @@ The alignment is deliberately token-level rather than Strong's-number-only. Stro
 
 For Hebrew Old Testament words, BSMP supplements the Strong's dictionary entry with the selected original-language segment and morphology from STEPBible TAHOT. The implementation follows the TAHOT structure in which prefixes, roots, and suffixes can be separated with `/`, the lexical root is marked with `{curly braces}`, and the Grammar column carries an Open Scriptures-style morphology code. The selected KJV Strong's number is aligned to the corresponding TAHOT segment by occurrence within the verse. When the source structure is not unambiguous, BSMP leaves the lexical entry available without inventing a morphology result.
 
-The Hebrew decoder is based on the published Open Scriptures morphology scheme and the STEPBible TEHMC vocabulary. It covers common nouns, adjectives, pronouns, prefixes/articles, prepositions, particles, suffixes, and verb stem/aspect forms, while preserving the raw code for unsupported combinations. Hebrew and Aramaic source codes are both represented by the same UI model, with Aramaic identified in the decoded summary.
+The Hebrew decoder is based on the published Open Scriptures morphology scheme and the STEPBible TEHMC vocabulary. It covers common nouns, adjectives, pronouns, prefixes/articles, prepositions, particles, suffixes, and verb stem/aspect forms, while preserving the raw code for unsupported combinations. Composite codes such as `HTd/Ncmpa` are retained as ordered segments so the UI can show the article and lexical stem separately. Hebrew and Aramaic source codes are both represented by the same UI model, with Aramaic identified in the decoded summary.
 
 TAHOT source data is pinned to commit `b99716b0cddb648ddb95cc786a197180f2f97d48`. STEPBible describes TAHOT as a Leningrad-based Hebrew OT with full morphological and semantic tags for words, prefixes, and suffixes, with morphology based on ETCBC converted to the Open Scriptures format. The source is CC BY 4.0 and requests attribution to STEP Bible. citeturn395373search1
 
@@ -89,4 +93,4 @@ The Hebrew slice preserves the same lexical-reference boundary as the Greek slic
 
 ## Future lexical slices
 
-The next lexical slices can build on this boundary with Hebrew morphology, richer original-language display, and additional lexical/syntactic references without coupling lexical reference data to Study evidence.
+Future lexical slices can build on this boundary with richer original-language display and additional lexical or syntactic references without coupling lexical reference data to Study evidence.
