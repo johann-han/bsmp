@@ -569,7 +569,7 @@ export function WordStudyPopover({
                                                                                 color: "#94a3b8",
                                                                             }}
                                                                         >
-                                                                            Source segment: {morpheme.sourceStrongSegment}
+                                                                            TAHOT source: {morpheme.sourceStrongSegment}
                                                                         </div>
                                                                     )}
                                                                 </div>
