@@ -36,6 +36,15 @@ describe("TAHOT Hebrew word alignment", () => {
         expect(match?.morphology.summary).toContain(
             "Noun · Common · Absolute · Feminine · Singular",
         );
+        expect(match?.morphemes).toHaveLength(2);
+        expect(match?.morphemes[0]).toMatchObject({
+            originalForm: "בְּ",
+            morphology: { code: "HR", summary: "Preposition" },
+        });
+        expect(match?.morphemes[1]).toMatchObject({
+            originalForm: "רֵאשִׁ֖ית",
+            morphology: { code: "HNcfsa" },
+        });
     });
 
     it("maps a prefix Strong's number to its own Hebrew segment", () => {
