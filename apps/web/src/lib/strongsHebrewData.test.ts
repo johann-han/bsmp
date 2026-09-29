@@ -42,6 +42,7 @@ describe("TAHOT Hebrew word alignment", () => {
             role: "prefix",
             strongsNumbers: ["H9003"],
             sourceStrongSegment: "H9003",
+            matchedStrong: false,
             morphology: { code: "HR", summary: "Preposition" },
         });
         expect(match?.morphemes[1]).toMatchObject({
@@ -49,6 +50,7 @@ describe("TAHOT Hebrew word alignment", () => {
             role: "root",
             strongsNumbers: ["H7225G"],
             sourceStrongSegment: "{H7225G}",
+            matchedStrong: true,
             morphology: { code: "HNcfsa" },
         });
     });
