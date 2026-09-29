@@ -106,6 +106,15 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("preserves Aramaic on composite morphology codes", () => {
+        const parsed = parseHebrewMorphology("AC/AVqp3ms");
+
+        expect(parsed.language).toBe("A");
+        expect(parsed.segments?.[0]?.language).toBe("A");
+        expect(parsed.segments?.[1]?.language).toBe("A");
+        expect(parsed.summary).toContain("Aramaic");
+    });
+
     it("rejects an empty code and an invalid language", () => {
         expect(() => parseHebrewMorphology("")).toThrow(/morphology code/i);
         expect(() => parseHebrewMorphology("GNcfsa")).toThrow(/H or A/i);
