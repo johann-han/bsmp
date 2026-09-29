@@ -54,6 +54,48 @@ const TAHOT_BOOK_FILE: Record<string, TahotFile> = {
     MAL: "Isa-Mal",
 };
 
+const TAHOT_BOOK_NAME: Record<string, string> = {
+    GEN: "Gen",
+    EXO: "Exo",
+    LEV: "Lev",
+    NUM: "Num",
+    DEU: "Deu",
+    JOS: "Jos",
+    JDG: "Jdg",
+    RUT: "Rut",
+    "1SA": "1Sa",
+    "2SA": "2Sa",
+    "1KI": "1Ki",
+    "2KI": "2Ki",
+    "1CH": "1Ch",
+    "2CH": "2Ch",
+    EZR: "Ezr",
+    NEH: "Neh",
+    EST: "Est",
+    JOB: "Job",
+    PSA: "Psa",
+    PRO: "Pro",
+    ECC: "Ecc",
+    SNG: "Sng",
+    ISA: "Isa",
+    JER: "Jer",
+    LAM: "Lam",
+    EZK: "Ezk",
+    DAN: "Dan",
+    HOS: "Hos",
+    JOL: "Jol",
+    AMO: "Amo",
+    OBA: "Oba",
+    JON: "Jon",
+    MIC: "Mic",
+    NAM: "Nam",
+    HAB: "Hab",
+    ZEP: "Zep",
+    HAG: "Hag",
+    ZEC: "Zec",
+    MAL: "Mal",
+};
+
 interface TahotWord {
     readonly location: string;
     readonly wordIndex: number;
@@ -84,30 +126,28 @@ function sourceUrl(file: TahotFile): string {
 async function loadTahot(file: TahotFile): Promise<string> {
     const now = Date.now();
     const cached = cache.get(file);
-    if (cached && cached.expiresAt > now) {
-        return cached.promise;
-    }
+    if (cached && cached.expiresAt > now) return cached.promise;
 
-    const promise = fetch(sourceUrl(file)).then(async (response) => {
-        if (!response.ok) {
-            throw new Error(
-                "Unable to load STEPBible TAHOT data (" + response.status + ").",
-            );
-        }
-        return response.text();
-    });
+    const promise = fetch(sourceUrl(file), { next: { revalidate: 86400 } })
+        .then(async (response) => {
+            if (!response.ok) {
+                throw new Error(
+                    "Unable to load STEPBible TAHOT data (HTTP " + response.status + ").",
+                );
+            }
+            return response.text();
+        })
+        .catch((error) => {
+            cache.delete(file);
+            throw error;
+        });
 
     cache.set(file, {
         expiresAt: now + CACHE_MS,
         promise,
     });
 
-    try {
-        return await promise;
-    } catch (error) {
-        cache.delete(file);
-        throw error;
-    }
+    return promise;
 }
 
 const REF_RE =
@@ -178,18 +218,14 @@ function cleanHebrewPart(value: string): string {
     return value.split("\\")[0]?.trim() ?? value.trim();
 }
 
-function isRootSegment(value: string, target: string): boolean {
-    return extractStrongTags(value).some((tag) => {
-        return tag === target && value.includes("{");
-    });
-}
-
 function findTahotSegment(
     words: readonly TahotWord[],
     targetStrong: string,
     occurrence: number,
 ): { readonly originalForm: string; readonly morphology: StrongsMorphology } | null {
     const target = baseStrong(targetStrong);
+    if (!target || occurrence < 1) return null;
+
     let seen = 0;
 
     for (const word of words) {
@@ -239,16 +275,22 @@ export function __test__() {
 }
 
 export async function lookupHebrewWordStudy(
-    reference: string,
+    bookId: string,
+    chapter: number,
+    verse: number,
     strongNumber: string,
     occurrence: number,
 ): Promise<HebrewWordStudyData | null> {
-    const [book] = reference.split(".");
-    const file = TAHOT_BOOK_FILE[book ?? ""];
-    if (!file) return null;
+    const normalizedBook = bookId.trim().toUpperCase();
+    const file = TAHOT_BOOK_FILE[normalizedBook];
+    const sourceBook = TAHOT_BOOK_NAME[normalizedBook];
+    if (!file || !sourceBook) return null;
 
     const source = await loadTahot(file);
-    const words = parseTahotVerse(source, reference);
+    const words = parseTahotVerse(
+        source,
+        sourceBook + "." + chapter + "." + verse,
+    );
     if (words.length === 0) return null;
 
     return findTahotSegment(words, strongNumber, occurrence);
