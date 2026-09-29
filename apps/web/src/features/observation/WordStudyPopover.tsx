@@ -25,6 +25,7 @@ interface StrongsEntry {
         readonly grammaticalCase: string | null;
         readonly number: string | null;
         readonly gender: string | null;
+        readonly state: string | null;
         readonly degree: string | null;
         readonly qualifier: string | null;
     } | null;
@@ -77,6 +78,7 @@ function morphologyDetails(
         ["Case", morphology.grammaticalCase],
         ["Number", morphology.number],
         ["Gender", morphology.gender],
+        ["State", morphology.state],
         ["Degree", morphology.degree],
         ["Qualifier", morphology.qualifier],
     ]
