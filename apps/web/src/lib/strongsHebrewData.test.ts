@@ -42,6 +42,7 @@ describe("TAHOT Hebrew word alignment", () => {
             role: "prefix",
             strongsNumbers: ["H9003"],
             sourceStrongSegment: "H9003",
+            sourceGrammarSegment: "HR",
             matchedStrong: false,
             morphology: { code: "HR", summary: "Preposition" },
         });
@@ -50,6 +51,7 @@ describe("TAHOT Hebrew word alignment", () => {
             role: "root",
             strongsNumbers: ["H7225G"],
             sourceStrongSegment: "{H7225G}",
+            sourceGrammarSegment: "Ncfsa",
             matchedStrong: true,
             morphology: { code: "HNcfsa" },
         });
@@ -66,6 +68,7 @@ describe("TAHOT Hebrew word alignment", () => {
             originalForm: "־",
             strongsNumbers: [],
             sourceStrongSegment: "",
+            sourceGrammarSegment: "Td",
         });
     });
 

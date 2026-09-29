@@ -34,6 +34,7 @@ interface StrongsEntry {
         readonly role: "prefix" | "root" | "suffix" | "segment";
         readonly strongsNumbers: readonly string[];
         readonly sourceStrongSegment: string;
+        readonly sourceGrammarSegment: string;
         readonly matchedStrong: boolean;
         readonly morphology: {
             readonly language: "G" | "H" | "A";
@@ -588,6 +589,18 @@ export function WordStudyPopover({
                                                                             }}
                                                                         >
                                                                             TAHOT source: {morpheme.sourceStrongSegment}
+                                                                        </div>
+                                                                    )}
+                                                                    {morpheme.sourceGrammarSegment && (
+                                                                        <div
+                                                                            dir="ltr"
+                                                                            style={{
+                                                                                marginTop: 2,
+                                                                                fontSize: 10,
+                                                                                color: "#94a3b8",
+                                                                            }}
+                                                                        >
+                                                                            TAHOT grammar: {morpheme.sourceGrammarSegment}
                                                                         </div>
                                                                     )}
                                                                 </div>
