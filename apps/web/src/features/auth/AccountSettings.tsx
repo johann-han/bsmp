@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase";
 
@@ -71,6 +72,17 @@ export function AccountSettings() {
                 <div style={{ color: "#6b7280", fontSize: 13 }}>Account</div>
                 <h2 style={{ margin: "4px 0 8px" }}>Signed-in account</h2>
                 <p style={{ margin: 0 }}><strong>Email:</strong> {user.email ?? "Unknown"}</p>
+            </section>
+
+            <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
+                <div style={{ color: "#6b7280", fontSize: 13 }}>Billing</div>
+                <h2 style={{ margin: "4px 0 8px" }}>Subscription</h2>
+                <p style={{ margin: "0 0 12px", color: "#6b7280" }}>
+                    Manage your BSMP subscription, view plan entitlements, and review subscription history.
+                </p>
+                <Link href="/settings/subscription" style={{ display: "inline-block", padding: "10px 16px", border: "1px solid #cbd5e1", borderRadius: 8, color: "#334155", textDecoration: "none", fontWeight: 700 }}>
+                    Open Subscription Settings
+                </Link>
             </section>
 
             <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 20, background: "#fff" }}>
