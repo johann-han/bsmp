@@ -13,8 +13,8 @@ The user can enable **Word Study**, select an English word, and open a popover c
 - transliteration
 - pronunciation when supplied by the lexicon
 - the inflected original-language form when available
-- token-level Greek morphology for New Testament words
-- token-level Hebrew morphology for Old Testament words
+- token-level Greek morphology for New Testament words, including structured morphology details when supplied
+- token-level Hebrew morphology for Old Testament words, including structured morphology details when supplied
 - morpheme-by-morpheme Hebrew breakdowns for composite words (prefix/root/suffix segments)
 - conservative prefix/root/suffix role labels derived from the TAHOT root marker and segment order
 - Strong's definition
@@ -85,7 +85,7 @@ The alignment is deliberately token-level rather than Strong's-number-only. Stro
 
 For Hebrew Old Testament words, BSMP supplements the Strong's dictionary entry with the selected original-language segment and morphology from STEPBible TAHOT. The implementation follows the TAHOT structure in which prefixes, roots, and suffixes can be separated with `/`, the lexical root is marked with `{curly braces}`, and the Grammar column carries an Open Scriptures-style morphology code. The selected KJV Strong's number is aligned to the corresponding TAHOT segment by occurrence within the verse. When the source structure is not unambiguous, BSMP leaves the lexical entry available without inventing a morphology result.
 
-The Hebrew decoder is based on the published Open Scriptures morphology scheme and the STEPBible TEHMC vocabulary. It covers common nouns, adjectives, pronouns, prefixes/articles, prepositions, particles, suffixes, and verb stem/aspect forms, while preserving the raw code for unsupported combinations. Composite codes such as `HTd/Ncmpa` are retained as ordered segments so the UI can show the article and lexical stem separately. When TAHOT identifies a lexical root, BSMP labels segments before it as prefixes and segments after it as suffixes; when the source does not expose a defensible root position, the segments remain neutrally labeled. Hebrew and Aramaic source codes are both represented in the same morphology model, with the language code preserved (`H` for Hebrew and `A` for Aramaic) and Aramaic identified in the decoded summary.
+The Hebrew decoder is based on the published Open Scriptures morphology scheme and the STEPBible TEHMC vocabulary. It covers common nouns, adjectives, pronouns, prefixes/articles, prepositions, particles, suffixes, and verb stem/aspect forms, while preserving the raw code for unsupported combinations. Composite codes such as `HTd/Ncmpa` are retained as ordered segments so the UI can show the article and lexical stem separately. The existing word-study popover also exposes the decoder's structured fields—such as part of speech, form/aspect, person, gender, number, and qualifier—alongside the decoded summary and raw code. When TAHOT identifies a lexical root, BSMP labels segments before it as prefixes and segments after it as suffixes; when the source does not expose a defensible root position, the segments remain neutrally labeled. Hebrew and Aramaic source codes are both represented in the same morphology model, with the language code preserved (`H` for Hebrew and `A` for Aramaic) and Aramaic identified in the decoded summary.
 
 TAHOT source data is pinned to commit `b99716b0cddb648ddb95cc786a197180f2f97d48`. STEPBible describes TAHOT as a Leningrad-based Hebrew OT with full morphological and semantic tags for words, prefixes, and suffixes, with morphology based on ETCBC converted to the Open Scriptures format. The source is CC BY 4.0 and requests attribution to STEP Bible. citeturn395373search1
 
