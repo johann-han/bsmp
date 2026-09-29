@@ -34,6 +34,7 @@ interface StrongsEntry {
         readonly role: "prefix" | "root" | "suffix" | "segment";
         readonly strongsNumbers: readonly string[];
         readonly sourceStrongSegment: string;
+        readonly matchedStrong: boolean;
         readonly morphology: {
             readonly language: "G" | "H" | "A";
             readonly code: string;
@@ -524,6 +525,23 @@ export function WordStudyPopover({
                                                                         >
                                                                             {morpheme.role}
                                                                         </span>
+                                                                        {morpheme.matchedStrong && (
+                                                                            <span
+                                                                                dir="ltr"
+                                                                                style={{
+                                                                                    padding: "2px 5px",
+                                                                                    borderRadius: 5,
+                                                                                    background: "#dbeafe",
+                                                                                    color: "#1d4ed8",
+                                                                                    fontSize: 9,
+                                                                                    fontWeight: 800,
+                                                                                    textTransform: "uppercase",
+                                                                                    letterSpacing: ".05em",
+                                                                                }}
+                                                                            >
+                                                                                selected Strong&apos;s
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                     <div
                                                                         dir="ltr"
