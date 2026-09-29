@@ -339,11 +339,13 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
         form,
         mood,
         person ? person + " person" : null,
-        gender,
+        grammaticalCase,
         number,
-    ]);
-
-    return {
+        gender,
+        degree,
+        tense,
+        voice,
+    ]);\n\n    return {
         language: "H",
         code,
         partOfSpeech,
