@@ -13,6 +13,7 @@ export interface StrongsMorphology {
     readonly degree: string | null;
     readonly qualifier: string | null;
     readonly summary: string;
+    readonly segments?: readonly StrongsMorphology[];
 }
 
 const PART_OF_SPEECH: Record<string, string> = {
