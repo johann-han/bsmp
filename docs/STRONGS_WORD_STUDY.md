@@ -44,7 +44,7 @@ The morphology code definitions are based on STEPBible's **TEGMC — Translators
 
 The KJV tagging repository README identifies its corpus as KJV JSON with embedded Strong's tags.
 
-The morphology slice currently covers Greek New Testament words. Hebrew morphology remains a separate future slice because its source and parsing scheme are different.
+Greek New Testament morphology and Hebrew Old Testament morphology are now both supported as separate source-driven slices because their tagging and parsing schemes differ.
 
 ## Architecture
 
@@ -75,6 +75,17 @@ For Greek New Testament words, BSMP supplements the Strong's dictionary entry wi
 The decoder covers the common TAGNT/Robinson pattern families used by the current source, including second-form verbs such as `V-2AAI-3S` and `V-2RAI-3P`, pluperfect forms such as `V-LAI-3S`, participles, infinitives, personal pronouns, demonstratives, correlatives, and uninflected categories such as `CONJ`, `PREP`, `ADV`, and `PRT-N`. Unknown or unsupported source forms retain their raw code rather than being assigned an invented interpretation.
 
 The alignment is deliberately token-level rather than Strong's-number-only. Strong's numbers can occur multiple times in a verse, so BSMP uses the KJV tag position and STEPBible's `sStrong+Instance` convention to select the corresponding Greek token. When the source does not provide a defensible match, the Strong's lexical entry remains available without inventing morphology.
+
+## Hebrew morphology
+
+For Hebrew Old Testament words, BSMP supplements the Strong's dictionary entry with the selected original-language segment and morphology from STEPBible TAHOT. The implementation follows the TAHOT structure in which prefixes, roots, and suffixes can be separated with `/`, the lexical root is marked with `{curly braces}`, and the Grammar column carries an Open Scriptures-style morphology code. The selected KJV Strong's number is aligned to the corresponding TAHOT segment by occurrence within the verse. When the source structure is not unambiguous, BSMP leaves the lexical entry available without inventing a morphology result.
+
+The Hebrew decoder is based on the published Open Scriptures morphology scheme and the STEPBible TEHMC vocabulary. It covers common nouns, adjectives, pronouns, prefixes/articles, prepositions, particles, suffixes, and verb stem/aspect forms, while preserving the raw code for unsupported combinations. Hebrew and Aramaic source codes are both represented by the same UI model, with Aramaic identified in the decoded summary.
+
+TAHOT source data is pinned to commit `b99716b0cddb648ddb95cc786a197180f2f97d48`. STEPBible describes TAHOT as a Leningrad-based Hebrew OT with full morphological and semantic tags for words, prefixes, and suffixes, with morphology based on ETCBC converted to the Open Scriptures format. The source is CC BY 4.0 and requests attribution to STEP Bible. citeturn395373search1
+
+The Hebrew slice preserves the same lexical-reference boundary as the Greek slice: morphology is reference information for word study and does not populate Study observations or interpretations.
+
 
 ## Future lexical slices
 
