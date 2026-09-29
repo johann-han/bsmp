@@ -13,7 +13,7 @@ interface StrongsEntry {
     readonly kjvDefinition: string | null;
     readonly originalForm: string | null;
     readonly morphology: {
-        readonly language: "G";
+        readonly language: "G" | "H";
         readonly code: string;
         readonly summary: string;
     } | null;
