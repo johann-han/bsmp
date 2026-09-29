@@ -113,6 +113,7 @@ export interface HebrewMorphologySegment {
     readonly morphology: StrongsMorphology;
     readonly role: HebrewMorphemeRole;
     readonly strongsNumbers: readonly string[];
+    readonly sourceStrongSegment: string;
 }
 
 export interface HebrewWordStudyData {
@@ -282,6 +283,7 @@ function parseTahotMorphemes(word: TahotWord): HebrewMorphologySegment[] | null 
             morphology: parseHebrewMorphology(grammar),
             role,
             strongsNumbers: extractStrongTags(dStrongParts[index] ?? ""),
+            sourceStrongSegment: (dStrongParts[index] ?? "").trim(),
         };
     });
 
