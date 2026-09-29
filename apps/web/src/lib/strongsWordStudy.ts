@@ -1,4 +1,5 @@
 import { parseGreekMorphology, type StrongsMorphology } from "./strongsMorphology";
+import { lookupHebrewWordStudy } from "./strongsHebrewData";
 
 export type StrongsLanguage = "G" | "H";
 
@@ -457,6 +458,21 @@ export async function lookupStrongsWordStudy(input: {
                             originalForm: tagntWord.originalForm,
                             morphology: parseGreekMorphology(tagntWord.grammar),
                         };
+                    }
+                }
+            } else if (language === "H") {
+                const occurrence = selectedStrongOccurrence(taggedWords, selected.index, number);
+                if (occurrence > 0) {
+                    const hebrewWord = await lookupHebrewWordStudy(
+                        bookId,
+                        chapter,
+                        verse,
+                        number,
+                        occurrence,
+                    );
+
+                    if (hebrewWord) {
+                        lexicalContext = hebrewWord;
                     }
                 }
             }
