@@ -100,6 +100,7 @@ describe("Hebrew morphology", () => {
             qualifier: "Common · Absolute",
             gender: "Masculine",
             number: "Plural",
+            state: "Absolute",
         });
         expect(parsed.summary).toContain("Particle · Definite article");
         expect(parsed.summary).toContain("Noun · Common · Absolute · Plural · Masculine");
