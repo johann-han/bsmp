@@ -10,12 +10,23 @@ describe("Hebrew morphology", () => {
             partOfSpeech: "Noun",
             number: "Singular",
             gender: "Feminine",
+            state: "Absolute",
             qualifier: "Common · Absolute",
         });
 
         expect(parseHebrewMorphology("HNcfsa").summary).toContain(
             "Noun · Common · Absolute · Feminine · Singular",
         );
+    });
+
+    it("decodes a construct noun state", () => {
+        expect(parseHebrewMorphology("HNcfsc")).toMatchObject({
+            partOfSpeech: "Noun",
+            number: "Singular",
+            gender: "Feminine",
+            state: "Construct",
+            qualifier: "Common · Construct",
+        });
     });
 
     it("decodes a Qal perfect verb", () => {
