@@ -106,9 +106,12 @@ interface TahotWord {
     readonly rootDStrongInstance: string;
 }
 
+export type HebrewMorphemeRole = "prefix" | "root" | "suffix" | "segment";
+
 export interface HebrewMorphologySegment {
     readonly originalForm: string;
     readonly morphology: StrongsMorphology;
+    readonly role: HebrewMorphemeRole;
 }
 
 export interface HebrewWordStudyData {
@@ -227,11 +230,33 @@ function cleanHebrewPart(value: string): string {
 function parseTahotMorphemes(word: TahotWord): HebrewMorphologySegment[] | null {
     const hebrewParts = word.hebrew.split("/");
     const grammarParts = word.grammar.split("/");
+    const dStrongParts = word.dStrongs.split("/");
 
-    if (hebrewParts.length !== grammarParts.length) return null;
+    if (
+        hebrewParts.length !== grammarParts.length ||
+        hebrewParts.length !== dStrongParts.length
+    ) {
+        return null;
+    }
 
     const firstLanguage = languagePrefix(grammarParts[0] ?? "");
     if (!firstLanguage) return null;
+
+    const rootStrong = word.rootDStrongInstance
+        ? baseStrong(word.rootDStrongInstance)
+        : null;
+
+    let rootIndex = -1;
+
+    if (rootStrong) {
+        rootIndex = dStrongParts.findIndex((part) =>
+            extractStrongTags(part).some((tag) => baseStrong(tag) === rootStrong),
+        );
+    }
+
+    if (rootIndex < 0) {
+        rootIndex = dStrongParts.findIndex((part) => part.includes("{"));
+    }
 
     const morphemes = hebrewParts.map((hebrewPart, index) => {
         const grammar = normalizeGrammarPart(
@@ -242,9 +267,19 @@ function parseTahotMorphemes(word: TahotWord): HebrewMorphologySegment[] | null 
 
         if (!grammar) return null;
 
+        const role =
+            rootIndex < 0
+                ? "segment"
+                : index < rootIndex
+                  ? "prefix"
+                  : index === rootIndex
+                    ? "root"
+                    : "suffix";
+
         return {
             originalForm: cleanHebrewPart(hebrewPart),
             morphology: parseHebrewMorphology(grammar),
+            role,
         };
     });
 
