@@ -96,7 +96,7 @@ describe("Hebrew morphology", () => {
 
     it("decodes an Aramaic verb using the same Open Scriptures code structure", () => {
         expect(parseHebrewMorphology("AVqp3ms")).toMatchObject({
-            language: "H",
+            language: "A",
             partOfSpeech: "Verb",
             form: "Perfect",
             qualifier: "Peal",
