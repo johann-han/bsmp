@@ -33,6 +33,7 @@ interface StrongsEntry {
         readonly originalForm: string;
         readonly role: "prefix" | "root" | "suffix" | "segment";
         readonly strongsNumbers: readonly string[];
+        readonly sourceStrongSegment: string;
         readonly morphology: {
             readonly language: "G" | "H" | "A";
             readonly code: string;
@@ -557,6 +558,18 @@ export function WordStudyPopover({
                                                                             }}
                                                                         >
                                                                             Strong&apos;s: {morpheme.strongsNumbers.join(", ")}
+                                                                        </div>
+                                                                    )}
+                                                                    {morpheme.sourceStrongSegment && (
+                                                                        <div
+                                                                            dir="ltr"
+                                                                            style={{
+                                                                                marginTop: 2,
+                                                                                fontSize: 10,
+                                                                                color: "#94a3b8",
+                                                                            }}
+                                                                        >
+                                                                            Source segment: {morpheme.sourceStrongSegment}
                                                                         </div>
                                                                     )}
                                                                 </div>
