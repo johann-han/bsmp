@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { __test__, parseStrongsDictionary, parseTaggedVerse } from "./strongsWordStudy";
+import {
+    __test__,
+    parseStrongsDictionary,
+    parseTaggedVerse,
+} from "./strongsWordStudy";
 
 describe("Strong's word-study data helpers", () => {
     it("parses embedded Strong's tags without losing the visible word", () => {
@@ -58,6 +62,47 @@ var strongsGreekDictionary = {"G25":{"lemma":"ἀγαπάω","translit":"agapaō
         expect(() => parseStrongsDictionary("not a dictionary")).toThrow(
             /unsupported format/i,
         );
+    });
+
+    it("parses STEPBible TAGNT rows and preserves the original-language form", () => {
+        const words = __test__.parseTagntVerse(
+            "Rom.1.16#08=NKO\tδύναμις (dunamis)\t[the] power\tG1411=N-NSF\tδύναμις=power\tNA28+NA27+Tyn+SBL+WH+Treg+TR+Byz\t\t\tpoder\tpower\t#08\tG1411",
+            "Rom.1.16",
+        );
+
+        expect(words).toEqual([
+            expect.objectContaining({
+                wordIndex: 8,
+                wordType: "NKO",
+                originalForm: "δύναμις",
+                grammar: "N-NSF",
+                sStrongInstance: "G1411",
+            }),
+        ]);
+    });
+
+    it("matches the KJV Strong's instance to the corresponding traditional Greek token", () => {
+        const words = __test__.parseTagntVerse(
+            [
+                "Rom.1.16#02=NKO\tγὰρ (gar)\tfor\tG1063=CONJ\tγάρ=for\tNA28+NA27+Tyn+SBL+WH+Treg+TR+Byz\t\t\tporque\tfor\t#02\tG1063_A",
+                "Rom.1.16#09=NKO\tγὰρ (gar)\tfor\tG1063=CONJ\tγάρ=for\tNA28+NA27+Tyn+SBL+WH+Treg+TR+Byz\t\t\tporque\tfor\t#09\tG1063_B",
+            ].join("\n"),
+            "Rom.1.16",
+        );
+
+        expect(__test__.findTagntWord(words, "G1063", 2)).toMatchObject({
+            wordIndex: 9,
+            originalForm: "γὰρ",
+            grammar: "CONJ",
+        });
+    });
+
+    it("calculates the Strong's instance ordinal from the selected KJV word", () => {
+        const words = parseTaggedVerse(
+            "For[G1063] I[G1473] am[G1510] ashamed[G1870] for[G1063] God[G2316].",
+        );
+
+        expect(__test__.selectedStrongOccurrence(words, 4, "G1063")).toBe(2);
     });
 
     it("rejects malformed verse references", () => {

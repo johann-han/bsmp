@@ -12,6 +12,8 @@ The user can enable **Word Study**, select an English word, and open a popover c
 - original-language lemma
 - transliteration
 - pronunciation when supplied by the lexicon
+- the inflected original-language form when available
+- token-level Greek morphology for New Testament words
 - Strong's definition
 - KJV gloss
 - derivation when supplied
@@ -22,24 +24,35 @@ The feature does not write lexical definitions into Study observations or interp
 
 ## Data sources
 
-The KJV word-level tagging is read from the pinned \`kaiserlik/kjv\` repository commit:
+The KJV word-level tagging is read from the pinned `kaiserlik/kjv` repository commit:
 
-\`323f79bc6f4c2749e77a23a71b7ca7772fad81a7\`
+`323f79bc6f4c2749e77a23a71b7ca7772fad81a7`
 
-The Hebrew and Greek lexicon metadata is read from the pinned Open Scriptures Strong's repository commit:
+The Hebrew and Greek Strong's lexicon metadata is read from the pinned Open Scriptures Strong's repository commit:
 
-\`0acd2f251c2d35ff8db2dece4e0593979d3ac223\`
+`0acd2f251c2d35ff8db2dece4e0593979d3ac223`
 
 Open Scriptures documents its digital Strong's dictionaries as CC BY-SA, while James Strong's original dictionary work is public domain. Attribution should be preserved for redistributed or derived lexicon data.
 
+The Greek morphology source is STEPBible's pinned TAGNT dataset at commit:
+
+`b99716b0cddb648ddb95cc786a197180f2f97d48`
+
+TAGNT and its morphology coding reference are published by **STEP Bible** from work created at Tyndale House Cambridge under **CC BY 4.0**. The repository requests credit to "STEP Bible" with a link to `https://www.stepbible.org` and asks that any data changes be recorded. BSMP does not modify or redistribute the raw TAGNT files; it fetches the pinned source server-side and decodes the published morphology codes for display.
+
+The morphology code definitions are based on STEPBible's **TEGMC — Translators Expansion of Greek Morphology Codes**, also CC BY 4.0.
+
 The KJV tagging repository README identifies its corpus as KJV JSON with embedded Strong's tags.
+
+The morphology slice currently covers Greek New Testament words. Hebrew morphology remains a separate future slice because its source and parsing scheme are different.
 
 ## Architecture
 
-- \`apps/web/src/lib/strongsWordStudy.ts\` loads and normalizes the external KJV word-tag data and Strong's dictionaries.
-- \`apps/web/app/api/bible/strongs/route.ts\` exposes a server-side lookup boundary.
-- \`apps/web/src/features/observation/WordStudyPopover.tsx\` provides the user-facing popover.
-- \`StudyPassage\` activates the lexical mode without changing the existing Word Markup behavior.
+- `apps/web/src/lib/strongsWordStudy.ts` loads and normalizes the external KJV word-tag data and Strong's dictionaries.
+- `apps/web/src/lib/strongsMorphology.ts` decodes the published Greek morphology code into a small structured display model.
+- `apps/web/app/api/bible/strongs/route.ts` exposes a server-side lookup boundary.
+- `apps/web/src/features/observation/WordStudyPopover.tsx` provides the user-facing popover.
+- `StudyPassage` activates the lexical mode without changing the existing Word Markup behavior.
 
 External source files are fetched server-side and cached for 24 hours. Source URLs are pinned to commit hashes rather than mutable branches.
 
@@ -47,12 +60,22 @@ External source files are fetched server-side and cached for 24 hours. Source UR
 
 Strong's numbers are an indexing and lexical-reference system. A Strong's entry should not be treated as a complete contextual definition or as a substitute for syntax, literary context, and the student's own interpretation.
 
+Morphology describes the form of an individual original-language token. It does not, by itself, determine the meaning or grammatical function of the whole clause.
+
 ## Word-study navigation
 
 When Word Study is active, the selected word is treated as a lexical sub-focus inside the current passage context. The popover provides **Previous** and **Next** controls so the student can move through adjacent words without closing the study surface. Navigation crosses verse boundaries when the passage contains multiple verses.
 
 The left and right arrow keys perform the same navigation while the word-study popover is open. The verse remains the contextual focus; navigation changes only the lexical word target.
 
+## Greek morphology
+
+For Greek New Testament words, BSMP supplements the Strong's dictionary entry with the token's original-language form and morphology from STEPBible TAGNT. The display includes the published morphology code and a decoded summary such as part of speech, tense, voice, mood, person, case, number, and gender where those fields are present in the source code.
+
+The decoder covers the common TAGNT/Robinson pattern families used by the current source, including second-form verbs such as `V-2AAI-3S` and `V-2RAI-3P`, pluperfect forms such as `V-LAI-3S`, participles, infinitives, personal pronouns, demonstratives, correlatives, and uninflected categories such as `CONJ`, `PREP`, `ADV`, and `PRT-N`. Unknown or unsupported source forms retain their raw code rather than being assigned an invented interpretation.
+
+The alignment is deliberately token-level rather than Strong's-number-only. Strong's numbers can occur multiple times in a verse, so BSMP uses the KJV tag position and STEPBible's `sStrong+Instance` convention to select the corresponding Greek token. When the source does not provide a defensible match, the Strong's lexical entry remains available without inventing morphology.
+
 ## Future lexical slices
 
-The next lexical slices can build on this boundary with morphology and richer original-language display without coupling lexical reference data to Study evidence.
+The next lexical slices can build on this boundary with Hebrew morphology, richer original-language display, and additional lexical/syntactic references without coupling lexical reference data to Study evidence.
