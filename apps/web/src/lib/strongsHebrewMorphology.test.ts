@@ -33,6 +33,14 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the consecutive conjunction form", () => {
+        expect(parseHebrewMorphology("Hc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Conjunction",
+            qualifier: "Consecutive",
+        });
+    });
+
     it("decodes a definite article", () => {
         expect(parseHebrewMorphology("HTd")).toMatchObject({
             partOfSpeech: "Particle",
