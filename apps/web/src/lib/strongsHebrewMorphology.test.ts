@@ -1753,6 +1753,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a definite article plus masculine singular ordinal adjective composite", () => {
+        const parsed = parseHebrewMorphology("HTd/Aomsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HAomsa",
+            partOfSpeech: "Adjective",
+            qualifier: "Ordinal number · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Adjective · Ordinal number · Absolute · Singular · Masculine",
+        );
+    });
+
     it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HTo/Sp3ms");
 
