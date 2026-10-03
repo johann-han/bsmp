@@ -59,6 +59,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a TEHMC feminine plural absolute title noun", () => {
+        expect(parseHebrewMorphology("HNtfpa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Title · Absolute",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HNtfpa").summary).toContain(
+            "Noun · Title · Absolute · Plural · Feminine",
+        );
+    });
+
     it("decodes a TEHMC masculine singular construct title noun", () => {
         expect(parseHebrewMorphology("HNtmsc")).toMatchObject({
             language: "H",
