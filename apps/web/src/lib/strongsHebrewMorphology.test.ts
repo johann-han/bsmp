@@ -1299,6 +1299,32 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Suffix · Pronominal · 3rd person · Singular · Feminine");
     });
 
+    it("decodes a vav-consecutive plus Piel sequential-imperfect composite", () => {
+        const parsed = parseHebrewMorphology("HCv/Vpw3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCv",
+            partOfSpeech: "Conjunction",
+            qualifier: "Vav consecutive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVpw3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain("Conjunction · Vav consecutive");
+        expect(parsed.summary).toContain(
+            "Verb · Piel · Sequential imperfect · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HTo/Sp3ms");
 
