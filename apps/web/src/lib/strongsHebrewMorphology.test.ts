@@ -220,6 +220,33 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a preposition plus noun composite", () => {
+        const parsed = parseHebrewMorphology("HR/Ncfsa");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HR/Ncfsa",
+        });
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Singular · Feminine",
+        );
+    });
+
     it("decodes a composite Hebrew word code", () => {
         const parsed = parseHebrewMorphology("HC/Vqw3ms");
 
