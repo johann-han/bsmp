@@ -495,6 +495,14 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures interjection particle", () => {
+        expect(parseHebrewMorphology("HTj")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Particle",
+            qualifier: "Interjection",
+        });
+    });
+
     it("decodes an Aramaic verb using the same Open Scriptures code structure", () => {
         expect(parseHebrewMorphology("AVqp3ms")).toMatchObject({
             language: "A",
