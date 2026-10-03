@@ -794,6 +794,25 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a conjunction plus interjection composite", () => {
+        const parsed = parseHebrewMorphology("HCc/Tj");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTj",
+            partOfSpeech: "Particle",
+            qualifier: "Interjection",
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Conjunctive · Particle · Interjection",
+        );
+    });
+
     it("decodes a two-preposition composite", () => {
         const parsed = parseHebrewMorphology("HR/R");
 
