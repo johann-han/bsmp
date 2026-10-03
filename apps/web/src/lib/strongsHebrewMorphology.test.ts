@@ -391,6 +391,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures Niphal jussive verb", () => {
+        expect(parseHebrewMorphology("HVNj3mp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Jussive",
+            mood: "Jussive",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes an Open Scriptures Hiphil jussive verb", () => {
         expect(parseHebrewMorphology("HVhj3fs")).toMatchObject({
             language: "H",
