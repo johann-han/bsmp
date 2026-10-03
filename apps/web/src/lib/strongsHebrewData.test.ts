@@ -4,6 +4,11 @@ import { __test__ } from "./strongsHebrewData";
 
 const { parseTahotVerse, findTahotSegment, baseStrong } = __test__();
 
+const GENESIS_1_2_REPEATED_STRONG = [
+    "Gen.1.2#06=L\tעַל\\־\t'al-\t[was] over\t{H5921A}\\H9014\tHR\t\t\tH5921A_A\t\t\t{H5921A=עַל=upon}\\H9014=־=link",
+    "Gen.1.2#12=L\tעַל\\־\t'al-\tover\t{H5921A}\\H9014\tHR\t\t\tH5921A_B\t\t\t{H5921A=עַל=upon}\\H9014=־=link",
+].join("\n");
+
 const GENESIS_1_2_1 = [
     "Gen.1.2#01=L\tוְ/הָ/אָ֗רֶץ\tve./ha./'A.retz\tand/ the/ earth\tH9002/H9009/{H0776G}\tHC/Td/Ncfsa\t\t\tH0776G\t\t\tH9002=ו=and/H9009=ה=the/{H0776G=אֶ֫רֶץ=: country;_planet»land:2_country;_planet}",
 ].join("\n");
@@ -31,6 +36,30 @@ describe("TAHOT Hebrew word alignment", () => {
             hebrew: "בְּ/רֵאשִׁ֖ית",
             dStrongs: "H9003/{H7225G}",
             grammar: "HR/Ncfsa",
+        });
+    });
+
+    it("selects the second repeated Strong's occurrence within a verse", () => {
+        const words = parseTahotVerse(
+            GENESIS_1_2_REPEATED_STRONG,
+            "Gen.1.2",
+        );
+
+        const first = findTahotSegment(words, "H5921", 1);
+        const second = findTahotSegment(words, "H5921", 2);
+
+        expect(first?.originalForm).toBe("עַל");
+        expect(first?.morphemes[0]).toMatchObject({
+            role: "root",
+            sourceStrongSegment: "{H5921A}\\H9014",
+            matchedStrong: true,
+        });
+
+        expect(second?.originalForm).toBe("עַל");
+        expect(second?.morphemes[0]).toMatchObject({
+            role: "root",
+            sourceStrongSegment: "{H5921A}\\H9014",
+            matchedStrong: true,
         });
     });
 
