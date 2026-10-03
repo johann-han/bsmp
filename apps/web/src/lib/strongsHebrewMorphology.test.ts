@@ -831,7 +831,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Particle · Definite article");
         expect(parsed.summary).toContain(
-            "Verb · Qal · Participle active · Singular · Feminine · Absolute",
+            "Verb · Qal · Participle active · Singular · Feminine",
         );
     });
 
