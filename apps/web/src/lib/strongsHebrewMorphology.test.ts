@@ -344,6 +344,17 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a cardinal adjective in masculine dual construct form", () => {
+        expect(parseHebrewMorphology("HAcmdc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Construct",
+            gender: "Masculine",
+            number: "Dual",
+            state: "Construct",
+        });
+    });
+
     it("decodes a cardinal adjective", () => {
         expect(parseHebrewMorphology("HAcmsa")).toMatchObject({
             partOfSpeech: "Adjective",
