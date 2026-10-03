@@ -142,7 +142,7 @@ const VERB_ASPECT: Record<string, string> = {
 };
 
 const GENDER: Record<string, string> = {
-    b: "Both genders",
+    b: "Both",
     c: "Common",
     f: "Feminine",
     m: "Masculine",
@@ -236,7 +236,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
     if (!partOfSpeech) {
         return {
             language,
-            code,
+            code: language + code,
             partOfSpeech: null,
             tense: null,
             voice: null,
@@ -370,7 +370,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
 
     return {
         language,
-        code,
+        code: language + code,
         partOfSpeech,
         tense,
         voice,
