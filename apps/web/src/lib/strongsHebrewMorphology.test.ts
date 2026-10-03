@@ -69,6 +69,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a determined-state masculine singular noun", () => {
+        expect(parseHebrewMorphology("HNcmda")).toMatchObject({
+            partOfSpeech: "Noun",
+            qualifier: "Common · Determined",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Determined",
+        });
+    });
+
     it("decodes a common masculine singular construct noun", () => {
         expect(parseHebrewMorphology("HNcmsc")).toMatchObject({
             partOfSpeech: "Noun",
