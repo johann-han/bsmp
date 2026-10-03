@@ -21,6 +21,10 @@ const GENESIS_1_2_1 = [
     "Gen.1.2#01=L\tוְ/הָ/אָ֗רֶץ\tve./ha./'A.retz\tand/ the/ earth\tH9002/H9009/{H0776G}\tHC/Td/Ncfsa\t\t\tH0776G\t\t\tH9002=ו=and/H9009=ה=the/{H0776G=אֶ֫רֶץ=: country;_planet»land:2_country;_planet}",
 ].join("\n");
 
+const DEUTERONOMY_16_21_04 = [
+    "Deu.16.21#04=L\tאֲשֵׁרָה\t'a.she.Rah\tan Asherah pole\t{H0842}\tHNtfsa\t\t\tH0842\t\t\t{H0842=אֲשֵׁרָה=Asherah»Asherah@Exo.34.13-Mic}",
+].join("\n");
+
 const GENESIS_41_20_08 = [
     "Gen.41.20#08=L\tהָ/רִאשֹׁנ֖וֹת\tha./ri.sho.Not\t<the>/ former\tH9009/{H7223G}\tHTd/Aofpa\t\t\tH7223G\t\t\tH9009=ה=the/{H7223G=רִאשׁוֹן=: first»first:1_first}",
 ].join("\n");
@@ -218,6 +222,44 @@ describe("TAHOT Hebrew word alignment", () => {
                 sourceGrammarSegment: "Ncfsa",
                 matchedStrong: true,
                 morphology: { language: "H", code: "HNcfsa" },
+            },
+        ]);
+    });
+
+    it("aligns a pinned TAHOT title noun row", () => {
+        const words = parseTahotVerse(
+            DEUTERONOMY_16_21_04,
+            "Deu.16.21",
+        );
+
+        const match = findTahotSegment(words, "H0842", 1);
+
+        expect(match?.originalForm).toBe("אֲשֵׁרָה");
+        expect(match?.morphology).toMatchObject({
+            language: "H",
+            code: "HNtfsa",
+            partOfSpeech: "Noun",
+            qualifier: "Title · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(match?.morphology.summary).toContain(
+            "Noun · Title · Absolute · Singular · Feminine",
+        );
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "אֲשֵׁרָה",
+                role: "root",
+                strongsNumbers: ["H0842"],
+                sourceStrongSegment: "{H0842}",
+                sourceGrammarSegment: "HNtfsa",
+                matchedStrong: true,
+                morphology: {
+                    language: "H",
+                    code: "HNtfsa",
+                    qualifier: "Title · Absolute",
+                },
             },
         ]);
     });
