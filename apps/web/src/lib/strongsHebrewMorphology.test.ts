@@ -809,6 +809,32 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an article plus feminine active participle composite", () => {
+        const parsed = parseHebrewMorphology("HTd/Vqrxfs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqrxfs",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Participle active",
+            person: null,
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+            tense: null,
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Participle active · Singular · Feminine · Absolute",
+        );
+    });
+
     it("decodes Open Scriptures composite article/noun patterns", () => {
         const parsed = parseHebrewMorphology("HTd/Ncmpa");
 
