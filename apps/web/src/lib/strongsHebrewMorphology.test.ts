@@ -1229,6 +1229,23 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a conjunction plus preposition composite", () => {
+        const parsed = parseHebrewMorphology("HCc/R");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.summary).toBe("Conjunction · Conjunctive · Preposition");
+    });
+
     it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HTo/Sp3ms");
 
