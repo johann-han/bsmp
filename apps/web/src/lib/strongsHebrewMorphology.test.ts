@@ -794,6 +794,23 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a two-preposition composite", () => {
+        const parsed = parseHebrewMorphology("HR/R");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.summary).toBe("Preposition; Preposition");
+    });
+
     it("decodes a conjunction plus preposition and plural-noun composite", () => {
         const parsed = parseHebrewMorphology("HCc/R/Ncmpa");
 
