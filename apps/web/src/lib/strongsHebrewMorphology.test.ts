@@ -529,6 +529,25 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a preposition plus feminine singular construct noun", () => {
+        const parsed = parseHebrewMorphology("HR/Ncfsc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Construct",
+        });
+    });
+
     it("decodes a preposition plus Qal infinitive-construct composite", () => {
         const parsed = parseHebrewMorphology("HR/Vqc");
 
