@@ -202,7 +202,7 @@ describe("TAHOT Hebrew word alignment", () => {
                 role: "prefix",
                 strongsNumbers: ["H9009"],
                 sourceStrongSegment: "H9009",
-                sourceGrammarSegment: "HTd",
+                sourceGrammarSegment: "Td",
                 matchedStrong: false,
                 morphology: {
                     language: "H",
