@@ -70,7 +70,7 @@ describe("TAHOT Hebrew word alignment", () => {
                 morphology: {
                     language: "H",
                     code: "HTd",
-                    summary: "Definite article",
+                    summary: "Particle · Definite article",
                 },
             },
             {
