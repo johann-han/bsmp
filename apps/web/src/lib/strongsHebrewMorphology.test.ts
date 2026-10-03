@@ -315,6 +315,26 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the pinned TAHOT Hophal perfect feminine singular form", () => {
+        expect(parseHebrewMorphology("HVHp3fs")).toMatchObject({
+            language: "H",
+            code: "HVHp3fs",
+            partOfSpeech: "Verb",
+            qualifier: "Hophal",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVHp3fs").summary).toContain(
+            "Verb · Hophal · Perfect · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("decodes the pinned TAHOT Hophal perfect common plural form", () => {
         expect(parseHebrewMorphology("HVHp3cp")).toMatchObject({
             language: "H",
