@@ -808,7 +808,7 @@ describe("Hebrew morphology", () => {
             partOfSpeech: "Preposition",
             qualifier: null,
         });
-        expect(parsed.summary).toBe("Preposition; Preposition");
+        expect(parsed.summary).toBe("Preposition · Preposition");
     });
 
     it("decodes a conjunction plus preposition and plural-noun composite", () => {
