@@ -655,6 +655,25 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a direct-object-marker plus third-person plural pronominal suffix", () => {
+        const parsed = parseHebrewMorphology("HTo/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTo",
+            partOfSpeech: "Particle",
+            qualifier: "Direct object marker",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+        });
+    });
+
     it("decodes an Open Scriptures conjunction plus direct-object-marker composite", () => {
         const parsed = parseHebrewMorphology("HCc/To");
 
