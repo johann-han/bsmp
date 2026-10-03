@@ -70,6 +70,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a noun with an unspecified gender placeholder", () => {
+        expect(parseHebrewMorphology("HNcbpa")).toMatchObject({
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Both",
+            number: "Plural",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp3ms")).toMatchObject({
             partOfSpeech: "Verb",
