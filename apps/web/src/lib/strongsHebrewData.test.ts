@@ -21,6 +21,10 @@ const GENESIS_1_2_1 = [
     "Gen.1.2#01=L\tוְ/הָ/אָ֗רֶץ\tve./ha./'A.retz\tand/ the/ earth\tH9002/H9009/{H0776G}\tHC/Td/Ncfsa\t\t\tH0776G\t\t\tH9002=ו=and/H9009=ה=the/{H0776G=אֶ֫רֶץ=: country;_planet»land:2_country;_planet}",
 ].join("\n");
 
+const EXODUS_26_33_19 = [
+    "Exo.26.33#19=L\tקֹ֥דֶשׁ\tKo.desh\t[the] holy place of\t{H6944J}\tHNtmsc\t\t\tH6944J_B\t\t\t{H6944J=קֹ֫דֶשׁ=Holy Place»Holy_Place@Exo.26.33-Heb}",
+].join("\n");
+
 const DEUTERONOMY_16_21_04 = [
     "Deu.16.21#04=L\tאֲשֵׁרָה\t'a.she.Rah\tan Asherah pole\t{H0842}\tHNtfsa\t\t\tH0842\t\t\t{H0842=אֲשֵׁרָה=Asherah»Asherah@Exo.34.13-Mic}",
 ].join("\n");
@@ -222,6 +226,41 @@ describe("TAHOT Hebrew word alignment", () => {
                 sourceGrammarSegment: "Ncfsa",
                 matchedStrong: true,
                 morphology: { language: "H", code: "HNcfsa" },
+            },
+        ]);
+    });
+
+    it("aligns a pinned TAHOT construct title noun row", () => {
+        const words = parseTahotVerse(EXODUS_26_33_19, "Exo.26.33");
+
+        const match = findTahotSegment(words, "H6944", 1);
+
+        expect(match?.originalForm).toBe("קֹ֥דֶשׁ");
+        expect(match?.morphology).toMatchObject({
+            language: "H",
+            code: "HNtmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Title · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(match?.morphology.summary).toContain(
+            "Noun · Title · Construct · Singular · Masculine",
+        );
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "קֹ֥דֶשׁ",
+                role: "root",
+                strongsNumbers: ["H6944J"],
+                sourceStrongSegment: "{H6944J}",
+                sourceGrammarSegment: "HNtmsc",
+                matchedStrong: true,
+                morphology: {
+                    language: "H",
+                    code: "HNtmsc",
+                    qualifier: "Title · Construct",
+                },
             },
         ]);
     });
