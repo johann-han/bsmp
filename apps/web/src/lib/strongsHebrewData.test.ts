@@ -252,8 +252,8 @@ describe("TAHOT Hebrew word alignment", () => {
             {
                 originalForm: "קֹ֥דֶשׁ",
                 role: "root",
-                strongsNumbers: ["H6944J_B"],
-                sourceStrongSegment: "{H6944J_B}",
+                strongsNumbers: ["H6944J"],
+                sourceStrongSegment: "{H6944J}",
                 sourceGrammarSegment: "HNtmsc",
                 matchedStrong: true,
                 morphology: {
