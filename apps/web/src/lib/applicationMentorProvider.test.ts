@@ -52,7 +52,7 @@ describe("createApplicationMentorProvider", () => {
 
         expect(result).toMatchObject({ assessment: "mixed", provider: "gemini", model: "gemini-test" });
         expect(result.coaching).toContain("action is not yet concrete");
-        expect(result.focuses).toEqual(["principle", "action", "personal"]);
+        expect(result.focuses).toEqual(["principle", "action", "personal", "ministry"]);
     });
 
     it("falls back to the next Gemini model after a transient provider failure", async () => {

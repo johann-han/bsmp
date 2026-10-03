@@ -34,7 +34,7 @@ describe("TAHOT Hebrew word alignment", () => {
         expect(match?.originalForm).toBe("רֵאשִׁ֖ית");
         expect(match?.morphology.code).toBe("HNcfsa");
         expect(match?.morphology.summary).toContain(
-            "Noun · Common · Absolute · Feminine · Singular",
+            "Noun · Common · Absolute · Singular · Feminine",
         );
         expect(match?.morphemes).toHaveLength(2);
         expect(match?.morphemes[0]).toMatchObject({
@@ -122,7 +122,7 @@ describe("TAHOT Hebrew word alignment", () => {
         expect(match?.originalForm).toBe("יֹּ֥אמֶר");
         expect(match?.morphology.code).toBe("HVqw3ms");
         expect(match?.morphology.summary).toContain(
-            "Verb · Qal · Sequential imperfect · 3rd person · Masculine · Singular",
+            "Verb · Qal · Sequential imperfect · 3rd person · Singular · Masculine",
         );
     });
 
