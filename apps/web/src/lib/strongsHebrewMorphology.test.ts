@@ -168,6 +168,21 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures Qal imperative verb", () => {
+        expect(parseHebrewMorphology("HVqv2mp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes an Open Scriptures Qal imperfect verb", () => {
         expect(parseHebrewMorphology("HVqi3ms")).toMatchObject({
             language: "H",
