@@ -248,7 +248,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
         };
     }
 
-    let tense: string | null = null;
+    const tense: string | null = null;
     const voice: string | null = null;
     let mood: string | null = null;
     let form: string | null = null;
@@ -323,12 +323,6 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
             form = aspect;
             qualifier = stem;
 
-            if (["p", "q"].includes(code[2] ?? "")) {
-                tense = "Past / present";
-            } else if (["i", "j", "w", "v", "h"].includes(code[2] ?? "")) {
-                tense = "Future / present";
-            }
-
             if (code[2] === "h") mood = "Cohortative";
             if (code[2] === "j") mood = "Jussive";
             if (code[2] === "v") mood = "Imperative";
@@ -365,7 +359,6 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
         number,
         gender,
         degree,
-        tense,
         voice,
     ]);
 
