@@ -30,6 +30,7 @@ const NOUN_TYPE: Record<string, string> = {
     c: "Common",
     g: "Gentilic",
     p: "Proper name",
+    t: "Title",
     x: "Unspecified",
 };
 
