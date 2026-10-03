@@ -309,6 +309,30 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a three-part conjunction/article/noun composite", () => {
+        const parsed = parseHebrewMorphology("HCc/Td/Ncfsa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Consecutive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcfsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a composite Hebrew word code", () => {
         const parsed = parseHebrewMorphology("HC/Vqw3ms");
 
