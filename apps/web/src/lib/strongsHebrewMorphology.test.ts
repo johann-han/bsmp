@@ -196,6 +196,20 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures first-person Qal perfect verb", () => {
+        expect(parseHebrewMorphology("HVqp1cs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Perfect",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes a Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp3ms")).toMatchObject({
             partOfSpeech: "Verb",
