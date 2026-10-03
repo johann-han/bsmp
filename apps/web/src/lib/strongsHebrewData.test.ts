@@ -21,6 +21,10 @@ const GENESIS_1_2_1 = [
     "Gen.1.2#01=L\tוְ/הָ/אָ֗רֶץ\tve./ha./'A.retz\tand/ the/ earth\tH9002/H9009/{H0776G}\tHC/Td/Ncfsa\t\t\tH0776G\t\t\tH9002=ו=and/H9009=ה=the/{H0776G=אֶ֫רֶץ=: country;_planet»land:2_country;_planet}",
 ].join("\n");
 
+const GENESIS_41_20_08 = [
+    "Gen.41.20#08=L\tהָ/רִאשֹׁנ֖וֹת\tha./ri.sho.Not\t<the>/ former\tH9009/{H7223G}\tHTd/Aofpa\t\t\tH7223G\t\t\tH9009=ה=the/{H7223G=רִאשׁוֹן=: first»first:1_first}",
+].join("\n");
+
 const GENESIS_24_60_09 = [
     "Gen.24.60#09=L\tלְ/אַלְפֵ֣י\tle./'al.Fei\t<into>/ thousands of\tH9005/{H0505G}\tHR/Acbpc\t\t\tH0505G\t\t\tH9005=ל=to/{H0505G=אֶ֫לֶף=: thousand»thousand:1_thousand}",
 ].join("\n");
@@ -214,6 +218,52 @@ describe("TAHOT Hebrew word alignment", () => {
                 sourceGrammarSegment: "Ncfsa",
                 matchedStrong: true,
                 morphology: { language: "H", code: "HNcfsa" },
+            },
+        ]);
+    });
+
+    it("aligns a pinned TAHOT ordinal adjective plural row", () => {
+        const words = parseTahotVerse(GENESIS_41_20_08, "Gen.41.20");
+
+        const match = findTahotSegment(words, "H7223", 1);
+
+        expect(match?.originalForm).toBe("רִאשֹׁנ֖וֹת");
+        expect(match?.morphology).toMatchObject({
+            language: "H",
+            code: "HAofpa",
+            partOfSpeech: "Adjective",
+            qualifier: "Ordinal number · Absolute",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(match?.morphology.summary).toContain(
+            "Adjective · Ordinal number · Absolute · Plural · Feminine",
+        );
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "הָ",
+                role: "prefix",
+                strongsNumbers: ["H9009"],
+                sourceStrongSegment: "H9009",
+                sourceGrammarSegment: "Td",
+                matchedStrong: false,
+            },
+            {
+                originalForm: "רִאשֹׁנ֖וֹת",
+                role: "root",
+                strongsNumbers: ["H7223G"],
+                sourceStrongSegment: "{H7223G}",
+                sourceGrammarSegment: "Aofpa",
+                matchedStrong: true,
+                morphology: {
+                    language: "H",
+                    code: "HAofpa",
+                    qualifier: "Ordinal number · Absolute",
+                    gender: "Feminine",
+                    number: "Plural",
+                    state: "Absolute",
+                },
             },
         ]);
     });
