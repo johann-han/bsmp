@@ -29,6 +29,21 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a common masculine singular absolute noun", () => {
+        expect(parseHebrewMorphology("HNcmsa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HNcmsa").summary).toContain(
+            "Noun · Common · Absolute · Singular · Masculine",
+        );
+    });
+
     it("decodes a proper-name noun", () => {
         expect(parseHebrewMorphology("HNpmsa")).toMatchObject({
             partOfSpeech: "Noun",
