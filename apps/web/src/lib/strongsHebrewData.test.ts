@@ -21,6 +21,10 @@ const GENESIS_1_2_1 = [
     "Gen.1.2#01=L\tוְ/הָ/אָ֗רֶץ\tve./ha./'A.retz\tand/ the/ earth\tH9002/H9009/{H0776G}\tHC/Td/Ncfsa\t\t\tH0776G\t\t\tH9002=ו=and/H9009=ה=the/{H0776G=אֶ֫רֶץ=: country;_planet»land:2_country;_planet}",
 ].join("\n");
 
+const GENESIS_24_60_09 = [
+    "Gen.24.60#09=L\tלְ/אַלְפֵ֣י\tle./'al.Fei\t<into>/ thousands of\tH9005/{H0505G}\tHR/Acbpc\t\t\tH0505G\t\t\tH9005=ל=to/{H0505G=אֶ֫לֶף=: thousand»thousand:1_thousand}",
+].join("\n");
+
 const GENESIS_1_2_11 = [
     "Gen.1.2#11=L\tמְרַחֶ֖פֶת\tme.ra.Che.fet\t[was] hovering\t{H7363B}\tHVprfsa\t\t\tH7363B\t\t\t{H7363B=רָחַף=to hover}",
 ].join("\n");
@@ -210,6 +214,53 @@ describe("TAHOT Hebrew word alignment", () => {
                 sourceGrammarSegment: "Ncfsa",
                 matchedStrong: true,
                 morphology: { language: "H", code: "HNcfsa" },
+            },
+        ]);
+    });
+
+    it("aligns a pinned TAHOT cardinal construct adjective row", () => {
+        const words = parseTahotVerse(GENESIS_24_60_09, "Gen.24.60");
+
+        const match = findTahotSegment(words, "H0505", 1);
+
+        expect(match?.originalForm).toBe("אַלְפֵ֣י");
+        expect(match?.morphology).toMatchObject({
+            language: "H",
+            code: "HAcbpc",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(match?.morphology.summary).toContain(
+            "Adjective · Cardinal number · Construct · Plural · Both",
+        );
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "לְ",
+                role: "prefix",
+                strongsNumbers: ["H9005"],
+                sourceStrongSegment: "H9005",
+                sourceGrammarSegment: "HR",
+                matchedStrong: false,
+            },
+            {
+                originalForm: "אַלְפֵ֣י",
+                role: "root",
+                strongsNumbers: ["H0505G"],
+                sourceStrongSegment: "{H0505G}",
+                sourceGrammarSegment: "Acbpc",
+                matchedStrong: true,
+                morphology: {
+                    language: "H",
+                    code: "HAcbpc",
+                    partOfSpeech: "Adjective",
+                    qualifier: "Cardinal number · Construct",
+                    gender: "Both",
+                    number: "Plural",
+                    state: "Construct",
+                },
             },
         ]);
     });

@@ -221,9 +221,14 @@ function normalizeGrammarPart(
     firstLanguage: "H" | "A" | null,
 ): string {
     const value = grammar.trim();
-    if (index === 0 || !firstLanguage || value.startsWith("H") || value.startsWith("A")) {
+    const hasExplicitLanguagePrefix =
+        value.startsWith("H") ||
+        (value.startsWith("A") && /^[ACDNPRSTV]/.test(value.slice(1, 2)));
+
+    if (index === 0 || !firstLanguage || hasExplicitLanguagePrefix) {
         return value;
     }
+
     return firstLanguage + value;
 }
 
