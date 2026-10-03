@@ -225,6 +225,20 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures third-person common-plural Qal perfect verb", () => {
+        expect(parseHebrewMorphology("HVqp3cp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes an Open Scriptures first-person Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp1cs")).toMatchObject({
             language: "H",
