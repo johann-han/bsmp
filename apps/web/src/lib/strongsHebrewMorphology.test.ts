@@ -1172,6 +1172,30 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a conjunction plus inseparable-preposition article and masculine noun composite", () => {
+        const parsed = parseHebrewMorphology("HCc/Tp/Ncmsa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTp",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article with inseparable preposition",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcmsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a conjunction plus preposition and Qal infinitive-construct composite", () => {
         const parsed = parseHebrewMorphology("HCc/R/Vqc");
 
