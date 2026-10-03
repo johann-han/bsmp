@@ -29,6 +29,23 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a participle with the Open Scriptures x placeholder", () => {
+        expect(parseHebrewMorphology("HVprxfs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            form: "Participle active",
+            qualifier: "Piel",
+            person: null,
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HVprxfs").summary).toContain(
+            "Verb · Piel · Participle active · Feminine · Singular",
+        );
+    });
+
     it("decodes a Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp3ms")).toMatchObject({
             partOfSpeech: "Verb",
