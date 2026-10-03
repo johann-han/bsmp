@@ -96,6 +96,19 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures feminine singular Qal participle", () => {
+        expect(parseHebrewMorphology("HVqrxfs")).toMatchObject({
+            partOfSpeech: "Verb",
+            form: "Participle active",
+            qualifier: "Qal",
+            person: null,
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes Open Scriptures masculine singular participles", () => {
         expect(parseHebrewMorphology("HVqrxms")).toMatchObject({
             partOfSpeech: "Verb",
