@@ -826,7 +826,7 @@ describe("Hebrew morphology", () => {
             person: null,
             gender: "Feminine",
             number: "Singular",
-            state: "Absolute",
+            state: null,
             tense: null,
         });
         expect(parsed.summary).toContain("Particle · Definite article");
