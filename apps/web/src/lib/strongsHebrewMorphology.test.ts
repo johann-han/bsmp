@@ -200,6 +200,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an ordinal adjective", () => {
+        expect(parseHebrewMorphology("HAomsa")).toMatchObject({
+            partOfSpeech: "Adjective",
+            qualifier: "Ordinal number · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a composite Hebrew word code", () => {
         const parsed = parseHebrewMorphology("HC/Vqw3ms");
 
