@@ -363,6 +363,21 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures standalone Hebrew preposition", () => {
+        expect(parseHebrewMorphology("HR")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HR").summary).toBe("Preposition");
+    });
+
     it("decodes a definite article", () => {
         expect(parseHebrewMorphology("HTd")).toMatchObject({
             partOfSpeech: "Particle",
