@@ -686,6 +686,28 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an article plus masculine dual noun composite", () => {
+        const parsed = parseHebrewMorphology("HTd/Ncmda");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmda",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Dual",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Dual · Masculine",
+        );
+    });
+
     it("decodes a conjunction plus both-gender singular construct noun", () => {
         const parsed = parseHebrewMorphology("HCc/Ncbsc");
 
