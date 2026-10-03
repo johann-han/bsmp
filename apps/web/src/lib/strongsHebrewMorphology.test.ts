@@ -834,6 +834,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an article plus masculine plural adjective composite", () => {
+        const parsed = parseHebrewMorphology("HTd/Aampa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HAampa",
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Absolute",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+        });
+    });
+
     it("decodes an article plus feminine active participle composite", () => {
         const parsed = parseHebrewMorphology("HTd/Vqrxfs");
 
