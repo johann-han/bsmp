@@ -460,6 +460,25 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Noun · Common · Absolute · Plural · Masculine");
     });
 
+    it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
+        const parsed = parseHebrewMorphology("HTo/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTo",
+            partOfSpeech: "Particle",
+            qualifier: "Direct object marker",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "Sp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+        });
+    });
+
     it("decodes an Open Scriptures conjunction plus direct-object-marker composite", () => {
         const parsed = parseHebrewMorphology("HCc/To");
 
