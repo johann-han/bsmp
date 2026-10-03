@@ -49,6 +49,7 @@ describe("Hebrew morphology", () => {
     it("decodes a Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp3ms")).toMatchObject({
             partOfSpeech: "Verb",
+            tense: null,
             form: "Perfect",
             person: "3rd",
             gender: "Masculine",
@@ -59,6 +60,7 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HVqp3ms").summary).toContain(
             "Verb · Qal · Perfect · 3rd person · Masculine · Singular",
         );
+        expect(parseHebrewMorphology("HVqp3ms").summary).not.toContain("Past / present");
     });
 
     it("decodes the consecutive conjunction form", () => {
