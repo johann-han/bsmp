@@ -3,6 +3,16 @@ import { describe, expect, it } from "vitest";
 import { parseHebrewMorphology } from "./strongsHebrewMorphology";
 
 describe("Hebrew morphology", () => {
+    it("decodes a proper-name noun", () => {
+        expect(parseHebrewMorphology("HNpmsa")).toMatchObject({
+            partOfSpeech: "Noun",
+            qualifier: "Proper · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a common feminine singular absolute noun", () => {
         expect(parseHebrewMorphology("HNcfsa")).toMatchObject({
             language: "H",
