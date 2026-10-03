@@ -49,7 +49,7 @@ describe("Hebrew morphology", () => {
             partOfSpeech: "Noun",
             qualifier: "Common · Construct",
             gender: "Both",
-            number: "Plural",
+            number: "Singular",
             state: "Construct",
         });
     });
@@ -692,6 +692,25 @@ describe("Hebrew morphology", () => {
             gender: "Feminine",
             number: "Singular",
             state: "Absolute",
+        });
+    });
+
+    it("decodes a conjunction plus both-gender singular construct noun composite", () => {
+        const parsed = parseHebrewMorphology("HCc/Ncbsc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
         });
     });
 
