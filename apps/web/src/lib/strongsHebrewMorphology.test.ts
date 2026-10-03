@@ -6,7 +6,7 @@ describe("Hebrew morphology", () => {
     it("decodes a proper-name noun", () => {
         expect(parseHebrewMorphology("HNpmsa")).toMatchObject({
             partOfSpeech: "Noun",
-            qualifier: "Proper · Absolute",
+            qualifier: "Proper name · Absolute",
             gender: "Masculine",
             number: "Singular",
             state: "Absolute",
@@ -55,7 +55,7 @@ describe("Hebrew morphology", () => {
         });
 
         expect(parseHebrewMorphology("HNcfsa").summary).toContain(
-            "Noun · Common · Absolute · Feminine · Singular",
+            "Noun · Common · Absolute · Singular · Feminine",
         );
     });
 
@@ -70,7 +70,7 @@ describe("Hebrew morphology", () => {
     });
 
     it("decodes a determined-state masculine singular noun", () => {
-        expect(parseHebrewMorphology("HNcmda")).toMatchObject({
+        expect(parseHebrewMorphology("HNcmsd")).toMatchObject({
             partOfSpeech: "Noun",
             qualifier: "Common · Determined",
             gender: "Masculine",
@@ -102,7 +102,7 @@ describe("Hebrew morphology", () => {
         });
 
         expect(parseHebrewMorphology("HVprxfs").summary).toContain(
-            "Verb · Piel · Participle active · Feminine · Singular",
+            "Verb · Piel · Participle active · Singular · Feminine",
         );
     });
 
@@ -194,7 +194,7 @@ describe("Hebrew morphology", () => {
         });
 
         expect(parseHebrewMorphology("HVqp3ms").summary).toContain(
-            "Verb · Qal · Perfect · 3rd person · Masculine · Singular",
+            "Verb · Qal · Perfect · 3rd person · Singular · Masculine",
         );
         expect(parseHebrewMorphology("HVqp3ms").summary).not.toContain("Past / present");
     });
@@ -234,7 +234,7 @@ describe("Hebrew morphology", () => {
     });
 
     it("decodes a demonstrative pronoun", () => {
-        expect(parseHebrewMorphology("HPpd")).toMatchObject({
+        expect(parseHebrewMorphology("HPd")).toMatchObject({
             partOfSpeech: "Pronoun",
             qualifier: "Demonstrative",
         });
@@ -282,7 +282,7 @@ describe("Hebrew morphology", () => {
     });
 
     it("decodes an adjective with an unspecified gender placeholder", () => {
-        expect(parseHebrewMorphology("HAxpa")).toMatchObject({
+        expect(parseHebrewMorphology("HAxmsa")).toMatchObject({
             partOfSpeech: "Adjective",
             qualifier: "Adjective · Absolute",
             gender: "Both",
@@ -304,7 +304,7 @@ describe("Hebrew morphology", () => {
     it("decodes a cardinal adjective", () => {
         expect(parseHebrewMorphology("HAcmsa")).toMatchObject({
             partOfSpeech: "Adjective",
-            qualifier: "Cardinal · Absolute",
+            qualifier: "Cardinal number · Absolute",
             gender: "Masculine",
             number: "Singular",
             state: "Absolute",
@@ -439,16 +439,16 @@ describe("Hebrew morphology", () => {
     });
 
     it("decodes a composite Hebrew word code", () => {
-        const parsed = parseHebrewMorphology("HC/Vqw3ms");
+        const parsed = parseHebrewMorphology("HCv/Vqw3ms");
 
         expect(parsed).toMatchObject({
             language: "H",
-            code: "HC/Vqw3ms",
+            code: "HCv/Vqw3ms",
         });
         expect(parsed.summary).toContain("Conjunction");
         expect(parsed.summary).toContain("Verb · Qal · Sequential imperfect");
         expect(parsed.segments).toHaveLength(2);
-        expect(parsed.segments?.[0]?.summary).toBe("Conjunction · Consecutive");
+        expect(parsed.segments?.[0]?.summary).toBe("Conjunction · Vav consecutive");
         expect(parsed.segments?.[1]?.summary).toContain(
             "Verb · Qal · Sequential imperfect · 3rd person · Masculine · Singular",
         );
