@@ -534,6 +534,30 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a conjunction plus preposition and plural-noun composite", () => {
+        const parsed = parseHebrewMorphology("HCc/R/Ncmpa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcmpa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a conjunction plus imperative and pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HCc/Vqv2mp/Sp3fs");
 
