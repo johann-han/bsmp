@@ -215,6 +215,17 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a standalone relative pronoun", () => {
+        expect(parseHebrewMorphology("HPr")).toMatchObject({
+            partOfSpeech: "Pronoun",
+            qualifier: "Relative",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+    });
+
     it("decodes a personal pronoun", () => {
         expect(parseHebrewMorphology("HPp3ms")).toMatchObject({
             partOfSpeech: "Pronoun",
