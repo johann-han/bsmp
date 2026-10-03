@@ -13,6 +13,11 @@ const PART_OF_SPEECH: Record<string, string> = {
     V: "Verb",
 };
 
+const CONJUNCTION_TYPE: Record<string, string> = {
+    c: "Conjunctive",
+    v: "Vav consecutive",
+};
+
 const ADJECTIVE_TYPE: Record<string, string> = {
     a: "Adjective",
     c: "Cardinal number",
@@ -261,8 +266,9 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
     let qualifier: string | null = null;
 
     switch (posCode) {
+        case "C":
         case "c": {
-            qualifier = "Consecutive";
+            qualifier = CONJUNCTION_TYPE[code[1] ?? ""] ?? null;
             break;
         }
         case "A": {
