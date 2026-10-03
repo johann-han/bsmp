@@ -223,6 +223,24 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the published Open Scriptures Qal infinitive-absolute pattern", () => {
+        expect(parseHebrewMorphology("HVqaj3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Infinitive absolute",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVqaj3ms").summary).toContain(
+            "Verb · Qal · Infinitive absolute",
+        );
+    });
+
     it("decodes an Open Scriptures Qal jussive verb", () => {
         expect(parseHebrewMorphology("HVqj3ms")).toMatchObject({
             partOfSpeech: "Verb",
