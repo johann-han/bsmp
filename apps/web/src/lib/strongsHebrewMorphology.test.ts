@@ -44,6 +44,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a TEHMC title noun", () => {
+        expect(parseHebrewMorphology("HNtfsa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Title · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HNtfsa").summary).toContain(
+            "Noun · Title · Absolute · Singular · Feminine",
+        );
+    });
+
     it("decodes a proper-name noun", () => {
         expect(parseHebrewMorphology("HNpmsa")).toMatchObject({
             partOfSpeech: "Noun",
