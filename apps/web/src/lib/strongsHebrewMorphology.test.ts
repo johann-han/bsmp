@@ -33,6 +33,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a common noun with both-gender plural construct features", () => {
+        expect(parseHebrewMorphology("HNcbpc")).toMatchObject({
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+    });
+
     it("decodes a common feminine singular absolute noun", () => {
         expect(parseHebrewMorphology("HNcfsa")).toMatchObject({
             language: "H",
