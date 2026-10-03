@@ -237,6 +237,24 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures third-person feminine Hiphil imperfect verb", () => {
+        expect(parseHebrewMorphology("HVhij3fs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVhij3fs").summary).toContain(
+            "Verb · Hiphil · Imperfect · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("decodes an Open Scriptures third-person feminine Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp3fs")).toMatchObject({
             language: "H",
