@@ -352,6 +352,32 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a preposition/noun/pronominal-suffix composite", () => {
+        const parsed = parseHebrewMorphology("HR/Ncmsc/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "Sp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+        });
+    });
+
     it("decodes a three-part conjunction/article/noun composite", () => {
         const parsed = parseHebrewMorphology("HCc/Td/Ncfsa");
 
