@@ -1223,6 +1223,30 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a conjunction plus preposition and masculine construct noun composite", () => {
+        const parsed = parseHebrewMorphology("HCc/R/Ncmsc");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+    });
+
     it("decodes an Aramaic verb using the same Open Scriptures code structure", () => {
         expect(parseHebrewMorphology("AVqp3ms")).toMatchObject({
             language: "A",
