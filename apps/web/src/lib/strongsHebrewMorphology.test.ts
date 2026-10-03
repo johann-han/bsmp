@@ -143,6 +143,20 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures Qal jussive verb", () => {
+        expect(parseHebrewMorphology("HVqj3ms")).toMatchObject({
+            partOfSpeech: "Verb",
+            form: "Jussive",
+            mood: "Jussive",
+            qualifier: "Qal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes a Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp3ms")).toMatchObject({
             partOfSpeech: "Verb",
