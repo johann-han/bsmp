@@ -454,6 +454,32 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a vav-consecutive plus sequential-perfect composite", () => {
+        const parsed = parseHebrewMorphology("HCv/Vqq3cp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCv",
+            partOfSpeech: "Conjunction",
+            qualifier: "Vav consecutive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqq3cp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Sequential perfect",
+            person: "3rd",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain("Conjunction · Vav consecutive");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Sequential perfect · 3rd person · Plural · Common",
+        );
+    });
+
     it("decodes Open Scriptures composite article/noun patterns", () => {
         const parsed = parseHebrewMorphology("HTd/Ncmpa");
 
