@@ -149,6 +149,22 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Noun · Common · Absolute · Plural · Masculine");
     });
 
+    it("decodes an Open Scriptures conjunction plus direct-object-marker composite", () => {
+        const parsed = parseHebrewMorphology("HCc/To");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Consecutive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTo",
+            partOfSpeech: "Particle",
+            qualifier: "Direct object marker",
+        });
+    });
+
     it("decodes an Aramaic verb using the same Open Scriptures code structure", () => {
         expect(parseHebrewMorphology("AVqp3ms")).toMatchObject({
             language: "A",
