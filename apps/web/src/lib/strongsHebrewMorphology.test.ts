@@ -174,11 +174,19 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HVqp3ms").summary).not.toContain("Past / present");
     });
 
-    it("decodes the consecutive conjunction form", () => {
-        expect(parseHebrewMorphology("Hc")).toMatchObject({
+    it("decodes the conjunctive conjunction form", () => {
+        expect(parseHebrewMorphology("HCc")).toMatchObject({
             language: "H",
             partOfSpeech: "Conjunction",
-            qualifier: "Consecutive",
+            qualifier: "Conjunctive",
+        });
+    });
+
+    it("decodes the vav-consecutive conjunction form", () => {
+        expect(parseHebrewMorphology("HCv")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Conjunction",
+            qualifier: "Vav consecutive",
         });
     });
 
@@ -351,7 +359,7 @@ describe("Hebrew morphology", () => {
         expect(parsed.segments?.[0]).toMatchObject({
             code: "HCc",
             partOfSpeech: "Conjunction",
-            qualifier: "Consecutive",
+            qualifier: "Conjunctive",
         });
         expect(parsed.segments?.[1]).toMatchObject({
             code: "HTd",
@@ -412,7 +420,7 @@ describe("Hebrew morphology", () => {
         expect(parsed.segments?.[0]).toMatchObject({
             code: "HCc",
             partOfSpeech: "Conjunction",
-            qualifier: "Consecutive",
+            qualifier: "Conjunctive",
         });
         expect(parsed.segments?.[1]).toMatchObject({
             code: "HTo",
