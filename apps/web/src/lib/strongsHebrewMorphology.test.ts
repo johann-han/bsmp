@@ -211,6 +211,20 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures third-person feminine Qal perfect verb", () => {
+        expect(parseHebrewMorphology("HVqp3fs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes an Open Scriptures first-person Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp1cs")).toMatchObject({
             language: "H",
