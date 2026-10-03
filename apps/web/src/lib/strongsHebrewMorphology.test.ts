@@ -227,9 +227,9 @@ describe("Hebrew morphology", () => {
             partOfSpeech: "Pronoun",
             qualifier: "Personal",
             person: null,
-            gender: "Both",
-            number: "Plural",
-            state: "Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
         });
     });
 
