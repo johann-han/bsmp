@@ -213,6 +213,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an adjective without an explicit state suffix", () => {
+        expect(parseHebrewMorphology("HAams")).toMatchObject({
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+    });
+
     it("decodes an adjective with an unspecified gender placeholder", () => {
         expect(parseHebrewMorphology("HAxpa")).toMatchObject({
             partOfSpeech: "Adjective",
