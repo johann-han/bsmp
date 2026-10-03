@@ -284,9 +284,9 @@ describe("Hebrew morphology", () => {
     it("decodes an adjective with an unspecified gender placeholder", () => {
         expect(parseHebrewMorphology("HAxmsa")).toMatchObject({
             partOfSpeech: "Adjective",
-            qualifier: "Adjective · Absolute",
-            gender: "Both",
-            number: "Plural",
+            qualifier: "Unspecified · Absolute",
+            gender: "Masculine",
+            number: "Singular",
             state: "Absolute",
         });
     });
