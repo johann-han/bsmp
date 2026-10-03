@@ -1325,6 +1325,32 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a vav-consecutive plus Hiphil sequential-imperfect composite", () => {
+        const parsed = parseHebrewMorphology("HCv/Vhw3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCv",
+            partOfSpeech: "Conjunction",
+            qualifier: "Vav consecutive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVhw3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain("Conjunction · Vav consecutive");
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Sequential imperfect · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HTo/Sp3ms");
 
