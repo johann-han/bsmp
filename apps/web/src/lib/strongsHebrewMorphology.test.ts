@@ -503,6 +503,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures Qal jussive masculine plural verb", () => {
+        expect(parseHebrewMorphology("HVqj3mp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Jussive",
+            mood: "Jussive",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVqj3mp").summary).toContain(
+            "Verb · Qal · Jussive · Jussive · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("decodes an Open Scriptures Piel jussive verb", () => {
         expect(parseHebrewMorphology("HVpj3ms")).toMatchObject({
             language: "H",
