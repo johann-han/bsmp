@@ -406,6 +406,28 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a preposition plus Qal infinitive-construct composite", () => {
+        const parsed = parseHebrewMorphology("HR/Vqc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqc",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes a preposition plus Hiphil infinitive-construct composite", () => {
         const parsed = parseHebrewMorphology("HR/Vhc");
 
