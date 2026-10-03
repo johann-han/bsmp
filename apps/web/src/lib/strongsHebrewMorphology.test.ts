@@ -168,6 +168,20 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures Qal imperfect verb", () => {
+        expect(parseHebrewMorphology("HVqi3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes an Open Scriptures Qal jussive verb", () => {
         expect(parseHebrewMorphology("HVqj3ms")).toMatchObject({
             partOfSpeech: "Verb",
