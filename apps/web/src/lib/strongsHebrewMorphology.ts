@@ -344,7 +344,13 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
                 gender = null;
                 number = null;
             } else {
-                const tail = parsePersonGenderNumber(code, 3);
+                // Open Scriptures contains a legacy finite-verb form with an
+                // extra "j" marker before the person/gender/number tail.
+                const featureStart =
+                    code[3] === "j" && ["1", "2", "3"].includes(code[4] ?? "")
+                        ? 4
+                        : 3;
+                const tail = parsePersonGenderNumber(code, featureStart);
                 person = tail.person;
                 gender = tail.gender;
                 number = tail.number;
