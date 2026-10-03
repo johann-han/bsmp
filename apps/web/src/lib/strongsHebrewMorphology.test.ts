@@ -133,6 +133,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an adjective with an unspecified gender placeholder", () => {
+        expect(parseHebrewMorphology("HAxpa")).toMatchObject({
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Absolute",
+            gender: "Both",
+            number: "Plural",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a composite Hebrew word code", () => {
         const parsed = parseHebrewMorphology("HC/Vqw3ms");
 
