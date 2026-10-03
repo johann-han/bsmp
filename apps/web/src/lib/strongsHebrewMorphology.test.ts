@@ -1179,6 +1179,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a conjunction plus Qal imperative plural composite", () => {
+        const parsed = parseHebrewMorphology("HCc/Vqv2mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqv2mp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain("Conjunction · Conjunctive");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Imperative · 2nd person · Plural · Masculine",
+        );
+    });
+
     it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HTo/Sp3ms");
 
