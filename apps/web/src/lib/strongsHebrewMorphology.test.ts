@@ -1202,7 +1202,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Conjunction · Conjunctive");
         expect(parsed.summary).toContain(
-            "Verb · Qal · Imperative · 2nd person · Plural · Masculine",
+            "Verb · Qal · Imperative · Imperative · 2nd person · Plural · Masculine",
         );
     });
 
