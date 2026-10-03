@@ -4,6 +4,10 @@ import { __test__ } from "./strongsHebrewData";
 
 const { parseTahotVerse, findTahotSegment, baseStrong } = __test__();
 
+const GENESIS_1_2_11 = [
+    "Gen.1.2#11=L\tמְרַחֶ֖פֶת\tme.ra.Che.fet\t[was] hovering\t{H7363B}\tHVprfsa\t\t\tH7363B\t\t\t{H7363B=רָחַף=to hover}",
+].join("\n");
+
 const GENESIS_1_1 = [
     "Eng (Heb) Ref & Type\tHebrew\tTransliteration\tTranslation\tdStrongs\tGrammar\tMeaning Variants\tSpelling Variants\tRoot dStrong+Instance\tAlternative Strongs+Instance\tConjoin word\tExpanded Strong tags",
     "Gen.1.1#01=L\tבְּ/רֵאשִׁ֖ית\tbe./re.Shit\tin/ beginning\tH9003/{H7225G}\tHR/Ncfsa\t\t\tH7225G\t\t\tH9003=ב=in/{H7225G=רֵאשִׁית=: beginning»first:1_beginning}",
@@ -23,6 +27,37 @@ describe("TAHOT Hebrew word alignment", () => {
             hebrew: "בְּ/רֵאשִׁ֖ית",
             dStrongs: "H9003/{H7225G}",
             grammar: "HR/Ncfsa",
+        });
+    });
+
+    it("aligns an actual pinned TAHOT Piel participle row", () => {
+        const words = parseTahotVerse(GENESIS_1_2_11, "Gen.1.2");
+
+        const match = findTahotSegment(words, "H7363", 1);
+
+        expect(match?.originalForm).toBe("מְרַחֶ֖פֶת");
+        expect(match?.morphology).toMatchObject({
+            language: "H",
+            code: "HVprfsa",
+            partOfSpeech: "Verb",
+            qualifier: "Piel · Absolute",
+            form: "Participle active",
+            person: null,
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(match?.morphology.summary).toContain(
+            "Verb · Piel · Absolute · Participle active · Singular · Feminine",
+        );
+        expect(match?.morphemes).toHaveLength(1);
+        expect(match?.morphemes[0]).toMatchObject({
+            originalForm: "מְרַחֶ֖פֶת",
+            role: "root",
+            strongsNumbers: ["H7363B"],
+            sourceStrongSegment: "{H7363B}",
+            sourceGrammarSegment: "HVprfsa",
+            matchedStrong: true,
         });
     });
 
