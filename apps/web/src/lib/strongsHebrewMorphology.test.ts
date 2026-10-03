@@ -348,6 +348,17 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures feminine singular absolute adjective", () => {
+        expect(parseHebrewMorphology("HAafsa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a gentilic adjective", () => {
         expect(parseHebrewMorphology("HAgmsa")).toMatchObject({
             partOfSpeech: "Adjective",
