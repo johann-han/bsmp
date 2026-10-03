@@ -153,6 +153,21 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures Qal cohortative verb", () => {
+        expect(parseHebrewMorphology("HVqh1cp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            form: "Cohortative",
+            mood: "Cohortative",
+            qualifier: "Qal",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes an Open Scriptures Qal jussive verb", () => {
         expect(parseHebrewMorphology("HVqj3ms")).toMatchObject({
             partOfSpeech: "Verb",
