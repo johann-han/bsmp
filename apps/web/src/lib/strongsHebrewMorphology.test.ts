@@ -508,6 +508,33 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a preposition plus plural construct noun and pronominal suffix composite", () => {
+        const parsed = parseHebrewMorphology("HR/Ncmpc/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+        });
+    });
+
     it("decodes a preposition/noun/pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HR/Ncmsc/Sp3ms");
 
