@@ -143,13 +143,13 @@ describe("Hebrew morphology", () => {
         });
     });
 
-    it("decodes a noun with an unspecified gender placeholder", () => {
+    it("decodes a noun with both-gender plural absolute features", () => {
         expect(parseHebrewMorphology("HNcbpa")).toMatchObject({
             partOfSpeech: "Noun",
             qualifier: "Common · Absolute",
-            gender: "Feminine",
-            number: "Singular",
-            state: null,
+            gender: "Both",
+            number: "Plural",
+            state: "Absolute",
         });
     });
 
@@ -485,7 +485,7 @@ describe("Hebrew morphology", () => {
             qualifier: "Direct object marker",
         });
         expect(parsed.segments?.[1]).toMatchObject({
-            code: "Sp3ms",
+            code: "HSp3ms",
             partOfSpeech: "Suffix",
             qualifier: "Pronominal",
             person: "3rd",
