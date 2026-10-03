@@ -482,6 +482,23 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures standalone direct-object marker", () => {
+        expect(parseHebrewMorphology("HTo")).toMatchObject({
+            language: "H",
+            code: "HTo",
+            partOfSpeech: "Particle",
+            qualifier: "Direct object marker",
+            tense: null,
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parseHebrewMorphology("HTo").summary).toBe(
+            "Particle · Direct object marker",
+        );
+    });
+
     it("decodes an Open Scriptures standalone Hebrew adverb", () => {
         expect(parseHebrewMorphology("HD")).toMatchObject({
             language: "H",
