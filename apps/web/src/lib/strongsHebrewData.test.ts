@@ -4,6 +4,10 @@ import { __test__ } from "./strongsHebrewData";
 
 const { parseTahotVerse, findTahotSegment, baseStrong } = __test__();
 
+const GENESIS_1_2_1 = [
+    "Gen.1.2#01=L\tוְ/הָ/אָ֗רֶץ\tve./ha./'A.retz\tand/ the/ earth\tH9002/H9009/{H0776G}\tHC/Td/Ncfsa\t\t\tH0776G\t\t\tH9002=ו=and/H9009=ה=the/{H0776G=אֶ֫רֶץ=: country;_planet»land:2_country;_planet}",
+].join("\n");
+
 const GENESIS_1_2_11 = [
     "Gen.1.2#11=L\tמְרַחֶ֖פֶת\tme.ra.Che.fet\t[was] hovering\t{H7363B}\tHVprfsa\t\t\tH7363B\t\t\t{H7363B=רָחַף=to hover}",
 ].join("\n");
@@ -28,6 +32,57 @@ describe("TAHOT Hebrew word alignment", () => {
             dStrongs: "H9003/{H7225G}",
             grammar: "HR/Ncfsa",
         });
+    });
+
+    it("aligns an actual pinned TAHOT three-segment composite row", () => {
+        const words = parseTahotVerse(GENESIS_1_2_1, "Gen.1.2");
+
+        const match = findTahotSegment(words, "H0776", 1);
+
+        expect(match?.originalForm).toBe("אָ֗רֶץ");
+        expect(match?.morphology).toMatchObject({
+            language: "H",
+            code: "HNcfsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(match?.morphemes).toHaveLength(3);
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "וְ",
+                role: "prefix",
+                strongsNumbers: ["H9002"],
+                sourceStrongSegment: "H9002",
+                sourceGrammarSegment: "HC",
+                matchedStrong: false,
+                morphology: { language: "H", code: "HC", summary: "Conjunction" },
+            },
+            {
+                originalForm: "הָ",
+                role: "prefix",
+                strongsNumbers: ["H9009"],
+                sourceStrongSegment: "H9009",
+                sourceGrammarSegment: "Td",
+                matchedStrong: false,
+                morphology: {
+                    language: "H",
+                    code: "HTd",
+                    summary: "Definite article",
+                },
+            },
+            {
+                originalForm: "אָ֗רֶץ",
+                role: "root",
+                strongsNumbers: ["H0776G"],
+                sourceStrongSegment: "{H0776G}",
+                sourceGrammarSegment: "Ncfsa",
+                matchedStrong: true,
+                morphology: { language: "H", code: "HNcfsa" },
+            },
+        ]);
     });
 
     it("aligns an actual pinned TAHOT Piel participle row", () => {
