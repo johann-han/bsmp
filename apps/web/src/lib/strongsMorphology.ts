@@ -165,6 +165,16 @@ function parseGrammarTail(tail: string): ParsedGrammarTail {
         };
     }
 
+    const personNumber = tail.match(/^([123])([SP])$/);
+    if (personNumber) {
+        return {
+            person: PERSON[personNumber[1]!] ?? null,
+            grammaticalCase: null,
+            number: NUMBER[personNumber[2]!] ?? null,
+            gender: null,
+        };
+    }
+
     return {
         person: null,
         grammaticalCase: null,
