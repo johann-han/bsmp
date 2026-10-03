@@ -315,6 +315,26 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the pinned TAHOT Hiphil imperfect feminine plural form", () => {
+        expect(parseHebrewMorphology("HVhi3fp")).toMatchObject({
+            language: "H",
+            code: "HVhi3fp",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVhi3fp").summary).toContain(
+            "Verb · Hiphil · Imperfect · 3rd person · Plural · Feminine",
+        );
+    });
+
     it("decodes an Open Scriptures third-person feminine Hiphil imperfect verb", () => {
         expect(parseHebrewMorphology("HVhij3fs")).toMatchObject({
             language: "H",
