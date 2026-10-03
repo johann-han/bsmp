@@ -622,6 +622,25 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a preposition plus second-person masculine plural suffix", () => {
+        const parsed = parseHebrewMorphology("HR/Sp2mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp2mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+        });
+    });
+
     it("decodes a conjunction plus imperative and pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HCc/Vqv2mp/Sp3fs");
 
