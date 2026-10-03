@@ -21,6 +21,10 @@ const GENESIS_1_2_1 = [
     "Gen.1.2#01=L\tוְ/הָ/אָ֗רֶץ\tve./ha./'A.retz\tand/ the/ earth\tH9002/H9009/{H0776G}\tHC/Td/Ncfsa\t\t\tH0776G\t\t\tH9002=ו=and/H9009=ה=the/{H0776G=אֶ֫רֶץ=: country;_planet»land:2_country;_planet}",
 ].join("\n");
 
+const EXODUS_34_22_02 = [
+    "Exo.34.22#02=L\tשָׁבֻעֹת֙\tsha.vu.'Ot\tweeks\t{H7620G}\tHNtfpa\t\t\tH7620G\t\t\t{H7620G=שָׁבוּעַ=Weeks»Weeks@Exo.34.22-1Co}",
+].join("\n");
+
 const EXODUS_26_33_19 = [
     "Exo.26.33#19=L\tקֹ֥דֶשׁ\tKo.desh\t[the] holy place of\t{H6944J}\tHNtmsc\t\t\tH6944J_B\t\t\t{H6944J=קֹ֫דֶשׁ=Holy Place»Holy_Place@Exo.26.33-Heb}",
 ].join("\n");
@@ -226,6 +230,44 @@ describe("TAHOT Hebrew word alignment", () => {
                 sourceGrammarSegment: "Ncfsa",
                 matchedStrong: true,
                 morphology: { language: "H", code: "HNcfsa" },
+            },
+        ]);
+    });
+
+    it("aligns a pinned TAHOT feminine plural title noun row", () => {
+        const words = parseTahotVerse(
+            EXODUS_34_22_02,
+            "Exo.34.22",
+        );
+
+        const match = findTahotSegment(words, "H7620", 1);
+
+        expect(match?.originalForm).toBe("שָׁבֻעֹת֙");
+        expect(match?.morphology).toMatchObject({
+            language: "H",
+            code: "HNtfpa",
+            partOfSpeech: "Noun",
+            qualifier: "Title · Absolute",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(match?.morphology.summary).toContain(
+            "Noun · Title · Absolute · Plural · Feminine",
+        );
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "שָׁבֻעֹת֙",
+                role: "root",
+                strongsNumbers: ["H7620G"],
+                sourceStrongSegment: "{H7620G}",
+                sourceGrammarSegment: "HNtfpa",
+                matchedStrong: true,
+                morphology: {
+                    language: "H",
+                    code: "HNtfpa",
+                    qualifier: "Title · Absolute",
+                },
             },
         ]);
     });
