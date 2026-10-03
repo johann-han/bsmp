@@ -46,6 +46,30 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes Open Scriptures masculine singular participles", () => {
+        expect(parseHebrewMorphology("HVqrxms")).toMatchObject({
+            partOfSpeech: "Verb",
+            form: "Participle active",
+            qualifier: "Qal",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVhrxms")).toMatchObject({
+            partOfSpeech: "Verb",
+            form: "Participle active",
+            qualifier: "Hiphil",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes a Qal perfect verb", () => {
         expect(parseHebrewMorphology("HVqp3ms")).toMatchObject({
             partOfSpeech: "Verb",
