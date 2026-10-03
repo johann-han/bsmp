@@ -112,6 +112,17 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a pronoun with an unspecified gender placeholder", () => {
+        expect(parseHebrewMorphology("HPpxpa")).toMatchObject({
+            partOfSpeech: "Pronoun",
+            qualifier: "Personal",
+            person: null,
+            gender: "Both",
+            number: "Plural",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a personal pronoun", () => {
         expect(parseHebrewMorphology("HPp3ms")).toMatchObject({
             partOfSpeech: "Pronoun",
