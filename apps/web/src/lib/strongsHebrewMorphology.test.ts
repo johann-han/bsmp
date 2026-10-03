@@ -180,6 +180,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a gentilic adjective", () => {
+        expect(parseHebrewMorphology("HAgmsa")).toMatchObject({
+            partOfSpeech: "Adjective",
+            qualifier: "Gentilic · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a composite Hebrew word code", () => {
         const parsed = parseHebrewMorphology("HC/Vqw3ms");
 
