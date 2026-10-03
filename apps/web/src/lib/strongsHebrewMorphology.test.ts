@@ -416,6 +416,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures Piel jussive verb", () => {
+        expect(parseHebrewMorphology("HVpj3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Jussive",
+            mood: "Jussive",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes an Open Scriptures Niphal jussive verb", () => {
         expect(parseHebrewMorphology("HVNj3mp")).toMatchObject({
             language: "H",
