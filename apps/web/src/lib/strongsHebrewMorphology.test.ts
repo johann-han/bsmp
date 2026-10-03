@@ -1156,6 +1156,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a conjunction plus masculine singular absolute noun composite", () => {
+        const parsed = parseHebrewMorphology("HCc/Ncmsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Conjunction · Conjunctive");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Singular · Masculine",
+        );
+    });
+
     it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HTo/Sp3ms");
 
