@@ -123,6 +123,13 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a demonstrative pronoun", () => {
+        expect(parseHebrewMorphology("HPpd")).toMatchObject({
+            partOfSpeech: "Pronoun",
+            qualifier: "Demonstrative",
+        });
+    });
+
     it("decodes a personal pronoun", () => {
         expect(parseHebrewMorphology("HPp3ms")).toMatchObject({
             partOfSpeech: "Pronoun",
