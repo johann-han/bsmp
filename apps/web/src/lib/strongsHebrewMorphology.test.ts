@@ -315,6 +315,26 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the pinned TAHOT Hophal passive participle feminine plural construct form", () => {
+        expect(parseHebrewMorphology("HVHsfpc")).toMatchObject({
+            language: "H",
+            code: "HVHsfpc",
+            partOfSpeech: "Verb",
+            qualifier: "Hophal · Construct",
+            form: "Participle passive",
+            person: null,
+            gender: "Feminine",
+            number: "Plural",
+            state: "Construct",
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVHsfpc").summary).toContain(
+            "Verb · Hophal · Construct · Participle passive · Plural · Feminine",
+        );
+    });
+
     it("decodes the pinned TAHOT Hiphil imperfect feminine plural form", () => {
         expect(parseHebrewMorphology("HVhi3fp")).toMatchObject({
             language: "H",
