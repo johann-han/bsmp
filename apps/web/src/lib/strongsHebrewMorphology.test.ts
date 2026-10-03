@@ -59,6 +59,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a common masculine singular construct noun", () => {
+        expect(parseHebrewMorphology("HNcmsc")).toMatchObject({
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+    });
+
     it("decodes a participle with the Open Scriptures x placeholder", () => {
         expect(parseHebrewMorphology("HVprxfs")).toMatchObject({
             language: "H",
