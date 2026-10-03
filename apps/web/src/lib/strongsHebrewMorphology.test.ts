@@ -668,6 +668,33 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a conjunction plus construct noun and pronominal-suffix composite", () => {
+        const parsed = parseHebrewMorphology("HCc/Ncfsc/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+        });
+    });
+
     it("decodes a conjunction plus imperative and pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HCc/Vqv2mp/Sp3fs");
 
