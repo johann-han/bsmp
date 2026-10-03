@@ -508,6 +508,25 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a preposition plus third-person plural pronominal suffix", () => {
+        const parsed = parseHebrewMorphology("HR/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+        });
+    });
+
     it("decodes a preposition plus plural construct noun and pronominal suffix composite", () => {
         const parsed = parseHebrewMorphology("HR/Ncmpc/Sp3mp");
 
