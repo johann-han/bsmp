@@ -59,6 +59,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a TEHMC masculine singular construct title noun", () => {
+        expect(parseHebrewMorphology("HNtmsc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Title · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+
+        expect(parseHebrewMorphology("HNtmsc").summary).toContain(
+            "Noun · Title · Construct · Singular · Masculine",
+        );
+    });
+
     it("decodes a proper-name noun", () => {
         expect(parseHebrewMorphology("HNpmsa")).toMatchObject({
             partOfSpeech: "Noun",
