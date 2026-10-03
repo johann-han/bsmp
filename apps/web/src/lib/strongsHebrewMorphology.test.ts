@@ -290,6 +290,27 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a preposition plus Hiphil infinitive-construct composite", () => {
+        const parsed = parseHebrewMorphology("HR/Vhc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVhc",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+    });
+
     it("decodes a definite-article inseparable-preposition composite", () => {
         const parsed = parseHebrewMorphology("HTp/Ncmsa");
 
