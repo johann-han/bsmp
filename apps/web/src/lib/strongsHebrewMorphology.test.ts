@@ -482,6 +482,21 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures standalone Hebrew adverb", () => {
+        expect(parseHebrewMorphology("HD")).toMatchObject({
+            language: "H",
+            code: "HD",
+            partOfSpeech: "Adverb",
+            qualifier: null,
+            tense: null,
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parseHebrewMorphology("HD").summary).toBe("Adverb");
+    });
+
     it("decodes an Open Scriptures Hiphil jussive verb", () => {
         expect(parseHebrewMorphology("HVhj3fs")).toMatchObject({
             language: "H",
