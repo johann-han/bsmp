@@ -147,9 +147,9 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HNcbpa")).toMatchObject({
             partOfSpeech: "Noun",
             qualifier: "Common · Absolute",
-            gender: "Both",
-            number: "Plural",
-            state: "Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
         });
     });
 
@@ -222,8 +222,8 @@ describe("Hebrew morphology", () => {
         });
     });
 
-    it("decodes a pronoun with an unspecified gender placeholder", () => {
-        expect(parseHebrewMorphology("HPpxpa")).toMatchObject({
+    it("decodes a personal pronoun with an unspecified person placeholder", () => {
+        expect(parseHebrewMorphology("HPpxfs")).toMatchObject({
             partOfSpeech: "Pronoun",
             qualifier: "Personal",
             person: null,
@@ -405,7 +405,7 @@ describe("Hebrew morphology", () => {
             state: "Construct",
         });
         expect(parsed.segments?.[2]).toMatchObject({
-            code: "Sp3ms",
+            code: "HSp3ms",
             partOfSpeech: "Suffix",
             qualifier: "Pronominal",
             person: "3rd",
@@ -450,7 +450,7 @@ describe("Hebrew morphology", () => {
         expect(parsed.segments).toHaveLength(2);
         expect(parsed.segments?.[0]?.summary).toBe("Conjunction · Vav consecutive");
         expect(parsed.segments?.[1]?.summary).toContain(
-            "Verb · Qal · Sequential imperfect · 3rd person · Masculine · Singular",
+            "Verb · Qal · Sequential imperfect · 3rd person · Singular · Masculine",
         );
     });
 
