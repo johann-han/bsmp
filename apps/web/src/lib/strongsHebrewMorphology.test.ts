@@ -190,6 +190,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a cardinal adjective", () => {
+        expect(parseHebrewMorphology("HAcmsa")).toMatchObject({
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a composite Hebrew word code", () => {
         const parsed = parseHebrewMorphology("HC/Vqw3ms");
 
