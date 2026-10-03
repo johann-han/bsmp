@@ -13,6 +13,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a gentilic noun", () => {
+        expect(parseHebrewMorphology("HNgmsa")).toMatchObject({
+            partOfSpeech: "Noun",
+            qualifier: "Gentilic · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes a common feminine singular absolute noun", () => {
         expect(parseHebrewMorphology("HNcfsa")).toMatchObject({
             language: "H",
