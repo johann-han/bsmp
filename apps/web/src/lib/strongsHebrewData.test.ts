@@ -4,6 +4,10 @@ import { __test__ } from "./strongsHebrewData";
 
 const { parseTahotVerse, findTahotSegment, baseStrong } = __test__();
 
+const GENESIS_4_8_0501_X = [
+    "Gen.4.8#0501=X\tנֵלְכָה\tne.le.Khah\tlet us go\t{H1980G}\tHVqi1cp\t\t\tH1980G\tH3212\t\t{H1980G=הָלַךְ=: went»to go:3_went;_go[away];_take_out;_release}",
+].join("\n");
+
 const GENESIS_9_21_07_QERE = [
     "Gen.9.21#07=Q(K)\tאָהֳלֽ/וֹ\\׃\t'o.ho.L/o\ttent/ his\t{H0168G}/H9023\\H9016\tHNcmsc/Sp3ms\tK= 'o.ho.Lo/h (אָהֳלֹ/ה\\׃) \"tent/ his\" (H0168G/H9023\\H9016=HNcbsc/Sp3ms)\tL= אָהֳלֹֽ/ה\\׃ ¦ ;\tH0168G\t\t\t{H0168G=אֹ֫הֶל=: tent»tent:1_tent}/H9023=Ps3m=his\\H9016=׃=verseEnd",
 ].join("\n");
@@ -41,6 +45,50 @@ describe("TAHOT Hebrew word alignment", () => {
             dStrongs: "H9003/{H7225G}",
             grammar: "HR/Ncfsa",
         });
+    });
+
+    it("preserves published restored-text source provenance and morphology", () => {
+        const words = parseTahotVerse(
+            GENESIS_4_8_0501_X,
+            "Gen.4.8",
+        );
+
+        expect(words[0]).toMatchObject({
+            location: "Gen.4.8#0501=X",
+            type: "X",
+            hebrew: "נֵלְכָה",
+            dStrongs: "{H1980G}",
+            grammar: "HVqi1cp",
+        });
+
+        const match = findTahotSegment(words, "H1980", 1);
+
+        expect(match?.originalForm).toBe("נֵלְכָה");
+        expect(match?.morphology).toMatchObject({
+            language: "H",
+            code: "HVqi1cp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+        expect(match?.morphology.summary).toContain(
+            "Verb · Qal · Imperfect · 1st person · Plural · Common",
+        );
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "נֵלְכָה",
+                role: "root",
+                strongsNumbers: ["H1980G"],
+                sourceStrongSegment: "{H1980G}",
+                sourceGrammarSegment: "HVqi1cp",
+                matchedStrong: true,
+            },
+        ]);
     });
 
     it("preserves published Qere/Ketiv provenance on a composite word", () => {
