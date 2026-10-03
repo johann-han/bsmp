@@ -23,6 +23,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a proper-name title noun", () => {
+        expect(parseHebrewMorphology("HNpt")).toMatchObject({
+            partOfSpeech: "Noun",
+            qualifier: "Proper name · Title",
+            gender: null,
+            number: null,
+            state: null,
+        });
+    });
+
     it("decodes a common feminine singular absolute noun", () => {
         expect(parseHebrewMorphology("HNcfsa")).toMatchObject({
             language: "H",
