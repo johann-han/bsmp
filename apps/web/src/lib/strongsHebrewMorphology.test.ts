@@ -1704,6 +1704,32 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a definite article plus masculine singular Qal participle composite", () => {
+        const parsed = parseHebrewMorphology("HTd/Vqrxms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqrxms",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Participle active · Singular · Masculine",
+        );
+    });
+
     it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HTo/Sp3ms");
 
