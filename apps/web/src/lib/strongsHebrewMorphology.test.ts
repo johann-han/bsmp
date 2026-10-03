@@ -686,6 +686,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a conjunction plus both-gender singular construct noun", () => {
+        const parsed = parseHebrewMorphology("HCc/Ncbsc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.summary).toContain("Conjunction · Conjunctive");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Singular · Both",
+        );
+    });
+
     it("decodes a conjunction plus inseparable-preposition article and noun composite", () => {
         const parsed = parseHebrewMorphology("HCc/Tp/Ncfsa");
 
