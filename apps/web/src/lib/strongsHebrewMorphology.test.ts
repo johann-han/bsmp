@@ -315,6 +315,26 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the pinned TAHOT Hophal perfect common plural form", () => {
+        expect(parseHebrewMorphology("HVHp3cp")).toMatchObject({
+            language: "H",
+            code: "HVHp3cp",
+            partOfSpeech: "Verb",
+            qualifier: "Hophal",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVHp3cp").summary).toContain(
+            "Verb · Hophal · Perfect · 3rd person · Plural · Common",
+        );
+    });
+
     it("decodes the pinned TAHOT Hophal passive participle feminine plural construct form", () => {
         expect(parseHebrewMorphology("HVHsfpc")).toMatchObject({
             language: "H",
