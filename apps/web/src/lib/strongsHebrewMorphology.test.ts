@@ -703,6 +703,28 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an article plus feminine adjective composite", () => {
+        const parsed = parseHebrewMorphology("HTd/Aafsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HAafsa",
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Adjective · Absolute · Singular · Feminine",
+        );
+    });
+
     it("decodes an article plus masculine dual noun composite", () => {
         const parsed = parseHebrewMorphology("HTd/Ncmda");
 
