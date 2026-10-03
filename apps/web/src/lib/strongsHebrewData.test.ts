@@ -4,6 +4,10 @@ import { __test__ } from "./strongsHebrewData";
 
 const { parseTahotVerse, findTahotSegment, baseStrong } = __test__();
 
+const GENESIS_9_21_07_QERE = [
+    "Gen.9.21#07=Q(K)\tאָהֳלֽ/וֹ\\׃\t'o.ho.L/o\ttent/ his\t{H0168G}/H9023\\H9016\tHNcmsc/Sp3ms\tK= 'o.ho.Lo/h (אָהֳלֹ/ה\\׃) \"tent/ his\" (H0168G/H9023\\H9016=HNcbsc/Sp3ms)\tL= אָהֳלֹֽ/ה\\׃ ¦ ;\tH0168G\t\t\t{H0168G=אֹ֫הֶל=: tent»tent:1_tent}/H9023=Ps3m=his\\H9016=׃=verseEnd",
+].join("\n");
+
 const GENESIS_1_2_REPEATED_STRONG = [
     "Gen.1.2#06=L\tעַל\\־\t'al-\t[was] over\t{H5921A}\\H9014\tHR\t\t\tH5921A_A\t\t\t{H5921A=עַל=upon}\\H9014=־=link",
     "Gen.1.2#12=L\tעַל\\־\t'al-\tover\t{H5921A}\\H9014\tHR\t\t\tH5921A_B\t\t\t{H5921A=עַל=upon}\\H9014=־=link",
@@ -37,6 +41,54 @@ describe("TAHOT Hebrew word alignment", () => {
             dStrongs: "H9003/{H7225G}",
             grammar: "HR/Ncfsa",
         });
+    });
+
+    it("preserves published Qere/Ketiv provenance on a composite word", () => {
+        const words = parseTahotVerse(
+            GENESIS_9_21_07_QERE,
+            "Gen.9.21",
+        );
+
+        expect(words[0]).toMatchObject({
+            location: "Gen.9.21#07=Q(K)",
+            type: "Q(K)",
+            hebrew: "אָהֳלֽ/וֹ\\׃",
+            dStrongs: "{H0168G}/H9023\\H9016",
+            grammar: "HNcmsc/Sp3ms",
+        });
+
+        const match = findTahotSegment(words, "H0168", 1);
+
+        expect(match?.originalForm).toBe("אָהֳלֽ");
+        expect(match?.morphemes).toMatchObject([
+            {
+                originalForm: "אָהֳלֽ",
+                role: "root",
+                strongsNumbers: ["H0168G"],
+                sourceStrongSegment: "{H0168G}",
+                sourceGrammarSegment: "HNcmsc",
+                matchedStrong: true,
+                morphology: {
+                    language: "H",
+                    code: "HNcmsc",
+                    state: "Construct",
+                },
+            },
+            {
+                originalForm: "וֹ",
+                role: "suffix",
+                strongsNumbers: ["H9023", "H9016"],
+                sourceStrongSegment: "H9023\\H9016",
+                sourceGrammarSegment: "Sp3ms",
+                matchedStrong: false,
+                morphology: {
+                    language: "H",
+                    code: "HSp3ms",
+                    partOfSpeech: "Suffix",
+                    qualifier: "Pronominal",
+                },
+            },
+        ]);
     });
 
     it("selects the second repeated Strong's occurrence within a verse", () => {
