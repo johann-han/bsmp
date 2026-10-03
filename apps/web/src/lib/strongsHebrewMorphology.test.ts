@@ -362,6 +362,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures Hiphil jussive verb", () => {
+        expect(parseHebrewMorphology("HVhj3fs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Jussive",
+            mood: "Jussive",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes a preposition plus Hiphil infinitive-construct composite", () => {
         const parsed = parseHebrewMorphology("HR/Vhc");
 
