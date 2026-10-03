@@ -1269,6 +1269,36 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a preposition plus construct noun and third-person feminine suffix composite", () => {
+        const parsed = parseHebrewMorphology("HR/Ncmsc/Sp3fs");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3fs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain("Noun · Common · Construct · Singular · Masculine");
+        expect(parsed.summary).toContain("Suffix · Pronominal · 3rd person · Singular · Feminine");
+    });
+
     it("decodes a direct-object-marker plus pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HTo/Sp3ms");
 
