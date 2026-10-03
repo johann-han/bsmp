@@ -170,6 +170,16 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a standard adjective", () => {
+        expect(parseHebrewMorphology("HAamsa")).toMatchObject({
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+    });
+
     it("decodes an adjective with an unspecified gender placeholder", () => {
         expect(parseHebrewMorphology("HAxpa")).toMatchObject({
             partOfSpeech: "Adjective",
