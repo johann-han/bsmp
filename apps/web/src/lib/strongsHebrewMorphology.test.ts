@@ -714,6 +714,29 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a conjunctive conjunction plus Qal jussive composite", () => {
+        const parsed = parseHebrewMorphology("HCc/Vqj3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HCc",
+            partOfSpeech: "Conjunction",
+            qualifier: "Conjunctive",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqj3mp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Jussive",
+            mood: "Jussive",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+    });
+
     it("decodes a conjunction plus imperative and pronominal-suffix composite", () => {
         const parsed = parseHebrewMorphology("HCc/Vqv2mp/Sp3fs");
 
