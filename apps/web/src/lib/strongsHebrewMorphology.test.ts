@@ -944,6 +944,44 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Niphal infinitive-suffix composite", () => {
+        const parsed = parseHebrewMorphology("HR/VNc/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVNc",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Verb · Niphal · Infinitive construct",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("decodes a preposition plus Qal infinitive-construct composite", () => {
         const parsed = parseHebrewMorphology("HR/Vqc");
 
