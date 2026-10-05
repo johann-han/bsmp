@@ -2808,6 +2808,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures not-yet adjective", () => {
+        expect(parseHebrewMorphology("HAcbsa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Absolute",
+            gender: "Both",
+            number: "Singular",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HAcbsa").summary).toContain(
+            "Adjective · Cardinal number · Absolute · Singular · Both",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
