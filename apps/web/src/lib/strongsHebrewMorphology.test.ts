@@ -228,7 +228,7 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HVqrxfs")).toMatchObject({
             partOfSpeech: "Verb",
             form: "Participle active",
-            qualifier: "Qal · Absolute",
+            qualifier: "Qal",
             person: null,
             gender: "Feminine",
             number: "Singular",
@@ -2555,7 +2555,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Particle · Definite article");
         expect(parsed.summary).toContain(
-            "Verb · Qal · Absolute · Participle active · Singular · Masculine",
+            "Verb · Qal · Participle active · Singular · Masculine",
         );
     });
 
