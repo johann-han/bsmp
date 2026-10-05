@@ -1093,7 +1093,7 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toBe("Preposition · Preposition");
     });
 
-    it("decodes a conjunction plus preposition and plural-noun composite", () => {
+    it("decodes a conjunction plus both-gender plural construct noun composite", () => {\n        const parsed = parseHebrewMorphology("HCc/Ncbsc");\n\n        expect(parsed.segments).toHaveLength(2);\n        expect(parsed.segments?.[0]).toMatchObject({\n            code: "HCc",\n            partOfSpeech: "Conjunction",\n            qualifier: "Conjunctive",\n        });\n        expect(parsed.segments?.[1]).toMatchObject({\n            code: "HNcbsc",\n            partOfSpeech: "Noun",\n            qualifier: "Common · Construct",\n            gender: "Both",\n            number: "Plural",\n            state: "Construct",\n        });\n\n        expect(parsed.summary).toContain("Conjunction · Conjunctive");\n        expect(parsed.summary).toContain(\n            "Noun · Common · Construct · Plural · Both",\n        );\n    });\n\n    it("decodes a conjunction plus preposition and plural-noun composite", () => {
         const parsed = parseHebrewMorphology("HCc/R/Ncmpa");
 
         expect(parsed.segments).toHaveLength(3);
