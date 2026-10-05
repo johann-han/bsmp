@@ -4848,6 +4848,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures Hiphil imperative 2fs", () => {
+        expect(parseHebrewMorphology("HVhv2fs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVhv2fs").summary).toContain(
+            "Verb · Hiphil · Imperative · Imperative · 2nd person · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
