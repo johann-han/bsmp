@@ -3041,6 +3041,30 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures conjunction plus preposition plus adverb", () => {
+        const parsed = parseHebrewMorphology("HC/R/D");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HD",
+            partOfSpeech: "Adverb",
+            qualifier: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain("Adverb");
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
