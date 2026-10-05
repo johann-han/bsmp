@@ -2995,6 +2995,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Qal active participle", () => {
+        expect(parseHebrewMorphology("HVqrmsa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Absolute",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqrmsa").summary).toContain(
+            "Verb · Qal · Absolute · Participle active · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
