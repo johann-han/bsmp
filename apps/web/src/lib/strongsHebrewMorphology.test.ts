@@ -89,6 +89,23 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures standalone proper-name noun", () => {
+        expect(parseHebrewMorphology("HNp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Proper name",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HNp").summary).toBe(
+            "Noun · Proper name",
+        );
+    });
+
     it("decodes a proper-name noun", () => {
         expect(parseHebrewMorphology("HNpmsa")).toMatchObject({
             partOfSpeech: "Noun",
