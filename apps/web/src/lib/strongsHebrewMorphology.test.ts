@@ -4779,6 +4779,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures definite article plus gentilic feminine plural noun composite", () => {
+        const parsed = parseHebrewMorphology("HTd/Ngfpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNgfpa",
+            partOfSpeech: "Noun",
+            qualifier: "Gentilic · Absolute",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Noun · Gentilic · Absolute · Plural · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
