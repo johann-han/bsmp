@@ -306,7 +306,7 @@ describe("Hebrew morphology", () => {
             language: "H",
             partOfSpeech: "Verb",
             qualifier: "Qal",
-            form: "Sequential perfect",
+            form: "Imperfect",
             person: "3rd",
             gender: "Masculine",
             number: "Singular",
@@ -470,7 +470,7 @@ describe("Hebrew morphology", () => {
             code: "HVhq3ms",
             partOfSpeech: "Verb",
             qualifier: "Hiphil",
-            form: "Imperfect",
+            form: "Sequential perfect",
             person: "3rd",
             gender: "Masculine",
             number: "Singular",
@@ -480,7 +480,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Conjunction");
         expect(parsed.summary).toContain(
-            "Verb · Hiphil · Sequential perfect · 3rd person · Singular · Masculine",
+            "Verb · Hiphil · Imperfect · 3rd person · Singular · Masculine",
         );
     });
 
