@@ -2851,6 +2851,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures particle conjunction", () => {
+        expect(parseHebrewMorphology("HTc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Particle",
+            qualifier: null,
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HTc").summary).toBe("Particle");
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
