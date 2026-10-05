@@ -2866,6 +2866,28 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HTc").summary).toBe("Particle");
     });
 
+    it("decodes the next Genesis 2 Open Scriptures preposition plus proper-name noun", () => {
+        const parsed = parseHebrewMorphology("HR/Npl");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNpl",
+            partOfSpeech: "Noun",
+            qualifier: "Proper name",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain("Noun · Proper name");
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
