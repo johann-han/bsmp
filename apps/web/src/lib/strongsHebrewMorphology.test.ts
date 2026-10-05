@@ -4300,6 +4300,22 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures interrogative particle", () => {
+        expect(parseHebrewMorphology("HTi")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Particle",
+            qualifier: "Interrogative",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HTi").summary).toContain(
+            "Particle · Interrogative",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
