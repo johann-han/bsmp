@@ -6021,7 +6021,7 @@ describe("Hebrew morphology", () => {
         );
     });
 
-    it("decodes the next Exodus 3 Open Scriptures Qal active participle feminine singular construct", () => {
+    it("decodes the next Exodus 3 Open Scriptures Qal active participle feminine singular in construct", () => {
         expect(parseHebrewMorphology("HVqrfsc")).toMatchObject({
             language: "H",
             partOfSpeech: "Verb",
