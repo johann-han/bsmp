@@ -1550,6 +1550,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the first Genesis 2 Open Scriptures Pual sequential-imperfect composite", () => {
+        const parsed = parseHebrewMorphology("HC/VPw3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVPw3mp",
+            partOfSpeech: "Verb",
+            qualifier: "Pual",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Pual · Sequential imperfect · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("decodes a vav-consecutive plus Hiphil sequential-imperfect composite", () => {
         const parsed = parseHebrewMorphology("HCv/Vhw3ms");
 
