@@ -200,6 +200,26 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Qal imperfect first-person common singular", () => {
+        expect(parseHebrewMorphology("HVqi1cs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqi1cs").summary).toContain(
+            "Verb · Qal · Imperfect · 1st person · Singular · Common",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures Qal infinitive construct", () => {
         expect(parseHebrewMorphology("HVqc")).toMatchObject({
             language: "H",
