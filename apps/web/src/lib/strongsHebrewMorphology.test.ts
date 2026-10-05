@@ -4802,6 +4802,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures conjunction plus Hiphil imperfect 3fs composite", () => {
+        const parsed = parseHebrewMorphology("HC/Vhi3fs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVhi3fs",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Imperfect · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
