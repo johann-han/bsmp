@@ -5355,6 +5355,25 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Particle · Interrogative");
     });
 
+    it("decodes the next Exodus 2 Open Scriptures Hiphil imperfect 2ms", () => {
+        expect(parseHebrewMorphology("HVhi2ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperfect",
+            mood: null,
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVhi2ms").summary).toContain(
+            "Verb · Hiphil · Imperfect · 2nd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
