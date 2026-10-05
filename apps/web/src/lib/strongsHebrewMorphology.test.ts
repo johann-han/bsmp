@@ -169,6 +169,18 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures standalone conjunction", () => {
+        expect(parseHebrewMorphology("HC")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+
+        expect(parseHebrewMorphology("HC").summary).toContain(
+            "Conjunction",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures preposition plus first-person common-plural suffix", () => {
         const parsed = parseHebrewMorphology("HR/Sp1cp");
 
