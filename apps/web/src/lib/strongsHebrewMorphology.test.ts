@@ -2888,6 +2888,25 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Noun · Proper name");
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Hiphil sequential-imperfect verb", () => {
+        expect(parseHebrewMorphology("HVhw3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVhw3ms").summary).toContain(
+            "Verb · Hiphil · Sequential imperfect · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
