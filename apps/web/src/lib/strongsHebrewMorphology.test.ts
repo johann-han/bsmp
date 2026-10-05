@@ -5590,6 +5590,34 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures demonstrative particle plus 1cs suffix composite", () => {
+        const parsed = parseHebrewMorphology("HTm/Sp1cs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTm",
+            partOfSpeech: "Particle",
+            qualifier: "Demonstrative",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Particle · Demonstrative");
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 1st person · Singular · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
