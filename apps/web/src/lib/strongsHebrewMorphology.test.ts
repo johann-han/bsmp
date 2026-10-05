@@ -5730,6 +5730,22 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures personal pronoun 1cs", () => {
+        expect(parseHebrewMorphology("HPp1cs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Pronoun",
+            qualifier: "Personal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HPp1cs").summary).toContain(
+            "Pronoun · Personal · 1st person · Singular · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
