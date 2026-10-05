@@ -4508,6 +4508,35 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures conjunction plus definite-article preposition and feminine noun composite", () => {
+        const parsed = parseHebrewMorphology("HC/Rd/Ncfsa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HRd",
+            partOfSpeech: "Preposition",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcfsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Preposition · Definite article");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
