@@ -438,6 +438,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Hiphil perfect verb", () => {
+        expect(parseHebrewMorphology("HVhp3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVhp3ms").summary).toContain(
+            "Verb · Hiphil · Perfect · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("decodes a Hiphil imperfect first-person common singular verb", () => {
         expect(parseHebrewMorphology("HVhi1cs")).toMatchObject({
             language: "H",
