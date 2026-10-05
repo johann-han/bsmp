@@ -4067,6 +4067,22 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures affirmation particle", () => {
+        expect(parseHebrewMorphology("HTa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Particle",
+            qualifier: "Affirmation",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HTa").summary).toContain(
+            "Particle · Affirmation",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
