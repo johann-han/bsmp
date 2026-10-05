@@ -644,6 +644,22 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes an Open Scriptures interrogative pronoun", () => {
+        expect(parseHebrewMorphology("HPi")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Pronoun",
+            qualifier: "Interrogative",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HPi").summary).toContain(
+            "Pronoun · Interrogative",
+        );
+    });
+
     it("decodes a demonstrative pronoun", () => {
         expect(parseHebrewMorphology("HPd")).toMatchObject({
             partOfSpeech: "Pronoun",
