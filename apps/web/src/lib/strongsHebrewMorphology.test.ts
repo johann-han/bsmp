@@ -3977,6 +3977,35 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures Qal imperative with paragogic-he suffix", () => {
+        const parsed = parseHebrewMorphology("HVqv2ms/Sh");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVqv2ms",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperative",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSh",
+            partOfSpeech: "Suffix",
+            qualifier: "Paragogic he",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Imperative · Imperative · 2nd person · Singular · Masculine",
+        );
+        expect(parsed.summary).toContain("Suffix · Paragogic he");
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
