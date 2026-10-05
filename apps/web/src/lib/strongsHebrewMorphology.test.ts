@@ -3887,6 +3887,30 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Noun · Proper name");
     });
 
+    it("decodes the next Exodus 1 Open Scriptures article plus personal pronoun", () => {
+        const parsed = parseHebrewMorphology("HTd/Pp3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HPp3ms",
+            partOfSpeech: "Pronoun",
+            qualifier: "Personal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Pronoun · Personal · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
