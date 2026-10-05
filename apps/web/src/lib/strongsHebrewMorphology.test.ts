@@ -1599,6 +1599,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures conjunction/construct-noun composite", () => {
+        const parsed = parseHebrewMorphology("HC/Ncmsc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Singular · Masculine",
+        );
+    });
+
     it("decodes a preposition plus masculine singular construct noun composite", () => {
         const parsed = parseHebrewMorphology("HR/Ncmsc");
 
