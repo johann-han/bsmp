@@ -2785,6 +2785,29 @@ describe("Hebrew morphology", () => {
         expect(() => parseHebrewMorphology("GNcfsa")).toThrow(/H or A/i);
     });
 
+    it("decodes the next Genesis 2 Open Scriptures definite-article preposition plus suffix composite", () => {
+        const parsed = parseHebrewMorphology("HRd/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HRd",
+            partOfSpeech: "Preposition",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain("Preposition · Definite article");
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
