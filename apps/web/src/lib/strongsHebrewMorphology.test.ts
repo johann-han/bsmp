@@ -4587,6 +4587,25 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Noun · Proper name");
     });
 
+    it("decodes the next Exodus 2 Open Scriptures Qal active participle feminine plural", () => {
+        expect(parseHebrewMorphology("HVqrfpa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Participle active",
+            person: null,
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqrfpa").summary).toContain(
+            "Verb · Qal · Participle active · Plural · Feminine · Absolute",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
