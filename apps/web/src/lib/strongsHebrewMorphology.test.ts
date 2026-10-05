@@ -5272,6 +5272,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures gentilic masculine plural absolute noun", () => {
+        expect(parseHebrewMorphology("HNgmpa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Gentilic · Absolute",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HNgmpa").summary).toContain(
+            "Noun · Gentilic · Absolute · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
