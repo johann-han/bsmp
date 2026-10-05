@@ -6118,3 +6118,4 @@ describe("Hebrew morphology", () => {
         );
     });
 });
+
