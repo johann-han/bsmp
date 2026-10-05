@@ -99,6 +99,21 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the next Genesis 2 Open Scriptures feminine plural construct noun", () => {
+        expect(parseHebrewMorphology("HNcfpc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Construct",
+        });
+
+        expect(parseHebrewMorphology("HNcfpc").summary).toContain(
+            "Noun · Common · Construct · Plural · Feminine",
+        );
+    });
+
     it("decodes a gentilic noun", () => {
         expect(parseHebrewMorphology("HNgmsa")).toMatchObject({
             partOfSpeech: "Noun",
