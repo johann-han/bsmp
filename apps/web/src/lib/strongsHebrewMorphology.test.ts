@@ -6408,6 +6408,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures conjunction plus Qal sequential perfect 3cp composite", () => {
+        const parsed = parseHebrewMorphology("HC/Vqq3cp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqq3cp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Sequential perfect",
+            person: "3rd",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Sequential perfect · 3rd person · Plural · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
