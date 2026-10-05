@@ -3850,6 +3850,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures cardinal-number adjective", () => {
+        expect(parseHebrewMorphology("HAcbpa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Absolute",
+            gender: "Both",
+            number: "Plural",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HAcbpa").summary).toContain(
+            "Adjective · Cardinal number · Absolute · Plural · Both",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
