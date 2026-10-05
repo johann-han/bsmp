@@ -6346,6 +6346,39 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Suffix · Paragogic nun");
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Qal perfect plus 1cs suffix composite", () => {
+        const parsed = parseHebrewMorphology("HVqp3ms/Sp1cs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVqp3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Perfect · 3rd person · Singular · Masculine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 1st person · Singular · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
