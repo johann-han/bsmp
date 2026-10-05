@@ -332,6 +332,34 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a masculine plural construct noun with a third-person suffix", () => {
+        const parsed = parseHebrewMorphology("HNcmpc/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Masculine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("decodes a both-gender plural construct noun with a first-person suffix", () => {
         const parsed = parseHebrewMorphology("HNcbpc/Sp1bs");
 
