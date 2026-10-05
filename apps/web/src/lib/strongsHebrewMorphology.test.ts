@@ -7,7 +7,7 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HNcbsa")).toMatchObject({
             language: "H",
             partOfSpeech: "Noun",
-            qualifier: "Common · Absolute",
+            qualifier: "Adjective · Absolute",
             gender: "Both",
             number: "Singular",
             state: "Absolute",
@@ -6017,7 +6017,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Conjunction");
         expect(parsed.summary).toContain(
-            "Adjective · Common · Absolute · Singular · Feminine",
+            "Adjective · Adjective · Absolute · Singular · Feminine",
         );
     });
 
