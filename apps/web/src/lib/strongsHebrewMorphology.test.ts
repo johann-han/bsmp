@@ -332,6 +332,34 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a both-gender plural construct noun with a first-person suffix", () => {
+        const parsed = parseHebrewMorphology("HNcbpc/Sp1bs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcbpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1bs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Both",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Both",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 1st person · Singular · Both",
+        );
+    });
+
     it("decodes a Piel imperfect first-person common singular verb", () => {
         expect(parseHebrewMorphology("HVpi1cs")).toMatchObject({
             language: "H",
