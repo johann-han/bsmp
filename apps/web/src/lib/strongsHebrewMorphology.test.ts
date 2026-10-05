@@ -4210,6 +4210,24 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Particle · Relative");
     });
 
+    it("decodes the next Exodus 1 Open Scriptures Piel imperfect 3mp", () => {
+        expect(parseHebrewMorphology("HVpi3mp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Imperfect",
+            mood: null,
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HVpi3mp").summary).toContain(
+            "Verb · Piel · Imperfect · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
