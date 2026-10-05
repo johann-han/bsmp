@@ -6315,6 +6315,37 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Qal imperfect plus paragogic nun", () => {
+        const parsed = parseHebrewMorphology("HVqi2mp/Sn");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVqi2mp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSn",
+            partOfSpeech: "Suffix",
+            qualifier: "Paragogic nun",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Imperfect · 2nd person · Plural · Masculine",
+        );
+        expect(parsed.summary).toContain("Suffix · Paragogic nun");
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
