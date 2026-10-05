@@ -5524,6 +5524,26 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Qal passive participle masculine singular absolute", () => {
+        const parsed = parseHebrewMorphology("HVQsmsa");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal passive · Absolute",
+            form: "Participle passive",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal passive · Absolute · Participle passive · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
