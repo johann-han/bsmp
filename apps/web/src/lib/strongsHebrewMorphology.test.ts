@@ -5833,6 +5833,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures preposition plus both-gender plural construct noun composite", () => {
+        const parsed = parseHebrewMorphology("HR/Ncbpc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Both",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
