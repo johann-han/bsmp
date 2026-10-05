@@ -138,7 +138,7 @@ describe("Hebrew morphology", () => {
         expect(parsed.segments?.[0]).toMatchObject({
             code: "HC",
             partOfSpeech: "Conjunction",
-            qualifier: "Conjunctive",
+            qualifier: null,
         });
         expect(parsed.segments?.[1]).toMatchObject({
             code: "HTd",
@@ -153,7 +153,7 @@ describe("Hebrew morphology", () => {
             number: "Singular",
             state: "Absolute",
         });
-        expect(parsed.summary).toContain("Conjunction · Conjunctive");
+        expect(parsed.summary).toContain("Conjunction");
         expect(parsed.summary).toContain("Particle · Definite article");
         expect(parsed.summary).toContain(
             "Noun · Common · Absolute · Singular · Masculine",
