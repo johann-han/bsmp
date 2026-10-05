@@ -5138,7 +5138,7 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HVhrmsa")).toMatchObject({
             language: "H",
             partOfSpeech: "Verb",
-            qualifier: "Hiphil",
+            qualifier: "Hiphil · Absolute",
             form: "Participle active",
             person: null,
             gender: "Masculine",
