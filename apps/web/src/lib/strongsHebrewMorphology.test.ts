@@ -2164,6 +2164,33 @@ describe("Hebrew morphology", () => {
         expect(() => parseHebrewMorphology("GNcfsa")).toThrow(/H or A/i);
     });
 
+    it("decodes the first new Exodus 2 Open Scriptures Hithpael sequential-imperfect composite", () => {
+        const parsed = parseHebrewMorphology("HC/Vtw3fs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVtw3fs",
+            partOfSpeech: "Verb",
+            qualifier: "Hithpael",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Hithpael · Sequential imperfect · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
