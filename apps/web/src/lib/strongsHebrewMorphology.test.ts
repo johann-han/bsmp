@@ -169,6 +169,37 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Qal infinitive-construct with second-person masculine singular suffix", () => {
+        const parsed = parseHebrewMorphology("HVqc/Sp2ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVqc",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp2ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Infinitive construct",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 2nd person · Singular · Masculine",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures standalone conjunction", () => {
         expect(parseHebrewMorphology("HC")).toMatchObject({
             language: "H",
