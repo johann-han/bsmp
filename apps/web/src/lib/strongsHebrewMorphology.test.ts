@@ -480,7 +480,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Conjunction");
         expect(parsed.summary).toContain(
-            "Verb · Hiphil · Imperfect · 3rd person · Singular · Masculine",
+            "Verb · Hiphil · Sequential perfect · 3rd person · Singular · Masculine",
         );
     });
 
