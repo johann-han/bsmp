@@ -3169,7 +3169,7 @@ describe("Hebrew morphology", () => {
         expect(parsed.segments?.[1]).toMatchObject({
             code: "HVqrmsa",
             partOfSpeech: "Verb",
-            qualifier: "Qal",
+            qualifier: "Qal · Absolute",
             form: "Participle active",
             person: null,
             gender: "Masculine",
@@ -3178,7 +3178,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Particle · Definite article");
         expect(parsed.summary).toContain(
-            "Verb · Qal · Participle active · Singular · Masculine",
+            "Verb · Qal · Absolute · Participle active · Singular · Masculine",
         );
     });
 
