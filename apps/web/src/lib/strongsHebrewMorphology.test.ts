@@ -1046,6 +1046,35 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the next Genesis 2 Open Scriptures conjunction/article/noun composite", () => {
+        const parsed = parseHebrewMorphology("HC/Td/Ncbsa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcbsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Both",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Singular · Both",
+        );
+    });
+
     it("decodes a three-part conjunction/article/noun composite", () => {
         const parsed = parseHebrewMorphology("HCc/Td/Ncfsa");
 
