@@ -5998,7 +5998,7 @@ describe("Hebrew morphology", () => {
         );
     });
 
-    it("decodes the next Exodus 3 Open Scriptures conjunction with feminine singular absolute adjective", () => {
+    it("decodes the next Exodus 3 Open Scriptures conjunction plus feminine singular absolute adjective", () => {
         const parsed = parseHebrewMorphology("HC/Aafsa");
 
         expect(parsed.segments).toHaveLength(2);
