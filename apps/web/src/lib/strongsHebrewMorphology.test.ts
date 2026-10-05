@@ -3204,6 +3204,30 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Noun · Proper name");
     });
 
+    it("decodes the next Genesis 2 Open Scriptures article plus third-feminine singular personal pronoun", () => {
+        const parsed = parseHebrewMorphology("HTd/Pp3fs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HPp3fs",
+            partOfSpeech: "Pronoun",
+            qualifier: "Personal",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Pronoun · Personal · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
