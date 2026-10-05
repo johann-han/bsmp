@@ -660,6 +660,23 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures demonstrative pronoun", () => {
+        expect(parseHebrewMorphology("HPdxcp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Pronoun",
+            qualifier: "Demonstrative",
+            person: null,
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HPdxcp").summary).toContain(
+            "Pronoun · Demonstrative · Plural · Common",
+        );
+    });
+
     it("decodes a demonstrative pronoun", () => {
         expect(parseHebrewMorphology("HPd")).toMatchObject({
             partOfSpeech: "Pronoun",
