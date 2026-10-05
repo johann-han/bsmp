@@ -3710,6 +3710,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures masculine plural construct noun", () => {
+        expect(parseHebrewMorphology("HNcmpc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+
+        expect(parseHebrewMorphology("HNcmpc").summary).toContain(
+            "Noun · Common · Construct · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
