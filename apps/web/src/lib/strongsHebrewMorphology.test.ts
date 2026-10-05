@@ -6642,6 +6642,22 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures cardinal adjective masculine singular construct", () => {
+        expect(parseHebrewMorphology("HAcmsc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Construct",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+
+        expect(parseHebrewMorphology("HAcmsc").summary).toContain(
+            "Adjective · Cardinal number · Construct · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
