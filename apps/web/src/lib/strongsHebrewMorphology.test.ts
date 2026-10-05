@@ -200,6 +200,24 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures conjunction plus direct object marker", () => {
+        const parsed = parseHebrewMorphology("HC/To");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTo",
+            partOfSpeech: "Particle",
+            qualifier: "Direct object marker",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Particle · Direct object marker");
+    });
+
     it("decodes the next Genesis 2 Open Scriptures relational preposition plus masculine singular suffix", () => {
         const parsed = parseHebrewMorphology("HR/R/Sp3ms");
 
