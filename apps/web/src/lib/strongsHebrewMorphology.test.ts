@@ -6768,7 +6768,7 @@ describe("Hebrew morphology", () => {
         );
     });
 
-    it("decodes the next Exodus 3 Open Scriptures conjunction plus Hiphil cohortative 1cs composite", () => {
+    it("decodes the next Exodus 3 Open Scriptures conjunction plus Hiphil sequential-perfect 1cs composite", () => {
         const parsed = parseHebrewMorphology("HC/Vhq1cs");
 
         expect(parsed.segments).toHaveLength(2);
@@ -6781,8 +6781,8 @@ describe("Hebrew morphology", () => {
             code: "HVhq1cs",
             partOfSpeech: "Verb",
             qualifier: "Hiphil",
-            form: "Cohortative",
-            mood: "Cohortative",
+            form: "Sequential perfect",
+            mood: null,
             person: "1st",
             gender: "Common",
             number: "Singular",
@@ -6791,7 +6791,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Conjunction");
         expect(parsed.summary).toContain(
-            "Verb · Hiphil · Cohortative · Cohortative · 1st person · Singular · Common",
+            "Verb · Hiphil · Sequential perfect · 1st person · Singular · Common",
         );
     });
 
