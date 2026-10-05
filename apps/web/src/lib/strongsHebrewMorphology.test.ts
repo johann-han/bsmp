@@ -4145,6 +4145,43 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures preposition-noun-suffix composite", () => {
+        const parsed = parseHebrewMorphology("HR/Ncfpc/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Preposition",
+        );
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Feminine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
