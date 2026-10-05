@@ -6768,6 +6768,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures conjunction plus Hiphil sequential-perfect 1cs composite", () => {
+        const parsed = parseHebrewMorphology("HC/Vhq1cs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVhq1cs",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Sequential perfect",
+            mood: null,
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Sequential perfect · 1st person · Singular · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
