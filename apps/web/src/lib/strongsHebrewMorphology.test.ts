@@ -3725,6 +3725,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures article plus Qal active participle", () => {
+        const parsed = parseHebrewMorphology("HTd/Vqrmpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqrmpa",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Absolute",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Absolute · Participle active · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
