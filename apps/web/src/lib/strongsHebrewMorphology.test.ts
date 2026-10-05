@@ -3065,6 +3065,25 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Adverb");
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Niphal imperfect verb", () => {
+        expect(parseHebrewMorphology("HVNi3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVNi3ms").summary).toContain(
+            "Verb · Niphal · Imperfect · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
