@@ -2823,6 +2823,34 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures definite-article preposition plus feminine noun", () => {
+        expect(parseHebrewMorphology("HRd/Ncfsa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Preposition",
+            qualifier: "Definite article",
+        });
+
+        expect(parseHebrewMorphology("HRd/Ncfsa").segments?.[0]).toMatchObject({
+            code: "HRd",
+            partOfSpeech: "Preposition",
+            qualifier: "Definite article",
+        });
+        expect(parseHebrewMorphology("HRd/Ncfsa").segments?.[1]).toMatchObject({
+            code: "HNcfsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parseHebrewMorphology("HRd/Ncfsa").summary).toContain(
+            "Preposition · Definite article",
+        );
+        expect(parseHebrewMorphology("HRd/Ncfsa").summary).toContain(
+            "Noun · Common · Absolute · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
