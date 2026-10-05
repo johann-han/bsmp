@@ -169,6 +169,26 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Qal infinitive absolute", () => {
+        expect(parseHebrewMorphology("HVqa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Infinitive absolute",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqa").summary).toContain(
+            "Verb · Qal · Infinitive absolute",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures definite article plus both-gender noun", () => {
         const parsed = parseHebrewMorphology("HTd/Ncbsa");
 
