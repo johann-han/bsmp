@@ -6685,6 +6685,35 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures construct noun plus 1cp suffix composite", () => {
+        const parsed = parseHebrewMorphology("HNcmpc/Sp1cp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Masculine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 1st person · Plural · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
