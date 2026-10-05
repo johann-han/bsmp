@@ -4114,6 +4114,37 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures Piel infinitive-suffix composite", () => {
+        const parsed = parseHebrewMorphology("HVpc/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVpc",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Piel · Infinitive construct",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
