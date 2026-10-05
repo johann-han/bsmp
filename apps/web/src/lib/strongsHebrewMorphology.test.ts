@@ -2949,6 +2949,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures conjunction plus adjective", () => {
+        const parsed = parseHebrewMorphology("HC/Aamsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HAamsa",
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Adjective · Absolute · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
