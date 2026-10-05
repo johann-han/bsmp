@@ -5496,6 +5496,34 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the first Exodus 3 Open Scriptures negative particle plus 3ms suffix composite", () => {
+        const parsed = parseHebrewMorphology("HTn/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTn",
+            partOfSpeech: "Particle",
+            qualifier: "Negative",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Particle · Negative");
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
