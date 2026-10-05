@@ -169,6 +169,30 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures preposition plus first-person common-plural suffix", () => {
+        const parsed = parseHebrewMorphology("HR/Sp1cp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 1st person · Plural · Common",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures conjunction plus preposition plus masculine construct noun", () => {
         const parsed = parseHebrewMorphology("HC/R/Ncmsc");
 
