@@ -6714,6 +6714,30 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures preposition plus common both-gender noun composite", () => {
+        const parsed = parseHebrewMorphology("HR/Ncbsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            person: null,
+            gender: "Both",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Singular · Both",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
