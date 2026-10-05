@@ -6658,6 +6658,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures conjunction plus Qal cohortative 1cp composite", () => {
+        const parsed = parseHebrewMorphology("HC/Vqh1cp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqh1cp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Cohortative",
+            mood: "Cohortative",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Cohortative · Cohortative · 1st person · Plural · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
