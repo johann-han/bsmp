@@ -4024,6 +4024,24 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures Qal imperfect feminine plural", () => {
+        expect(parseHebrewMorphology("HVqi3fp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            mood: null,
+            person: "3rd",
+            gender: "Feminine",
+            number: "Plural",
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HVqi3fp").summary).toContain(
+            "Verb · Qal · Imperfect · 3rd person · Plural · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
