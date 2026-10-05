@@ -4895,6 +4895,45 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures conjunction plus Hiphil imperative and 3ms suffix composite", () => {
+        const parsed = parseHebrewMorphology("HC/Vhv2fs/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVhv2fs",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Imperative · Imperative · 2nd person · Singular · Feminine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
