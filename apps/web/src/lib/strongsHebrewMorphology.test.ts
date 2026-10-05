@@ -5469,6 +5469,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the first Exodus 3 Open Scriptures conjunction plus Niphal sequential-imperfect composite", () => {
+        const parsed = parseHebrewMorphology("HC/VNw3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVNw3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Niphal · Sequential imperfect · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
