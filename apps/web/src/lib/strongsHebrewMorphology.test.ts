@@ -6462,6 +6462,22 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures adjective masculine plural construct", () => {
+        expect(parseHebrewMorphology("HAampc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Construct",
+            person: null,
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+
+        expect(parseHebrewMorphology("HAampc").summary).toContain(
+            "Adjective · Adjective · Construct · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
