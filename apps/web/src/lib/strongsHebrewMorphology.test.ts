@@ -1842,6 +1842,34 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures both-gender noun and plural suffix composite", () => {
+        const parsed = parseHebrewMorphology("HNcbsc/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcbsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Singular · Both",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("decodes a construct noun plus third-person masculine singular suffix composite", () => {
         const parsed = parseHebrewMorphology("HNcmsc/Sp3ms");
 
