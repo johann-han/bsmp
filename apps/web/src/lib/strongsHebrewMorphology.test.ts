@@ -4685,6 +4685,22 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures demonstrative pronoun masculine singular", () => {
+        expect(parseHebrewMorphology("HPdxms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Pronoun",
+            qualifier: "Demonstrative",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HPdxms").summary).toContain(
+            "Pronoun · Demonstrative · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
