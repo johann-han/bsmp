@@ -5287,6 +5287,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures Niphal participle masculine plural absolute", () => {
+        expect(parseHebrewMorphology("HVNrmpa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal · Absolute",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVNrmpa").summary).toContain(
+            "Verb · Niphal · Absolute · Participle active · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
