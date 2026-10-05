@@ -4439,6 +4439,37 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Particle · Negative");
     });
 
+    it("decodes the next Exodus 2 Open Scriptures Hiphil infinitive-suffix composite", () => {
+        const parsed = parseHebrewMorphology("HVhc/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVhc",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Verb · Hiphil · Infinitive construct");
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
