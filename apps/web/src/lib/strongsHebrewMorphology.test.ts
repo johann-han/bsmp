@@ -4001,7 +4001,7 @@ describe("Hebrew morphology", () => {
             state: null,
         });
         expect(parsed.summary).toContain(
-            "Verb · Qal · Imperative · 2nd person · Singular · Masculine",
+            "Verb · Qal · Imperative · Imperative · 2nd person · Singular · Masculine",
         );
         expect(parsed.summary).toContain("Suffix · Paragogic he");
     });
