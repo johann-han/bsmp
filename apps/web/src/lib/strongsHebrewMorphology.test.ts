@@ -5544,6 +5544,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Qal cohortative 1cs", () => {
+        expect(parseHebrewMorphology("HVqh1cs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Cohortative",
+            mood: "Cohortative",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVqh1cs").summary).toContain(
+            "Verb · Qal · Cohortative · Cohortative · 1st person · Singular · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
