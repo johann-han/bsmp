@@ -4316,6 +4316,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures Qal sequential-imperfect 3fs composite", () => {
+        const parsed = parseHebrewMorphology("HC/Vqw3fs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqw3fs",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Sequential imperfect · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
