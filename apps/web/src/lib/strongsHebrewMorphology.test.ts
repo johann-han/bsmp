@@ -5618,6 +5618,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Qal jussive 2ms", () => {
+        expect(parseHebrewMorphology("HVqj2ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Jussive",
+            mood: "Jussive",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVqj2ms").summary).toContain(
+            "Verb · Qal · Jussive · Jussive · 2nd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
