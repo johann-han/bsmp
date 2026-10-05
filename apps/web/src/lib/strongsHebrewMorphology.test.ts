@@ -169,6 +169,26 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Qal imperfect second masculine singular", () => {
+        expect(parseHebrewMorphology("HVqi2ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqi2ms").summary).toContain(
+            "Verb · Qal · Imperfect · 2nd person · Singular · Masculine",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures Qal infinitive absolute", () => {
         expect(parseHebrewMorphology("HVqa")).toMatchObject({
             language: "H",
