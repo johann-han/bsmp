@@ -2351,6 +2351,23 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the next Genesis 2 Open Scriptures relative particle", () => {
+        expect(parseHebrewMorphology("HTr")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Particle",
+            qualifier: "Relative",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HTr").summary).toBe(
+            "Particle · Relative",
+        );
+    });
+
     it("decodes an Open Scriptures interjection particle", () => {
         expect(parseHebrewMorphology("HTj")).toMatchObject({
             language: "H",
