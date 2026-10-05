@@ -3157,6 +3157,31 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures article plus Qal active participle", () => {
+        const parsed = parseHebrewMorphology("HTd/Vqrmsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqrmsa",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Participle active · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
