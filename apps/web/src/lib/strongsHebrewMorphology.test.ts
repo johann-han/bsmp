@@ -89,6 +89,21 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures both-gender singular construct noun", () => {
+        expect(parseHebrewMorphology("HNcbsc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Singular",
+            state: "Construct",
+        });
+
+        expect(parseHebrewMorphology("HNcbsc").summary).toContain(
+            "Noun · Common · Construct · Singular · Both",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures standalone proper-name noun", () => {
         expect(parseHebrewMorphology("HNp")).toMatchObject({
             language: "H",
