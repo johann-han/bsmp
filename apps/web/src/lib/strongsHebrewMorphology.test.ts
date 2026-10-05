@@ -6092,6 +6092,26 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Particle · Affirmation");
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Qal active participle masculine plural absolute", () => {
+        expect(parseHebrewMorphology("HVqrmpa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Absolute",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqrmpa").summary).toContain(
+            "Verb · Qal · Absolute · Participle active · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
