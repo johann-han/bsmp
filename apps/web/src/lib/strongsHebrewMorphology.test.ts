@@ -131,6 +131,35 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes the next Genesis 2 Open Scriptures conjunction plus article plus masculine noun", () => {
+        const parsed = parseHebrewMorphology("HC/Td/Ncmsa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcmsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Singular · Masculine",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures feminine plural construct noun", () => {
         expect(parseHebrewMorphology("HNcfpc")).toMatchObject({
             language: "H",
