@@ -4250,6 +4250,29 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Particle · Demonstrative");
     });
 
+    it("decodes the next Exodus 1 Open Scriptures preposition plus both-gender noun composite", () => {
+        const parsed = parseHebrewMorphology("HR/Ncbpc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Both",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
