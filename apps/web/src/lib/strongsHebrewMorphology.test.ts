@@ -5134,6 +5134,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures Hiphil active participle masculine singular", () => {
+        expect(parseHebrewMorphology("HVhrmsa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVhrmsa").summary).toContain(
+            "Verb · Hiphil · Absolute · Participle active · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
