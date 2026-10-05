@@ -6041,7 +6041,7 @@ describe("Hebrew morphology", () => {
         );
     });
 
-    it("decodes the next Exodus 3 Open Scriptures conjunction plus definite article and gentilic masculine singular noun", () => {
+    it("decodes the next Exodus 3 Open Scriptures conjunction plus definite article with gentilic masculine singular noun", () => {
         const parsed = parseHebrewMorphology("HC/Td/Ngmsa");
 
         expect(parsed.segments).toHaveLength(3);
