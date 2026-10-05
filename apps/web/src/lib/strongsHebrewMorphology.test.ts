@@ -6021,6 +6021,26 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Qal active participle feminine singular construct", () => {
+        expect(parseHebrewMorphology("HVqrfsc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Construct",
+            form: "Participle active",
+            person: null,
+            gender: "Feminine",
+            number: "Singular",
+            state: "Construct",
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqrfsc").summary).toContain(
+            "Verb · Qal · Construct · Participle active · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
