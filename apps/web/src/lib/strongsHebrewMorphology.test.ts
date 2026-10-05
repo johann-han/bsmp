@@ -89,6 +89,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures preposition plus both-gender singular construct noun", () => {
+        const parsed = parseHebrewMorphology("HR/Ncbsc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Singular · Both",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures conjunction plus Hiphil sequential-imperfect verb with suffix", () => {
         const parsed = parseHebrewMorphology("HC/Vhw3ms/Sp3ms");
 
