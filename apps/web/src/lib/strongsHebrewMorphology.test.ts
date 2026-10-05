@@ -4006,6 +4006,24 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Suffix · Paragogic he");
     });
 
+    it("decodes the next Exodus 1 Open Scriptures Hithpael cohortative", () => {
+        expect(parseHebrewMorphology("HVth1cp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hithpael",
+            form: "Cohortative",
+            mood: "Cohortative",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+        });
+
+        expect(parseHebrewMorphology("HVth1cp").summary).toContain(
+            "Verb · Hithpael · Cohortative · Cohortative · 1st person · Plural · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
