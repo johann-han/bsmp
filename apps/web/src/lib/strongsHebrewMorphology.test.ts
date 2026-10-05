@@ -6478,6 +6478,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Niphal perfect 3ms", () => {
+        expect(parseHebrewMorphology("HVNp3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVNp3ms").summary).toContain(
+            "Verb · Niphal · Perfect · 3rd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
