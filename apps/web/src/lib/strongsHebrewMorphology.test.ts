@@ -332,6 +332,24 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a Piel imperfect first-person common singular verb", () => {
+        expect(parseHebrewMorphology("HVpi1cs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Imperfect",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVpi1cs").summary).toContain(
+            "Verb · Piel · Imperfect · 1st person · Singular · Common",
+        );
+    });
+
     it("decodes a Hiphil imperfect first-person common singular verb", () => {
         expect(parseHebrewMorphology("HVhi1cs")).toMatchObject({
             language: "H",
