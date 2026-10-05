@@ -658,6 +658,23 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HR").summary).toBe("Preposition");
     });
 
+    it("decodes the next Genesis 2 Open Scriptures negative particle", () => {
+        expect(parseHebrewMorphology("HTn")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Particle",
+            qualifier: "Negative",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HTn").summary).toBe(
+            "Particle · Negative",
+        );
+    });
+
     it("decodes a definite article", () => {
         expect(parseHebrewMorphology("HTd")).toMatchObject({
             partOfSpeech: "Particle",
