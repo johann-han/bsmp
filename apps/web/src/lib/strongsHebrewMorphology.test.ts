@@ -301,6 +301,37 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a Qal imperfect verb with a first-person pronominal suffix", () => {
+        const parsed = parseHebrewMorphology("HVqi3ms/Sp1bs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVqi3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1bs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Both",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Imperfect · 3rd person · Singular · Masculine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 1st person · Singular · Both",
+        );
+    });
+
     it("decodes an Open Scriptures Qal jussive verb", () => {
         expect(parseHebrewMorphology("HVqj3ms")).toMatchObject({
             partOfSpeech: "Verb",
