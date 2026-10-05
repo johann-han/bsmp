@@ -5291,8 +5291,8 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HVNrmpa")).toMatchObject({
             language: "H",
             partOfSpeech: "Verb",
-            qualifier: "Niphal",
-            form: "Participle passive",
+            qualifier: "Niphal · Absolute",
+            form: "Participle active",
             person: null,
             gender: "Masculine",
             number: "Plural",
@@ -5302,7 +5302,7 @@ describe("Hebrew morphology", () => {
         });
 
         expect(parseHebrewMorphology("HVNrmpa").summary).toContain(
-            "Verb · Niphal · Absolute · Participle passive · Plural · Masculine",
+            "Verb · Niphal · Absolute · Participle active · Plural · Masculine",
         );
     });
 
