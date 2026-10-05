@@ -200,6 +200,26 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Genesis 2 Open Scriptures Qal infinitive construct", () => {
+        expect(parseHebrewMorphology("HVqc")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqc").summary).toContain(
+            "Verb · Qal · Infinitive construct",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures standalone conjunction", () => {
         expect(parseHebrewMorphology("HC")).toMatchObject({
             language: "H",
