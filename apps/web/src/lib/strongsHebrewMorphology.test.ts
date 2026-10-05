@@ -4958,6 +4958,30 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 2 Open Scriptures conjunction plus personal pronoun 1cs composite", () => {
+        const parsed = parseHebrewMorphology("HC/Pp1cs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HPp1cs",
+            partOfSpeech: "Pronoun",
+            qualifier: "Personal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Pronoun · Personal · 1st person · Singular · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
