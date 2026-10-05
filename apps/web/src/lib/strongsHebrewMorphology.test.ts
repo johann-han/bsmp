@@ -332,6 +332,24 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes a Hiphil imperfect first-person common singular verb", () => {
+        expect(parseHebrewMorphology("HVhi1cs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperfect",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+
+        expect(parseHebrewMorphology("HVhi1cs").summary).toContain(
+            "Verb · Hiphil · Imperfect · 1st person · Singular · Common",
+        );
+    });
+
     it("decodes an Open Scriptures Qal jussive verb", () => {
         expect(parseHebrewMorphology("HVqj3ms")).toMatchObject({
             partOfSpeech: "Verb",
