@@ -4083,6 +4083,37 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 1 Open Scriptures participle plus pronominal suffix composite", () => {
+        const parsed = parseHebrewMorphology("HVqrmpc/Sp1cp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVqrmpc",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Construct",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Construct · Participle active · Plural · Masculine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 1st person · Plural · Common",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
