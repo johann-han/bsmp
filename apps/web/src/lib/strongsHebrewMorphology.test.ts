@@ -5914,7 +5914,7 @@ describe("Hebrew morphology", () => {
         );
     });
 
-    it("decodes the next Exodus 3 Open Scriptures preposition plus Hiphil infinitive construct and 3ms suffix composite", () => {
+    it("decodes the next Exodus 3 Open Scriptures preposition plus Hiphil infinitive construct with 3ms suffix", () => {
         const parsed = parseHebrewMorphology("HR/Vhc/Sp3ms");
 
         expect(parsed.segments).toHaveLength(3);
