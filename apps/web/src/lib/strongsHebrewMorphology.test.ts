@@ -7514,6 +7514,27 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 4 Open Scriptures bare Hiphil imperative 2ms", () => {
+        const parsed = parseHebrewMorphology("HVhv2ms");
+
+        expect(parsed.segments).toHaveLength(1);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVhv2ms",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Imperative · Imperative · 2nd person · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
