@@ -7303,6 +7303,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 4 Open Scriptures absolute noun plus directional-he suffix composite", () => {
+        const parsed = parseHebrewMorphology("HNcbsa/Sd");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcbsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Both",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSd",
+            partOfSpeech: "Suffix",
+            qualifier: "Directional he",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Singular · Both",
+        );
+        expect(parsed.summary).toContain("Suffix · Directional he");
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
