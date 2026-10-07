@@ -7590,6 +7590,26 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 4 Open Scriptures Pual passive participle feminine singular absolute", () => {
+        const parsed = parseHebrewMorphology("HVPsfsa");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Pual · Absolute",
+            form: "Participle passive",
+            person: null,
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Pual · Absolute · Participle passive · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
