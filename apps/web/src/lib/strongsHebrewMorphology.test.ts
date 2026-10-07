@@ -7330,7 +7330,7 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Suffix · Directional he");
     });
 
-    it("decodes the next Exodus 4 Open Scriptures preposition plus both-gender singular construct noun and 3ms suffix composite", () => {
+    it("decodes the next Exodus 4 Open Scriptures preposition plus both-gender plural construct noun and 3ms suffix composite", () => {
         const parsed = parseHebrewMorphology("HR/Ncbpc/Sp3ms");
 
         expect(parsed.segments).toHaveLength(3);
@@ -7344,7 +7344,7 @@ describe("Hebrew morphology", () => {
             partOfSpeech: "Noun",
             qualifier: "Common · Construct",
             gender: "Both",
-            number: "Singular",
+            number: "Plural",
             state: "Construct",
         });
         expect(parsed.segments?.[2]).toMatchObject({
@@ -7358,7 +7358,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Preposition");
         expect(parsed.summary).toContain(
-            "Noun · Common · Construct · Singular · Both",
+            "Noun · Common · Construct · Plural · Both",
         );
         expect(parsed.summary).toContain(
             "Suffix · Pronominal · 3rd person · Singular · Masculine",
