@@ -7551,6 +7551,45 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toBe("Particle · Exhortation");
     });
 
+    it("decodes the next Exodus 4 Open Scriptures conjunction plus Hiphil sequential-imperfect and 3fs suffix composite", () => {
+        const parsed = parseHebrewMorphology("HC/Vhw3ms/Sp3fs");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVhw3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3fs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Sequential imperfect · 3rd person · Singular · Masculine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
