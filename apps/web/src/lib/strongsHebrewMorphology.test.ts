@@ -7208,6 +7208,34 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 4 Open Scriptures interrogative plus demonstrative pronoun composite", () => {
+        const parsed = parseHebrewMorphology("HTi/Pdxms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTi",
+            partOfSpeech: "Particle",
+            qualifier: "Interrogative",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HPdxms",
+            partOfSpeech: "Pronoun",
+            qualifier: "Demonstrative",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Particle · Interrogative");
+        expect(parsed.summary).toContain(
+            "Pronoun · Demonstrative · Singular · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
