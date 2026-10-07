@@ -7118,6 +7118,24 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 4 Open Scriptures conjunction plus interjection composite", () => {
+        const parsed = parseHebrewMorphology("HC/Tj");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTj",
+            partOfSpeech: "Particle",
+            qualifier: "Interjection",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Particle · Interjection");
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
