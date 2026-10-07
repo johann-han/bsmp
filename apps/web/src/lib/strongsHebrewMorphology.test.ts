@@ -7485,6 +7485,35 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 4 Open Scriptures masculine plural construct noun plus 3mp suffix composite", () => {
+        const parsed = parseHebrewMorphology("HNcmpc/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Masculine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
