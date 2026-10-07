@@ -7636,4 +7636,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+
+    it("decodes an Open Scriptures Hiphil imperfect third-person masculine singular verb", () => {
+        expect(parseHebrewMorphology("HVhi3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVhi3ms").summary).toContain(
+            "Verb · Hiphil · Imperfect · 3rd person · Singular · Masculine",
+        );
+    });
+
 });
