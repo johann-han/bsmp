@@ -6939,6 +6939,41 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures preposition plus feminine construct adjective and 3fs suffix composite", () => {
+        const parsed = parseHebrewMorphology("HR/Aafsc/Sp3fs");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HAafsc",
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Construct",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3fs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Adjective · Adjective · Construct · Singular · Feminine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
