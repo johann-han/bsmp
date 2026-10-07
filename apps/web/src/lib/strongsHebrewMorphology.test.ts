@@ -7104,7 +7104,7 @@ describe("Hebrew morphology", () => {
             code: "HVpq2mp",
             partOfSpeech: "Verb",
             qualifier: "Piel",
-            form: "Perfect",
+            form: "Sequential perfect",
             mood: null,
             person: "2nd",
             gender: "Masculine",
@@ -7114,7 +7114,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Conjunction");
         expect(parsed.summary).toContain(
-            "Verb · Piel · Perfect · 2nd person · Plural · Masculine",
+            "Verb · Piel · Sequential perfect · 2nd person · Plural · Masculine",
         );
     });
 
