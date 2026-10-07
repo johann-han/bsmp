@@ -7615,4 +7615,25 @@ describe("Hebrew morphology", () => {
             "Noun · Proper name · Title",
         );
     });
+
+    it("decodes an Open Scriptures Piel perfect third-person masculine singular verb", () => {
+        expect(parseHebrewMorphology("HVpp3ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVpp3ms").summary).toContain(
+            "Verb · Piel · Perfect · 3rd person · Singular · Masculine",
+        );
+    });
+
 });
