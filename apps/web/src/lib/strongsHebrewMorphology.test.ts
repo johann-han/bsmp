@@ -7637,3 +7637,460 @@ describe("Hebrew morphology", () => {
     });
 
 });
+
+describe("Global Open Scriptures morphology dimension coverage", () => {
+    it("covers global OSHB adjective dimension from 1Chr.5.21", () => {
+        const parsed = parseHebrewMorphology("HAcbda");
+        const target = parsed.segments?.find((item) => item.code === "HAcbda");
+        expect(target, "1Chr.5.21 · HAcbda").toMatchObject({"partOfSpeech":"Adjective","gender":"Both","number":"Dual","state":"Absolute"});
+        expect(target?.qualifier, "1Chr.5.21 · HAcbda").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from 1Chr.12.14", () => {
+        const parsed = parseHebrewMorphology("HAobpc");
+        const target = parsed.segments?.find((item) => item.code === "HAobpc");
+        expect(target, "1Chr.12.14 · HAobpc").toMatchObject({"partOfSpeech":"Adjective","gender":"Both","number":"Plural","state":"Construct"});
+        expect(target?.qualifier, "1Chr.12.14 · HAobpc").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from 2Chr.25.9", () => {
+        const parsed = parseHebrewMorphology("HR/Acbsc");
+        const target = parsed.segments?.find((item) => item.code === "HAcbsc");
+        expect(target, "2Chr.25.9 · HR/Acbsc").toMatchObject({"partOfSpeech":"Adjective","gender":"Both","number":"Singular","state":"Construct"});
+        expect(target?.qualifier, "2Chr.25.9 · HR/Acbsc").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from Dan.2.39", () => {
+        const parsed = parseHebrewMorphology("AAobsd");
+        const target = parsed.segments?.find((item) => item.code === "AAobsd");
+        expect(target, "Dan.2.39 · AAobsd").toMatchObject({"partOfSpeech":"Adjective","gender":"Both","number":"Singular","state":"Determined"});
+        expect(target?.qualifier, "Dan.2.39 · AAobsd").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from Ezra.4.24", () => {
+        const parsed = parseHebrewMorphology("AAocpa");
+        const target = parsed.segments?.find((item) => item.code === "AAocpa");
+        expect(target, "Ezra.4.24 · AAocpa").toMatchObject({"partOfSpeech":"Adjective","gender":"Common","number":"Plural","state":"Absolute"});
+        expect(target?.qualifier, "Ezra.4.24 · AAocpa").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from 1Chr.6.48", () => {
+        const parsed = parseHebrewMorphology("HAcfda");
+        const target = parsed.segments?.find((item) => item.code === "HAcfda");
+        expect(target, "1Chr.6.48 · HAcfda").toMatchObject({"partOfSpeech":"Adjective","gender":"Feminine","number":"Dual","state":"Absolute"});
+        expect(target?.qualifier, "1Chr.6.48 · HAcfda").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from 1Chr.4.5", () => {
+        const parsed = parseHebrewMorphology("HAcfdc");
+        const target = parsed.segments?.find((item) => item.code === "HAcfdc");
+        expect(target, "1Chr.4.5 · HAcfdc").toMatchObject({"partOfSpeech":"Adjective","gender":"Feminine","number":"Dual","state":"Construct"});
+        expect(target?.qualifier, "1Chr.4.5 · HAcfdc").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from 1Chr.22.8", () => {
+        const parsed = parseHebrewMorphology("HAafpa");
+        const target = parsed.segments?.find((item) => item.code === "HAafpa");
+        expect(target, "1Chr.22.8 · HAafpa").toMatchObject({"partOfSpeech":"Adjective","gender":"Feminine","number":"Plural","state":"Absolute"});
+        expect(target?.qualifier, "1Chr.22.8 · HAafpa").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from 2Kgs.8.12", () => {
+        const parsed = parseHebrewMorphology("HC/Aafpc/Sp3mp");
+        const target = parsed.segments?.find((item) => item.code === "HAafpc");
+        expect(target, "2Kgs.8.12 · HC/Aafpc/Sp3mp").toMatchObject({"partOfSpeech":"Adjective","gender":"Feminine","number":"Plural","state":"Construct"});
+        expect(target?.qualifier, "2Kgs.8.12 · HC/Aafpc/Sp3mp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from Dan.2.22", () => {
+        const parsed = parseHebrewMorphology("AAafpd/Td");
+        const target = parsed.segments?.find((item) => item.code === "AAafpd");
+        expect(target, "Dan.2.22 · AAafpd/Td").toMatchObject({"partOfSpeech":"Adjective","gender":"Feminine","number":"Plural","state":"Determined"});
+        expect(target?.qualifier, "Dan.2.22 · AAafpd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from Dan.4.27", () => {
+        const parsed = parseHebrewMorphology("AAafsd/Td");
+        const target = parsed.segments?.find((item) => item.code === "AAafsd");
+        expect(target, "Dan.4.27 · AAafsd/Td").toMatchObject({"partOfSpeech":"Adjective","gender":"Feminine","number":"Singular","state":"Determined"});
+        expect(target?.qualifier, "Dan.4.27 · AAafsd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from 1Chr.7.2", () => {
+        const parsed = parseHebrewMorphology("HC/Acmda");
+        const target = parsed.segments?.find((item) => item.code === "HAcmda");
+        expect(target, "1Chr.7.2 · HC/Acmda").toMatchObject({"partOfSpeech":"Adjective","gender":"Masculine","number":"Dual","state":"Absolute"});
+        expect(target?.qualifier, "1Chr.7.2 · HC/Acmda").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from Dan.2.30", () => {
+        const parsed = parseHebrewMorphology("AAampd/Td");
+        const target = parsed.segments?.find((item) => item.code === "AAampd");
+        expect(target, "Dan.2.30 · AAampd/Td").toMatchObject({"partOfSpeech":"Adjective","gender":"Masculine","number":"Plural","state":"Determined"});
+        expect(target?.qualifier, "Dan.2.30 · AAampd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB adjective dimension from Dan.2.15", () => {
+        const parsed = parseHebrewMorphology("AAamsd/Td");
+        const target = parsed.segments?.find((item) => item.code === "AAamsd");
+        expect(target, "Dan.2.15 · AAamsd/Td").toMatchObject({"partOfSpeech":"Adjective","gender":"Masculine","number":"Singular","state":"Determined"});
+        expect(target?.qualifier, "Dan.2.15 · AAamsd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB noun dimension from 1Chr.4.40", () => {
+        const parsed = parseHebrewMorphology("HNcbda");
+        const target = parsed.segments?.find((item) => item.code === "HNcbda");
+        expect(target, "1Chr.4.40 · HNcbda").toMatchObject({"partOfSpeech":"Noun","qualifier":"Common · Absolute","gender":"Both","number":"Dual","state":"Absolute"});
+        expect(target?.qualifier, "1Chr.4.40 · HNcbda").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB noun dimension from Dan.3.6", () => {
+        const parsed = parseHebrewMorphology("ANcbsd/Td");
+        const target = parsed.segments?.find((item) => item.code === "ANcbsd");
+        expect(target, "Dan.3.6 · ANcbsd/Td").toMatchObject({"partOfSpeech":"Noun","qualifier":"Common · Determined","gender":"Both","number":"Singular","state":"Determined"});
+        expect(target?.qualifier, "Dan.3.6 · ANcbsd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB noun dimension from 1Chr.13.8", () => {
+        const parsed = parseHebrewMorphology("HC/R/Ncfda");
+        const target = parsed.segments?.find((item) => item.code === "HNcfda");
+        expect(target, "1Chr.13.8 · HC/R/Ncfda").toMatchObject({"partOfSpeech":"Noun","qualifier":"Common · Absolute","gender":"Feminine","number":"Dual","state":"Absolute"});
+        expect(target?.qualifier, "1Chr.13.8 · HC/R/Ncfda").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB noun dimension from Dan.2.41", () => {
+        const parsed = parseHebrewMorphology("ANcfpd/Td");
+        const target = parsed.segments?.find((item) => item.code === "ANcfpd");
+        expect(target, "Dan.2.41 · ANcfpd/Td").toMatchObject({"partOfSpeech":"Noun","qualifier":"Common · Determined","gender":"Feminine","number":"Plural","state":"Determined"});
+        expect(target?.qualifier, "Dan.2.41 · ANcfpd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB noun dimension from Dan.2.5", () => {
+        const parsed = parseHebrewMorphology("ANcfsd/Td");
+        const target = parsed.segments?.find((item) => item.code === "ANcfsd");
+        expect(target, "Dan.2.5 · ANcfsd/Td").toMatchObject({"partOfSpeech":"Noun","qualifier":"Common · Determined","gender":"Feminine","number":"Singular","state":"Determined"});
+        expect(target?.qualifier, "Dan.2.5 · ANcfsd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB noun dimension from Dan.2.13", () => {
+        const parsed = parseHebrewMorphology("AC/Ncmpd/Td");
+        const target = parsed.segments?.find((item) => item.code === "ANcmpd");
+        expect(target, "Dan.2.13 · AC/Ncmpd/Td").toMatchObject({"partOfSpeech":"Noun","qualifier":"Common · Determined","gender":"Masculine","number":"Plural","state":"Determined"});
+        expect(target?.qualifier, "Dan.2.13 · AC/Ncmpd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB noun dimension from Dan.5.25", () => {
+        const parsed = parseHebrewMorphology("ANxxxa");
+        const target = parsed.segments?.find((item) => item.code === "ANxxxa");
+        expect(target, "Dan.5.25 · ANxxxa").toMatchObject({"partOfSpeech":"Noun","qualifier":"Unspecified · Absolute","gender":"Unspecified","number":"Unspecified","state":"Absolute"});
+        expect(target?.qualifier, "Dan.5.25 · ANxxxa").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from 1Chr.11.1", () => {
+        const parsed = parseHebrewMorphology("HPp1cp");
+        const target = parsed.segments?.find((item) => item.code === "HPp1cp");
+        expect(target, "1Chr.11.1 · HPp1cp").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Personal","person":"1st","gender":"Common","number":"Plural"});
+        expect(target?.qualifier, "1Chr.11.1 · HPp1cp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from Ezek.13.11", () => {
+        const parsed = parseHebrewMorphology("HC/Pp2fp");
+        const target = parsed.segments?.find((item) => item.code === "HPp2fp");
+        expect(target, "Ezek.13.11 · HC/Pp2fp").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Personal","person":"2nd","gender":"Feminine","number":"Plural"});
+        expect(target?.qualifier, "Ezek.13.11 · HC/Pp2fp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from 1Kgs.2.15", () => {
+        const parsed = parseHebrewMorphology("HPp2fs");
+        const target = parsed.segments?.find((item) => item.code === "HPp2fs");
+        expect(target, "1Kgs.2.15 · HPp2fs").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Personal","person":"2nd","gender":"Feminine","number":"Singular"});
+        expect(target?.qualifier, "1Kgs.2.15 · HPp2fs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from 1Chr.15.12", () => {
+        const parsed = parseHebrewMorphology("HPp2mp");
+        const target = parsed.segments?.find((item) => item.code === "HPp2mp");
+        expect(target, "1Chr.15.12 · HPp2mp").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Personal","person":"2nd","gender":"Masculine","number":"Plural"});
+        expect(target?.qualifier, "1Chr.15.12 · HPp2mp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from Dan.3.6", () => {
+        const parsed = parseHebrewMorphology("AC/Pf3bs");
+        const target = parsed.segments?.find((item) => item.code === "APf3bs");
+        expect(target, "Dan.3.6 · AC/Pf3bs").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Indefinite","person":"3rd","gender":"Both","number":"Singular"});
+        expect(target?.qualifier, "Dan.3.6 · AC/Pf3bs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from Dan.3.11", () => {
+        const parsed = parseHebrewMorphology("AC/Pf3cs");
+        const target = parsed.segments?.find((item) => item.code === "APf3cs");
+        expect(target, "Dan.3.11 · AC/Pf3cs").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Indefinite","person":"3rd","gender":"Common","number":"Singular"});
+        expect(target?.qualifier, "Dan.3.11 · AC/Pf3cs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from 1Chr.21.10", () => {
+        const parsed = parseHebrewMorphology("HR/Pp3fp");
+        const target = parsed.segments?.find((item) => item.code === "HPp3fp");
+        expect(target, "1Chr.21.10 · HR/Pp3fp").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Personal","person":"3rd","gender":"Feminine","number":"Plural"});
+        expect(target?.qualifier, "1Chr.21.10 · HR/Pp3fp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from Dan.2.40", () => {
+        const parsed = parseHebrewMorphology("APdxbp");
+        const target = parsed.segments?.find((item) => item.code === "APdxbp");
+        expect(target, "Dan.2.40 · APdxbp").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Demonstrative","person":null,"gender":"Both","number":"Plural"});
+        expect(target?.qualifier, "Dan.2.40 · APdxbp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from Dan.2.22", () => {
+        const parsed = parseHebrewMorphology("APfxbs");
+        const target = parsed.segments?.find((item) => item.code === "APfxbs");
+        expect(target, "Dan.2.22 · APfxbs").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Indefinite","person":null,"gender":"Both","number":"Singular"});
+        expect(target?.qualifier, "Dan.2.22 · APfxbs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from 1Sam.14.1", () => {
+        const parsed = parseHebrewMorphology("HPdxcs");
+        const target = parsed.segments?.find((item) => item.code === "HPdxcs");
+        expect(target, "1Sam.14.1 · HPdxcs").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Demonstrative","person":null,"gender":"Common","number":"Singular"});
+        expect(target?.qualifier, "1Sam.14.1 · HPdxcs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from Dan.2.44", () => {
+        const parsed = parseHebrewMorphology("APdxmp");
+        const target = parsed.segments?.find((item) => item.code === "APdxmp");
+        expect(target, "Dan.2.44 · APdxmp").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Demonstrative","person":null,"gender":"Masculine","number":"Plural"});
+        expect(target?.qualifier, "Dan.2.44 · APdxmp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB pronoun dimension from 1Sam.21.3", () => {
+        const parsed = parseHebrewMorphology("HPf");
+        const target = parsed.segments?.find((item) => item.code === "HPf");
+        expect(target, "1Sam.21.3 · HPf").toMatchObject({"partOfSpeech":"Pronoun","qualifier":"Indefinite","person":null,"gender":null,"number":null});
+        expect(target?.qualifier, "1Sam.21.3 · HPf").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB suffix dimension from Dan.4.27", () => {
+        const parsed = parseHebrewMorphology("ANcmsc/Sp1ms");
+        const target = parsed.segments?.find((item) => item.code === "ASp1ms");
+        expect(target, "Dan.4.27 · ANcmsc/Sp1ms").toMatchObject({"partOfSpeech":"Suffix","qualifier":"Pronominal","person":"1st","gender":"Masculine","number":"Singular"});
+        expect(target?.qualifier, "Dan.4.27 · ANcmsc/Sp1ms").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB suffix dimension from 2Sam.11.12", () => {
+        const parsed = parseHebrewMorphology("HVpi1cs/Sp2cs");
+        const target = parsed.segments?.find((item) => item.code === "HSp2cs");
+        expect(target, "2Sam.11.12 · HVpi1cs/Sp2cs").toMatchObject({"partOfSpeech":"Suffix","qualifier":"Pronominal","person":"2nd","gender":"Common","number":"Singular"});
+        expect(target?.qualifier, "2Sam.11.12 · HVpi1cs/Sp2cs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB suffix dimension from 2Sam.1.24", () => {
+        const parsed = parseHebrewMorphology("HNcmsc/Sp2fp");
+        const target = parsed.segments?.find((item) => item.code === "HSp2fp");
+        expect(target, "2Sam.1.24 · HNcmsc/Sp2fp").toMatchObject({"partOfSpeech":"Suffix","qualifier":"Pronominal","person":"2nd","gender":"Feminine","number":"Plural"});
+        expect(target?.qualifier, "2Sam.1.24 · HNcmsc/Sp2fp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB suffix dimension from Dan.5.21", () => {
+        const parsed = parseHebrewMorphology("AR/Sp3cs");
+        const target = parsed.segments?.find((item) => item.code === "ASp3cs");
+        expect(target, "Dan.5.21 · AR/Sp3cs").toMatchObject({"partOfSpeech":"Suffix","qualifier":"Pronominal","person":"3rd","gender":"Common","number":"Singular"});
+        expect(target?.qualifier, "Dan.5.21 · AR/Sp3cs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB suffix dimension from 1Kgs.7.37", () => {
+        const parsed = parseHebrewMorphology("HR/Ncmsc/Sp3fp");
+        const target = parsed.segments?.find((item) => item.code === "HSp3fp");
+        expect(target, "1Kgs.7.37 · HR/Ncmsc/Sp3fp").toMatchObject({"partOfSpeech":"Suffix","qualifier":"Pronominal","person":"3rd","gender":"Feminine","number":"Plural"});
+        expect(target?.qualifier, "1Kgs.7.37 · HR/Ncmsc/Sp3fp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB suffix dimension from Lev.11.43", () => {
+        const parsed = parseHebrewMorphology("HNcbpc/Sp2cp");
+        const target = parsed.segments?.find((item) => item.code === "HSp2cp");
+        expect(target, "Lev.11.43 · HNcbpc/Sp2cp").toMatchObject({"partOfSpeech":"Suffix","qualifier":"Pronominal","person":"2nd","gender":"Common","number":"Plural"});
+        expect(target?.qualifier, "Lev.11.43 · HNcbpc/Sp2cp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB particle dimension from Dan.4.12", () => {
+        const parsed = parseHebrewMorphology("AT");
+        const target = parsed.segments?.find((item) => item.code === "AT");
+        expect(target, "Dan.4.12 · AT").toMatchObject({"partOfSpeech":"Particle","qualifier":null});
+        expect(target?.qualifier, "Dan.4.12 · AT").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Deut.21.8", () => {
+        const parsed = parseHebrewMorphology("HC/VDq3ms");
+        const target = parsed.segments?.find((item) => item.code === "HVDq3ms");
+        expect(target, "Deut.21.8 · HC/VDq3ms").toMatchObject({"partOfSpeech":"Verb","qualifier":"Nithpael","form":"Sequential perfect","person":"3rd","gender":"Masculine","number":"Singular"});
+        expect(target?.qualifier, "Deut.21.8 · HC/VDq3ms").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Sam.2.5", () => {
+        const parsed = parseHebrewMorphology("HVKp3fs");
+        const target = parsed.segments?.find((item) => item.code === "HVKp3fs");
+        expect(target, "1Sam.2.5 · HVKp3fs").toMatchObject({"partOfSpeech":"Verb","qualifier":"Pulal","form":"Perfect","person":"3rd","gender":"Feminine","number":"Singular"});
+        expect(target?.qualifier, "1Sam.2.5 · HVKp3fs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Kgs.20.27", () => {
+        const parsed = parseHebrewMorphology("HC/VLp3cp");
+        const target = parsed.segments?.find((item) => item.code === "HVLp3cp");
+        expect(target, "1Kgs.20.27 · HC/VLp3cp").toMatchObject({"partOfSpeech":"Verb","qualifier":"Polpal","form":"Perfect","person":"3rd","gender":"Common","number":"Plural"});
+        expect(target?.qualifier, "1Kgs.20.27 · HC/VLp3cp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Kgs.7.9", () => {
+        const parsed = parseHebrewMorphology("HVMsfpa");
+        const target = parsed.segments?.find((item) => item.code === "HVMsfpa");
+        expect(target, "1Kgs.7.9 · HVMsfpa").toMatchObject({"partOfSpeech":"Verb","qualifier":"Poal · Absolute","form":"Participle passive","person":null,"gender":"Feminine","number":"Plural","state":"Absolute"});
+        expect(target?.qualifier, "1Kgs.7.9 · HVMsfpa").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Ezek.28.13", () => {
+        const parsed = parseHebrewMorphology("HVOp3cp");
+        const target = parsed.segments?.find((item) => item.code === "HVOp3cp");
+        expect(target, "Ezek.28.13 · HVOp3cp").toMatchObject({"partOfSpeech":"Verb","qualifier":"Polal","form":"Perfect","person":"3rd","gender":"Common","number":"Plural"});
+        expect(target?.qualifier, "Ezek.28.13 · HVOp3cp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Dan.2.44", () => {
+        const parsed = parseHebrewMorphology("AVai3ms");
+        const target = parsed.segments?.find((item) => item.code === "AVai3ms");
+        expect(target, "Dan.2.44 · AVai3ms").toMatchObject({"partOfSpeech":"Verb","qualifier":"Aphel","form":"Imperfect","person":"3rd","gender":"Masculine","number":"Singular"});
+        expect(target?.qualifier, "Dan.2.44 · AVai3ms").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Hos.11.3", () => {
+        const parsed = parseHebrewMorphology("HVcp1cs");
+        const target = parsed.segments?.find((item) => item.code === "HVcp1cs");
+        expect(target, "Hos.11.3 · HVcp1cs").toMatchObject({"partOfSpeech":"Verb","qualifier":"Tiphil","form":"Perfect","person":"1st","gender":"Common","number":"Singular"});
+        expect(target?.qualifier, "Hos.11.3 · HVcp1cs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Dan.3.15", () => {
+        const parsed = parseHebrewMorphology("AVei3ms/Sp2mp");
+        const target = parsed.segments?.find((item) => item.code === "AVei3ms");
+        expect(target, "Dan.3.15 · AVei3ms/Sp2mp").toMatchObject({"partOfSpeech":"Verb","qualifier":"Shaphel","form":"Imperfect","person":"3rd","gender":"Masculine","number":"Singular"});
+        expect(target?.qualifier, "Dan.3.15 · AVei3ms/Sp2mp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 2Chr.36.16", () => {
+        const parsed = parseHebrewMorphology("HC/Vfrmpa");
+        const target = parsed.segments?.find((item) => item.code === "HVfrmpa");
+        expect(target, "2Chr.36.16 · HC/Vfrmpa").toMatchObject({"partOfSpeech":"Verb","qualifier":"Hithpalpel · Absolute","form":"Participle active","person":null,"gender":"Masculine","number":"Plural","state":"Absolute"});
+        expect(target?.qualifier, "2Chr.36.16 · HC/Vfrmpa").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Dan.2.45", () => {
+        const parsed = parseHebrewMorphology("AVip3fs");
+        const target = parsed.segments?.find((item) => item.code === "AVip3fs");
+        expect(target, "Dan.2.45 · AVip3fs").toMatchObject({"partOfSpeech":"Verb","qualifier":"Ithpeel","form":"Perfect","person":"3rd","gender":"Feminine","number":"Singular"});
+        expect(target?.qualifier, "Dan.2.45 · AVip3fs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Lam.1.20", () => {
+        const parsed = parseHebrewMorphology("HVjp3cp");
+        const target = parsed.segments?.find((item) => item.code === "HVjp3cp");
+        expect(target, "Lam.1.20 · HVjp3cp").toMatchObject({"partOfSpeech":"Verb","qualifier":"Pealal","form":"Perfect","person":"3rd","gender":"Common","number":"Plural"});
+        expect(target?.qualifier, "Lam.1.20 · HVjp3cp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Gen.21.16", () => {
+        const parsed = parseHebrewMorphology("HR/Vkrmpc");
+        const target = parsed.segments?.find((item) => item.code === "HVkrmpc");
+        expect(target, "Gen.21.16 · HR/Vkrmpc").toMatchObject({"partOfSpeech":"Verb","qualifier":"Palel · Construct","form":"Participle active","person":null,"gender":"Masculine","number":"Plural","state":"Construct"});
+        expect(target?.qualifier, "Gen.21.16 · HR/Vkrmpc").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Kgs.4.7", () => {
+        const parsed = parseHebrewMorphology("HC/Vlp3cp");
+        const target = parsed.segments?.find((item) => item.code === "HVlp3cp");
+        expect(target, "1Kgs.4.7 · HC/Vlp3cp").toMatchObject({"partOfSpeech":"Verb","qualifier":"Pilpel","form":"Perfect","person":"3rd","gender":"Common","number":"Plural"});
+        expect(target?.qualifier, "1Kgs.4.7 · HC/Vlp3cp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Kgs.17.10", () => {
+        const parsed = parseHebrewMorphology("HVmrfsc");
+        const target = parsed.segments?.find((item) => item.code === "HVmrfsc");
+        expect(target, "1Kgs.17.10 · HVmrfsc").toMatchObject({"partOfSpeech":"Verb","qualifier":"Poel · Construct","form":"Participle active","person":null,"gender":"Feminine","number":"Singular","state":"Construct"});
+        expect(target?.qualifier, "1Kgs.17.10 · HVmrfsc").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Chr.6.18", () => {
+        const parsed = parseHebrewMorphology("HTd/Vormsa");
+        const target = parsed.segments?.find((item) => item.code === "HVormsa");
+        expect(target, "1Chr.6.18 · HTd/Vormsa").toMatchObject({"partOfSpeech":"Verb","qualifier":"Polel · Absolute","form":"Participle active","person":null,"gender":"Masculine","number":"Singular","state":"Absolute"});
+        expect(target?.qualifier, "1Chr.6.18 · HTd/Vormsa").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Kgs.3.21", () => {
+        const parsed = parseHebrewMorphology("HC/Vrw1cs");
+        const target = parsed.segments?.find((item) => item.code === "HVrw1cs");
+        expect(target, "1Kgs.3.21 · HC/Vrw1cs").toMatchObject({"partOfSpeech":"Verb","qualifier":"Hithpolel","form":"Sequential imperfect","person":"1st","gender":"Common","number":"Singular"});
+        expect(target?.qualifier, "1Kgs.3.21 · HC/Vrw1cs").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Ezra.6.3", () => {
+        const parsed = parseHebrewMorphology("AVssmpa");
+        const target = parsed.segments?.find((item) => item.code === "AVssmpa");
+        expect(target, "Ezra.6.3 · AVssmpa").toMatchObject({"partOfSpeech":"Verb","qualifier":"Saphel · Absolute","form":"Participle passive","person":null,"gender":"Masculine","number":"Plural","state":"Absolute"});
+        expect(target?.qualifier, "Ezra.6.3 · AVssmpa").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Kgs.20.27", () => {
+        const parsed = parseHebrewMorphology("HVup3cp");
+        const target = parsed.segments?.find((item) => item.code === "HVup3cp");
+        expect(target, "1Kgs.20.27 · HVup3cp").toMatchObject({"partOfSpeech":"Verb","qualifier":"Hothpaal","form":"Perfect","person":"3rd","gender":"Common","number":"Plural"});
+        expect(target?.qualifier, "1Kgs.20.27 · HVup3cp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from 1Chr.16.29", () => {
+        const parsed = parseHebrewMorphology("HVvv2mp");
+        const target = parsed.segments?.find((item) => item.code === "HVvv2mp");
+        expect(target, "1Chr.16.29 · HVvv2mp").toMatchObject({"partOfSpeech":"Verb","qualifier":"Hishtaphel","form":"Imperative","person":"2nd","gender":"Masculine","number":"Plural"});
+        expect(target?.qualifier, "1Chr.16.29 · HVvv2mp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb stem dimension from Dan.4.16", () => {
+        const parsed = parseHebrewMorphology("AVzp3ms");
+        const target = parsed.segments?.find((item) => item.code === "AVzp3ms");
+        expect(target, "Dan.4.16 · AVzp3ms").toMatchObject({"partOfSpeech":"Verb","qualifier":"Ithpoel","form":"Perfect","person":"3rd","gender":"Masculine","number":"Singular"});
+        expect(target?.qualifier, "Dan.4.16 · AVzp3ms").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb tail dimension from 2Sam.1.24", () => {
+        const parsed = parseHebrewMorphology("HVqv2fp");
+        const target = parsed.segments?.find((item) => item.code === "HVqv2fp");
+        expect(target, "2Sam.1.24 · HVqv2fp").toMatchObject({"partOfSpeech":"Verb","form":"Imperative","person":"2nd","gender":"Feminine","number":"Plural"});
+        expect(target?.qualifier, "2Sam.1.24 · HVqv2fp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb tail dimension from Lev.11.45", () => {
+        const parsed = parseHebrewMorphology("HC/Vqq2cp");
+        const target = parsed.segments?.find((item) => item.code === "HVqq2cp");
+        expect(target, "Lev.11.45 · HC/Vqq2cp").toMatchObject({"partOfSpeech":"Verb","form":"Sequential perfect","person":"2nd","gender":"Common","number":"Plural"});
+        expect(target?.qualifier, "Lev.11.45 · HC/Vqq2cp").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb participle tail dimension from Dan.2.22", () => {
+        const parsed = parseHebrewMorphology("AC/Vpsfpd/Td");
+        const target = parsed.segments?.find((item) => item.code === "AVpsfpd");
+        expect(target, "Dan.2.22 · AC/Vpsfpd/Td").toMatchObject({"partOfSpeech":"Verb","form":"Participle passive","gender":"Feminine","number":"Plural","state":"Determined"});
+        expect(target?.qualifier, "Dan.2.22 · AC/Vpsfpd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb participle tail dimension from Dan.3.6", () => {
+        const parsed = parseHebrewMorphology("AVqrfsd/Td");
+        const target = parsed.segments?.find((item) => item.code === "AVqrfsd");
+        expect(target, "Dan.3.6 · AVqrfsd/Td").toMatchObject({"partOfSpeech":"Verb","form":"Participle active","gender":"Feminine","number":"Singular","state":"Determined"});
+        expect(target?.qualifier, "Dan.3.6 · AVqrfsd/Td").not.toBe("Unsupported morphology code");
+    });
+
+    it("covers global OSHB verb participle tail dimension from Dan.4.4", () => {
+        const parsed = parseHebrewMorphology("AC/Vqrmpd/Td");
+        const target = parsed.segments?.find((item) => item.code === "AVqrmpd");
+        expect(target, "Dan.4.4 · AC/Vqrmpd/Td").toMatchObject({"partOfSpeech":"Verb","form":"Participle active","gender":"Masculine","number":"Plural","state":"Determined"});
+        expect(target?.qualifier, "Dan.4.4 · AC/Vqrmpd/Td").not.toBe("Unsupported morphology code");
+    });
+});
