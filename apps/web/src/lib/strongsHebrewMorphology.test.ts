@@ -6893,6 +6893,25 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 3 Open Scriptures Qal imperfect 2mp", () => {
+        expect(parseHebrewMorphology("HVqi2mp")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqi2mp").summary).toContain(
+            "Verb · Qal · Imperfect · 2nd person · Plural · Masculine",
+        );
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
