@@ -7872,7 +7872,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
 
     it("covers global OSHB suffix dimension from Dan.4.27", () => {
         const parsed = parseHebrewMorphology("ANcmsc/Sp1ms");
-        const target = parsed.segments?.find((item) => item.code === "HSp1ms");
+        const target = parsed.segments?.find((item) => item.code === "ASp1ms");
         expect(target, "Dan.4.27 · ANcmsc/Sp1ms").toMatchObject({"partOfSpeech":"Suffix","qualifier":"Pronominal","person":"1st","gender":"Masculine","number":"Singular"});
         expect(target?.qualifier, "Dan.4.27 · ANcmsc/Sp1ms").not.toBe("Unsupported morphology code");
     });
