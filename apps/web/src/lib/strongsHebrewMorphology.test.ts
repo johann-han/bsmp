@@ -7535,6 +7535,22 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the next Exodus 4 Open Scriptures exhortation particle", () => {
+        const parsed = parseHebrewMorphology("HTe");
+
+        expect(parsed.segments).toHaveLength(1);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTe",
+            partOfSpeech: "Particle",
+            qualifier: "Exhortation",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toBe("Particle · Exhortation");
+    });
+
     it("keeps an unknown form conservative", () => {
         expect(parseHebrewMorphology("HNpt").summary).toContain(
             "Noun · Proper name · Title",
