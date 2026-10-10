@@ -8565,7 +8565,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
-    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus common plural absolute adjective from Gen.5.5", () => {
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus cardinal-number adjective from Gen.5.5", () => {
         const parsed = parseHebrewMorphology("HC/Acbpa");
 
         expect(parsed.segments).toHaveLength(2);
@@ -8577,13 +8577,13 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         expect(parsed.segments?.[1]).toMatchObject({
             code: "HAcbpa",
             partOfSpeech: "Adjective",
-            qualifier: "Common · Absolute",
+            qualifier: "Cardinal number · Absolute",
             gender: "Both",
             number: "Plural",
             state: "Absolute",
         });
         expect(parsed.summary).toContain(
-            "Conjunction · Adjective · Common · Absolute · Plural · Both",
+            "Conjunction · Adjective · Cardinal number · Absolute · Plural · Both",
         );
     });
 
