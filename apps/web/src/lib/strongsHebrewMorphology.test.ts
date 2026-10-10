@@ -8144,4 +8144,19 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures cardinal adjective from Gen.2.21", () => {
+        expect(parseHebrewMorphology("HAcfsa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HAcfsa").summary).toContain(
+            "Adjective · Cardinal number · Absolute · Singular · Feminine",
+        );
+    });
+
 });
