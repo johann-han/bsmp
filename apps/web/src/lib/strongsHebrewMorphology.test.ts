@@ -8266,4 +8266,26 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures article and feminine noun composite from Gen.14.16", () => {
+        const parsed = parseHebrewMorphology("HTd/Ncfpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfpa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Particle · Definite article · Noun · Common · Absolute · Plural · Feminine",
+        );
+    });
+
 });
