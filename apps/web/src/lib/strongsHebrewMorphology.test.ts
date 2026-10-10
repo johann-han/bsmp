@@ -8519,6 +8519,32 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures masculine plural construct noun plus 3fs suffix from Gen.25.24", () => {
+        const parsed = parseHebrewMorphology("HNcmpc/Sp3fs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3fs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Masculine · Suffix · Pronominal · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
         const parsed = parseHebrewMorphology("HR/Tr");
 
