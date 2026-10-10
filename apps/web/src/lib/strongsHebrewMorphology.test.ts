@@ -8385,6 +8385,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures preposition plus Piel infinitive construct from Gen.6.17", () => {
+        const parsed = parseHebrewMorphology("HR/Vpc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVpc",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Preposition · Verb · Piel · Infinitive construct",
+        );
+    });
+
     it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
         const parsed = parseHebrewMorphology("HR/Tr");
 
