@@ -1,29 +1,35 @@
 # MorphHB Old Testament Morphology Global Audit
 
-- Audited source: [Open Scriptures MorphHB](https://github.com/openscriptures/morphhb/tree/master/wlc), all 39 book XML files under `wlc/`; `VerseMap.xml` excluded because it is not a book text.
-- Upstream `master` commit at audit: `3d15126fb1ef74867fc1434be1942e837932691f`.
-- BSMP canonical integration base after merging PR #410: `764bc390ee674e33b4d92f72126d3cfc45698de6`.
-- BSMP parser/test files audited at live canonical tip: `764bc390ee674e33b4d92f72126d3cfc45698de6`.
-- Token definition: each `<w>` is a word element; morphology token means a non-empty `morph` attribute on `<w>`. Full attribute strings including slash composites are counted as distinct source codes.
-- First occurrence: first appearance in canonical OT book order; word position is the 1-based ordinal of `<w>` elements within the OSIS verse.
-- Exact-code test coverage means a source `morph` string is explicitly passed as a string literal to `parseHebrewMorphology` in `strongsHebrewMorphology.test.ts`. This is stricter than feature-family coverage.
-- Parser mapping status is a static check against the current parser mapping tables. “Mapping gap” means at least one segment has an unrecognized language/POS/type/stem/aspect mapping; it is a review priority, not by itself proof that runtime output is wrong.
+- Source: [Open Scriptures MorphHB `wlc/`](https://github.com/openscriptures/morphhb/tree/master/wlc), pinned by the individual XML blob IDs listed from upstream `master` commit `3d15126fb1ef74867fc1434be1942e837932691f`.
+- BSMP canonical branch base after PR #410: `764bc390ee674e33b4d92f72126d3cfc45698de6`.
+- Scope: all 39 book XML files in `wlc/`; `VerseMap.xml` excluded because it is not a book text.
+- Token definition: a morphology token is a non-empty `morph` attribute on a `<w>` element. Full attribute strings, including slash composites, are counted as exact morphology codes.
+- First occurrence: the first appearance in canonical OT book order; word number is the 1-based ordinal of `<w>` elements within the OSIS verse.
+- Exact-code regression coverage means the full source code string appears as a string literal in a direct `parseHebrewMorphology(...)` test call. This is stricter than grammar-feature coverage.
+- Parser mapping status is computed from the current parser's POS, subtype, verb-stem, and aspect maps. A reported mapping gap is a candidate for review, not proof of incorrect runtime output.
 
 ## Summary
 
 | Metric | Result |
 |---|---:|
-| MorphHB OT book XML files | 39 |
-| Total `<w>` word elements | 306785 |
-| Morphology-tagged word tokens | 306785 |
-| Distinct full source morphology strings | 3464 |
-| Distinct source strings with exact-code regression | 346 (9.99%) |
-| Untested distinct source strings | 3118 (90.01%) |
-| Tokens bearing an exact-tested source string | 255923 (83.42%) |
-| Untested codes with parser mapping gaps | 3118 |
-| Untested codes whose parser mappings are recognized (regression-only candidates) | 0 |
+| Old Testament book XML files | 39 |
+| `<w>` word elements | 306,785 |
+| Morphology-tagged word tokens | 306,785 |
+| Distinct exact source morphology strings | 3,464 |
+| Exact-tested source strings | 346 (9.99%) |
+| Untested source strings | 3,118 (90.01%) |
+| Tokens using an exact-tested code | 255,923 (83.42%) |
+| Untested parser-mapping gap candidates | 0 |
+| Untested codes with recognized mappings (regression-only candidates) | 3,118 |
+| Distinct tested strings in the test file (including strings outside the MorphHB OT source) | 410 |
 
-## Highest-priority untested parser-mapping gaps
+## Highest-priority untested parser-mapping candidates
+
+| Code | Occurrences | First occurrence |
+|---|---:|---|
+| None | 0 | — |
+
+## Highest-priority regression-only candidates
 
 | Code | Occurrences | First occurrence |
 |---|---:|---|
@@ -53,12 +59,6 @@
 | `HVqp2mp` | 244 | Gen 18:5, word 11 |
 | `HR/Ncbsc/Sp3ms` | 238 | Gen 9:4, word 3 |
 
-## Highest-priority regression-only candidates
-
-| Code | Occurrences | First occurrence |
-|---|---:|---|
-| None | 0 | — |
-
 ## Complete inventory
 
-See the accompanying CSV for every source code, exact frequency, first occurrence, exact test status, parser-mapping assessment, and recommended next action. CSV rows are ordered by priority: untested mapping gaps by frequency, then regression-only candidates by frequency, then codes already covered by exact regression.
+The accompanying CSV contains one row for every source morphology string, ordered by priority: untested mapping-gap candidates by occurrence count, then regression-only candidates by occurrence count, then codes already covered by exact regression. Each row includes frequency, first occurrence, exact-test status, parser-map status, and a recommended next action.
