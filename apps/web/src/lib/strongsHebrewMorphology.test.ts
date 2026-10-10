@@ -8495,6 +8495,30 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus preposition plus proper name from Gen.3.17", () => {
+        const parsed = parseHebrewMorphology("HC/R/Np");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNp",
+            partOfSpeech: "Noun",
+            qualifier: "Proper name",
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Preposition · Noun · Proper name",
+        );
+    });
+
     it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
         const parsed = parseHebrewMorphology("HR/Tr");
 
