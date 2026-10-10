@@ -8410,6 +8410,24 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures personal pronoun 3mp from Gen.3.7", () => {
+        const parsed = parseHebrewMorphology("HPp3mp");
+
+        expect(parsed.segments).toHaveLength(1);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HPp3mp",
+            partOfSpeech: "Pronoun",
+            qualifier: "Personal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Pronoun · Personal · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
         const parsed = parseHebrewMorphology("HR/Tr");
 
