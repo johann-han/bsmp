@@ -8454,6 +8454,29 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures Aramaic determined noun plus article composite from Ezra.4.8", () => {
+        const parsed = parseHebrewMorphology("ANcmsd/Td");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "ANcmsd",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Determined",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Determined",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "ATd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Determined · Singular · Masculine",
+        );
+        expect(parsed.summary).toContain("Particle · Definite article");
+    });
+
     it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
         const parsed = parseHebrewMorphology("HR/Tr");
 
