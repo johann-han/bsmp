@@ -8209,4 +8209,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction and feminine noun composite from Gen.1.27", () => {
+        const parsed = parseHebrewMorphology("HC/Ncfsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Noun · Common · Absolute · Singular · Feminine",
+        );
+    });
+
 });
