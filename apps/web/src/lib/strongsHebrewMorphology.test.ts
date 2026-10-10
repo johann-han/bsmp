@@ -5792,6 +5792,35 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the highest-frequency uncovered Open Scriptures feminine construct noun plus 1cs suffix composite from Gen.4.23", () => {
+        const parsed = parseHebrewMorphology("HNcfsc/Sp1cs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcfsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Singular · Feminine",
+        );
+        expect(parsed.summary).toContain(
+            "Suffix · Pronominal · 1st person · Singular · Common",
+        );
+    });
+
     it("decodes the next Exodus 3 Open Scriptures masculine construct noun plus 1cs suffix composite", () => {
         const parsed = parseHebrewMorphology("HNcmsc/Sp1cs");
 
