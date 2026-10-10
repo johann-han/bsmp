@@ -8248,4 +8248,22 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal perfect 2ms verb from Gen.3.11", () => {
+        expect(parseHebrewMorphology("HVqp2ms")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Perfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqp2ms").summary).toContain(
+            "Verb · Qal · Perfect · 2nd person · Singular · Masculine",
+        );
+    });
+
 });
