@@ -3499,6 +3499,23 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes the highest-frequency uncovered MorphHB preposition plus adverb composite from Gen.3.23", () => {
+        const parsed = parseHebrewMorphology("HR/D");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HD",
+            partOfSpeech: "Adverb",
+            qualifier: null,
+        });
+        expect(parsed.summary).toContain("Preposition · Adverb");
+    });
+
     it("decodes the next Genesis 2 Open Scriptures conjunction plus preposition plus adverb", () => {
         const parsed = parseHebrewMorphology("HC/R/D");
 
