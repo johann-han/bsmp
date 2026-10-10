@@ -8359,6 +8359,32 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus Hiphil sequential-imperfect 3mp from Gen.14.5", () => {
+        const parsed = parseHebrewMorphology("HC/Vhw3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVhw3mp",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Verb · Hiphil · Sequential imperfect · 3rd person · Plural · Masculine",
+        );
+    });
+
     it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
         const parsed = parseHebrewMorphology("HR/Tr");
 
