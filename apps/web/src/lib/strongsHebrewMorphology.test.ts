@@ -8129,4 +8129,19 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures adjective from Gen.2.25", () => {
+        expect(parseHebrewMorphology("HAampa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Absolute",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HAampa").summary).toContain(
+            "Adjective · Adjective · Absolute · Plural · Masculine",
+        );
+    });
+
 });
