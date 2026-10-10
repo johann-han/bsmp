@@ -8313,4 +8313,22 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
+        const parsed = parseHebrewMorphology("HR/Tr");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTr",
+            partOfSpeech: "Particle",
+            qualifier: "Relative",
+        });
+        expect(parsed.summary).toContain(
+            "Preposition · Particle · Relative",
+        );
+    });
+
 });
