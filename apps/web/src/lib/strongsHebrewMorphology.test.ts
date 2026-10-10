@@ -8159,4 +8159,29 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures noun and suffix composite from Gen.15.2", () => {
+        const parsed = parseHebrewMorphology("HNcmpc/Sp1cs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Masculine · Suffix · Pronominal · 1st person · Singular · Common",
+        );
+    });
+
 });
