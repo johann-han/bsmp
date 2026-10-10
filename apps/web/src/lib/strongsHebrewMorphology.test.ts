@@ -8230,4 +8230,22 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal imperfect 3fs verb from Gen.9.2", () => {
+        expect(parseHebrewMorphology("HVqi3fs")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            mood: null,
+        });
+
+        expect(parseHebrewMorphology("HVqi3fs").summary).toContain(
+            "Verb · Qal · Imperfect · 3rd person · Singular · Feminine",
+        );
+    });
+
 });
