@@ -8565,6 +8565,28 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus common plural absolute adjective from Gen.5.5", () => {
+        const parsed = parseHebrewMorphology("HC/Acbpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HAcbpa",
+            partOfSpeech: "Adjective",
+            qualifier: "Common · Absolute",
+            gender: "Both",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Adjective · Common · Absolute · Plural · Both",
+        );
+    });
+
     it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
         const parsed = parseHebrewMorphology("HR/Tr");
 
