@@ -8114,4 +8114,19 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the highest-frequency uncovered Open Scriptures morphology code from Gen.3.7", () => {
+        expect(parseHebrewMorphology("HNcfpa")).toMatchObject({
+            language: "H",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+        });
+
+        expect(parseHebrewMorphology("HNcfpa").summary).toContain(
+            "Noun · Common · Absolute · Plural · Feminine",
+        );
+    });
+
 });
