@@ -8545,6 +8545,26 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes the next highest-frequency uncovered Open Scriptures Niphal perfect 3cp verb from Gen.7.11", () => {
+        const parsed = parseHebrewMorphology("HVNp3cp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Niphal · Perfect · 3rd person · Plural · Common",
+        );
+    });
+
     it("decodes the next highest-frequency uncovered Open Scriptures preposition and relative-particle composite from Gen.7.9", () => {
         const parsed = parseHebrewMorphology("HR/Tr");
 
