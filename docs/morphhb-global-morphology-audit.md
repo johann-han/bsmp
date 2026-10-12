@@ -3,8 +3,9 @@
 ## Provenance
 
 - Source: https://github.com/openscriptures/morphhb/tree/master/wlc
+- Attribution: Original work of the Open Scriptures Hebrew Bible available at https://github.com/openscriptures/morphhb. The morphology annotations are licensed CC BY 4.0.
 - MorphHB commit: 3d15126fb1ef74867fc1434be1942e837932691f.
-- BSMP commit audited: 5e38b329dc8c892133b801093eca3d334d30a97f.
+- BSMP commit audited: cb741ea11a3484891f7827b463ce5d1a7fdb6589.
 - Test coverage means a complete source morphology code appears as a literal argument to parseHebrewMorphology(...) in the current BSMP test file. Segment-only expectations do not count as exact-code coverage.
 - Parser status is checked against the current parser's part-of-speech dispatch and lookup maps. The OSHM code reference defines x as a placeholder for unknown or unnecessary values when another required value follows; PERSON=x is therefore treated as supported because the parser uses its nullable person field for that placeholder. Partial means a needed code dimension is not handled or mapped; Unsupported means a segment uses an unknown POS or the overall code prefix is invalid. Code reference: https://hb.openscriptures.org/parsing/HebrewMorphologyCodes.html.
 
@@ -12,8 +13,12 @@
 
 | Measure | Result |
 |---|---:|
-| Canonical OT book XML files | 39 |
-| Total word tokens (all w elements) | 306,785 |
+| XML files in wlc directory | 40 |
+| Canonical OT book XML files parsed | 39 |
+| Total OT word tokens (all w elements) | 306,785 |
+| Hebrew-prefixed tokens (morphology H) | 301,837 |
+| Aramaic-prefixed tokens (morphology A) | 4,948 |
+| Other language-prefix tokens | 0 |
 | Word tokens with non-empty morphology | 306,785 |
 | Word tokens without morphology | 0 |
 | Distinct exact morphology codes | 3,464 |
@@ -97,6 +102,10 @@ These codes are flagged because the parser either lacks a dispatch branch or one
 
 | Code | OT occurrences | First occurrence | Parser status | Detail | Exact-code test |
 |---|---:|---|---|---|---|
+
+## XML inventory note
+
+The source directory contains 40 XML files. The 39 canonical book files above were parsed for word and morphology counts. Non-book XML files: VerseMap.xml. VerseMap.xml is an auxiliary WLC/KJV versification mapping file, not an OT book text, and is excluded from morphology counts.
 
 ## Book-by-book inventory
 
