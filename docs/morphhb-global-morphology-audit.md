@@ -4,9 +4,9 @@
 
 - Source: https://github.com/openscriptures/morphhb/tree/master/wlc
 - MorphHB commit: 3d15126fb1ef74867fc1434be1942e837932691f.
-- BSMP commit audited: e4d7ec1e3b5eaa669ad66aa21753ea6def0d9a0b.
+- BSMP commit audited: 5e38b329dc8c892133b801093eca3d334d30a97f.
 - Test coverage means a complete source morphology code appears as a literal argument to parseHebrewMorphology(...) in the current BSMP test file. Segment-only expectations do not count as exact-code coverage.
-- Parser status is checked against the current parser's part-of-speech dispatch and lookup maps. Partial means the POS is recognized but at least one code dimension is not handled or mapped; Unsupported means a segment uses an unknown POS or the overall code prefix is invalid.
+- Parser status is checked against the current parser's part-of-speech dispatch and lookup maps. The OSHM code reference defines x as a placeholder for unknown or unnecessary values when another required value follows; PERSON=x is therefore treated as supported because the parser uses its nullable person field for that placeholder. Partial means a needed code dimension is not handled or mapped; Unsupported means a segment uses an unknown POS or the overall code prefix is invalid. Code reference: https://hb.openscriptures.org/parsing/HebrewMorphologyCodes.html.
 
 ## Coverage summary
 
@@ -21,7 +21,7 @@
 | Exact codes not directly covered | 3,105 |
 | Source occurrences covered by exact-code tests | 260,686 / 306,785 (84.97%) |
 | Source occurrences belonging to uncovered exact codes | 46,099 |
-| Codes flagged for parser review | 43 (2,680 occurrences) |
+| Codes flagged for parser review | 0 (0 occurrences) |
 | Whole-code literals found in direct test calls | 422 |
 
 ## Master gap list — highest-frequency uncovered codes
@@ -32,14 +32,14 @@ The complete inventory of all exact source codes, frequency, first occurrence, p
 |---:|---|---:|---|---|---|
 | 1 | HVqsmsa | 292 | Genesis 3:14, word 9 | Supported | Add exact-code regression only |
 | 2 | HVhp3cp | 287 | Genesis 19:11, word 6 | Supported | Add exact-code regression only |
-| 3 | HTd/Pdxcp | 284 | Genesis 15:1, word 3 | Partial — person code x | Parser review/change plus exact-code regression |
+| 3 | HTd/Pdxcp | 284 | Genesis 15:1, word 3 | Supported | Add exact-code regression only |
 | 4 | ATr | 278 | Ezra 4:10, word 3 | Supported | Add exact-code regression only |
 | 5 | HTi/Tn | 277 | Genesis 4:7, word 1 | Supported | Add exact-code regression only |
 | 6 | HC/Ncfsc | 271 | Genesis 1:24, word 10 | Supported | Add exact-code regression only |
-| 7 | HTd/Pdxfs | 271 | Genesis 12:7, word 10 | Partial — person code x | Parser review/change plus exact-code regression |
+| 7 | HTd/Pdxfs | 271 | Genesis 12:7, word 10 | Supported | Add exact-code regression only |
 | 8 | HC/Vqv2mp | 263 | Genesis 1:22, word 6 | Supported | Add exact-code regression only |
 | 9 | HC/Ncmpc/Sp3ms | 261 | Genesis 7:7, word 3 | Supported | Add exact-code regression only |
-| 10 | HPdxfs | 255 | Genesis 2:23, word 3 | Partial — person code x | Parser review/change plus exact-code regression |
+| 10 | HPdxfs | 255 | Genesis 2:23, word 3 | Supported | Add exact-code regression only |
 | 11 | HVqp2mp | 244 | Genesis 18:5, word 11 | Supported | Add exact-code regression only |
 | 12 | HR/Ncbsc/Sp3ms | 238 | Genesis 9:4, word 3 | Supported | Add exact-code regression only |
 | 13 | HNcfpc/Sp3ms | 233 | Genesis 19:14, word 7 | Supported | Add exact-code regression only |
@@ -97,49 +97,6 @@ These codes are flagged because the parser either lacks a dispatch branch or one
 
 | Code | OT occurrences | First occurrence | Parser status | Detail | Exact-code test |
 |---|---:|---|---|---|---|
-| HTd/Pdxms | 699 | Genesis 7:1, word 16 | Partial | person code x | Yes |
-| HPdxms | 328 | Genesis 5:1, word 1 | Partial | person code x | Yes |
-| HPdxcp | 321 | Genesis 2:4, word 1 | Partial | person code x | Yes |
-| HTd/Pdxcp | 284 | Genesis 15:1, word 3 | Partial | person code x | No |
-| HTd/Pdxfs | 271 | Genesis 12:7, word 10 | Partial | person code x | No |
-| HPdxfs | 255 | Genesis 2:23, word 3 | Partial | person code x | No |
-| HC/Pdxcp | 106 | Genesis 10:1, word 1 | Partial | person code x | Yes |
-| HR/Pdxms | 89 | Genesis 16:8, word 6 | Partial | person code x | No |
-| HC/Pdxms | 51 | Genesis 6:15, word 1 | Partial | person code x | Yes |
-| HR/Pdxfs | 48 | Genesis 2:23, word 9 | Partial | person code x | No |
-| APdxms | 47 | Ezra 4:11, word 1 | Partial | person code x | No |
-| HR/Pdxcp | 36 | Genesis 10:5, word 1 | Partial | person code x | No |
-| HC/Pdxfs | 25 | Genesis 49:28, word 7 | Partial | person code x | No |
-| HC/R/Pdxms | 17 | Exodus 17:12, word 16 | Partial | person code x | No |
-| APdxfs | 12 | Ezra 4:13, word 8 | Partial | person code x | No |
-| APdxmp | 12 | Ezra 4:21, word 6 | Partial | person code x | Yes |
-| HC/R/Pdxcp | 9 | Genesis 9:19, word 5 | Partial | person code x | No |
-| APdxcp | 8 | Ezra 5:15, word 3 | Partial | person code x | No |
-| HC/R/Pdxfs | 8 | Joshua 7:20, word 12 | Partial | person code x | No |
-| APdxcs | 6 | Ezra 4:22, word 6 | Partial | person code x | No |
-| APfxbs | 5 | Daniel 2:22, word 6 | Partial | person code x | Yes |
-| HTi/Pdxfs | 5 | Ruth 1:19, word 16 | Partial | person code x | No |
-| HTi/Pdxms | 5 | Genesis 43:29, word 10 | Partial | person code x | Yes |
-| APdxbp | 3 | Daniel 2:40, word 18 | Partial | person code x | Yes |
-| AR/Pfxcs | 3 | Ezra 6:8, word 4 | Partial | person code x | No |
-| HPdxcs | 3 | Judges 6:20, word 13 | Partial | person code x | Yes |
-| AC/Pfxcs | 2 | Ezra 6:9, word 1 | Partial | person code x | No |
-| AC/R/Prxcs | 2 | Daniel 4:22, word 30 | Partial | person code x | No |
-| APfxcs | 2 | Ezra 7:18, word 2 | Partial | person code x | No |
-| APrxcs | 2 | Daniel 4:22, word 31 | Partial | person code x | No |
-| AR/Pdxms | 2 | Daniel 2:10, word 25 | Partial | person code x | No |
-| HTd/Pdxmp | 2 | Joel 3:2, word 7 | Partial | person code x | No |
-| HTi/R/Pdxms | 2 | Isaiah 58:5, word 1 | Partial | person code x | No |
-| AC/Pdxms | 1 | Daniel 5:25, word 1 | Partial | person code x | No |
-| AC/R/Pdxms | 1 | Ezra 5:7, word 4 | Partial | person code x | No |
-| AC/R/Pfxcs | 1 | Daniel 4:14, word 19 | Partial | person code x | No |
-| APdxbs | 1 | Daniel 2:31, word 10 | Partial | person code x | No |
-| APixbs | 1 | Daniel 4:32, word 21 | Partial | person code x | No |
-| AR/Pdxcs | 1 | Jeremiah 10:11, word 1 | Partial | person code x | No |
-| AR/Pdxfs | 1 | Daniel 5:6, word 12 | Partial | person code x | No |
-| AR/Pixcs | 1 | Ezra 7:23, word 13 | Partial | person code x | No |
-| HR/Pdxcs | 1 | Daniel 8:16, word 10 | Partial | person code x | No |
-| HR/Pdxmp | 1 | Ecclesiastes 12:12, word 2 | Partial | person code x | No |
 
 ## Book-by-book inventory
 
