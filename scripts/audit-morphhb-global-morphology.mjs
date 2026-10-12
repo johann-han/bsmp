@@ -87,6 +87,9 @@ function classifyMorphology(raw) {
     }
     const check = (map, index, label) => {
       const ch = segment[index];
+      // OSHM defines x as a placeholder for unknown or unnecessary values.
+      // The parser's nullable person field intentionally represents PERSON=x as null.
+      if (map === "PERSON" && ch === "x") return;
       if (ch !== undefined && ch !== "" && !maps[map].has(ch)) problems.push(label + " code " + ch);
     };
     switch (pos) {
@@ -267,7 +270,7 @@ const report = [
   "- MorphHB commit: " + summary.morphhbCommit + ".",
   "- BSMP commit audited: " + summary.bsmpAuditCommit + ".",
   "- Test coverage means a complete source morphology code appears as a literal argument to parseHebrewMorphology(...) in the current BSMP test file. Segment-only expectations do not count as exact-code coverage.",
-  "- Parser status is checked against the current parser's part-of-speech dispatch and lookup maps. Partial means the POS is recognized but at least one code dimension is not handled or mapped; Unsupported means a segment uses an unknown POS or the overall code prefix is invalid.",
+  "- Parser status is checked against the current parser's part-of-speech dispatch and lookup maps. The OSHM code reference defines x as a placeholder for unknown or unnecessary values when another required value follows; PERSON=x is therefore treated as supported because the parser uses its nullable person field for that placeholder. Partial means a needed code dimension is not handled or mapped; Unsupported means a segment uses an unknown POS or the overall code prefix is invalid. Code reference: https://hb.openscriptures.org/parsing/HebrewMorphologyCodes.html.",
   "",
   "## Coverage summary",
   "",
