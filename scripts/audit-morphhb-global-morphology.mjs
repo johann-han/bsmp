@@ -353,5 +353,5 @@ console.log("MORPHHB_GLOBAL_AUDIT_SUMMARY=" + JSON.stringify(summary));
 console.log("UNTESTED_TOP_20=" + JSON.stringify(gaps.slice(0,20).map(r => ({
   code:r.code,count:r.count,first:r.firstOccurrence,parser:r.parserStatus,action:r.action
 }))));
-console.log("Parser lookup maps checked: " + [...maps.keys()].join(", "));
+console.log("Parser lookup maps checked: " + Object.keys(maps).join(", "));
 console.log("Source book files: " + entries.join(", "));
