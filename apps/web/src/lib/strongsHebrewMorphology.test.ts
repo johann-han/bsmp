@@ -8627,4 +8627,23 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal passive participle masculine singular absolute verb from Gen.3.14", () => {
+        const parsed = parseHebrewMorphology("HVqsmsa");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVqsmsa",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Absolute",
+            form: "Participle passive",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Absolute · Participle passive · Singular · Masculine",
+        );
+    });
+
 });
