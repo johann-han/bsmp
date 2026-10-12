@@ -8646,4 +8646,26 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Hiphil perfect third-person common plural verb from Gen.19.11", () => {
+        const parsed = parseHebrewMorphology("HVhp3cp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVhp3cp",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Perfect · 3rd person · Plural · Common",
+        );
+    });
+
 });
