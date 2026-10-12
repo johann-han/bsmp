@@ -8691,4 +8691,23 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Aramaic relative particle from Ezra.4.10", () => {
+        const parsed = parseHebrewMorphology("ATr");
+
+        expect(parsed).toMatchObject({
+            language: "A",
+            code: "ATr",
+            partOfSpeech: "Particle",
+            qualifier: "Relative",
+        });
+        expect(parsed.segments?.[0]).toMatchObject({
+            language: "A",
+            code: "Tr",
+            partOfSpeech: "Particle",
+            qualifier: "Relative",
+        });
+        expect(parsed.summary).toContain("Aramaic · Particle · Relative");
+    });
+
 });
