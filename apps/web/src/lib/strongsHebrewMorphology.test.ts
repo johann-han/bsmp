@@ -8730,4 +8730,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus feminine singular construct noun from Gen.1.24", () => {
+        const parsed = parseHebrewMorphology("HC/Ncfsc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Noun · Common · Construct · Singular · Feminine",
+        );
+    });
+
 });
