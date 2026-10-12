@@ -8753,4 +8753,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures definite article plus feminine singular demonstrative pronoun from Gen.12.7", () => {
+        const parsed = parseHebrewMorphology("HTd/Pdxfs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HPdxfs",
+            partOfSpeech: "Pronoun",
+            qualifier: "Demonstrative",
+            person: null,
+            gender: "Feminine",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain(
+            "Particle · Definite article · Pronoun · Demonstrative · Singular · Feminine",
+        );
+    });
+
 });
