@@ -61,7 +61,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 60,P2,HC/Ncfsc/Sp3ms,143,"Genesis 2:25, word 5",Genesis,2,25,5,Supported,,no,Add exact-code regression only
 61,P2,HVpv2mp,140,"Genesis 40:8, word 14",Genesis,40,8,14,Supported,,no,Add exact-code regression only
 62,P2,HC/Vpq3ms,139,"Genesis 41:30, word 11",Genesis,41,30,11,Supported,,no,Add exact-code regression only
-63,P2,HD/Sd,138,"Genesis 14:10, word 11",Genesis,14,10,11,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+63,P2,HD/Sd,138,"Genesis 14:10, word 11",Genesis,14,10,11,Supported,,no,Add exact-code regression only
 64,P2,HVNp3fs,138,"Genesis 6:12, word 6",Genesis,6,12,6,Supported,,no,Add exact-code regression only
 65,P2,HC/R/Ncmpc,137,"Genesis 25:6, word 1",Genesis,25,6,1,Supported,,no,Add exact-code regression only
 66,P2,ANcmsc,136,"Ezra 4:8, word 2",Ezra,4,8,2,Supported,,no,Add exact-code regression only
@@ -189,9 +189,9 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 188,P3,HC/Vqrmpa,60,"Genesis 28:12, word 13",Genesis,28,12,13,Supported,,no,Add exact-code regression only
 189,P3,HR/Acfsa,60,"Genesis 8:13, word 2",Genesis,8,13,2,Supported,,no,Add exact-code regression only
 190,P3,HR/Sp3fp,60,"Genesis 19:8, word 15",Genesis,19,8,15,Supported,,no,Add exact-code regression only
-191,P3,HC/D/Sd,59,"Genesis 49:31, word 15",Genesis,49,31,15,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+191,P3,HC/D/Sd,59,"Genesis 49:31, word 15",Genesis,49,31,15,Supported,,no,Add exact-code regression only
 192,P3,HTd/Acbpa,59,"Genesis 18:29, word 14",Genesis,18,29,14,Supported,,no,Add exact-code regression only
-193,P3,AD,58,"Ezra 4:8, word 13",Ezra,4,8,13,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+193,P3,AD,58,"Ezra 4:8, word 13",Ezra,4,8,13,Supported,,no,Add exact-code regression only
 194,P3,AR/Sp3ms,58,"Ezra 4:11, word 6",Ezra,4,11,6,Supported,,no,Add exact-code regression only
 195,P3,AVqi3ms,58,"Ezra 4:12, word 2",Ezra,4,12,2,Supported,,no,Add exact-code regression only
 196,P3,AVqrmpa,58,"Ezra 4:12, word 17",Ezra,4,12,17,Supported,,no,Add exact-code regression only
@@ -393,7 +393,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 392,P3,HVqp2ms/Sp1cs,30,"Genesis 31:28, word 2",Genesis,31,28,2,Supported,,no,Add exact-code regression only
 393,P3,HVqrmsc/Sp2ms,30,"Genesis 23:6, word 11",Genesis,23,6,11,Supported,,no,Add exact-code regression only
 394,P3,AC/R,29,"Ezra 5:16, word 12",Ezra,5,16,12,Supported,,no,Add exact-code regression only
-395,P3,AR/D,29,"Ezra 4:24, word 1",Ezra,4,24,1,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+395,P3,AR/D,29,"Ezra 4:24, word 1",Ezra,4,24,1,Supported,,no,Add exact-code regression only
 396,P3,AR/Sp3mp,29,"Ezra 4:20, word 14",Ezra,4,20,14,Supported,,no,Add exact-code regression only
 397,P3,HC/Ncbsc/Sp1cs,29,"1 Samuel 24:13, word 8",1 Samuel,24,13,8,Supported,,no,Add exact-code regression only
 398,P3,HC/Td/VNrmsa,29,"Exodus 12:10, word 6",Exodus,12,10,6,Supported,,no,Add exact-code regression only
@@ -414,7 +414,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 413,P3,HC/Vqi1cp,28,"Genesis 37:20, word 11",Genesis,37,20,11,Supported,,no,Add exact-code regression only
 414,P3,HC/Vqw3mp/Sp3mp,28,"Exodus 39:18, word 10",Exodus,39,18,10,Supported,,no,Add exact-code regression only
 415,P3,HNcbdc/Sp2mp,28,"Genesis 3:5, word 9",Genesis,3,5,9,Supported,,no,Add exact-code regression only
-416,P3,HR/D/Sd,28,"Exodus 25:20, word 5",Exodus,25,20,5,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+416,P3,HR/D/Sd,28,"Exodus 25:20, word 5",Exodus,25,20,5,Supported,,no,Add exact-code regression only
 417,P3,HRd/Vqrmpa,28,"Ruth 2:4, word 7",Ruth,2,4,7,Supported,,no,Add exact-code regression only
 418,P3,HVhi1cs/Sp3mp,28,"Deuteronomy 32:21, word 8",Deuteronomy,32,21,8,Supported,,no,Add exact-code regression only
 419,P3,HVhrmsc,28,"Exodus 21:12, word 1",Exodus,21,12,1,Supported,,no,Add exact-code regression only
@@ -442,7 +442,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 441,P3,HPp3fp,26,"Genesis 6:2, word 9",Genesis,6,2,9,Supported,,no,Add exact-code regression only
 442,P3,HR/Aamsc,26,"Exodus 15:16, word 5",Exodus,15,16,5,Supported,,no,Add exact-code regression only
 443,P3,HR/Ncbdc/Sp2mp,26,"Genesis 19:8, word 17",Genesis,19,8,17,Supported,,no,Add exact-code regression only
-444,P3,HTi/D,26,"Genesis 16:13, word 11",Genesis,16,13,11,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+444,P3,HTi/D,26,"Genesis 16:13, word 11",Genesis,16,13,11,Supported,,no,Add exact-code regression only
 445,P3,HVNa,26,"Genesis 17:10, word 10",Genesis,17,10,10,Supported,,no,Add exact-code regression only
 446,P3,HVNrfpa,26,"Exodus 34:10, word 10",Exodus,34,10,10,Supported,,no,Add exact-code regression only
 447,P3,HVNv2mp,26,"Genesis 42:16, word 8",Genesis,42,16,8,Supported,,no,Add exact-code regression only
@@ -484,7 +484,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 483,P3,HNcmpc/Sp3fp,23,"Genesis 33:2, word 5",Genesis,33,2,5,Supported,,no,Add exact-code regression only
 484,P3,HR/Aafsa,23,"Genesis 50:20, word 7",Genesis,50,20,7,Supported,,no,Add exact-code regression only
 485,P3,HR/Ncbsc/Sp1cp,23,"Genesis 43:21, word 18",Genesis,43,21,18,Supported,,no,Add exact-code regression only
-486,P3,HR/R/D/Sd,23,"Genesis 6:16, word 7",Genesis,6,16,7,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+486,P3,HR/R/D/Sd,23,"Genesis 6:16, word 7",Genesis,6,16,7,Supported,,no,Add exact-code regression only
 487,P3,HTm/Sp3mp,23,"1 Samuel 12:2, word 10",1 Samuel,12,2,10,Supported,,no,Add exact-code regression only
 488,P3,HVhi3ms/Sp3mp,23,"Numbers 27:17, word 8",Numbers,27,17,8,Supported,,no,Add exact-code regression only
 489,P3,HVqi3mp/Sp1cs,23,"Genesis 26:7, word 13",Genesis,26,7,13,Supported,,no,Add exact-code regression only
@@ -571,7 +571,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 570,P3,HVqp2ms/Sp3mp,18,"Deuteronomy 13:3, word 14",Deuteronomy,13,3,14,Supported,,no,Add exact-code regression only
 571,P3,HVqp3fs/Sp3ms,18,"Genesis 37:20, word 10",Genesis,37,20,10,Supported,,no,Add exact-code regression only
 572,P3,AAampa,17,"Ezra 4:20, word 2",Ezra,4,20,2,Supported,,no,Add exact-code regression only
-573,P3,AC/D,17,"Ezra 4:10, word 16",Ezra,4,10,16,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+573,P3,AC/D,17,"Ezra 4:10, word 16",Ezra,4,10,16,Supported,,no,Add exact-code regression only
 574,P3,AVqp3fs,17,"Ezra 4:24, word 2",Ezra,4,24,2,Supported,,no,Add exact-code regression only
 575,P3,AVui3ms,17,"Ezra 4:21, word 14",Ezra,4,21,14,Supported,,no,Add exact-code regression only
 576,P3,HC/Ncbsc/Sp3mp,17,"Genesis 46:32, word 8",Genesis,46,32,8,Supported,,no,Add exact-code regression only
@@ -616,7 +616,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 615,P3,HC/Vpi1cs,16,"Genesis 12:2, word 5",Genesis,12,2,5,Supported,,no,Add exact-code regression only
 616,P3,HC/Vprmpa,16,"1 Kings 22:44, word 8",1 Kings,22,44,8,Supported,,no,Add exact-code regression only
 617,P3,HC/Vqq3cp/Sp3mp,16,"Genesis 33:13, word 12",Genesis,33,13,12,Supported,,no,Add exact-code regression only
-618,P3,HD/Sp3ms,16,"Genesis 18:22, word 7",Genesis,18,22,7,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+618,P3,HD/Sp3ms,16,"Genesis 18:22, word 7",Genesis,18,22,7,Supported,,no,Add exact-code regression only
 619,P3,HR/Acmda,16,"Exodus 24:4, word 16",Exodus,24,4,16,Supported,,no,Add exact-code regression only
 620,P3,HR/Ncfdc/Sp3mp,16,"Genesis 20:8, word 12",Genesis,20,8,12,Supported,,no,Add exact-code regression only
 621,P3,HR/Ncfpc/Sp2mp,16,"Genesis 43:23, word 12",Genesis,43,23,12,Supported,,no,Add exact-code regression only
@@ -1025,7 +1025,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1024,P4,HTi/Vqp2mp,7,"Genesis 29:5, word 3",Genesis,29,5,3,Supported,,no,Add exact-code regression only
 1025,P4,HTi/Vqp3ms,7,"Deuteronomy 4:33, word 1",Deuteronomy,4,33,1,Supported,,no,Add exact-code regression only
 1026,P4,HTm/Sp2fs,7,"Genesis 16:11, word 5",Genesis,16,11,5,Supported,,no,Add exact-code regression only
-1027,P4,HTr/D,7,"Psalms 122:4, word 1",Psalms,122,4,1,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1027,P4,HTr/D,7,"Psalms 122:4, word 1",Psalms,122,4,1,Supported,,no,Add exact-code regression only
 1028,P4,HTr/Vqi3mp,7,"Ecclesiastes 1:11, word 6",Ecclesiastes,1,11,6,Supported,,no,Add exact-code regression only
 1029,P4,HTr/Vqp1cs,7,"Judges 5:7, word 6",Judges,5,7,6,Supported,,no,Add exact-code regression only
 1030,P4,HVhc/Sp2ms,7,"Exodus 9:16, word 6",Exodus,9,16,6,Supported,,no,Add exact-code regression only
@@ -1068,7 +1068,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1067,P4,HC/Ncfsc/Sp1cp,6,"Genesis 47:18, word 28",Genesis,47,18,28,Supported,,no,Add exact-code regression only
 1068,P4,HC/Ngmsa,6,"Deuteronomy 23:4, word 4",Deuteronomy,23,4,4,Supported,,no,Add exact-code regression only
 1069,P4,HC/R/Acmsa,6,"Deuteronomy 28:7, word 13",Deuteronomy,28,7,13,Supported,,no,Add exact-code regression only
-1070,P4,HC/R/D/Sd,6,"1 Chronicles 23:27, word 12",1 Chronicles,23,27,12,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1070,P4,HC/R/D/Sd,6,"1 Chronicles 23:27, word 12",1 Chronicles,23,27,12,Supported,,no,Add exact-code regression only
 1071,P4,HC/R/Ncbsc/Sp1cs,6,"Genesis 30:25, word 15",Genesis,30,25,15,Supported,,no,Add exact-code regression only
 1072,P4,HC/R/Ncbsc/Sp3mp,6,"Deuteronomy 31:4, word 10",Deuteronomy,31,4,10,Supported,,no,Add exact-code regression only
 1073,P4,HC/Rd/Np,6,"Joshua 9:3, word 9",Joshua,9,3,9,Supported,,no,Add exact-code regression only
@@ -1104,7 +1104,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1103,P4,HNgmsc,6,"Judges 3:15, word 14",Judges,3,15,14,Supported,,no,Add exact-code regression only
 1104,P4,HR/Ncfdc/Sp1cp,6,"2 Samuel 7:22, word 15",2 Samuel,7,22,15,Supported,,no,Add exact-code regression only
 1105,P4,HR/Ncmdc,6,"1 Samuel 25:23, word 10",1 Samuel,25,23,10,Supported,,no,Add exact-code regression only
-1106,P4,HR/R/D,6,"Exodus 26:24, word 3",Exodus,26,24,3,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1106,P4,HR/R/D,6,"Exodus 26:24, word 3",Exodus,26,24,3,Supported,,no,Add exact-code regression only
 1107,P4,HR/R/Ncmsa,6,"Exodus 11:7, word 8",Exodus,11,7,8,Supported,,no,Add exact-code regression only
 1108,P4,HR/Td/Ncfpa,6,"Joshua 20:4, word 4",Joshua,20,4,4,Supported,,no,Add exact-code regression only
 1109,P4,HR/To/Sp3ms,6,"1 Kings 22:7, word 9",1 Kings,22,7,9,Supported,,no,Add exact-code regression only
@@ -1375,7 +1375,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1374,P4,HR/Acmdc/Sp3mp,4,"Exodus 26:24, word 14",Exodus,26,24,14,Supported,,no,Add exact-code regression only
 1375,P4,HR/Acmsc/Sp3fp,4,"Ezekiel 1:10, word 13",Ezekiel,1,10,13,Supported,,no,Add exact-code regression only
 1376,P4,HR/Aobpc,4,"Exodus 26:8, word 13",Exodus,26,8,13,Supported,,no,Add exact-code regression only
-1377,P4,HR/D/Sp1cs,4,"Genesis 48:15, word 15",Genesis,48,15,15,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1377,P4,HR/D/Sp1cs,4,"Genesis 48:15, word 15",Genesis,48,15,15,Supported,,no,Add exact-code regression only
 1378,P4,HR/Td/Ngmsa,4,"2 Samuel 21:20, word 21",2 Samuel,21,20,21,Supported,,no,Add exact-code regression only
 1379,P4,HR/Vha,4,"2 Chronicles 11:12, word 7",2 Chronicles,11,12,7,Supported,,no,Add exact-code regression only
 1380,P4,HR/Vhrmsc,4,"Psalms 37:7, word 7",Psalms,37,7,7,Supported,,no,Add exact-code regression only
@@ -1577,7 +1577,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1576,P4,HC/Vtp3cp,3,"1 Samuel 31:4, word 14",1 Samuel,31,4,14,Supported,,no,Add exact-code regression only
 1577,P4,HC/Vtq2ms,3,"Deuteronomy 22:1, word 10",Deuteronomy,22,1,10,Supported,,no,Add exact-code regression only
 1578,P4,HC/Vvw3ms,3,"Genesis 43:28, word 8",Genesis,43,28,8,Supported,,no,Add exact-code regression only
-1579,P4,HD/Sp2ms,3,"Genesis 46:30, word 12",Genesis,46,30,12,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1579,P4,HD/Sp2ms,3,"Genesis 46:30, word 12",Genesis,46,30,12,Supported,,no,Add exact-code regression only
 1580,P4,HNcbsa/Sh,3,"1 Samuel 3:19, word 10",1 Samuel,3,19,10,Supported,,no,Add exact-code regression only
 1581,P4,HR/Aampc/Sp2ms,3,"Psalms 31:20, word 6",Psalms,31,20,6,Supported,,no,Add exact-code regression only
 1582,P4,HR/Aamsc/Sp3ms,3,"Exodus 14:27, word 11",Exodus,14,27,11,Supported,,no,Add exact-code regression only
@@ -1606,7 +1606,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1605,P4,HTi/Ncmpa,3,"2 Kings 5:7, word 10",2 Kings,5,7,10,Supported,,no,Add exact-code regression only
 1606,P4,HTi/Np,3,"1 Samuel 14:45, word 5",1 Samuel,14,45,5,Supported,,no,Add exact-code regression only
 1607,P4,HTi/Pp1cs,3,"Numbers 11:12, word 1",Numbers,11,12,1,Supported,,no,Add exact-code regression only
-1608,P4,HTi/R/D,3,"2 Kings 1:3, word 15",2 Kings,1,3,15,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1608,P4,HTi/R/D,3,"2 Kings 1:3, word 15",2 Kings,1,3,15,Supported,,no,Add exact-code regression only
 1609,P4,HTi/R/R,3,"2 Kings 18:25, word 2",2 Kings,18,25,2,Supported,,no,Add exact-code regression only
 1610,P4,HTi/Sp3ms,3,"2 Kings 19:13, word 1",2 Kings,19,13,1,Supported,,no,Add exact-code regression only
 1611,P4,HTi/Vhi1cs,3,"Judges 20:23, word 12",Judges,20,23,12,Supported,,no,Add exact-code regression only
@@ -1757,7 +1757,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1756,P4,HC/Aampc/Sp1cs,2,"Psalms 38:12, word 6",Psalms,38,12,6,Supported,,no,Add exact-code regression only
 1757,P4,HC/Aamsc/Sp2ms,2,"2 Kings 19:28, word 4",2 Kings,19,28,4,Supported,,no,Add exact-code regression only
 1758,P4,HC/Aamsc/Sp3ms,2,"Exodus 12:4, word 8",Exodus,12,4,8,Supported,,no,Add exact-code regression only
-1759,P4,HC/D/Sp3ms,2,"Job 2:3, word 21",Job,2,3,21,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1759,P4,HC/D/Sp3ms,2,"Job 2:3, word 21",Job,2,3,21,Supported,,no,Add exact-code regression only
 1760,P4,HC/Ncbdc/Sp2fs,2,"Jeremiah 2:37, word 5",Jeremiah,2,37,5,Supported,,no,Add exact-code regression only
 1761,P4,HC/Ncbdc/Sp2mp,2,"Ezekiel 33:25, word 11",Ezekiel,33,25,11,Supported,,no,Add exact-code regression only
 1762,P4,HC/Ncbdc/Sp3fs,2,"Judges 19:27, word 16",Judges,19,27,16,Supported,,no,Add exact-code regression only
@@ -1903,7 +1903,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1902,P4,HC/Vvrmpa,2,"Nehemiah 9:3, word 13",Nehemiah,9,3,13,Supported,,no,Add exact-code regression only
 1903,P4,HC/Vvv2mp,2,"Psalms 99:5, word 4",Psalms,99,5,4,Supported,,no,Add exact-code regression only
 1904,P4,HC/Vvw3fp,2,"Genesis 33:6, word 5",Genesis,33,6,5,Supported,,no,Add exact-code regression only
-1905,P4,HD/Sp1cs,2,"Joshua 14:11, word 1",Joshua,14,11,1,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1905,P4,HD/Sp1cs,2,"Joshua 14:11, word 1",Joshua,14,11,1,Supported,,no,Add exact-code regression only
 1906,P4,HNcfdc/Sp3fp,2,"Ezekiel 1:24, word 17",Ezekiel,1,24,17,Supported,,no,Add exact-code regression only
 1907,P4,HNcfpc/Sp3fp,2,"Ezekiel 1:11, word 12",Ezekiel,1,11,12,Supported,,no,Add exact-code regression only
 1908,P4,HNcfsc/Sh,2,"Psalms 44:27, word 2",Psalms,44,27,2,Supported,,no,Add exact-code regression only
@@ -1926,7 +1926,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1925,P4,HR/Sp2fp,2,"Ezekiel 13:18, word 25",Ezekiel,13,18,25,Supported,,no,Add exact-code regression only
 1926,P4,HR/Td/Aafpa,2,"Ezekiel 42:5, word 8",Ezekiel,42,5,8,Supported,,no,Add exact-code regression only
 1927,P4,HR/Td/Vqrmsa,2,"Joshua 8:7, word 3",Joshua,8,7,3,Supported,,no,Add exact-code regression only
-1928,P4,HR/Tr/D,2,"Genesis 6:3, word 8",Genesis,6,3,8,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1928,P4,HR/Tr/D,2,"Genesis 6:3, word 8",Genesis,6,3,8,Supported,,no,Add exact-code regression only
 1929,P4,HR/Tr/Vqp3ms,2,"Ecclesiastes 5:14, word 8",Ecclesiastes,5,14,8,Supported,,no,Add exact-code regression only
 1930,P4,HR/Vhrmpa,2,"1 Chronicles 16:42, word 6",1 Chronicles,16,42,6,Supported,,no,Add exact-code regression only
 1931,P4,HR/Vlc/Sp2ms,2,"1 Kings 17:4, word 7",1 Kings,17,4,7,Supported,,no,Add exact-code regression only
@@ -1963,7 +1963,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 1962,P4,HTd/VHsfsa,2,"Numbers 25:15, word 3",Numbers,25,15,3,Supported,,no,Add exact-code regression only
 1963,P4,HTd/Vvrmpa,2,"Zephaniah 1:5, word 2",Zephaniah,1,5,2,Supported,,no,Add exact-code regression only
 1964,P4,HTi/Aafsa,2,"Numbers 13:19, word 7",Numbers,13,19,7,Supported,,no,Add exact-code regression only
-1965,P4,HTi/D/Sp3ms,2,"Genesis 43:27, word 10",Genesis,43,27,10,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+1965,P4,HTi/D/Sp3ms,2,"Genesis 43:27, word 10",Genesis,43,27,10,Supported,,no,Add exact-code regression only
 1966,P4,HTi/Ncbdc,2,"Numbers 16:14, word 14",Numbers,16,14,14,Supported,,no,Add exact-code regression only
 1967,P4,HTi/Ncmsc/Sp2ms,2,"1 Samuel 24:17, word 12",1 Samuel,24,17,12,Supported,,no,Add exact-code regression only
 1968,P4,HTi/R/Ncfsc/Sp2ms,2,"Job 22:4, word 1",Job,22,4,1,Supported,,no,Add exact-code regression only
@@ -2317,8 +2317,8 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 2316,P4,HC/Aampc/Sp2mp,1,"Deuteronomy 5:23, word 15",Deuteronomy,5,23,15,Supported,,no,Add exact-code regression only
 2317,P4,HC/Aobpc/Sp3ms,1,"Leviticus 5:24, word 10",Leviticus,5,24,10,Supported,,no,Add exact-code regression only
 2318,P4,HC/Aofsa,1,"Nehemiah 9:3, word 11",Nehemiah,9,3,11,Supported,,no,Add exact-code regression only
-2319,P4,HC/D/Sp1cs,1,"Psalms 139:18, word 5",Psalms,139,18,5,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
-2320,P4,HC/D/Sp2ms,1,"Exodus 9:2, word 6",Exodus,9,2,6,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+2319,P4,HC/D/Sp1cs,1,"Psalms 139:18, word 5",Psalms,139,18,5,Supported,,no,Add exact-code regression only
+2320,P4,HC/D/Sp2ms,1,"Exodus 9:2, word 6",Exodus,9,2,6,Supported,,no,Add exact-code regression only
 2321,P4,HC/Ncbdc/Sp1cp,1,"Deuteronomy 21:7, word 10",Deuteronomy,21,7,10,Supported,,no,Add exact-code regression only
 2322,P4,HC/Ncbdc/Sp3mp,1,"Ezekiel 10:12, word 4",Ezekiel,10,12,4,Supported,,no,Add exact-code regression only
 2323,P4,HC/Ncbsa/Sh,1,"Job 5:16, word 4",Job,5,16,4,Supported,,no,Add exact-code regression only
@@ -2359,7 +2359,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 2358,P4,HC/R/Ncmsc/Sp2fs,1,"1 Kings 17:13, word 19",1 Kings,17,13,19,Supported,,no,Add exact-code regression only
 2359,P4,HC/R/Np/Sd,1,"2 Kings 17:24, word 5",2 Kings,17,24,5,Supported,,no,Add exact-code regression only
 2360,P4,HC/R/Pp3mp,1,"2 Samuel 24:3, word 11",2 Samuel,24,3,11,Supported,,no,Add exact-code regression only
-2361,P4,HC/R/R/D/Sd,1,"1 Kings 7:11, word 1",1 Kings,7,11,1,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+2361,P4,HC/R/R/D/Sd,1,"1 Kings 7:11, word 1",1 Kings,7,11,1,Supported,,no,Add exact-code regression only
 2362,P4,HC/R/R/Ncbpa,1,"Isaiah 41:26, word 5",Isaiah,41,26,5,Supported,,no,Add exact-code regression only
 2363,P4,HC/R/R/Ncbpc,1,"2 Chronicles 32:7, word 10",2 Chronicles,32,7,10,Supported,,no,Add exact-code regression only
 2364,P4,HC/R/R/Ncbsc,1,"Deuteronomy 4:32, word 17",Deuteronomy,4,32,17,Supported,,no,Add exact-code regression only
@@ -2653,12 +2653,12 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 2652,P4,HC/Vvv2fs,1,"Psalms 45:12, word 7",Psalms,45,12,7,Supported,,no,Add exact-code regression only
 2653,P4,HC/Vvw1cs,1,"Genesis 24:48, word 2",Genesis,24,48,2,Supported,,no,Add exact-code regression only
 2654,P4,HC/Vzrmpa,1,"Jeremiah 41:5, word 12",Jeremiah,41,5,12,Supported,,no,Add exact-code regression only
-2655,P4,HD/Sh,1,"Ecclesiastes 4:2, word 12",Ecclesiastes,4,2,12,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
-2656,P4,HD/Sp1cp,1,"Lamentations 4:17, word 2",Lamentations,4,17,2,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
-2657,P4,HD/Sp2fs,1,"1 Kings 1:14, word 2",1 Kings,1,14,2,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
-2658,P4,HD/Sp3fp,1,"Lamentations 4:17, word 1",Lamentations,4,17,1,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
-2659,P4,HD/Sp3fs,1,"1 Kings 1:22, word 2",1 Kings,1,22,2,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
-2660,P4,HD/Sp3mp,1,"Esther 6:14, word 1",Esther,6,14,1,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+2655,P4,HD/Sh,1,"Ecclesiastes 4:2, word 12",Ecclesiastes,4,2,12,Supported,,no,Add exact-code regression only
+2656,P4,HD/Sp1cp,1,"Lamentations 4:17, word 2",Lamentations,4,17,2,Supported,,no,Add exact-code regression only
+2657,P4,HD/Sp2fs,1,"1 Kings 1:14, word 2",1 Kings,1,14,2,Supported,,no,Add exact-code regression only
+2658,P4,HD/Sp3fp,1,"Lamentations 4:17, word 1",Lamentations,4,17,1,Supported,,no,Add exact-code regression only
+2659,P4,HD/Sp3fs,1,"1 Kings 1:22, word 2",1 Kings,1,22,2,Supported,,no,Add exact-code regression only
+2660,P4,HD/Sp3mp,1,"Esther 6:14, word 1",Esther,6,14,1,Supported,,no,Add exact-code regression only
 2661,P4,HNcbdc/Sp3fp,1,"Ezekiel 23:42, word 16",Ezekiel,23,42,16,Supported,,no,Add exact-code regression only
 2662,P4,HNcbpc/Sp3fp,1,"Ezekiel 23:3, word 11",Ezekiel,23,3,11,Supported,,no,Add exact-code regression only
 2663,P4,HNcbsc/Sh,1,"Psalms 92:16, word 8",Psalms,92,16,8,Supported,,no,Add exact-code regression only
@@ -2683,9 +2683,9 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 2682,P4,HR/Acmdc/Sp3fp,1,"Ezekiel 23:13, word 6",Ezekiel,23,13,6,Supported,,no,Add exact-code regression only
 2683,P4,HR/Acmpa,1,"Ezekiel 37:17, word 10",Ezekiel,37,17,10,Supported,,no,Add exact-code regression only
 2684,P4,HR/Aofsa,1,"Numbers 15:4, word 9",Numbers,15,4,9,Supported,,no,Add exact-code regression only
-2685,P4,HR/D/Sp2ms,1,"Numbers 22:30, word 11",Numbers,22,30,11,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
-2686,P4,HR/D/Sp3fs,1,"Isaiah 28:4, word 18",Isaiah,28,4,18,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
-2687,P4,HR/D/Sp3ms,1,"Genesis 25:6, word 12",Genesis,25,6,12,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+2685,P4,HR/D/Sp2ms,1,"Numbers 22:30, word 11",Numbers,22,30,11,Supported,,no,Add exact-code regression only
+2686,P4,HR/D/Sp3fs,1,"Isaiah 28:4, word 18",Isaiah,28,4,18,Supported,,no,Add exact-code regression only
+2687,P4,HR/D/Sp3ms,1,"Genesis 25:6, word 12",Genesis,25,6,12,Supported,,no,Add exact-code regression only
 2688,P4,HR/Ncbsa/Sh,1,"Psalms 125:3, word 13",Psalms,125,3,13,Supported,,no,Add exact-code regression only
 2689,P4,HR/Ncbsc/Sp2cp,1,"Leviticus 26:1, word 14",Leviticus,26,1,14,Supported,,no,Add exact-code regression only
 2690,P4,HR/Ncfsa/Sh,1,"Psalms 80:3, word 9",Psalms,80,3,9,Supported,,no,Add exact-code regression only
@@ -2777,7 +2777,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 2776,P4,HTd/Aamsa/Sd,1,"2 Kings 16:18, word 11",2 Kings,16,18,11,Supported,,no,Add exact-code regression only
 2777,P4,HTd/Aamsa/Sh,1,"Ezekiel 40:19, word 5",Ezekiel,40,19,5,Supported,,no,Add exact-code regression only
 2778,P4,HTd/Acbda,1,"Ezekiel 45:15, word 6",Ezekiel,45,15,6,Supported,,no,Add exact-code regression only
-2779,P4,HTd/D,1,"Exodus 10:7, word 18",Exodus,10,7,18,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+2779,P4,HTd/D,1,"Exodus 10:7, word 18",Exodus,10,7,18,Supported,,no,Add exact-code regression only
 2780,P4,HTd/Ncfsa/Sh,1,"Jeremiah 11:15, word 5",Jeremiah,11,15,5,Supported,,no,Add exact-code regression only
 2781,P4,HTd/Ncmpc,1,"1 Chronicles 9:26, word 13",1 Chronicles,9,26,13,Supported,,no,Add exact-code regression only
 2782,P4,HTd/Ncmsc/Sp1cs,1,"Joshua 7:21, word 23",Joshua,7,21,23,Supported,,no,Add exact-code regression only
@@ -2803,7 +2803,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 2802,P4,HTd/Vtrfpa,1,"Ezekiel 13:17, word 9",Ezekiel,13,17,9,Supported,,no,Add exact-code regression only
 2803,P4,HTd/Vtrfsa,1,"Genesis 3:24, word 13",Genesis,3,24,13,Supported,,no,Add exact-code regression only
 2804,P4,HTi/Aampa,1,"Amos 6:2, word 11",Amos,6,2,11,Supported,,no,Add exact-code regression only
-2805,P4,HTi/D/Sp3mp,1,"Exodus 4:18, word 17",Exodus,4,18,17,Partial,no parser switch for POS D,no,Parser review/change plus exact-code regression
+2805,P4,HTi/D/Sp3mp,1,"Exodus 4:18, word 17",Exodus,4,18,17,Supported,,no,Add exact-code regression only
 2806,P4,HTi/Ncbpc/Sp1cs,1,"Ezekiel 18:29, word 8",Ezekiel,18,29,8,Supported,,no,Add exact-code regression only
 2807,P4,HTi/Ncbpc/Sp3ms,1,"Job 13:8, word 1",Job,13,8,1,Supported,,no,Add exact-code regression only
 2808,P4,HTi/Ncbsc/Sp1cs,1,"Ezekiel 18:25, word 10",Ezekiel,18,25,10,Supported,,no,Add exact-code regression only
@@ -3122,7 +3122,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 ,P1,HR/Np,3510,"Genesis 2:8, word 5",Genesis,2,8,5,Supported,,yes,Already covered by exact-code test
 ,P1,HR/Vqc,3135,"Genesis 1:22, word 4",Genesis,1,22,4,Supported,,yes,Already covered by exact-code test
 ,P1,HR/Sp3ms,2914,"Genesis 1:11, word 16",Genesis,1,11,16,Supported,,yes,Already covered by exact-code test
-,P1,HD,2865,"Genesis 1:7, word 17",Genesis,1,7,17,Partial,no parser switch for POS D,yes,Review parser behavior despite existing exact-code test
+,P1,HD,2865,"Genesis 1:7, word 17",Genesis,1,7,17,Supported,,yes,Already covered by exact-code test
 ,P1,HVqi3ms,2837,"Genesis 1:29, word 26",Genesis,1,29,26,Supported,,yes,Already covered by exact-code test
 ,P1,HTd/Ncmpa,2792,"Genesis 1:1, word 5",Genesis,1,1,5,Supported,,yes,Already covered by exact-code test
 ,P1,HRd/Ncmsa,2706,"Genesis 1:7, word 10",Genesis,1,7,10,Supported,,yes,Already covered by exact-code test
@@ -3210,12 +3210,12 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 ,P2,HR/Vhc,527,"Genesis 1:14, word 7",Genesis,1,14,7,Supported,,yes,Already covered by exact-code test
 ,P2,HC/Vpw3ms,526,"Genesis 1:22, word 1",Genesis,1,22,1,Supported,,yes,Already covered by exact-code test
 ,P2,HVhi3ms,499,"Genesis 17:20, word 15",Genesis,17,20,15,Supported,,yes,Already covered by exact-code test
-,P2,HR/D,491,"Genesis 3:23, word 11",Genesis,3,23,11,Partial,no parser switch for POS D,yes,Review parser behavior despite existing exact-code test
+,P2,HR/D,491,"Genesis 3:23, word 11",Genesis,3,23,11,Supported,,yes,Already covered by exact-code test
 ,P2,HNcbsc/Sp3ms,483,"Genesis 3:22, word 15",Genesis,3,22,15,Supported,,yes,Already covered by exact-code test
 ,P2,HVNi3ms,483,"Genesis 2:10, word 8",Genesis,2,10,8,Supported,,yes,Already covered by exact-code test
 ,P2,HTo/Sp3mp,478,"Genesis 1:17, word 2",Genesis,1,17,2,Supported,,yes,Already covered by exact-code test
 ,P2,HTo/Sp3ms,477,"Genesis 1:27, word 9",Genesis,1,27,9,Supported,,yes,Already covered by exact-code test
-,P2,HC/D,474,"Genesis 3:22, word 12",Genesis,3,22,12,Partial,no parser switch for POS D,yes,Review parser behavior despite existing exact-code test
+,P2,HC/D,474,"Genesis 3:22, word 12",Genesis,3,22,12,Supported,,yes,Already covered by exact-code test
 ,P2,HNcfsc/Sp1cs,469,"Genesis 4:23, word 11",Genesis,4,23,11,Supported,,yes,Already covered by exact-code test
 ,P2,HC/R/Ncmsc,466,"Genesis 1:10, word 5",Genesis,1,10,5,Supported,,yes,Already covered by exact-code test
 ,P2,HNcbpc,460,"Genesis 1:2, word 7",Genesis,1,2,7,Supported,,yes,Already covered by exact-code test
@@ -3364,7 +3364,7 @@ gap_rank,frequency_priority,morphology_code,ot_occurrences,first_occurrence,firs
 ,P3,HTd/Vqsmsa,34,"Exodus 3:16, word 22",Exodus,3,16,22,Supported,,yes,Already covered by exact-code test
 ,P3,HVqrmsc/Sp3ms,34,"Genesis 4:15, word 18",Genesis,4,15,18,Supported,,yes,Already covered by exact-code test
 ,P3,HC/Aafsa,33,"Genesis 27:34, word 9",Genesis,27,34,9,Supported,,yes,Already covered by exact-code test
-,P3,HC/R/D,30,"Genesis 2:10, word 7",Genesis,2,10,7,Partial,no parser switch for POS D,yes,Review parser behavior despite existing exact-code test
+,P3,HC/R/D,30,"Genesis 2:10, word 7",Genesis,2,10,7,Supported,,yes,Already covered by exact-code test
 ,P3,HC/Vpq2mp,30,"Genesis 45:13, word 11",Genesis,45,13,11,Supported,,yes,Already covered by exact-code test
 ,P3,HVPsfsa,26,"Genesis 15:9, word 6",Genesis,15,9,6,Supported,,yes,Already covered by exact-code test
 ,P3,HC/Aampc,25,"Exodus 3:18, word 5",Exodus,3,18,5,Supported,,yes,Already covered by exact-code test

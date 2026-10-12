@@ -4,7 +4,7 @@
 
 - Source: https://github.com/openscriptures/morphhb/tree/master/wlc
 - MorphHB commit: 3d15126fb1ef74867fc1434be1942e837932691f.
-- BSMP commit audited: 6ba4f57ee62234e2c87a6d7bfda14fa887d884a6.
+- BSMP commit audited: e4d7ec1e3b5eaa669ad66aa21753ea6def0d9a0b.
 - Test coverage means a complete source morphology code appears as a literal argument to parseHebrewMorphology(...) in the current BSMP test file. Segment-only expectations do not count as exact-code coverage.
 - Parser status is checked against the current parser's part-of-speech dispatch and lookup maps. Partial means the POS is recognized but at least one code dimension is not handled or mapped; Unsupported means a segment uses an unknown POS or the overall code prefix is invalid.
 
@@ -21,7 +21,7 @@
 | Exact codes not directly covered | 3,105 |
 | Source occurrences covered by exact-code tests | 260,686 / 306,785 (84.97%) |
 | Source occurrences belonging to uncovered exact codes | 46,099 |
-| Codes flagged for parser review | 80 (6,985 occurrences) |
+| Codes flagged for parser review | 43 (2,680 occurrences) |
 | Whole-code literals found in direct test calls | 422 |
 
 ## Master gap list — highest-frequency uncovered codes
@@ -97,61 +97,38 @@ These codes are flagged because the parser either lacks a dispatch branch or one
 
 | Code | OT occurrences | First occurrence | Parser status | Detail | Exact-code test |
 |---|---:|---|---|---|---|
-| HD | 2,865 | Genesis 1:7, word 17 | Partial | no parser switch for POS D | Yes |
 | HTd/Pdxms | 699 | Genesis 7:1, word 16 | Partial | person code x | Yes |
-| HR/D | 491 | Genesis 3:23, word 11 | Partial | no parser switch for POS D | Yes |
-| HC/D | 474 | Genesis 3:22, word 12 | Partial | no parser switch for POS D | Yes |
 | HPdxms | 328 | Genesis 5:1, word 1 | Partial | person code x | Yes |
 | HPdxcp | 321 | Genesis 2:4, word 1 | Partial | person code x | Yes |
 | HTd/Pdxcp | 284 | Genesis 15:1, word 3 | Partial | person code x | No |
 | HTd/Pdxfs | 271 | Genesis 12:7, word 10 | Partial | person code x | No |
 | HPdxfs | 255 | Genesis 2:23, word 3 | Partial | person code x | No |
-| HD/Sd | 138 | Genesis 14:10, word 11 | Partial | no parser switch for POS D | No |
 | HC/Pdxcp | 106 | Genesis 10:1, word 1 | Partial | person code x | Yes |
 | HR/Pdxms | 89 | Genesis 16:8, word 6 | Partial | person code x | No |
-| HC/D/Sd | 59 | Genesis 49:31, word 15 | Partial | no parser switch for POS D | No |
-| AD | 58 | Ezra 4:8, word 13 | Partial | no parser switch for POS D | No |
 | HC/Pdxms | 51 | Genesis 6:15, word 1 | Partial | person code x | Yes |
 | HR/Pdxfs | 48 | Genesis 2:23, word 9 | Partial | person code x | No |
 | APdxms | 47 | Ezra 4:11, word 1 | Partial | person code x | No |
 | HR/Pdxcp | 36 | Genesis 10:5, word 1 | Partial | person code x | No |
-| HC/R/D | 30 | Genesis 2:10, word 7 | Partial | no parser switch for POS D | Yes |
-| AR/D | 29 | Ezra 4:24, word 1 | Partial | no parser switch for POS D | No |
-| HR/D/Sd | 28 | Exodus 25:20, word 5 | Partial | no parser switch for POS D | No |
-| HTi/D | 26 | Genesis 16:13, word 11 | Partial | no parser switch for POS D | No |
 | HC/Pdxfs | 25 | Genesis 49:28, word 7 | Partial | person code x | No |
-| HR/R/D/Sd | 23 | Genesis 6:16, word 7 | Partial | no parser switch for POS D | No |
-| AC/D | 17 | Ezra 4:10, word 16 | Partial | no parser switch for POS D | No |
 | HC/R/Pdxms | 17 | Exodus 17:12, word 16 | Partial | person code x | No |
-| HD/Sp3ms | 16 | Genesis 18:22, word 7 | Partial | no parser switch for POS D | No |
 | APdxfs | 12 | Ezra 4:13, word 8 | Partial | person code x | No |
 | APdxmp | 12 | Ezra 4:21, word 6 | Partial | person code x | Yes |
 | HC/R/Pdxcp | 9 | Genesis 9:19, word 5 | Partial | person code x | No |
 | APdxcp | 8 | Ezra 5:15, word 3 | Partial | person code x | No |
 | HC/R/Pdxfs | 8 | Joshua 7:20, word 12 | Partial | person code x | No |
-| HTr/D | 7 | Psalms 122:4, word 1 | Partial | no parser switch for POS D | No |
 | APdxcs | 6 | Ezra 4:22, word 6 | Partial | person code x | No |
-| HC/R/D/Sd | 6 | 1 Chronicles 23:27, word 12 | Partial | no parser switch for POS D | No |
-| HR/R/D | 6 | Exodus 26:24, word 3 | Partial | no parser switch for POS D | No |
 | APfxbs | 5 | Daniel 2:22, word 6 | Partial | person code x | Yes |
 | HTi/Pdxfs | 5 | Ruth 1:19, word 16 | Partial | person code x | No |
 | HTi/Pdxms | 5 | Genesis 43:29, word 10 | Partial | person code x | Yes |
-| HR/D/Sp1cs | 4 | Genesis 48:15, word 15 | Partial | no parser switch for POS D | No |
 | APdxbp | 3 | Daniel 2:40, word 18 | Partial | person code x | Yes |
 | AR/Pfxcs | 3 | Ezra 6:8, word 4 | Partial | person code x | No |
-| HD/Sp2ms | 3 | Genesis 46:30, word 12 | Partial | no parser switch for POS D | No |
 | HPdxcs | 3 | Judges 6:20, word 13 | Partial | person code x | Yes |
-| HTi/R/D | 3 | 2 Kings 1:3, word 15 | Partial | no parser switch for POS D | No |
 | AC/Pfxcs | 2 | Ezra 6:9, word 1 | Partial | person code x | No |
 | AC/R/Prxcs | 2 | Daniel 4:22, word 30 | Partial | person code x | No |
 | APfxcs | 2 | Ezra 7:18, word 2 | Partial | person code x | No |
 | APrxcs | 2 | Daniel 4:22, word 31 | Partial | person code x | No |
 | AR/Pdxms | 2 | Daniel 2:10, word 25 | Partial | person code x | No |
-| HC/D/Sp3ms | 2 | Job 2:3, word 21 | Partial | no parser switch for POS D | No |
-| HD/Sp1cs | 2 | Joshua 14:11, word 1 | Partial | no parser switch for POS D | No |
-| HR/Tr/D | 2 | Genesis 6:3, word 8 | Partial | no parser switch for POS D | No |
 | HTd/Pdxmp | 2 | Joel 3:2, word 7 | Partial | person code x | No |
-| HTi/D/Sp3ms | 2 | Genesis 43:27, word 10 | Partial | no parser switch for POS D | No |
 | HTi/R/Pdxms | 2 | Isaiah 58:5, word 1 | Partial | person code x | No |
 | AC/Pdxms | 1 | Daniel 5:25, word 1 | Partial | person code x | No |
 | AC/R/Pdxms | 1 | Ezra 5:7, word 4 | Partial | person code x | No |
@@ -161,22 +138,8 @@ These codes are flagged because the parser either lacks a dispatch branch or one
 | AR/Pdxcs | 1 | Jeremiah 10:11, word 1 | Partial | person code x | No |
 | AR/Pdxfs | 1 | Daniel 5:6, word 12 | Partial | person code x | No |
 | AR/Pixcs | 1 | Ezra 7:23, word 13 | Partial | person code x | No |
-| HC/D/Sp1cs | 1 | Psalms 139:18, word 5 | Partial | no parser switch for POS D | No |
-| HC/D/Sp2ms | 1 | Exodus 9:2, word 6 | Partial | no parser switch for POS D | No |
-| HC/R/R/D/Sd | 1 | 1 Kings 7:11, word 1 | Partial | no parser switch for POS D | No |
-| HD/Sh | 1 | Ecclesiastes 4:2, word 12 | Partial | no parser switch for POS D | No |
-| HD/Sp1cp | 1 | Lamentations 4:17, word 2 | Partial | no parser switch for POS D | No |
-| HD/Sp2fs | 1 | 1 Kings 1:14, word 2 | Partial | no parser switch for POS D | No |
-| HD/Sp3fp | 1 | Lamentations 4:17, word 1 | Partial | no parser switch for POS D | No |
-| HD/Sp3fs | 1 | 1 Kings 1:22, word 2 | Partial | no parser switch for POS D | No |
-| HD/Sp3mp | 1 | Esther 6:14, word 1 | Partial | no parser switch for POS D | No |
-| HR/D/Sp2ms | 1 | Numbers 22:30, word 11 | Partial | no parser switch for POS D | No |
-| HR/D/Sp3fs | 1 | Isaiah 28:4, word 18 | Partial | no parser switch for POS D | No |
-| HR/D/Sp3ms | 1 | Genesis 25:6, word 12 | Partial | no parser switch for POS D | No |
 | HR/Pdxcs | 1 | Daniel 8:16, word 10 | Partial | person code x | No |
 | HR/Pdxmp | 1 | Ecclesiastes 12:12, word 2 | Partial | person code x | No |
-| HTd/D | 1 | Exodus 10:7, word 18 | Partial | no parser switch for POS D | No |
-| HTi/D/Sp3mp | 1 | Exodus 4:18, word 17 | Partial | no parser switch for POS D | No |
 
 ## Book-by-book inventory
 
