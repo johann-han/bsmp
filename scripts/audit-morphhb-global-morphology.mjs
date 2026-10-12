@@ -165,12 +165,17 @@ for (const match of tests.matchAll(directCall)) {
   if (/^[HA][A-Za-z0-9/]+$/.test(code)) testedCodes.add(code);
 }
 
-const entries = fs.readdirSync(sourceDir)
-  .filter(file => file.endsWith(".xml") && ORDER_INDEX.has(file.slice(0, -4)))
+const allXmlFiles = fs.readdirSync(sourceDir).filter(file => file.endsWith(".xml")).sort();
+const nonBookXmlFiles = allXmlFiles.filter(file => !ORDER_INDEX.has(file.slice(0, -4)));
+const entries = allXmlFiles
+  .filter(file => ORDER_INDEX.has(file.slice(0, -4)))
   .sort((a, b) => ORDER_INDEX.get(a.slice(0, -4)) - ORDER_INDEX.get(b.slice(0, -4)));
 const stats = new Map();
 let wordTokens = 0;
 let morphTokens = 0;
+let hebrewTokens = 0;
+let aramaicTokens = 0;
+let otherLanguageMorphTokens = 0;
 const bookSummaries = [];
 
 for (const filename of entries) {
@@ -203,6 +208,9 @@ for (const filename of entries) {
     morphTokens += 1;
     bookMorphs += 1;
     const code = morph.trim();
+    if (code[0] === "H") hebrewTokens += 1;
+    else if (code[0] === "A") aramaicTokens += 1;
+    else otherLanguageMorphTokens += 1;
     if (!stats.has(code)) {
       const locBookCode = currentVerse?.book ?? bookCode;
       const locBookName = BOOK_NAMES.get(locBookCode) ?? bookName;
@@ -246,7 +254,12 @@ const summary = {
   bsmpAuditCommit: process.env.BSMP_AUDIT_COMMIT ?? "unknown",
   books: entries.length,
   bookFiles: entries.map(f => f),
+  wlcXmlFileCount: allXmlFiles.length,
+  nonBookXmlFiles,
   wordTokens,
+  hebrewWordTokens: hebrewTokens,
+  aramaicWordTokens: aramaicTokens,
+  otherLanguageMorphTokens,
   morphologyTaggedTokens: morphTokens,
   tokensWithoutMorphology: wordTokens - morphTokens,
   distinctMorphologyCodes: rows.length,
@@ -267,6 +280,7 @@ const report = [
   "## Provenance",
   "",
   "- Source: https://github.com/openscriptures/morphhb/tree/master/wlc",
+  "- Attribution: Original work of the Open Scriptures Hebrew Bible available at https://github.com/openscriptures/morphhb. The morphology annotations are licensed CC BY 4.0.",
   "- MorphHB commit: " + summary.morphhbCommit + ".",
   "- BSMP commit audited: " + summary.bsmpAuditCommit + ".",
   "- Test coverage means a complete source morphology code appears as a literal argument to parseHebrewMorphology(...) in the current BSMP test file. Segment-only expectations do not count as exact-code coverage.",
@@ -276,8 +290,12 @@ const report = [
   "",
   "| Measure | Result |",
   "|---|---:|",
-  "| Canonical OT book XML files | " + summary.books + " |",
-  "| Total word tokens (all w elements) | " + summary.wordTokens.toLocaleString("en-US") + " |",
+  "| XML files in wlc directory | " + summary.wlcXmlFileCount + " |",
+  "| Canonical OT book XML files parsed | " + summary.books + " |",
+  "| Total OT word tokens (all w elements) | " + summary.wordTokens.toLocaleString("en-US") + " |",
+  "| Hebrew-prefixed tokens (morphology H) | " + summary.hebrewWordTokens.toLocaleString("en-US") + " |",
+  "| Aramaic-prefixed tokens (morphology A) | " + summary.aramaicWordTokens.toLocaleString("en-US") + " |",
+  "| Other language-prefix tokens | " + summary.otherLanguageMorphTokens.toLocaleString("en-US") + " |",
   "| Word tokens with non-empty morphology | " + summary.morphologyTaggedTokens.toLocaleString("en-US") + " |",
   "| Word tokens without morphology | " + summary.tokensWithoutMorphology.toLocaleString("en-US") + " |",
   "| Distinct exact morphology codes | " + summary.distinctMorphologyCodes.toLocaleString("en-US") + " |",
@@ -307,6 +325,10 @@ const report = [
   ...parserIssues.slice(0, 100).map(r =>
     "| " + escMarkdown(r.code) + " | " + r.count.toLocaleString("en-US") + " | " + escMarkdown(r.firstOccurrence) + " | " + r.parserStatus + " | " + escMarkdown(r.parserDetail) + " | " + (r.tested ? "Yes" : "No") + " |"
   ),
+  "",
+  "## XML inventory note",
+  "",
+  "The source directory contains " + summary.wlcXmlFileCount + " XML files. The 39 canonical book files above were parsed for word and morphology counts. Non-book XML files: " + (summary.nonBookXmlFiles.length ? summary.nonBookXmlFiles.join(", ") : "none") + ". VerseMap.xml is an auxiliary WLC/KJV versification mapping file, not an OT book text, and is excluded from morphology counts.",
   "",
   "## Book-by-book inventory",
   "",
