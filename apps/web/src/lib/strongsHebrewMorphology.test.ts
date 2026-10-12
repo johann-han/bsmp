@@ -8710,4 +8710,24 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         expect(parsed.summary).toContain("Aramaic · Particle · Relative");
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures interrogative plus negative particle composite from Gen.4.7", () => {
+        const parsed = parseHebrewMorphology("HTi/Tn");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTi",
+            partOfSpeech: "Particle",
+            qualifier: "Interrogative",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTn",
+            partOfSpeech: "Particle",
+            qualifier: "Negative",
+        });
+        expect(parsed.summary).toContain(
+            "Particle · Interrogative · Particle · Negative",
+        );
+    });
+
 });
