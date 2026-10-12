@@ -8776,4 +8776,30 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures bare conjunction plus Qal imperative 2mp composite from Gen.1.22", () => {
+        const parsed = parseHebrewMorphology("HC/Vqv2mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqv2mp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Verb · Qal · Imperative · Imperative · 2nd person · Plural · Masculine",
+        );
+    });
+
 });
