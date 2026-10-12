@@ -8833,4 +8833,23 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures demonstrative pronoun feminine singular from Gen.2.23", () => {
+        const parsed = parseHebrewMorphology("HPdxfs");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HPdxfs",
+            partOfSpeech: "Pronoun",
+            qualifier: "Demonstrative",
+            person: null,
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Pronoun · Demonstrative · Singular · Feminine",
+        );
+    });
+
 });
