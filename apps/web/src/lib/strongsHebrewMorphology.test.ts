@@ -8703,7 +8703,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         });
         expect(parsed.segments?.[0]).toMatchObject({
             language: "A",
-            code: "Tr",
+            code: "ATr",
             partOfSpeech: "Particle",
             qualifier: "Relative",
         });
