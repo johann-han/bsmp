@@ -1,0 +1,63 @@
+name: MorphHB global morphology audit
+
+on:
+  push:
+    branches:
+      - feat/morphhb-global-audit-20261012
+    paths:
+      - .github/workflows/morphhb-global-audit.yml
+      - scripts/audit-morphhb-global-morphology.mjs
+      - apps/web/src/lib/strongsHebrewMorphology.ts
+      - apps/web/src/lib/strongsHebrewMorphology.test.ts
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout BSMP
+        uses: actions/checkout@v4
+
+      - name: Checkout Open Scriptures MorphHB
+        uses: actions/checkout@v4
+        with:
+          repository: openscriptures/morphhb
+          ref: master
+          path: morphhb
+          persist-credentials: false
+
+      - name: Generate complete Old Testament audit
+        env:
+          BSMP_AUDIT_COMMIT: ${{ github.sha }}
+        run: |
+          export MORPHHB_COMMIT="$(git -C morphhb rev-parse HEAD)"
+          node scripts/audit-morphhb-global-morphology.mjs \
+            --source morphhb/wlc \
+            --parser apps/web/src/lib/strongsHebrewMorphology.ts \
+            --tests apps/web/src/lib/strongsHebrewMorphology.test.ts \
+            --out-md docs/morphhb-global-morphology-audit.md \
+            --out-csv docs/morphhb-global-morphology-codes.csv
+
+      - name: Upload audit reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: morphhb-global-morphology-audit
+          path: |
+            docs/morphhb-global-morphology-audit.md
+            docs/morphhb-global-morphology-codes.csv
+          if-no-files-found: error
+
+      - name: Publish generated audit reports on this feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/morphhb-global-morphology-audit.md docs/morphhb-global-morphology-codes.csv
+          if git diff --cached --quiet; then
+            echo "Audit reports are unchanged."
+          else
+            git commit -m "docs(morphology): publish MorphHB global audit"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
