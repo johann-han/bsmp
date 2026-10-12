@@ -8668,4 +8668,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures definite article plus demonstrative pronoun from Gen.15.1", () => {
+        const parsed = parseHebrewMorphology("HTd/Pdxcp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HPdxcp",
+            partOfSpeech: "Pronoun",
+            qualifier: "Demonstrative",
+            person: null,
+            gender: "Common",
+            number: "Plural",
+        });
+        expect(parsed.summary).toContain(
+            "Particle · Definite article · Pronoun · Demonstrative · Plural · Common",
+        );
+    });
+
 });
