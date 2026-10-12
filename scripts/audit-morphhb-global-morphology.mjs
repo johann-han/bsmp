@@ -79,6 +79,9 @@ function classifyMorphology(raw) {
       continue;
     }
     if (!handledPos.has(pos)) {
+      // Bare D is a complete adverb morphology segment: the parser already
+      // recognizes its part of speech and there are no additional features.
+      if (pos === "D" && segment.length === 1) continue;
       problems.push("no parser switch for POS " + pos);
       continue;
     }
