@@ -10152,7 +10152,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             mood: null,
         });
         expect(parsed.summary).toBe(
-            "Verb · Niphal · Imperfect · 3rd person · Singular · Feminine",
+            "Verb · Niphal · Perfect · 3rd person · Singular · Feminine",
         );
     });
 
