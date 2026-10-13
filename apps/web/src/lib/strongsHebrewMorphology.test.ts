@@ -8942,4 +8942,34 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus definite article and masculine plural absolute noun from Gen.7.19", () => {
+        const parsed = parseHebrewMorphology("HC/Td/Ncmpa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcmpa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Plural · Masculine",
+        );
+    });
+
 });
