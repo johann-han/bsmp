@@ -330,9 +330,7 @@ function parseSegment(segment: string, language: "H" | "A"): StrongsMorphology {
             form = aspect;
             qualifier = stem;
 
-            if (code[2] === "h" || (language === "H" && code[2] === "p" && code[3] === "1")) {
-                mood = "Cohortative";
-            }
+            if (code[2] === "h") mood = "Cohortative";
             if (code[2] === "j") mood = "Jussive";
             if (code[2] === "v") mood = "Imperative";
 
