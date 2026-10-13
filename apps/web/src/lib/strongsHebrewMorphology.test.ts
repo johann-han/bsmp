@@ -10143,7 +10143,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             code: "HVNp3fs",
             partOfSpeech: "Verb",
             qualifier: "Niphal",
-            form: "Imperfect",
+            form: "Perfect",
             person: "3rd",
             gender: "Feminine",
             number: "Singular",
