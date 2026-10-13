@@ -3676,6 +3676,28 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures Niphal imperfect third-person masculine plural verb from Gen.20.9", () => {
+        const parsed = parseHebrewMorphology("HVNi3mp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVNi3mp",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Niphal · Imperfect · 3rd person · Plural · Masculine",
+        );
+    });
+
+
     it("decodes the next Genesis 2 Open Scriptures Qal sequential-perfect composite", () => {
         const parsed = parseHebrewMorphology("HC/Vqq3ms");
 
