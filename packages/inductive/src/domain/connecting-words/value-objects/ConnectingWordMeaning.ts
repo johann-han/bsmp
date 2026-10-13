@@ -33,7 +33,7 @@ export class ConnectingWordMeaning extends NonEmptyStringValueObject {
     }
 
     public override toString(): string {
-        return this.get("value");
+        return this.value;
     }
 
 }

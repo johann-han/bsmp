@@ -31,7 +31,7 @@ export class ConnectingWordId extends NonEmptyStringValueObject {
     }
 
     public override toString(): string {
-        return this.get("value");
+        return this.value;
     }
 
 }
