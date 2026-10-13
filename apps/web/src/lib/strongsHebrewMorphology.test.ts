@@ -8861,14 +8861,14 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             code: "HVqp2mp",
             partOfSpeech: "Verb",
             qualifier: "Qal",
-            form: "Sequential perfect",
+            form: "Perfect",
             person: "2nd",
             gender: "Masculine",
             number: "Plural",
             state: null,
         });
         expect(parsed.summary).toContain(
-            "Verb · Qal · Sequential perfect · 2nd person · Plural · Masculine",
+            "Verb · Qal · Perfect · 2nd person · Plural · Masculine",
         );
     });
 
