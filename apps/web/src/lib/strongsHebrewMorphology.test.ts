@@ -10106,7 +10106,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             mood: null,
         });
         expect(parsed.summary).toBe(
-            "Conjunction · Verb · Piel · Perfect · 3rd person · Singular · Masculine",
+            "Conjunction · Verb · Piel · Sequential perfect · 3rd person · Singular · Masculine",
         );
     });
 
