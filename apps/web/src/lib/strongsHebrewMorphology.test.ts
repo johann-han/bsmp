@@ -9223,4 +9223,17 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Aramaic preposition code from Ezra.4.8", () => {
+        const parsed = parseHebrewMorphology("AR");
+
+        expect(parsed).toMatchObject({
+            language: "A",
+            code: "AR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.summary).toBe("Aramaic · Preposition");
+    });
+
 });
