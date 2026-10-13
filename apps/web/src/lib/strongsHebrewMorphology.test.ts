@@ -2191,6 +2191,29 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an article plus both-gender plural absolute noun composite", () => {
+        const parsed = parseHebrewMorphology("HTd/Ncbpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbpa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Both",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Particle · Definite article");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Plural · Both",
+        );
+    });
+
     it("decodes an article plus masculine singular absolute noun composite", () => {
         const parsed = parseHebrewMorphology("HTd/Ncmsa");
 
