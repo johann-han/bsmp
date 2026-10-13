@@ -10267,4 +10267,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures preposition plus common feminine plural absolute noun from Gen.34.21", () => {
+        const parsed = parseHebrewMorphology("HR/Ncfpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfpa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toBe(
+            "Preposition · Noun · Common · Absolute · Plural · Feminine",
+        );
+    });
+
 });
