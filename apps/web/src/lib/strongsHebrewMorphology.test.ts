@@ -10083,4 +10083,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes an Open Scriptures conjunction plus Piel perfect third-person masculine singular verb from Gen.41.30", () => {
+        const parsed = parseHebrewMorphology("HC/Vpq3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVpq3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Verb · Piel · Perfect · 3rd person · Singular · Masculine",
+        );
+    });
+
 });
