@@ -898,6 +898,32 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures both-gender plural construct noun plus first-person common singular suffix from Gen.26.5", () => {
+        const parsed = parseHebrewMorphology("HNcbpc/Sp1cs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcbpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+        });
+        expect(parsed.summary).toBe(
+            "Noun · Common · Construct · Plural · Both · Suffix · Pronominal · 1st person · Singular · Common",
+        );
+    });
+
+
     it("decodes a Piel imperfect first-person common singular verb", () => {
         expect(parseHebrewMorphology("HVpi1cs")).toMatchObject({
             language: "H",
