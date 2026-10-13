@@ -9561,4 +9561,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures definite article plus common plural noun with both gender from Gen.26.3", () => {
+        const parsed = parseHebrewMorphology("HTd/Ncbpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbpa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Both",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toBe(
+            "Particle · Definite article · Noun · Common · Absolute · Plural · Both",
+        );
+    });
+
 });
