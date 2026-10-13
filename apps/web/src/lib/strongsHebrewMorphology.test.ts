@@ -10029,4 +10029,36 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes an Open Scriptures conjunction plus feminine singular construct noun and third-person masculine singular suffix from Gen.2.25", () => {
+        const parsed = parseHebrewMorphology("HC/Ncfsc/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Noun · Common · Construct · Singular · Feminine · Suffix · Pronominal · 3rd person · Singular · Masculine",
+        );
+    });
+
 });
