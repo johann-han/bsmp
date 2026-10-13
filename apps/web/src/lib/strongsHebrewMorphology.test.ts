@@ -420,6 +420,26 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures Hiphil infinitive absolute", () => {
+        const parsed = parseHebrewMorphology("HVha");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVha",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Infinitive absolute",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe("Verb · Hiphil · Infinitive absolute");
+    });
+
     it("decodes the next Genesis 2 Open Scriptures definite article plus both-gender noun", () => {
         const parsed = parseHebrewMorphology("HTd/Ncbsa");
 
