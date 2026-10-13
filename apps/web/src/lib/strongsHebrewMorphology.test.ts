@@ -6494,7 +6494,7 @@ describe("Hebrew morphology", () => {
             code: "HVqq2ms",
             partOfSpeech: "Verb",
             qualifier: "Qal",
-            form: "Perfect",
+            form: "Sequential perfect",
             person: "2nd",
             gender: "Masculine",
             number: "Singular",
@@ -6684,7 +6684,7 @@ describe("Hebrew morphology", () => {
         });
         expect(parsed.summary).toContain("Conjunction");
         expect(parsed.summary).toContain(
-            "Verb · Qal · Perfect · 2nd person · Plural · Masculine",
+            "Verb · Qal · Sequential perfect · 2nd person · Plural · Masculine",
         );
     });
 
