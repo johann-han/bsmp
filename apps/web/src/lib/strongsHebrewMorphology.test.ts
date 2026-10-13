@@ -10322,4 +10322,36 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures definite-article noun plus directional-he suffix from Gen.12.8", () => {
+        const parsed = parseHebrewMorphology("HTd/Ncmsa/Sd");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSd",
+            partOfSpeech: "Suffix",
+            qualifier: "Directional he",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Particle · Definite article · Noun · Common · Absolute · Singular · Masculine · Suffix · Directional he",
+        );
+    });
+
 });
