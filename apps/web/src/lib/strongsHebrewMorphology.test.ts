@@ -916,6 +916,28 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures Hiphil perfect first-person common singular verb", () => {
+        const parsed = parseHebrewMorphology("HVhp1cs");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVhp1cs",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Perfect",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Hiphil · Perfect · 1st person · Singular · Common",
+        );
+    });
+
     it("decodes the next Genesis 2 Open Scriptures Hiphil perfect verb", () => {
         expect(parseHebrewMorphology("HVhp3ms")).toMatchObject({
             language: "H",
