@@ -9447,4 +9447,21 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures masculine singular construct adjective from Gen.10.9", () => {
+        expect(parseHebrewMorphology("HAamsc")).toMatchObject({
+            language: "H",
+            code: "HAamsc",
+            partOfSpeech: "Adjective",
+            qualifier: "Adjective · Construct",
+            form: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parseHebrewMorphology("HAamsc").summary).toBe(
+            "Adjective · Adjective · Construct · Singular · Masculine",
+        );
+    });
+
 });
