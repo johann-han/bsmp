@@ -9979,4 +9979,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes an Open Scriptures feminine plural construct noun plus third-person masculine plural suffix from Gen.34.21", () => {
+        const parsed = parseHebrewMorphology("HNcfpc/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcfpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Noun · Common · Construct · Plural · Feminine · Suffix · Pronominal · 3rd person · Plural · Masculine",
+        );
+    });
+
 });
