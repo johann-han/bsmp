@@ -9196,6 +9196,29 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
     });
 
 
+    it("decodes an Open Scriptures conjunction plus common both-gender singular construct noun from Gen.1.2", () => {
+        const parsed = parseHebrewMorphology("HC/Ncbsc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Noun · Common · Construct · Singular · Both",
+        );
+    });
+
+
     it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus third-person masculine singular personal pronoun from Gen.3.16", () => {
         const parsed = parseHebrewMorphology("HC/Pp3ms");
 
