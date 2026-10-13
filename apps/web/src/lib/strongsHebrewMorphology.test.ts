@@ -10109,4 +10109,29 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             "Conjunction · Verb · Piel · Sequential perfect · 3rd person · Singular · Masculine",
         );
     });
+
+    it("decodes the next highest-frequency uncovered Open Scriptures adverb with directional-he suffix from Gen.14.10", () => {
+        const parsed = parseHebrewMorphology("HD/Sd");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HD",
+            partOfSpeech: "Adverb",
+            qualifier: null,
+            summary: "Adverb",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSd",
+            partOfSpeech: "Suffix",
+            qualifier: "Directional he",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Adverb · Suffix · Directional he",
+        );
+    });
+
 });
