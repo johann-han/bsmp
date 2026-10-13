@@ -8972,4 +8972,34 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus definite-article preposition and masculine singular absolute noun from Gen.1.5", () => {
+        const parsed = parseHebrewMorphology("HC/Rd/Ncmsa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HRd",
+            partOfSpeech: "Preposition",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcmsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain("Conjunction");
+        expect(parsed.summary).toContain("Preposition · Definite article");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Absolute · Singular · Masculine",
+        );
+    });
+
 });
