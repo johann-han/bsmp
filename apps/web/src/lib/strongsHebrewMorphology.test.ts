@@ -10202,4 +10202,22 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Aramaic common masculine singular absolute noun from Ezra 4:8", () => {
+        const parsed = parseHebrewMorphology("ANcmsa");
+
+        expect(parsed).toMatchObject({
+            language: "A",
+            code: "ANcmsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toBe(
+            "Aramaic · Noun · Common · Absolute · Singular · Masculine",
+        );
+    });
+
 });
