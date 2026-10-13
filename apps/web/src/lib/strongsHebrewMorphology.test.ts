@@ -9044,4 +9044,28 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures preposition plus feminine plural construct noun from Gen.13.12", () => {
+        const parsed = parseHebrewMorphology("HR/Ncfpc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.summary).toContain("Preposition");
+        expect(parsed.summary).toContain(
+            "Noun · Common · Construct · Plural · Feminine",
+        );
+    });
+
 });
