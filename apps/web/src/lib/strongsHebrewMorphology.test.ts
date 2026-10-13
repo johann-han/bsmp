@@ -9184,4 +9184,23 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal cohortative first-person common plural verb from Gen.26.28", () => {
+        const parsed = parseHebrewMorphology("HVqp1cp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVqp1cp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            mood: "Cohortative",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Cohortative · Cohortative · 1st person · Plural · Common",
+        );
+    });
+
 });
