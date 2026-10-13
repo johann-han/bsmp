@@ -9002,4 +9002,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal cohortative first-person common plural verb from Gen.1.26", () => {
+        const parsed = parseHebrewMorphology("HVqi1cp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVqi1cp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            mood: null,
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Imperfect · 1st person · Plural · Common",
+        );
+    });
+
 });
