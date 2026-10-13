@@ -7555,6 +7555,38 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures preposition plus both-gender plural construct noun and second-person masculine singular suffix from Gen.13.9", () => {
+        const parsed = parseHebrewMorphology("HR/Ncbpc/Sp2ms");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp2ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Preposition · Noun · Common · Construct · Plural · Both · Suffix · Pronominal · 2nd person · Singular · Masculine",
+        );
+    });
+
+
     it("decodes the next Exodus 4 Open Scriptures construct noun plus 2ms suffix composite", () => {
         const parsed = parseHebrewMorphology("HNcbsc/Sp2ms");
 
