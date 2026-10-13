@@ -3,7 +3,7 @@ name: Regenerate global MorphHB audit
 on:
   push:
     branches:
-      - chore/morphhb-audit-refresh-20261013
+      - 'chore/morphhb-audit-refresh-*'
     paths:
       - .github/workflows/refresh-morphhb-audit.yml
       - scripts/audit-morphhb-global-morphology.mjs
