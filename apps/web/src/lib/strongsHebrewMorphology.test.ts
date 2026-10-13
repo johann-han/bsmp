@@ -10430,4 +10430,29 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Aramaic common masculine plural determined noun plus definite-article particle from Ezra 4:9", () => {
+        const parsed = parseHebrewMorphology("ANcmpd/Td");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "ANcmpd",
+            language: "A",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Determined",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Determined",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "ATd",
+            language: "A",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.summary).toBe(
+            "Aramaic · Noun · Common · Determined · Plural · Masculine · Particle · Definite article",
+        );
+    });
+
 });
