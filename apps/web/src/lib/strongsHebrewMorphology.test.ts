@@ -10246,4 +10246,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Niphal imperfect third-person feminine singular verb from Gen.41.36", () => {
+        const parsed = parseHebrewMorphology("HVNi3fs");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVNi3fs",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Niphal · Imperfect · 3rd person · Singular · Feminine",
+        );
+    });
+
 });
