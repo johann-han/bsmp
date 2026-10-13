@@ -9317,7 +9317,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             code: "HVqc",
             partOfSpeech: "Verb",
             qualifier: "Qal",
-            form: "Perfect",
+            form: "Infinitive construct",
             person: null,
             gender: null,
             number: null,
@@ -9331,7 +9331,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             number: "Singular",
         });
         expect(parsed.summary).toContain(
-            "Preposition · Verb · Qal · Perfect · Suffix · Pronominal · 3rd person · Singular · Masculine",
+            "Preposition · Verb · Qal · Infinitive construct · Suffix · Pronominal · 3rd person · Singular · Masculine",
         );
     });
 
