@@ -9204,4 +9204,23 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal participle feminine singular absolute verb from Gen.15.12", () => {
+        const parsed = parseHebrewMorphology("HVqrfsa");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVqrfsa",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Absolute",
+            form: "Participle active",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Absolute · Participle active · Singular · Feminine",
+        );
+    });
+
 });
