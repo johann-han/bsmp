@@ -9925,4 +9925,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes an Open Scriptures conjunction plus Niphal sequential imperfect third-person masculine plural verb from Gen.7.23", () => {
+        const parsed = parseHebrewMorphology("HC/VNw3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVNw3mp",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Verb · Niphal · Sequential imperfect · 3rd person · Plural · Masculine",
+        );
+    });
+
 });
