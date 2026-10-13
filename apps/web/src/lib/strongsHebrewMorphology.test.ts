@@ -9503,4 +9503,34 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus preposition plus Qal infinitive-construct verb from Gen.1.18", () => {
+        const parsed = parseHebrewMorphology("HC/R/Vqc");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HVqc",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Preposition · Verb · Qal · Infinitive construct",
+        );
+    });
+
 });
