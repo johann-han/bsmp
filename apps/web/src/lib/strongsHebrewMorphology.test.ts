@@ -8664,7 +8664,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             mood: null,
         });
         expect(parsed.summary).toContain(
-            "Verb · Hiphil · Perfect · 3rd person · Common · Plural",
+            "Verb · Hiphil · Perfect · 3rd person · Plural · Common",
         );
     });
 
