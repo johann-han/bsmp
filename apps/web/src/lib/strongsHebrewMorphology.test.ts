@@ -9484,4 +9484,23 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Piel perfect third-person common plural verb from Gen.24.19", () => {
+        expect(parseHebrewMorphology("HVpp3cp")).toMatchObject({
+            language: "H",
+            code: "HVpp3cp",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Perfect",
+            person: "3rd",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+        expect(parseHebrewMorphology("HVpp3cp").summary).toBe(
+            "Verb · Piel · Perfect · 3rd person · Plural · Common",
+        );
+    });
+
 });
