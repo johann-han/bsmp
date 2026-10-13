@@ -10134,4 +10134,26 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal imperfect third-person feminine singular verb from Gen.6.12", () => {
+        const parsed = parseHebrewMorphology("HVNp3fs");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVNp3fs",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Niphal · Imperfect · 3rd person · Singular · Feminine",
+        );
+    });
+
 });
