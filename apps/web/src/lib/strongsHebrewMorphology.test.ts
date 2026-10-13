@@ -10184,4 +10184,22 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Aramaic common masculine singular construct noun from Ezra 4:8", () => {
+        const parsed = parseHebrewMorphology("ANcmsc");
+
+        expect(parsed).toMatchObject({
+            language: "A",
+            code: "ANcmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.summary).toBe(
+            "Aramaic · Noun · Common · Construct · Singular · Masculine",
+        );
+    });
+
 });
