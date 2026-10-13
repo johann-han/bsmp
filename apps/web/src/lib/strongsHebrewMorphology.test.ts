@@ -10290,4 +10290,36 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures preposition plus both-gender plural construct noun with 3mp suffix from Gen.6.13", () => {
+        const parsed = parseHebrewMorphology("HR/Ncbpc/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Preposition · Noun · Common · Construct · Plural · Both · Suffix · Pronominal · 3rd person · Plural · Masculine",
+        );
+    });
+
 });
