@@ -10006,4 +10006,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes an Open Scriptures definite-preposition plus feminine plural absolute noun from Gen.18.11", () => {
+        const parsed = parseHebrewMorphology("HRd/Ncfpa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HRd",
+            partOfSpeech: "Preposition",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcfpa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Plural",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toBe(
+            "Preposition · Definite article · Noun · Common · Absolute · Plural · Feminine",
+        );
+    });
+
 });
