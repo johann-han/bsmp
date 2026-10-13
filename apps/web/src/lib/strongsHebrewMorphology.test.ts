@@ -8269,6 +8269,24 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+    it("decodes an Open Scriptures masculine dual absolute cardinal-number adjective from Gen.6.19", () => {
+        const parsed = parseHebrewMorphology("HAcmda");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HAcmda",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Absolute",
+            gender: "Masculine",
+            number: "Dual",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toBe(
+            "Adjective · Cardinal number · Absolute · Dual · Masculine",
+        );
+    });
+
+
     it("decodes the next highest-frequency uncovered Open Scriptures noun and suffix composite from Gen.15.2", () => {
         const parsed = parseHebrewMorphology("HNcmpc/Sp1cs");
 
