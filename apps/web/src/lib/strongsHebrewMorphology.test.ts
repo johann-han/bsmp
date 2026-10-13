@@ -9108,4 +9108,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus common singular both-gender absolute noun from Gen.11.4", () => {
+        const parsed = parseHebrewMorphology("HC/Ncbsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Both",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Noun · Common · Absolute · Singular · Both",
+        );
+    });
+
 });
