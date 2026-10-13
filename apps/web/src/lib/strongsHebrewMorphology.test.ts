@@ -10220,4 +10220,30 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus Qal imperfect third-person masculine singular verb from Gen.1.6", () => {
+        const parsed = parseHebrewMorphology("HC/Vqi3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqi3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Verb · Qal · Imperfect · 3rd person · Singular · Masculine",
+        );
+    });
+
 });
