@@ -1104,7 +1104,7 @@ describe("Hebrew morphology", () => {
         expect(parseHebrewMorphology("HVqp1cs")).toMatchObject({
             language: "H",
             partOfSpeech: "Verb",
-            qualifier: "Piel",
+            qualifier: "Qal",
             form: "Perfect",
             person: "1st",
             gender: "Common",
@@ -5093,7 +5093,7 @@ describe("Hebrew morphology", () => {
             state: null,
         });
         expect(parsed.summary).toContain(
-            "Verb · Piel · Perfect · 1st person · Singular · Common",
+            "Verb · Qal · Perfect · 1st person · Singular · Common",
         );
         expect(parsed.summary).toContain(
             "Suffix · Pronominal · 3rd person · Singular · Masculine",
@@ -9031,7 +9031,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             language: "H",
             code: "HVpp1cs",
             partOfSpeech: "Verb",
-            qualifier: "Qal",
+            qualifier: "Piel",
             form: "Perfect",
             person: "1st",
             gender: "Common",
@@ -9040,7 +9040,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             mood: null,
         });
         expect(parsed.summary).toContain(
-            "Verb · Qal · Perfect · 1st person · Singular · Common",
+            "Verb · Piel · Perfect · 1st person · Singular · Common",
         );
     });
 
