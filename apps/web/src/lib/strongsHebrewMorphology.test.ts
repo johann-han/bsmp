@@ -9418,6 +9418,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
     });
 
 
+    it("decodes an Open Scriptures conjunction plus Qal imperfect third-person masculine plural verb from Gen.34.21", () => {
+        const parsed = parseHebrewMorphology("HC/Vqi3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqi3mp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Verb · Qal · Imperfect · 3rd person · Plural · Masculine",
+        );
+    });
+
+
     it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus Qal active participle composite from Gen.4.12", () => {
         const parsed = parseHebrewMorphology("HC/Vqrmsa");
 
