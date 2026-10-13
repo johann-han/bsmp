@@ -31,14 +31,13 @@ jobs:
         run: |
           echo "morphhb_commit=$(git -C morphhb rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "test_blob_sha=$(git rev-parse HEAD:apps/web/src/lib/strongsHebrewMorphology.test.ts)" >> "$GITHUB_OUTPUT"
-      - name: Publish exact test snapshot for this audit
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdir -p /tmp/audit-test-source
-          git show "HEAD:apps/web/src/lib/strongsHebrewMorphology.test.ts" > /tmp/audit-test-source/strongsHebrewMorphology.test.ts
-          cp /tmp/audit-test-source/strongsHebrewMorphology.test.ts apps/web/src/lib/strongsHebrewMorphology.test.ts
       - name: Generate full audit
+        env:
+          BSMP_AUDIT_COMMIT: ${{ github.sha }}
+          BSMP_TEST_FILE_BLOB_SHA: ${{ steps.refs.outputs.test_blob_sha }}
+          MORPHHB_COMMIT: ${{ steps.refs.outputs.morphhb_commit }}
+        run: |
+          node scripts/audit-morphhb-global-morphology.mjs      - name: Generate full audit
         env:
           BSMP_AUDIT_COMMIT: ${{ github.sha }}
           BSMP_TEST_FILE_BLOB_SHA: ${{ steps.refs.outputs.test_blob_sha }}
