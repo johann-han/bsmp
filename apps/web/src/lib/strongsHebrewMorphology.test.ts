@@ -10061,4 +10061,26 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes an Open Scriptures Piel imperative second-person masculine plural verb from Gen.40.8", () => {
+        const parsed = parseHebrewMorphology("HVpv2mp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVpv2mp",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Piel · Imperative · Imperative · 2nd person · Plural · Masculine",
+        );
+    });
+
 });
