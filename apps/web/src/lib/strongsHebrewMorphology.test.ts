@@ -10409,4 +10409,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Hiphil perfect second-person masculine singular verb from Gen.12.18", () => {
+        const parsed = parseHebrewMorphology("HVhp2ms");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVhp2ms",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Perfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Hiphil · Perfect · 2nd person · Singular · Masculine",
+        );
+    });
+
 });
