@@ -8852,4 +8852,24 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal sequential perfect second-person masculine plural verb from Gen.18.5", () => {
+        const parsed = parseHebrewMorphology("HVqp2mp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVqp2mp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Perfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Perfect · 2nd person · Plural · Masculine",
+        );
+    });
+
 });
