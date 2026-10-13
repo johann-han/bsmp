@@ -9154,4 +9154,34 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures preposition plus masculine singular construct noun and third-person masculine plural suffix from Gen.1.21", () => {
+        const parsed = parseHebrewMorphology("HR/Ncmsc/Sp3mp");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+        });
+        expect(parsed.summary).toContain(
+            "Preposition · Noun · Common · Construct · Singular · Masculine · Suffix · Pronominal · 3rd person · Plural · Masculine",
+        );
+    });
+
 });
