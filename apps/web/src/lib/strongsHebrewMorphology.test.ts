@@ -9378,4 +9378,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures definite-article preposition plus proper-name noun composite from Gen.23.17", () => {
+        const parsed = parseHebrewMorphology("HRd/Np");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HRd",
+            partOfSpeech: "Preposition",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNp",
+            partOfSpeech: "Noun",
+            qualifier: "Proper name",
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Preposition · Definite article · Noun · Proper name",
+        );
+    });
+
 });
