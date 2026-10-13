@@ -9952,4 +9952,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes an Open Scriptures masculine singular construct noun plus second-person masculine plural suffix from Gen.9.5", () => {
+        const parsed = parseHebrewMorphology("HNcmsc/Sp2mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp2mp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Noun · Common · Construct · Singular · Masculine · Suffix · Pronominal · 2nd person · Plural · Masculine",
+        );
+    });
+
 });
