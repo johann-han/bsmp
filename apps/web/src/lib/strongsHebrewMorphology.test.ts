@@ -9145,7 +9145,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             code: "HPp3ms",
             partOfSpeech: "Pronoun",
             qualifier: "Personal",
-            person: "Third",
+            person: "3rd",
             gender: "Masculine",
             number: "Singular",
         });
