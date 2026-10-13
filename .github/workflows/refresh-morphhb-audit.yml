@@ -1,0 +1,56 @@
+name: Regenerate global MorphHB audit
+
+on:
+  push:
+    branches:
+      - chore/morphhb-audit-refresh-20261013
+    paths:
+      - scripts/audit-morphhb-global-morphology.mjs
+      - apps/web/src/lib/strongsHebrewMorphology.ts
+      - apps/web/src/lib/strongsHebrewMorphology.test.ts
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout BSMP
+        uses: actions/checkout@v4
+      - name: Checkout Open Scriptures MorphHB
+        uses: actions/checkout@v4
+        with:
+          repository: openscriptures/morphhb
+          ref: master
+          path: morphhb
+          persist-credentials: false
+      - name: Generate full audit
+        env:
+          BSMP_AUDIT_COMMIT: ${{ github.sha }}
+          BSMP_TEST_FILE_BLOB_SHA: 95c9d3fac14a2cefe4c6fd7ad23a092ef64718bb
+        run: |
+          export MORPHHB_COMMIT="$(git -C morphhb rev-parse HEAD)"
+          node scripts/audit-morphhb-global-morphology.mjs \
+            --source morphhb/wlc \
+            --parser apps/web/src/lib/strongsHebrewMorphology.ts \
+            --tests apps/web/src/lib/strongsHebrewMorphology.test.ts \
+            --out-md docs/morphhb-global-morphology-audit.md \
+            --out-csv docs/morphhb-global-morphology-codes.csv
+          echo "MorphHB source commit: $MORPHHB_COMMIT"
+      - name: Upload generated audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: morphhb-global-audit-20261013
+          path: |
+            docs/morphhb-global-morphology-audit.md
+            docs/morphhb-global-morphology-codes.csv
+          if-no-files-found: error
+      - name: Commit refreshed audit on audit branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/morphhb-global-morphology-audit.md docs/morphhb-global-morphology-codes.csv
+          git commit -m "docs(morphology): refresh global audit after regression coverage" || echo "No report changes"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
