@@ -3101,6 +3101,28 @@ describe("Hebrew morphology", () => {
         });
     });
 
+    it("decodes a direct-object-marker plus third-person feminine singular pronominal suffix", () => {
+        const parsed = parseHebrewMorphology("HTo/Sp3fs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTo",
+            partOfSpeech: "Particle",
+            qualifier: "Direct object marker",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp3fs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Feminine",
+            number: "Singular",
+        });
+        expect(parsed.summary).toBe(
+            "Particle · Direct object marker · Suffix · Pronominal · 3rd person · Singular · Feminine",
+        );
+    });
+
     it("decodes an Open Scriptures conjunction plus direct-object-marker composite", () => {
         const parsed = parseHebrewMorphology("HCc/To");
 
