@@ -9068,4 +9068,21 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Aramaic proper-name morphology code from Gen.31.47", () => {
+        const parsed = parseHebrewMorphology("ANp");
+
+        expect(parsed).toMatchObject({
+            language: "A",
+            code: "ANp",
+            partOfSpeech: "Noun",
+            qualifier: "Proper name",
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toContain("Aramaic");
+        expect(parsed.summary).toContain("Noun · Proper name");
+    });
+
 });
