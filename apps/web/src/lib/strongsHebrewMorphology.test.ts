@@ -9193,13 +9193,14 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             code: "HVqp1cp",
             partOfSpeech: "Verb",
             qualifier: "Qal",
-            mood: "Cohortative",
+            form: "Perfect",
+            mood: null,
             person: "1st",
             gender: "Common",
             number: "Plural",
         });
         expect(parsed.summary).toContain(
-            "Verb · Qal · Cohortative · Cohortative · 1st person · Plural · Common",
+            "Verb · Qal · Perfect · 1st person · Plural · Common",
         );
     });
 
