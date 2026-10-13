@@ -7467,6 +7467,33 @@ describe("Hebrew morphology", () => {
         expect(parsed.summary).toContain("Suffix · Directional he");
     });
 
+    it("decodes an Open Scriptures common masculine singular absolute noun plus directional-he suffix from Gen.14.10", () => {
+        const parsed = parseHebrewMorphology("HNcmsa/Sd");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSd",
+            partOfSpeech: "Suffix",
+            qualifier: "Directional he",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Noun · Common · Absolute · Singular · Masculine · Suffix · Directional he",
+        );
+    });
+
+
     it("decodes the next Exodus 4 Open Scriptures preposition plus both-gender plural construct noun and 3ms suffix composite", () => {
         const parsed = parseHebrewMorphology("HR/Ncbpc/Sp3ms");
 
