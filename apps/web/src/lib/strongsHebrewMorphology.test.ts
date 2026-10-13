@@ -9303,4 +9303,36 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures preposition plus Qal perfect third-person masculine singular verb and suffix from Gen.12.4", () => {
+        const parsed = parseHebrewMorphology("HR/Vqc/Sp3ms");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVqc",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp3ms",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain(
+            "Preposition · Verb · Qal · Infinitive construct · Suffix · Pronominal · 3rd person · Singular · Masculine",
+        );
+    });
+
 });
