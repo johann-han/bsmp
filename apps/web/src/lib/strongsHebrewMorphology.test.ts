@@ -8866,6 +8866,29 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
     });
 
 
+    it("decodes an Open Scriptures Qal passive participle masculine plural absolute verb from Gen.39.20", () => {
+        const parsed = parseHebrewMorphology("HVqsmpa");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVqsmpa",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Absolute",
+            form: "Participle passive",
+            person: null,
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+            tense: null,
+            voice: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Qal · Absolute · Participle passive · Plural · Masculine",
+        );
+    });
+
+
     it("decodes the next highest-frequency uncovered Open Scriptures Qal passive participle masculine singular absolute verb from Gen.3.14", () => {
         const parsed = parseHebrewMorphology("HVqsmsa");
 
