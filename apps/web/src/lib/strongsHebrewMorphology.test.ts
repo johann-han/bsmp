@@ -9429,4 +9429,22 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Piel active participle masculine singular absolute verb from Gen.21.9", () => {
+        expect(parseHebrewMorphology("HVprmsa")).toMatchObject({
+            language: "H",
+            code: "HVprmsa",
+            partOfSpeech: "Verb",
+            qualifier: "Piel · Absolute",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parseHebrewMorphology("HVprmsa").summary).toBe(
+            "Verb · Piel · Absolute · Participle active · Singular · Masculine",
+        );
+    });
+
 });
