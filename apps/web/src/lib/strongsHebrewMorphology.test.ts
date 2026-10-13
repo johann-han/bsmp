@@ -10388,4 +10388,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Piel imperfect second-person masculine singular verb from Gen.31.24", () => {
+        const parsed = parseHebrewMorphology("HVpi2ms");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVpi2ms",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Imperfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Piel · Imperfect · 2nd person · Singular · Masculine",
+        );
+    });
+
 });
