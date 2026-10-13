@@ -26,7 +26,7 @@ jobs:
           ref: master
           path: morphhb
           persist-credentials: false
-      - name: Record exact source refs
+      - name: Capture source refs before report generation
         id: refs
         run: |
           echo "morphhb_commit=$(git -C morphhb rev-parse HEAD)" >> "$GITHUB_OUTPUT"
