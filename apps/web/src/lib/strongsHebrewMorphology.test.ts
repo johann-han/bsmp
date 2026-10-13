@@ -8930,7 +8930,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
     });
 
 
-    it("decodes the next highest-frequency uncovered Open Scriptures definite article plus demonstrative pronoun from Gen.15.1", () => {
+    it("covers the already-supported Open Scriptures definite article plus demonstrative pronoun from Gen.15.1", () => {
         const parsed = parseHebrewMorphology("HTd/Pdxcp");
 
         expect(parsed.segments).toHaveLength(2);
