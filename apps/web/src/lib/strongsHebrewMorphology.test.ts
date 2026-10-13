@@ -9023,4 +9023,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal perfect first-person common singular verb from Gen.17.20", () => {
+        const parsed = parseHebrewMorphology("HVpp1cs");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVpp1cs",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Perfect",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Perfect · 1st person · Singular · Common",
+        );
+    });
+
 });
