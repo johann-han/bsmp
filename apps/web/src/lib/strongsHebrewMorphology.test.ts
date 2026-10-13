@@ -10097,7 +10097,7 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
             code: "HVpq3ms",
             partOfSpeech: "Verb",
             qualifier: "Piel",
-            form: "Perfect",
+            form: "Sequential perfect",
             person: "3rd",
             gender: "Masculine",
             number: "Singular",
