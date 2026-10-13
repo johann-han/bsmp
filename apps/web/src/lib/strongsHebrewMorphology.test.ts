@@ -9464,4 +9464,24 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Hiphil imperative second-person masculine plural verb from Gen.24.49", () => {
+        expect(parseHebrewMorphology("HVhv2mp")).toMatchObject({
+            language: "H",
+            code: "HVhv2mp",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+        expect(parseHebrewMorphology("HVhv2mp").summary).toBe(
+            "Verb · Hiphil · Imperative · Imperative · 2nd person · Plural · Masculine",
+        );
+    });
+
 });
