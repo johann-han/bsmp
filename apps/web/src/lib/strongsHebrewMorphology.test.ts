@@ -9131,4 +9131,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus third-person masculine singular personal pronoun from Gen.3.16", () => {
+        const parsed = parseHebrewMorphology("HC/Pp3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HPp3ms",
+            partOfSpeech: "Pronoun",
+            qualifier: "Personal",
+            person: "Third",
+            gender: "Masculine",
+            number: "Singular",
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Pronoun · Personal · 3rd person · Singular · Masculine",
+        );
+    });
+
 });
