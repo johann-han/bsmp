@@ -9335,4 +9335,22 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the highest-frequency uncovered Open Scriptures conjunction plus interrogative particle composite from Gen.16.8", () => {
+        const parsed = parseHebrewMorphology("HC/Ti");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTi",
+            partOfSpeech: "Particle",
+            qualifier: "Interrogative",
+        });
+        expect(parsed.summary).toBe("Conjunction · Particle · Interrogative");
+    });
+
 });
