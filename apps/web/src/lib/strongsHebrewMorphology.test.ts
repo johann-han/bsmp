@@ -7678,6 +7678,28 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures bare Piel imperative second-person masculine singular verb from Gen.19.22", () => {
+        const parsed = parseHebrewMorphology("HVpv2ms");
+
+        expect(parsed.segments).toHaveLength(1);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVpv2ms",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Imperative",
+            mood: "Imperative",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Piel · Imperative · Imperative · 2nd person · Singular · Masculine",
+        );
+    });
+
+
     it("decodes the next Exodus 4 Open Scriptures bare Hiphil imperative 2ms", () => {
         const parsed = parseHebrewMorphology("HVhv2ms");
 
