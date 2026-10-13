@@ -2546,6 +2546,33 @@ describe("Hebrew morphology", () => {
         );
     });
 
+    it("decodes an Open Scriptures conjunction plus Piel sequential-imperfect third-person masculine plural verb from Gen.9.23", () => {
+        const parsed = parseHebrewMorphology("HC/Vpw3mp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVpw3mp",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Verb · Piel · Sequential imperfect · 3rd person · Plural · Masculine",
+        );
+    });
+
+
     it("decodes a vav-consecutive plus Piel sequential-imperfect composite", () => {
         const parsed = parseHebrewMorphology("HCv/Vpw3ms");
 
