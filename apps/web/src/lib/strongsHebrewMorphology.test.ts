@@ -9236,4 +9236,23 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         expect(parsed.summary).toBe("Aramaic · Preposition");
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal active participle masculine singular construct verb from Gen.4.2", () => {
+        const parsed = parseHebrewMorphology("HVqrmsc");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVqrmsc",
+            partOfSpeech: "Verb",
+            qualifier: "Qal · Construct",
+            form: "Participle active",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Construct · Participle active · Singular · Masculine",
+        );
+    });
+
 });
