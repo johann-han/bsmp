@@ -9085,4 +9085,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         expect(parsed.summary).toContain("Noun · Proper name");
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus common masculine singular absolute adjective from Gen.4.24", () => {
+        const parsed = parseHebrewMorphology("HC/Acmsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HAcmsa",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Conjunction · Adjective · Cardinal number · Absolute · Singular · Masculine",
+        );
+    });
+
 });
