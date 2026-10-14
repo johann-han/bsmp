@@ -10545,4 +10545,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus Hithpael sequential-imperfect masculine singular composite from Gen.3.8", () => {
+        const parsed = parseHebrewMorphology("HC/Vtw3ms");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVtw3ms",
+            partOfSpeech: "Verb",
+            qualifier: "Hithpael",
+            form: "Sequential imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Hithpael · Sequential imperfect · 3rd person · Singular · Masculine",
+        );
+    });
+
 });
