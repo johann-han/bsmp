@@ -288,7 +288,7 @@ P2,HC/R/Ncfsa,122,"Exodus 6:9, word 13",Exodus,6,9,13,Supported,,yes,Already cov
 P2,HC/VNq3ms,121,"Genesis 41:30, word 6",Genesis,41,30,6,Supported,,yes,Already covered by exact-code test
 P2,HVqj2mp,121,"Genesis 19:8, word 22",Genesis,19,8,22,Supported,,yes,Already covered by exact-code test
 P2,HVqp2fs,121,"Genesis 3:13, word 7",Genesis,3,13,7,Supported,,yes,Already covered by exact-code test
-P2,HC/Vtw3ms,119,"Genesis 3:8, word 10",Genesis,3,8,10,Supported,,no,Add exact-code regression only
+P2,HC/Vtw3ms,119,"Genesis 3:8, word 10",Genesis,3,8,10,Supported,,yes,Already covered by exact-code test
 P2,HVqh1cs,119,"Genesis 18:21, word 1",Genesis,18,21,1,Supported,,yes,Already covered by exact-code test
 P2,HVhi2mp,118,"Genesis 19:7, word 5",Genesis,19,7,5,Supported,,no,Add exact-code regression only
 P2,HNcbdc/Sp3ms,117,"Genesis 13:10, word 4",Genesis,13,10,4,Supported,,no,Add exact-code regression only
