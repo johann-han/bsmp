@@ -3,7 +3,7 @@ name: Regenerate global MorphHB audit
 on:
   push:
     # Use a fresh dedicated refresh branch after each morphology test merge.
-    # This captures the merged test suite and its exact source blob, not stale results.
+    # Refresh the exact-code gap ranking before selecting the next uncovered case.
     branches:
       - 'chore/morphhb-audit-refresh-*'
     paths:
