@@ -10572,4 +10572,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Hiphil imperfect second-person masculine plural verb from Gen.19.7", () => {
+        const parsed = parseHebrewMorphology("HVhi2mp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil",
+            form: "Imperfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Imperfect · 2nd person · Plural · Masculine",
+        );
+    });
+
 });
