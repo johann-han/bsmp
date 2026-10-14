@@ -347,20 +347,17 @@ const report = [
   "",
 ].join("\n");
 
-const allRows = rows.sort((a,b) => {
-  if (a.tested !== b.tested) return a.tested ? 1 : -1;
-  return b.count - a.count || a.code.localeCompare(b.code);
-});
+// Keep the master CSV in deterministic source-frequency order. Coverage status
+// changes must not reorder thousands of rows each time a regression test is added.
+const allRows = rows.sort((a,b) => b.count - a.count || a.code.localeCompare(b.code));
 const headers = [
-  "gap_rank", "frequency_priority", "morphology_code", "ot_occurrences", "first_occurrence",
+  "frequency_priority", "morphology_code", "ot_occurrences", "first_occurrence",
   "first_book", "chapter", "verse", "word_index", "parser_status", "parser_detail",
   "covered_by_exact_code_test", "recommended_action",
 ];
-const gapRanks = new Map(gaps.map((r,i) => [r.code, i+1]));
 const csvLines = [headers.join(",")];
 for (const r of allRows) {
   csvLines.push([
-    gapRanks.get(r.code) ?? "",
     r.priority,
     r.code,
     r.count,
