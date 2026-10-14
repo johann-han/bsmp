@@ -10525,4 +10525,24 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal perfect second-person feminine singular verb from Gen.3.13", () => {
+        const parsed = parseHebrewMorphology("HVqp2fs");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Perfect",
+            person: "2nd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Perfect · 2nd person · Singular · Feminine",
+        );
+    });
+
 });
