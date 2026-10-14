@@ -10476,4 +10476,32 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures conjunction plus preposition plus common feminine singular absolute noun from Exod.6.9", () => {
+        const parsed = parseHebrewMorphology("HC/R/Ncfsa");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HNcfsa",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Absolute",
+            gender: "Feminine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toBe(
+            "Conjunction · Preposition · Noun · Common · Absolute · Singular · Feminine",
+        );
+    });
+
 });
