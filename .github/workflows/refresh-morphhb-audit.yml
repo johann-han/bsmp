@@ -2,6 +2,8 @@ name: Regenerate global MorphHB audit
 
 on:
   push:
+    # Use a dedicated refresh branch after morphology test merges. This ensures
+    # the audit is generated against the merged test suite, not a stale report.
     branches:
       - 'chore/morphhb-audit-refresh-*'
     paths:
