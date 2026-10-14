@@ -10504,4 +10504,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Qal jussive second-person masculine plural from Gen.19.8", () => {
+        const parsed = parseHebrewMorphology("HVqj2mp");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Jussive",
+            mood: "Jussive",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            tense: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Qal · Jussive · Jussive · 2nd person · Plural · Masculine",
+        );
+    });
+
 });
