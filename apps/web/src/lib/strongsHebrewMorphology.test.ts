@@ -10743,4 +10743,30 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures preposition plus Niphal infinitive construct verb from Gen.19.19", () => {
+        const parsed = parseHebrewMorphology("HR/VNc");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HVNc",
+            partOfSpeech: "Verb",
+            qualifier: "Niphal",
+            form: "Infinitive construct",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Preposition · Verb · Niphal · Infinitive construct",
+        );
+    });
+
 });
