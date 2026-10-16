@@ -10675,4 +10675,28 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures direct-object marker plus first-person common singular suffix from Gen.4.14", () => {
+        const parsed = parseHebrewMorphology("HTo/Sp1cs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTo",
+            partOfSpeech: "Particle",
+            qualifier: "Direct object marker",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toContain(
+            "Particle · Direct object marker · Suffix · Pronominal · 1st person · Singular · Common",
+        );
+    });
+
 });
