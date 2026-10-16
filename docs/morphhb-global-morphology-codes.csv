@@ -302,7 +302,7 @@ P2,HR/VNc,116,"Genesis 19:19, word 18",Genesis,19,19,18,Supported,,yes,Already c
 P2,HNcmpc/Sp2fs,114,"Joshua 2:18, word 20",Joshua,2,18,20,Supported,,yes,Already covered by exact-code test
 P2,HNcmsc/Sp1cp,114,"Genesis 19:31, word 5",Genesis,19,31,5,Supported,,yes,Already covered by exact-code test
 P2,HC/Td/Ngmsa,113,"Genesis 12:6, word 10",Genesis,12,6,10,Supported,,yes,Already covered by exact-code test
-P2,HVpp2ms,112,"Genesis 4:14, word 2",Genesis,4,14,2,Supported,,no,Add exact-code regression only
+P2,HVpp2ms,112,"Genesis 4:14, word 2",Genesis,4,14,2,Supported,,yes,Already covered by exact-code test
 P2,HC/Tr,108,"Genesis 7:23, word 23",Genesis,7,23,23,Supported,,no,Add exact-code regression only
 P2,HC/Pdxcp,106,"Genesis 10:1, word 1",Genesis,10,1,1,Supported,,yes,Already covered by exact-code test
 P2,HR/Ncbpc/Sp1cs,104,"Genesis 6:13, word 8",Genesis,6,13,8,Supported,,no,Add exact-code regression only
