@@ -10769,4 +10769,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures masculine plural construct noun plus second-person feminine singular suffix from Josh.2.18", () => {
+        const parsed = parseHebrewMorphology("HNcmpc/Sp2fs");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp2fs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "2nd",
+            gender: "Feminine",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Noun · Common · Construct · Plural · Masculine · Suffix · Pronominal · 2nd person · Singular · Feminine",
+        );
+    });
+
 });
