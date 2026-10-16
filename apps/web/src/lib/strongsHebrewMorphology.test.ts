@@ -10699,4 +10699,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Hiphil active participle masculine plural absolute verb from Gen.19.13", () => {
+        const parsed = parseHebrewMorphology("HVhrmpa");
+
+        expect(parsed).toMatchObject({
+            language: "H",
+            code: "HVhrmpa",
+            partOfSpeech: "Verb",
+            qualifier: "Hiphil · Absolute",
+            form: "Participle active",
+            person: null,
+            gender: "Masculine",
+            number: "Plural",
+            state: "Absolute",
+            mood: null,
+        });
+        expect(parsed.summary).toContain(
+            "Verb · Hiphil · Absolute · Participle active · Plural · Masculine",
+        );
+    });
+
 });
