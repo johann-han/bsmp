@@ -5,7 +5,7 @@
 - Source: https://github.com/openscriptures/morphhb/tree/master/wlc
 - Attribution: Original work of the Open Scriptures Hebrew Bible available at https://github.com/openscriptures/morphhb. The morphology annotations are licensed CC BY 4.0.
 - MorphHB commit: 3d15126fb1ef74867fc1434be1942e837932691f.
-- BSMP commit audited: 34f14e86ae2f30d6a030bc023c11fc5ef790413f.
+- BSMP commit audited: 9cf2bc50d868f82a6921f6acc21d61ab09505891.
 - Test-file blob SHA: 23bbc8a95424ae90bab5771c248c75f0fbffb381.
 - Test coverage means a complete source morphology code appears as a literal argument to parseHebrewMorphology(...) in the current BSMP test file. Segment-only expectations do not count as exact-code coverage. This audit was regenerated from the current test suite, whose source blob is recorded in the report.
 - Parser status is checked against the current parser's part-of-speech dispatch and lookup maps. The OSHM code reference defines x as a placeholder for unknown or unnecessary values when another required value follows; PERSON=x is therefore treated as supported because the parser uses its nullable person field for that placeholder. Partial means a needed code dimension is not handled or mapped; Unsupported means a segment uses an unknown POS or the overall code prefix is invalid. Code reference: https://hb.openscriptures.org/parsing/HebrewMorphologyCodes.html.
