@@ -291,7 +291,7 @@ P2,HVqp2fs,121,"Genesis 3:13, word 7",Genesis,3,13,7,Supported,,yes,Already cove
 P2,HC/Vtw3ms,119,"Genesis 3:8, word 10",Genesis,3,8,10,Supported,,yes,Already covered by exact-code test
 P2,HVqh1cs,119,"Genesis 18:21, word 1",Genesis,18,21,1,Supported,,yes,Already covered by exact-code test
 P2,HVhi2mp,118,"Genesis 19:7, word 5",Genesis,19,7,5,Supported,,yes,Already covered by exact-code test
-P2,HNcbdc/Sp3ms,117,"Genesis 13:10, word 4",Genesis,13,10,4,Supported,,no,Add exact-code regression only
+P2,HNcbdc/Sp3ms,117,"Genesis 13:10, word 4",Genesis,13,10,4,Supported,,yes,Already covered by exact-code test
 P2,HR/Ncbsc/Sp2ms,117,"Genesis 4:11, word 14",Genesis,4,11,14,Supported,,yes,Already covered by exact-code test
 P2,HR/Ncmpc/Sp2ms,117,"Genesis 15:4, word 13",Genesis,15,4,13,Supported,,no,Add exact-code regression only
 P2,HTd/Acmsa,117,"Genesis 2:11, word 2",Genesis,2,11,2,Supported,,no,Add exact-code regression only
