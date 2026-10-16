@@ -10862,4 +10862,36 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         expect(parsed.summary).toBe("Conjunction · Particle · Relative");
     });
 
+
+    it("decodes the highest-priority uncovered preposition, common plural construct noun, and first-person common singular suffix from Gen.6.13", () => {
+        const parsed = parseHebrewMorphology("HR/Ncbpc/Sp1cs");
+
+        expect(parsed.segments).toHaveLength(3);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HR",
+            partOfSpeech: "Preposition",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HNcbpc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Both",
+            number: "Plural",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[2]).toMatchObject({
+            code: "HSp1cs",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Singular",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Preposition · Noun · Common · Construct · Plural · Both · Suffix · Pronominal · 1st person · Singular · Common",
+        );
+    });
+
 });
