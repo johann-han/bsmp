@@ -53,7 +53,7 @@ jobs:
       - name: Upload generated audit
         uses: actions/upload-artifact@v4
         with:
-          name: morphhb-global-audit-20261016q
+          name: morphhb-global-audit-20261016r
           path: |
             docs/morphhb-global-morphology-audit.md
             docs/morphhb-global-morphology-codes.csv
