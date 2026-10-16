@@ -10844,4 +10844,22 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the highest-frequency uncovered Open Scriptures conjunctive segment plus relative particle from Gen.7.23", () => {
+        const parsed = parseHebrewMorphology("HC/Tr");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HC",
+            partOfSpeech: "Conjunction",
+            qualifier: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HTr",
+            partOfSpeech: "Particle",
+            qualifier: "Relative",
+        });
+        expect(parsed.summary).toBe("Conjunction · Particle · Relative");
+    });
+
 });
