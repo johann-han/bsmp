@@ -5,8 +5,8 @@
 - Source: https://github.com/openscriptures/morphhb/tree/master/wlc
 - Attribution: Original work of the Open Scriptures Hebrew Bible available at https://github.com/openscriptures/morphhb. The morphology annotations are licensed CC BY 4.0.
 - MorphHB commit: 3d15126fb1ef74867fc1434be1942e837932691f.
-- BSMP commit audited: 64af2f159f80a4f1a3597116232a518fcf87b75d.
-- Test-file blob SHA: 5a04ba08b9557048e088c05189bbfcd98476e09c.
+- BSMP commit audited: 83eaa697ea90a9e533b6512f16be0de5568792fc.
+- Test-file blob SHA: 39dbba268f570cdfbacbffee39aeed6aa25cece3.
 - Test coverage means a complete source morphology code appears as a literal argument to parseHebrewMorphology(...) in the current BSMP test file. Segment-only expectations do not count as exact-code coverage. This audit was regenerated from the current test suite, whose source blob is recorded in the report.
 - Parser status is checked against the current parser's part-of-speech dispatch and lookup maps. The OSHM code reference defines x as a placeholder for unknown or unnecessary values when another required value follows; PERSON=x is therefore treated as supported because the parser uses its nullable person field for that placeholder. Partial means a needed code dimension is not handled or mapped; Unsupported means a segment uses an unknown POS or the overall code prefix is invalid. Code reference: https://hb.openscriptures.org/parsing/HebrewMorphologyCodes.html.
 
@@ -23,12 +23,12 @@
 | Word tokens with non-empty morphology | 306,785 |
 | Word tokens without morphology | 0 |
 | Distinct exact morphology codes | 3,464 |
-| Exact codes directly covered by tests | 452 (13.05%) |
-| Exact codes not directly covered | 3,012 |
-| Source occurrences covered by exact-code tests | 276,749 / 306,785 (90.21%) |
-| Source occurrences belonging to uncovered exact codes | 30,036 |
+| Exact codes directly covered by tests | 453 (13.08%) |
+| Exact codes not directly covered | 3,011 |
+| Source occurrences covered by exact-code tests | 276,853 / 306,785 (90.24%) |
+| Source occurrences belonging to uncovered exact codes | 29,932 |
 | Codes flagged for parser review | 0 (0 occurrences) |
-| Whole-code literals found in direct test calls | 515 |
+| Whole-code literals found in direct test calls | 516 |
 
 ## Master gap list — highest-frequency uncovered codes
 
@@ -36,66 +36,66 @@ The complete inventory of all exact source codes, frequency, first occurrence, p
 
 | Rank | Morphology code | OT occurrences | First occurrence | Parser status | Next action |
 |---:|---|---:|---|---|---|
-| 1 | HR/Ncbpc/Sp1cs | 104 | Genesis 6:13, word 8 | Supported | Add exact-code regression only |
-| 2 | HVqi3mp/Sn | 104 | Genesis 18:28, word 2 | Supported | Add exact-code regression only |
-| 3 | HR/Ncmpc/Sp2mp | 102 | Genesis 17:12, word 8 | Supported | Add exact-code regression only |
-| 4 | HTd/VNrmpa | 101 | Genesis 45:1, word 6 | Supported | Add exact-code regression only |
-| 5 | HNcfda | 100 | Genesis 4:15, word 8 | Supported | Add exact-code regression only |
-| 6 | HC/Ncmsc/Sp1cs | 98 | Genesis 18:12, word 10 | Supported | Add exact-code regression only |
-| 7 | HC/Pp3mp | 98 | Genesis 14:13, word 15 | Supported | Add exact-code regression only |
-| 8 | HC/R/Ncbsc | 98 | Genesis 9:5, word 10 | Supported | Add exact-code regression only |
-| 9 | HNcbpc/Sp2ms | 98 | Genesis 4:6, word 10 | Supported | Add exact-code regression only |
-| 10 | HNcfsc/Sp2fs | 98 | Genesis 3:16, word 13 | Supported | Add exact-code regression only |
-| 11 | HVHi3ms | 98 | Genesis 4:15, word 9 | Supported | Add exact-code regression only |
-| 12 | AC | 97 | Ezra 4:13, word 6 | Supported | Add exact-code regression only |
-| 13 | HC/R/Sp3ms | 95 | Genesis 33:1, word 8 | Supported | Add exact-code regression only |
-| 14 | HR/Tn | 95 | Leviticus 15:25, word 8 | Supported | Add exact-code regression only |
-| 15 | HR/Ncbsc/Sp1cs | 94 | Genesis 21:30, word 7 | Supported | Add exact-code regression only |
-| 16 | HC/Vhw3ms/Sp3mp | 93 | Genesis 3:21, word 8 | Supported | Add exact-code regression only |
-| 17 | HC/Vpq1cs | 93 | Genesis 17:16, word 1 | Supported | Add exact-code regression only |
-| 18 | HC/Vqp3cp | 92 | Genesis 12:12, word 6 | Supported | Add exact-code regression only |
-| 19 | HR/Ncfsc/Sp2ms | 92 | Genesis 49:18, word 1 | Supported | Add exact-code regression only |
-| 20 | HC/R/Ncfsc | 90 | Genesis 33:14, word 13 | Supported | Add exact-code regression only |
-| 21 | HC/Vhq2ms | 90 | Genesis 26:10, word 13 | Supported | Add exact-code regression only |
-| 22 | HVNp1cs | 90 | Genesis 6:7, word 20 | Supported | Add exact-code regression only |
-| 23 | HVqi2fs | 90 | Genesis 3:16, word 9 | Supported | Add exact-code regression only |
-| 24 | HNcfpc/Sp1cs | 89 | Genesis 26:5, word 8 | Supported | Add exact-code regression only |
-| 25 | HR/Pdxms | 89 | Genesis 16:8, word 6 | Supported | Add exact-code regression only |
-| 26 | HTd/Aofsa | 89 | Genesis 4:19, word 10 | Supported | Add exact-code regression only |
-| 27 | HC/Aampa | 88 | Genesis 13:13, word 4 | Supported | Add exact-code regression only |
-| 28 | HC/Rd/Ncmpa | 88 | Exodus 7:19, word 32 | Supported | Add exact-code regression only |
-| 29 | HVprmpa | 88 | Genesis 37:7, word 3 | Supported | Add exact-code regression only |
-| 30 | HC/Vqw3ms/Sp3mp | 87 | Genesis 14:15, word 7 | Supported | Add exact-code regression only |
-| 31 | HR/Ncbsc/Sp3mp | 87 | Genesis 35:4, word 9 | Supported | Add exact-code regression only |
-| 32 | HC/Ncmsc/Sp2ms | 85 | Genesis 17:9, word 10 | Supported | Add exact-code regression only |
-| 33 | HC/Vqa | 83 | Genesis 8:3, word 6 | Supported | Add exact-code regression only |
-| 34 | AVqrmsa | 82 | Ezra 4:15, word 20 | Supported | Add exact-code regression only |
-| 35 | HC/Vqw3fp | 82 | Genesis 19:36, word 1 | Supported | Add exact-code regression only |
-| 36 | HNcfdc/Sp3ms | 81 | Genesis 24:32, word 12 | Supported | Add exact-code regression only |
-| 37 | HR/Ncbdc/Sp2ms | 81 | Genesis 18:3, word 7 | Supported | Add exact-code regression only |
-| 38 | HR/Ncfsc/Sp1cs | 81 | Genesis 4:23, word 17 | Supported | Add exact-code regression only |
-| 39 | HC/Vqj3ms | 80 | Genesis 9:26, word 6 | Supported | Add exact-code regression only |
-| 40 | HR/Vqc/Sp1cs | 80 | Genesis 29:19, word 7 | Supported | Add exact-code regression only |
-| 41 | HC/Td/Ncfpa | 79 | Exodus 28:21, word 1 | Supported | Add exact-code regression only |
-| 42 | HC/VNq3cp | 79 | Genesis 3:5, word 8 | Supported | Add exact-code regression only |
-| 43 | HR/C | 79 | Genesis 3:11, word 12 | Supported | Add exact-code regression only |
-| 44 | HC/Td/Ngmpa | 78 | Genesis 37:36, word 1 | Supported | Add exact-code regression only |
-| 45 | HC/Vqi1cs | 78 | Genesis 24:14, word 9 | Supported | Add exact-code regression only |
-| 46 | HC/Vqw2ms | 78 | Genesis 3:17, word 7 | Supported | Add exact-code regression only |
-| 47 | HTd/Vhrmsa | 78 | Genesis 36:35, word 8 | Supported | Add exact-code regression only |
-| 48 | HVhv2ms/Sh | 78 | Genesis 27:7, word 1 | Supported | Add exact-code regression only |
-| 49 | HC/Ncfsc/Sp2ms | 77 | Genesis 6:18, word 10 | Supported | Add exact-code regression only |
-| 50 | HR/Ncfsc/Sp3mp | 77 | Genesis 47:30, word 7 | Supported | Add exact-code regression only |
-| 51 | HC/Vtw3mp | 76 | Genesis 33:7, word 5 | Supported | Add exact-code regression only |
-| 52 | HNcbdc/Sp2ms | 76 | Genesis 13:14, word 11 | Supported | Add exact-code regression only |
-| 53 | HC/Ncfpc | 75 | Genesis 6:18, word 11 | Supported | Add exact-code regression only |
-| 54 | HVqp3ms/Sp3ms | 75 | Genesis 4:25, word 21 | Supported | Add exact-code regression only |
-| 55 | HNcbdc/Sp1cs | 74 | Genesis 31:10, word 6 | Supported | Add exact-code regression only |
-| 56 | HC/Vpq2ms | 73 | Exodus 4:15, word 1 | Supported | Add exact-code regression only |
-| 57 | HVqi3ms/Sp3ms | 73 | Genesis 42:4, word 13 | Supported | Add exact-code regression only |
-| 58 | HNcbdc | 72 | Genesis 3:7, word 2 | Supported | Add exact-code regression only |
-| 59 | HNcbpc/Sp3mp | 72 | Genesis 34:28, word 6 | Supported | Add exact-code regression only |
-| 60 | HR/Vtc | 72 | Genesis 37:10, word 21 | Supported | Add exact-code regression only |
+| 1 | HVqi3mp/Sn | 104 | Genesis 18:28, word 2 | Supported | Add exact-code regression only |
+| 2 | HR/Ncmpc/Sp2mp | 102 | Genesis 17:12, word 8 | Supported | Add exact-code regression only |
+| 3 | HTd/VNrmpa | 101 | Genesis 45:1, word 6 | Supported | Add exact-code regression only |
+| 4 | HNcfda | 100 | Genesis 4:15, word 8 | Supported | Add exact-code regression only |
+| 5 | HC/Ncmsc/Sp1cs | 98 | Genesis 18:12, word 10 | Supported | Add exact-code regression only |
+| 6 | HC/Pp3mp | 98 | Genesis 14:13, word 15 | Supported | Add exact-code regression only |
+| 7 | HC/R/Ncbsc | 98 | Genesis 9:5, word 10 | Supported | Add exact-code regression only |
+| 8 | HNcbpc/Sp2ms | 98 | Genesis 4:6, word 10 | Supported | Add exact-code regression only |
+| 9 | HNcfsc/Sp2fs | 98 | Genesis 3:16, word 13 | Supported | Add exact-code regression only |
+| 10 | HVHi3ms | 98 | Genesis 4:15, word 9 | Supported | Add exact-code regression only |
+| 11 | AC | 97 | Ezra 4:13, word 6 | Supported | Add exact-code regression only |
+| 12 | HC/R/Sp3ms | 95 | Genesis 33:1, word 8 | Supported | Add exact-code regression only |
+| 13 | HR/Tn | 95 | Leviticus 15:25, word 8 | Supported | Add exact-code regression only |
+| 14 | HR/Ncbsc/Sp1cs | 94 | Genesis 21:30, word 7 | Supported | Add exact-code regression only |
+| 15 | HC/Vhw3ms/Sp3mp | 93 | Genesis 3:21, word 8 | Supported | Add exact-code regression only |
+| 16 | HC/Vpq1cs | 93 | Genesis 17:16, word 1 | Supported | Add exact-code regression only |
+| 17 | HC/Vqp3cp | 92 | Genesis 12:12, word 6 | Supported | Add exact-code regression only |
+| 18 | HR/Ncfsc/Sp2ms | 92 | Genesis 49:18, word 1 | Supported | Add exact-code regression only |
+| 19 | HC/R/Ncfsc | 90 | Genesis 33:14, word 13 | Supported | Add exact-code regression only |
+| 20 | HC/Vhq2ms | 90 | Genesis 26:10, word 13 | Supported | Add exact-code regression only |
+| 21 | HVNp1cs | 90 | Genesis 6:7, word 20 | Supported | Add exact-code regression only |
+| 22 | HVqi2fs | 90 | Genesis 3:16, word 9 | Supported | Add exact-code regression only |
+| 23 | HNcfpc/Sp1cs | 89 | Genesis 26:5, word 8 | Supported | Add exact-code regression only |
+| 24 | HR/Pdxms | 89 | Genesis 16:8, word 6 | Supported | Add exact-code regression only |
+| 25 | HTd/Aofsa | 89 | Genesis 4:19, word 10 | Supported | Add exact-code regression only |
+| 26 | HC/Aampa | 88 | Genesis 13:13, word 4 | Supported | Add exact-code regression only |
+| 27 | HC/Rd/Ncmpa | 88 | Exodus 7:19, word 32 | Supported | Add exact-code regression only |
+| 28 | HVprmpa | 88 | Genesis 37:7, word 3 | Supported | Add exact-code regression only |
+| 29 | HC/Vqw3ms/Sp3mp | 87 | Genesis 14:15, word 7 | Supported | Add exact-code regression only |
+| 30 | HR/Ncbsc/Sp3mp | 87 | Genesis 35:4, word 9 | Supported | Add exact-code regression only |
+| 31 | HC/Ncmsc/Sp2ms | 85 | Genesis 17:9, word 10 | Supported | Add exact-code regression only |
+| 32 | HC/Vqa | 83 | Genesis 8:3, word 6 | Supported | Add exact-code regression only |
+| 33 | AVqrmsa | 82 | Ezra 4:15, word 20 | Supported | Add exact-code regression only |
+| 34 | HC/Vqw3fp | 82 | Genesis 19:36, word 1 | Supported | Add exact-code regression only |
+| 35 | HNcfdc/Sp3ms | 81 | Genesis 24:32, word 12 | Supported | Add exact-code regression only |
+| 36 | HR/Ncbdc/Sp2ms | 81 | Genesis 18:3, word 7 | Supported | Add exact-code regression only |
+| 37 | HR/Ncfsc/Sp1cs | 81 | Genesis 4:23, word 17 | Supported | Add exact-code regression only |
+| 38 | HC/Vqj3ms | 80 | Genesis 9:26, word 6 | Supported | Add exact-code regression only |
+| 39 | HR/Vqc/Sp1cs | 80 | Genesis 29:19, word 7 | Supported | Add exact-code regression only |
+| 40 | HC/Td/Ncfpa | 79 | Exodus 28:21, word 1 | Supported | Add exact-code regression only |
+| 41 | HC/VNq3cp | 79 | Genesis 3:5, word 8 | Supported | Add exact-code regression only |
+| 42 | HR/C | 79 | Genesis 3:11, word 12 | Supported | Add exact-code regression only |
+| 43 | HC/Td/Ngmpa | 78 | Genesis 37:36, word 1 | Supported | Add exact-code regression only |
+| 44 | HC/Vqi1cs | 78 | Genesis 24:14, word 9 | Supported | Add exact-code regression only |
+| 45 | HC/Vqw2ms | 78 | Genesis 3:17, word 7 | Supported | Add exact-code regression only |
+| 46 | HTd/Vhrmsa | 78 | Genesis 36:35, word 8 | Supported | Add exact-code regression only |
+| 47 | HVhv2ms/Sh | 78 | Genesis 27:7, word 1 | Supported | Add exact-code regression only |
+| 48 | HC/Ncfsc/Sp2ms | 77 | Genesis 6:18, word 10 | Supported | Add exact-code regression only |
+| 49 | HR/Ncfsc/Sp3mp | 77 | Genesis 47:30, word 7 | Supported | Add exact-code regression only |
+| 50 | HC/Vtw3mp | 76 | Genesis 33:7, word 5 | Supported | Add exact-code regression only |
+| 51 | HNcbdc/Sp2ms | 76 | Genesis 13:14, word 11 | Supported | Add exact-code regression only |
+| 52 | HC/Ncfpc | 75 | Genesis 6:18, word 11 | Supported | Add exact-code regression only |
+| 53 | HVqp3ms/Sp3ms | 75 | Genesis 4:25, word 21 | Supported | Add exact-code regression only |
+| 54 | HNcbdc/Sp1cs | 74 | Genesis 31:10, word 6 | Supported | Add exact-code regression only |
+| 55 | HC/Vpq2ms | 73 | Exodus 4:15, word 1 | Supported | Add exact-code regression only |
+| 56 | HVqi3ms/Sp3ms | 73 | Genesis 42:4, word 13 | Supported | Add exact-code regression only |
+| 57 | HNcbdc | 72 | Genesis 3:7, word 2 | Supported | Add exact-code regression only |
+| 58 | HNcbpc/Sp3mp | 72 | Genesis 34:28, word 6 | Supported | Add exact-code regression only |
+| 59 | HR/Vtc | 72 | Genesis 37:10, word 21 | Supported | Add exact-code regression only |
+| 60 | HRd/Ngmpa | 72 | Genesis 37:27, word 3 | Supported | Add exact-code regression only |
 
 ## Parser-review inventory
 
