@@ -10796,4 +10796,31 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures masculine singular construct noun plus first-person common plural suffix from Gen.19.31", () => {
+        const parsed = parseHebrewMorphology("HNcmsc/Sp1cp");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HNcmsc",
+            partOfSpeech: "Noun",
+            qualifier: "Common · Construct",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Construct",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSp1cp",
+            partOfSpeech: "Suffix",
+            qualifier: "Pronominal",
+            person: "1st",
+            gender: "Common",
+            number: "Plural",
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Noun · Common · Construct · Singular · Masculine · Suffix · Pronominal · 1st person · Plural · Common",
+        );
+    });
+
 });
