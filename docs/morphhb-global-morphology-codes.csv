@@ -296,7 +296,7 @@ P2,HR/Ncbsc/Sp2ms,117,"Genesis 4:11, word 14",Genesis,4,11,14,Supported,,yes,Alr
 P2,HR/Ncmpc/Sp2ms,117,"Genesis 15:4, word 13",Genesis,15,4,13,Supported,,yes,Already covered by exact-code test
 P2,HTd/Acmsa,117,"Genesis 2:11, word 2",Genesis,2,11,2,Supported,,yes,Already covered by exact-code test
 P2,HTo/Sp1cs,117,"Genesis 4:14, word 3",Genesis,4,14,3,Supported,,yes,Already covered by exact-code test
-P2,HVhrmpa,117,"Genesis 19:13, word 2",Genesis,19,13,2,Supported,,no,Add exact-code regression only
+P2,HVhrmpa,117,"Genesis 19:13, word 2",Genesis,19,13,2,Supported,,yes,Already covered by exact-code test
 P2,HR/Acmsa,116,"Genesis 2:10, word 10",Genesis,2,10,10,Supported,,no,Add exact-code regression only
 P2,HR/VNc,116,"Genesis 19:19, word 18",Genesis,19,19,18,Supported,,no,Add exact-code regression only
 P2,HNcmpc/Sp2fs,114,"Joshua 2:18, word 20",Joshua,2,18,20,Supported,,no,Add exact-code regression only
