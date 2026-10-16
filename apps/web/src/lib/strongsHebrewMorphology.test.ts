@@ -10823,4 +10823,25 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures Piel perfect verb, second-person masculine singular (Gen.4.14)", () => {
+        const parsed = parseHebrewMorphology("HVpp2ms");
+
+        expect(parsed.segments).toHaveLength(1);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVpp2ms",
+            partOfSpeech: "Verb",
+            qualifier: "Piel",
+            form: "Perfect",
+            person: "2nd",
+            gender: "Masculine",
+            number: "Singular",
+            state: null,
+            mood: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Piel · Perfect · 2nd person · Singular · Masculine",
+        );
+    });
+
 });
