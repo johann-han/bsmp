@@ -10894,4 +10894,34 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Qal imperfect masculine plural verb plus paragogic nun from Gen.18.28", () => {
+        const parsed = parseHebrewMorphology("HVqi3mp/Sn");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HVqi3mp",
+            partOfSpeech: "Verb",
+            qualifier: "Qal",
+            form: "Imperfect",
+            person: "3rd",
+            gender: "Masculine",
+            number: "Plural",
+            state: null,
+            mood: null,
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HSn",
+            partOfSpeech: "Suffix",
+            qualifier: "Paragogic nun",
+            person: null,
+            gender: null,
+            number: null,
+            state: null,
+        });
+        expect(parsed.summary).toBe(
+            "Verb · Qal · Imperfect · 3rd person · Plural · Masculine · Suffix · Paragogic nun",
+        );
+    });
+
 });
