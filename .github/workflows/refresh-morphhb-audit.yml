@@ -3,7 +3,7 @@ name: Regenerate global MorphHB audit
 on:
   push:
     # Use a fresh dedicated refresh branch after each morphology test merge.
-    # Refresh the source-wide gap inventory after the direct-object suffix regression merge.
+    # Regenerate source-wide MorphHB coverage after the Hiphil participle regression merge.
     branches:
       - 'chore/morphhb-audit-refresh-*'
     paths:
