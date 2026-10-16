@@ -3,7 +3,7 @@ name: Regenerate global MorphHB audit
 on:
   push:
     # Use a fresh dedicated refresh branch after each morphology test merge.
-    # Refresh the global exact-code gap ranking after the latest regression-test merge.
+    # Recompute the published OT morphology inventory after the latest regression-test merge.
     branches:
       - 'chore/morphhb-audit-refresh-*'
     paths:
