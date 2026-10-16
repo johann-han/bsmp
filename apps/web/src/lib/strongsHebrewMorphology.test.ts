@@ -10652,4 +10652,27 @@ describe("Global Open Scriptures morphology dimension coverage", () => {
         );
     });
 
+
+    it("decodes the next highest-frequency uncovered Open Scriptures definite article plus masculine singular cardinal adjective from Gen.2.11", () => {
+        const parsed = parseHebrewMorphology("HTd/Acmsa");
+
+        expect(parsed.segments).toHaveLength(2);
+        expect(parsed.segments?.[0]).toMatchObject({
+            code: "HTd",
+            partOfSpeech: "Particle",
+            qualifier: "Definite article",
+        });
+        expect(parsed.segments?.[1]).toMatchObject({
+            code: "HAcmsa",
+            partOfSpeech: "Adjective",
+            qualifier: "Cardinal number · Absolute",
+            gender: "Masculine",
+            number: "Singular",
+            state: "Absolute",
+        });
+        expect(parsed.summary).toContain(
+            "Particle · Definite article · Adjective · Cardinal number · Absolute · Singular · Masculine",
+        );
+    });
+
 });
